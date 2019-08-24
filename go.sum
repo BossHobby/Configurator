@@ -1,0 +1,10 @@
+github.com/fxamacker/cbor v0.1.0 h1:vJ5HPBRlRtakqHF2/GWlT5qsjO5ZpHaurf7iSdV57oI=
+github.com/fxamacker/cbor v0.1.0/go.mod h1:QoJqAv+d8/zS8c51F67F1NpasNGDv68x6I0hC7UpjDI=
+github.com/gorilla/mux v1.7.3 h1:gnP5JzjVOuiZD07fKKToCAOjS0yOpj/qPETTXCCS6hw=
+github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+github.com/jacobsa/go-serial v0.0.0-20180131005756-15cf729a72d4 h1:G2ztCwXov8mRvP0ZfjE6nAlaCX2XbykaeHdbT6KwDz0=
+github.com/jacobsa/go-serial v0.0.0-20180131005756-15cf729a72d4/go.mod h1:2RvX5ZjVtsznNZPEt4xwJXNJrM3VTZoQf7V6gk0ysvs=
+github.com/rs/cors v1.7.0 h1:+88SsELBHx5r+hZ8TCkggzSstaWNbDvThkVK8H6f9ik=
+github.com/rs/cors v1.7.0/go.mod h1:gFx+x8UowdsKA9AchylcLynDq+nNFfI8FkUZdN/jGCU=
+golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a h1:aYOabOQFp6Vj6W1F80affTUvO9UxmJRx8K0gsfABByQ=
+golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
