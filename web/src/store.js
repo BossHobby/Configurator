@@ -8,6 +8,9 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     profile: {
+      Setup: {
+        InvertYaw: 1,
+      },
       Rate: {
         Mode: 0,
         Silverware: {},

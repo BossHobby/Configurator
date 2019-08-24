@@ -2,14 +2,15 @@
   <b-container class="mt-5">
     <b-row>
       <b-col sm="6">
-        <Rates></Rates>
+        <Setup></Setup>
+        <PIDRates class="my-3"></PIDRates>
       </b-col>
       <b-col sm="6">
-        <PIDRates></PIDRates>
+        <Rates></Rates>
       </b-col>
     </b-row>
-    <b-row>
-      <b-col offset="10" sm="2">
+    <b-row class="my-5">
+      <b-col offset="11" sm="1">
         <b-button v-on:click="apply_profile(profile)">Apply</b-button>
       </b-col>
     </b-row>
@@ -17,6 +18,7 @@
 </template>
 
 <script>
+import Setup from "@/components/Setup";
 import PIDRates from "@/components/PIDRates";
 import Rates from "@/components/Rates";
 
@@ -25,6 +27,7 @@ import { mapActions, mapState } from "vuex";
 export default {
   name: "home",
   components: {
+    Setup,
     Rates,
     PIDRates
   },

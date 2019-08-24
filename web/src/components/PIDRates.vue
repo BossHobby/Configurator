@@ -57,7 +57,7 @@
 import { mapState } from "vuex";
 
 export default {
-  name: "PIDPIDs",
+  name: "PIDRates",
   computed: mapState({
     PID: state => state.profile.PID
   })

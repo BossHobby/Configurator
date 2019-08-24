@@ -29,7 +29,12 @@ type PIDRates struct {
 	KD Vector `cbor:"kd"`
 }
 
+type Setup struct {
+	InvertYaw uint8 `cbor:"invert_yaw"`
+}
+
 type Profile struct {
-	Rate Rates    `cbor:"rate"`
-	PID  PIDRates `cbor:"pid"`
+	Setup Setup    `cbor:"setup"`
+	Rate  Rates    `cbor:"rate"`
+	PID   PIDRates `cbor:"pid"`
 }
