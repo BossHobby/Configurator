@@ -33,8 +33,17 @@ type Setup struct {
 	InvertYaw uint8 `cbor:"invert_yaw"`
 }
 
+type Voltage struct {
+	LipoCellCount            uint8   `cbor:"lipo_cell_count"`
+	PidVoltageCompensation   uint8   `cbor:"pid_voltage_compensation"`
+	StopLowbattery           uint8   `cbor:"stop_lowbattery"`
+	ActualBatteryVoltage     float32 `cbor:"actual_battery_voltage"`
+	ReportedTelemetryVoltage float32 `cbor:"reported_telemetry_voltage"`
+}
+
 type Profile struct {
-	Setup Setup    `cbor:"setup"`
-	Rate  Rates    `cbor:"rate"`
-	PID   PIDRates `cbor:"pid"`
+	Setup   Setup    `cbor:"setup"`
+	Voltage Voltage  `cbor:"voltage"`
+	Rate    Rates    `cbor:"rate"`
+	PID     PIDRates `cbor:"pid"`
 }

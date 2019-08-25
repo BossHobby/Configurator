@@ -112,6 +112,16 @@ func main() {
 		renderJSON(w, *value)
 	}).Methods("GET")
 
+	r.HandleFunc("/api/vbat", func(w http.ResponseWriter, r *http.Request) {
+		buf := protocol.SendQUIC(fc.Port, 1, []byte{3})
+
+		value := new(map[string]float32)
+		if err := cbor.Unmarshal(buf, value); err != nil {
+			log.Fatal(err)
+		}
+		renderJSON(w, *value)
+	}).Methods("GET")
+
 	r.HandleFunc("/api/profile", func(w http.ResponseWriter, r *http.Request) {
 		buf := protocol.SendQUIC(fc.Port, 1, []byte{1})
 
