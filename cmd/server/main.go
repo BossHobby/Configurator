@@ -1,3 +1,5 @@
+//go:generate statik -src=../../web/dist
+
 package main
 
 import (
@@ -5,16 +7,27 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/NotFastEnuf/configurator/cmd/server/statik"
 	"github.com/NotFastEnuf/configurator/controller"
 	"github.com/NotFastEnuf/configurator/controller/protocol"
+	serial "github.com/bugst/go-serial"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 )
 
 var (
-	fc *controller.Controller
+	defaultPort = "/dev/ttyACM0"
+	fc          *controller.Controller
+	disconnect  = make(chan bool, 1)
 )
+
+type Status struct {
+	IsConnected    bool
+	Port           string
+	AvailablePorts []string
+}
 
 func renderJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -23,24 +36,69 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 	}
 }
 
+func connecController(p string) error {
+	log.Printf("opening controller %s\n", p)
+	c, err := controller.OpenController(p)
+	if err != nil {
+		log.Printf("opening controller: %v\n", err)
+		return err
+	}
+
+	go func(fc *controller.Controller) {
+		for {
+			select {
+			case <-disconnect:
+				log.Printf("closing controller %s\n", p)
+				fc.Close()
+				return
+			default:
+				if err := fc.Run(); err != nil {
+					log.Printf("port: %v\n", err)
+					disconnect <- true
+				}
+			}
+		}
+	}(c)
+
+	fc = c
+
+	return nil
+}
+
+func closeController() {
+	fc.Close()
+	fc = nil
+}
+
 func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
-		if fc != nil {
-			renderJSON(w, "CONNECTED")
-		} else {
-			renderJSON(w, "DISCONNECTED")
-		}
-	}).Methods("GET")
-
-	r.HandleFunc("/api/connect", func(w http.ResponseWriter, r *http.Request) {
-		c, err := controller.OpenController("/dev/ttyACM0")
+		ports, err := serial.GetPortsList()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fc = c
+		if fc != nil && len(ports) == 0 {
+			closeController()
+		}
 
+		s := Status{
+			AvailablePorts: ports,
+			IsConnected:    fc != nil,
+		}
+		if fc != nil {
+			s.Port = fc.PortName
+		}
+		renderJSON(w, s)
+	}).Methods("GET")
+
+	r.HandleFunc("/api/connect", func(w http.ResponseWriter, r *http.Request) {
+		connecController(defaultPort)
+		renderJSON(w, "OK")
+	}).Methods("POST")
+
+	r.HandleFunc("/api/disconnect", func(w http.ResponseWriter, r *http.Request) {
+		closeController()
 		renderJSON(w, "OK")
 	}).Methods("POST")
 
@@ -69,7 +127,6 @@ func main() {
 		if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("profile: %+v\n", profile)
 
 		data, err := cbor.Marshal(profile, cbor.EncOptions{
 			Canonical: true,
@@ -79,22 +136,18 @@ func main() {
 		}
 
 		res := protocol.SendQUIC(fc.Port, 2, append([]byte{1}, data...))
-		value := controller.Profile{}
-		if err := cbor.Unmarshal(res, &value); err != nil {
+		if err := cbor.Unmarshal(res, &profile); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("profile: %+v\n", value)
-		renderJSON(w, value)
+		renderJSON(w, profile)
 	}).Methods("POST")
 
-	c, err := controller.OpenController("/dev/ttyACM0")
+	statikFS, err := fs.New()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer c.Close()
+	r.PathPrefix("/").Handler(http.FileServer(statikFS))
 
-	fc = c
-	go fc.Run()
-
+	connecController(defaultPort)
 	http.ListenAndServe(":8000", cors.Default().Handler(r))
 }

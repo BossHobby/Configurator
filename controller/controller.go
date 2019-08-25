@@ -2,51 +2,50 @@ package controller
 
 import (
 	"fmt"
-	"io"
 	"log"
 
 	"github.com/NotFastEnuf/configurator/controller/protocol"
-	"github.com/jacobsa/go-serial/serial"
+	serial "github.com/bugst/go-serial"
 )
 
 type Controller struct {
-	Port io.ReadWriteCloser
+	PortName string
+	Port     serial.Port
 }
 
 func OpenController(serialPort string) (*Controller, error) {
-	options := serial.OpenOptions{
-		PortName:        serialPort,
-		BaudRate:        115200,
-		DataBits:        8,
-		StopBits:        1,
-		MinimumReadSize: 1,
+	mode := &serial.Mode{
+		BaudRate: 115200,
 	}
-	port, err := serial.Open(options)
+	port, err := serial.Open(serialPort, mode)
+	if err != nil {
+		return nil, err
+	}
 	return &Controller{
-		Port: port,
-	}, err
+		PortName: serialPort,
+		Port:     port,
+	}, nil
 }
 
 func (c *Controller) Run() error {
-	for {
-		buf := make([]byte, 1)
-		n, err := c.Port.Read(buf)
-		if err != nil {
+	buf := make([]byte, 1)
+	n, err := c.Port.Read(buf)
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return nil
+	}
+
+	switch buf[0] {
+	case '#':
+		if err := protocol.ReadQUIC(c.Port); err != nil {
 			return err
 		}
-		if n != 1 {
-			continue
-		}
-
-		switch buf[0] {
-		case '#':
-			if err := protocol.ReadQUIC(c.Port); err != nil {
-				return err
-			}
-		default:
-			fmt.Print(buf[0])
-		}
+	default:
+		fmt.Print(string(buf))
 	}
+	return nil
 }
 
 func (c *Controller) Close() error {

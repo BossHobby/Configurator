@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
+import Setup from './views/Setup.vue'
+import Rates from './views/Rates.vue'
 import Plot from './views/Plot.vue'
 
 Vue.use(Router)
@@ -11,8 +12,17 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: Home
+      redirect: '/setup'
+    },
+    {
+      path: '/setup',
+      name: 'setup',
+      component: Setup
+    },
+    {
+      path: '/rates',
+      name: 'rates',
+      component: Rates
     },
     {
       path: '/plot',

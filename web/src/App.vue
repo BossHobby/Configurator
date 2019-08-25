@@ -3,35 +3,72 @@
     <b-navbar>
       <b-navbar-brand to="/">QUICKSILVER</b-navbar-brand>
       <b-navbar-nav>
-        <b-nav-item to="/">Profile</b-nav-item>
+        <b-nav-item to="/setup">Setup</b-nav-item>
+        <b-nav-item to="/rates">Rates</b-nav-item>
         <b-nav-item to="/plot">Plot</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form v-on:submit.prevent="connect" right>
-          <b-button size="sm" class="my-2 my-sm-0" type="submit">Connect</b-button>
+        <b-nav-form v-on:submit.prevent="toggle_connection" right>
+          <b-form-select
+            class="mx-3 my-2 my-sm-0"
+            id="serial-port"
+            v-model="status.Port"
+            :options="status.AvailablePorts"
+            :disabled="status.IsConnected"
+          ></b-form-select>
+          <b-button
+            size="sm"
+            class="my-2 my-sm-0"
+            type="submit"
+          >{{ status.IsConnected ? 'Disconnect' : 'Connect' }}</b-button>
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
-    <router-view></router-view>
+    <b-container v-if="status.IsConnected" class="mt-5">
+      <router-view></router-view>
+      <b-row class="my-5">
+        <b-col offset="11" sm="1">
+          <b-button v-on:click="apply_profile(profile)">Apply</b-button>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-container v-else class="mt-5">
+      <div class="jumbotron my-5">
+        <h1 class="display-4">USB Configurator</h1>
+        <p class="lead">Currently you are disconnected, connect to get started!</p>
+        <a
+          class="btn btn-primary btn-lg"
+          href="#"
+          role="button"
+          v-on:click="toggle_connection"
+        >Connect</a>
+      </div>
+    </b-container>
   </div>
 </template>
 
 <script>
+import { mapActions, mapState } from "vuex";
+
 export default {
   name: "app",
-  methods: {
-    connect() {
-      fetch("http://localhost:8000/api/connect", {
-        method: "POST"
-      })
-        .then(res => res.json())
-        .then(res => {
-          // eslint-disable-next-line
-          console.log(res);
-        });
-    }
+  computed: {
+    ...mapState(["status", "profile"])
   },
-  created() {}
+  methods: {
+    ...mapActions(["fetch_status", "toggle_connection", "apply_profile"])
+  },
+  created() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    this.interval = setInterval(() => {
+      this.fetch_status();
+    }, 2500);
+  },
+  destroyed() {
+    clearInterval(this.interval);
+  }
 };
 </script>
 
