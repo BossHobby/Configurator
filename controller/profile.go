@@ -36,12 +36,17 @@ type Setup struct {
 type Voltage struct {
 	LipoCellCount            uint8   `cbor:"lipo_cell_count"`
 	PidVoltageCompensation   uint8   `cbor:"pid_voltage_compensation"`
-	StopLowbattery           uint8   `cbor:"stop_lowbattery"`
+	VBattLow                 float32 `cbor:"vbattlow"`
 	ActualBatteryVoltage     float32 `cbor:"actual_battery_voltage"`
 	ReportedTelemetryVoltage float32 `cbor:"reported_telemetry_voltage"`
 }
 
+type Channel struct {
+	Aux []uint `cbor:"aux"`
+}
+
 type Profile struct {
+	Channel Channel  `cbor:"channel"`
 	Setup   Setup    `cbor:"setup"`
 	Voltage Voltage  `cbor:"voltage"`
 	Rate    Rates    `cbor:"rate"`

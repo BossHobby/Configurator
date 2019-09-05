@@ -26,7 +26,7 @@
             type="checkbox"
             class="custom-control-input"
             id="pid-voltage-compensation"
-            v-model="profile.Voltage.PidVoltageCompensation"
+            v-model.number="profile.Voltage.PidVoltageCompensation"
             true-value="1"
             false-value="0"
           />
@@ -35,20 +35,15 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="stop-lowbattery">StopLowbattery</label>
+        <label for="vbattlow">VBattLow</label>
       </b-col>
       <b-col sm="7" class="my-2">
-        <div class="custom-control custom-checkbox">
-          <input
-            type="checkbox"
-            class="custom-control-input"
-            id="stop-lowbattery"
-            v-model="profile.Voltage.StopLowbattery"
-            true-value="1"
-            false-value="0"
-          />
-          <label class="custom-control-label" for="stop-lowbattery">Enable</label>
-        </div>
+        <b-form-input
+          id="vbattlow"
+          type="number"
+          step="0.1"
+          v-model.number="profile.Voltage.VBattLow"
+        ></b-form-input>
       </b-col>
 
       <b-col sm="5" class="my-2">

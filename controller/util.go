@@ -1,4 +1,4 @@
-package protocol
+package controller
 
 func appendCRC8(buf []byte) []byte {
 	len := buf[3]

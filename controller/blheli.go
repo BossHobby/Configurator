@@ -1,7 +1,6 @@
-package protocol
+package controller
 
 import (
-	"io"
 	"log"
 )
 
@@ -149,12 +148,12 @@ type BLHeliResponse struct {
 	PARAMS []byte
 }
 
-func ReadBlheli(port io.Reader) *BLHeliResponse {
+func (c *Controller) ReadBlheli() *BLHeliResponse {
 	buf := make([]byte, 512)
 	length := 0
 
 	{
-		n, err := port.Read(buf)
+		n, err := c.port.Read(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -172,7 +171,7 @@ func ReadBlheli(port io.Reader) *BLHeliResponse {
 	}
 	size := int(5 + paramLen + 1 + 2)
 	for length != size {
-		n, err := port.Read(buf[length:size])
+		n, err := c.port.Read(buf[length:size])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -206,7 +205,7 @@ func ReadBlheli(port io.Reader) *BLHeliResponse {
 	}
 }
 
-func SendBlheli(port io.ReadWriter, cmd BLHeliCmd, addr uint16, params []byte) *BLHeliResponse {
+func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHeliResponse {
 	if len(params) > 256 {
 		log.Fatal("<blheli> params >= 256")
 	}
@@ -230,11 +229,9 @@ func SendBlheli(port io.ReadWriter, cmd BLHeliCmd, addr uint16, params []byte) *
 	buf = appendCRC16(buf)
 
 	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d\n", cmd, addr, paramLen)
-	if _, err := port.Write(buf); err != nil {
-		log.Fatal(err)
-	}
+	c.writeChannel <- buf
 
-	res := ReadBlheli(port)
+	res := c.ReadBlheli()
 	if res.CMD != cmd {
 		log.Fatalf("<blheli> invalid response cmd (0x%x vs 0x%x)\n", res.CMD, cmd)
 	}

@@ -1,7 +1,6 @@
-package protocol
+package controller
 
 import (
-	"io"
 	"log"
 )
 
@@ -15,9 +14,9 @@ const MSPBuildInfo byte = 5  //out message
 
 const MSP4wayIf byte = 245 //out message
 
-func ReadMSP(port io.Reader) {
+func (c *Controller) ReadMSP() {
 	buf := make([]byte, mspHeaderLen)
-	length, err := port.Read(buf)
+	length, err := c.port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,17 +33,12 @@ func ReadMSP(port io.Reader) {
 
 	payloadLen, cmd := buf[3], buf[4]
 	size := int(mspHeaderLen + payloadLen + 1)
-	buf = append(buf, make([]byte, size)...)
-	for length != size {
-		n, err := port.Read(buf[length:size])
-		if err != nil {
-			log.Fatal(err)
-		}
-		if n == 0 {
-			break
-		}
-		length += n
+
+	payload, err := c.readAtLeast(int(payloadLen))
+	if err != nil {
+		log.Fatal(err)
 	}
+	length += len(payload)
 
 	if length != size {
 		log.Printf("% x (%s)\n", buf[:length], string(buf[:length]))
@@ -55,7 +49,7 @@ func ReadMSP(port io.Reader) {
 	log.Printf("<msp> received cmd: %d size: %d chksum: %d\n", cmd, payloadLen, chksum)
 }
 
-func SendMSP(port io.ReadWriter, cmd byte) {
+func (c *Controller) SendMSP(cmd byte) {
 	buf := []byte{
 		'$',
 		'M',
@@ -65,9 +59,6 @@ func SendMSP(port io.ReadWriter, cmd byte) {
 	}
 	buf = appendCRC8(buf)
 
-	if _, err := port.Write(buf); err != nil {
-		log.Fatal(err)
-	}
-
-	ReadMSP(port)
+	c.writeChannel <- buf
+	c.ReadMSP()
 }

@@ -5,14 +5,15 @@
       <b-navbar-nav>
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
+        <b-nav-item to="/channels">Channels</b-nav-item>
         <b-nav-item to="/plot">Plot</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form v-on:submit.prevent="toggle_connection" right>
+        <b-nav-form v-on:submit.prevent="toggle_connection(currentPort)" right>
           <b-form-select
             class="mx-3 my-2 my-sm-0"
             id="serial-port"
-            v-model="status.Port"
+            v-model="currentPort"
             :options="status.AvailablePorts"
             :disabled="status.IsConnected"
           ></b-form-select>
@@ -52,6 +53,11 @@ import { mapActions, mapState } from "vuex";
 
 export default {
   name: "app",
+  data() {
+    return {
+      currentPort: ""
+    };
+  },
   computed: {
     ...mapState(["status", "profile"])
   },
@@ -62,8 +68,26 @@ export default {
     if (this.interval) {
       clearInterval(this.interval);
     }
+
+    this.fetch_status().then(() => {
+      if (
+        this.currentPort == "" &&
+        this.status.AvailablePorts &&
+        this.status.AvailablePorts.length
+      ) {
+        this.currentPort = this.status.AvailablePorts[0];
+      }
+    });
     this.interval = setInterval(() => {
-      this.fetch_status();
+      this.fetch_status().then(() => {
+        if (
+          this.currentPort == "" &&
+          this.status.AvailablePorts &&
+          this.status.AvailablePorts.length
+        ) {
+          this.currentPort = this.status.AvailablePorts[0];
+        }
+      });
     }, 2500);
   },
   destroyed() {

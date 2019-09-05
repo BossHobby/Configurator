@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/NotFastEnuf/configurator/controller/protocol"
 	serial "github.com/bugst/go-serial"
 )
 
 type Controller struct {
 	PortName string
-	Port     serial.Port
+
+	port         serial.Port
+	writeChannel chan []byte
 }
 
 func OpenController(serialPort string) (*Controller, error) {
@@ -22,14 +23,22 @@ func OpenController(serialPort string) (*Controller, error) {
 		return nil, err
 	}
 	return &Controller{
-		PortName: serialPort,
-		Port:     port,
+		PortName:     serialPort,
+		port:         port,
+		writeChannel: make(chan []byte),
 	}, nil
 }
 
 func (c *Controller) Run() error {
+	select {
+	case buf := <-c.writeChannel:
+		if _, err := c.port.Write(buf); err != nil {
+			return err
+		}
+	}
+
 	buf := make([]byte, 1)
-	n, err := c.Port.Read(buf)
+	n, err := c.port.Read(buf)
 	if err != nil {
 		return err
 	}
@@ -39,7 +48,7 @@ func (c *Controller) Run() error {
 
 	switch buf[0] {
 	case '#':
-		if err := protocol.ReadQUIC(c.Port); err != nil {
+		if err := c.ReadQUIC(); err != nil {
 			return err
 		}
 	default:
@@ -49,7 +58,7 @@ func (c *Controller) Run() error {
 }
 
 func (c *Controller) Close() error {
-	return c.Port.Close()
+	return c.port.Close()
 }
 
 func (c *Controller) ReadFlash(length uint16) []byte {
@@ -57,7 +66,7 @@ func (c *Controller) ReadFlash(length uint16) []byte {
 	offset := uint16(0)
 
 	for offset < length {
-		res := protocol.SendBlheli(c.Port, protocol.BLHeliCmdDeviceRead, offset, []byte{128})
+		res := c.SendBlheli(BLHeliCmdDeviceRead, offset, []byte{128})
 		log.Printf("<blheli> readFlash %d (%d)\n", offset, len(res.PARAMS))
 		copy(buf[offset:], res.PARAMS)
 		offset += uint16(len(res.PARAMS))
@@ -74,8 +83,23 @@ func (c *Controller) WriteFlash(buf []byte) {
 		if size > 128 {
 			size = 128
 		}
-		res := protocol.SendBlheli(c.Port, protocol.BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
+		res := c.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
 		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)\n", res.ACK, offset, size)
 		offset += size
 	}
+}
+
+func (c *Controller) readAtLeast(size int) ([]byte, error) {
+	length := 0
+
+	buf := make([]byte, size)
+	for length != size {
+		n, err := c.port.Read(buf[length:size])
+		if err != nil {
+			return nil, err
+		}
+		length += n
+	}
+
+	return buf, nil
 }

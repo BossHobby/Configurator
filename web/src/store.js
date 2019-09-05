@@ -18,7 +18,8 @@ export default new Vuex.Store({
         Mode: 0,
         Silverware: {},
         Betaflight: {},
-      }
+      },
+      Voltage: {}
     }
   },
   mutations: {
@@ -33,12 +34,12 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    toggle_connection({ dispatch, state }) {
+    toggle_connection({ dispatch, state }, port) {
       var path = "/api/connect"
       if (state.status.IsConnected) {
         path = "/api/disconnect";
       }
-      post(path)
+      post(path, port)
         .then(() => dispatch("fetch_status"))
     },
     fetch_status({ commit, state, dispatch }) {

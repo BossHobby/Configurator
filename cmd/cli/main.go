@@ -161,8 +161,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("serial.Open: %v", err)
 	}
-	defer fc.Close()
 
-	go fc.Run()
+	go func() {
+		defer fc.Close()
+		if err := fc.Run(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	control(fc)
 }
