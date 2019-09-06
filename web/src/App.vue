@@ -41,7 +41,7 @@
           class="btn btn-primary btn-lg"
           href="#"
           role="button"
-          v-on:click="toggle_connection"
+          v-on:click="toggle_connection(currentPort)"
         >Connect</a>
       </div>
     </b-container>
