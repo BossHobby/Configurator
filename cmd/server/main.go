@@ -276,6 +276,6 @@ func main() {
 	})
 
 	//connecController(defaultPort)
-	//openbrowser("http://localhost:8000")
+	openbrowser("http://localhost:8000")
 	http.ListenAndServe("localhost:8000", cors.Default().Handler(r))
 }

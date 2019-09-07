@@ -52,12 +52,20 @@ export default new Vuex.Store({
         });
     },
     fetch_profile({ commit }) {
+      console.log(">> fetch profile")
       get("/api/profile")
-        .then(p => commit('set_profile', p));
+        .then(p => {
+          console.log("<< fetch profile", p)
+          commit('set_profile', p)
+        });
     },
     apply_profile({ commit }, profile) {
+      console.log(">> apply profile", profile)
       post("/api/profile", profile)
-        .then(p => commit('set_profile', p));
+        .then(p => {
+          console.log("<< apply profile", p)
+          commit('set_profile', p)
+        });
     }
   }
 })
