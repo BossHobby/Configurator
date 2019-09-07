@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/fxamacker/cbor"
@@ -18,7 +17,6 @@ type quicPacket struct {
 const quicHeaderLen = uint16(4)
 
 var quicChannel = make(chan quicPacket)
-var quicMu sync.Mutex
 
 func (c *Controller) ReadQUIC() error {
 	header, err := c.readAtLeast(int(quicHeaderLen - 1))

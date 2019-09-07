@@ -10,11 +10,10 @@ import (
 	"time"
 
 	"github.com/NotFastEnuf/configurator/controller"
-	"github.com/NotFastEnuf/configurator/controller/protocol"
 	"github.com/fxamacker/cbor"
 )
 
-var mode protocol.BLHeliMode
+var mode controller.BLHeliMode
 
 const blheliFlashSize = 7168
 
@@ -36,19 +35,17 @@ func control(fc *controller.Controller) {
 		}
 
 		switch cmd[0] {
-		case "R":
-			fc.Port.Write([]byte{'R'})
 
 		case "4way":
-			protocol.SendMSP(fc.Port, protocol.MSP4wayIf)
+			fc.SendMSP(controller.MSP4wayIf)
 		case "version":
-			protocol.SendMSP(fc.Port, protocol.MSPApiVersion)
+			fc.SendMSP(controller.MSPApiVersion)
 		case "info":
-			protocol.SendMSP(fc.Port, protocol.MSPBoardInfo)
-			protocol.SendMSP(fc.Port, protocol.MSPBuildInfo)
+			fc.SendMSP(controller.MSPBoardInfo)
+			fc.SendMSP(controller.MSPBuildInfo)
 		case "fc":
-			protocol.SendMSP(fc.Port, protocol.MSPFcVariant)
-			protocol.SendMSP(fc.Port, protocol.MSPFcVersion)
+			fc.SendMSP(controller.MSPFcVariant)
+			fc.SendMSP(controller.MSPFcVersion)
 
 		case "get":
 			quicCMD := byte(0)
@@ -58,7 +55,11 @@ func control(fc *controller.Controller) {
 					quicCMD = byte(i)
 				}
 			}
-			res := protocol.SendQUIC(fc.Port, 1, []byte{quicCMD})
+			res, err := fc.SendQUIC(1, []byte{quicCMD})
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			log.Printf("%+v\n", res)
 			value := new(interface{})
 			if err := cbor.Unmarshal(res, value); err != nil {
@@ -76,8 +77,10 @@ func control(fc *controller.Controller) {
 			}
 
 			for {
-				res := protocol.SendQUIC(fc.Port, 1, []byte{quicCMD})
-
+				res, err := fc.SendQUIC(1, []byte{quicCMD})
+				if err != nil {
+					log.Fatal(err)
+				}
 				value := new(interface{})
 				if err := cbor.Unmarshal(res, value); err != nil {
 					log.Fatal(err)
@@ -89,10 +92,10 @@ func control(fc *controller.Controller) {
 
 		case "alive":
 			log.Println("<blheli> sending alive")
-			protocol.SendBlheli(fc.Port, protocol.BLHeliCmdInterfaceTestAlive, 0, []byte{})
+			fc.SendBlheli(controller.BLHeliCmdInterfaceTestAlive, 0, []byte{})
 		case "name":
 			log.Println("<blheli> sending name")
-			res := protocol.SendBlheli(fc.Port, protocol.BLHeliCmdInterfaceGetName, 0, []byte{})
+			res := fc.SendBlheli(controller.BLHeliCmdInterfaceGetName, 0, []byte{})
 			log.Printf("<blheli> name: %q\n", string(res.PARAMS))
 
 		case "init":
@@ -105,7 +108,7 @@ func control(fc *controller.Controller) {
 			}
 
 			log.Printf("<blheli> sending init %d\n", esc)
-			res := protocol.SendBlheli(fc.Port, protocol.BLHeliCmdDeviceInitFlash, 0, []byte{byte(esc)})
+			res := fc.SendBlheli(controller.BLHeliCmdDeviceInitFlash, 0, []byte{byte(esc)})
 			signature, other, mode := uint16(res.PARAMS[1])<<8|uint16(res.PARAMS[0]), res.PARAMS[2], res.PARAMS[3]
 			log.Printf("<blheli> init mode: %d signature: %x other: %x\n", mode, signature, other)
 
@@ -119,7 +122,7 @@ func control(fc *controller.Controller) {
 			}
 
 			log.Printf("<blheli> sending reset %d\n", esc)
-			res := protocol.SendBlheli(fc.Port, protocol.BLHeliCmdDeviceReset, 0, []byte{byte(esc)})
+			res := fc.SendBlheli(controller.BLHeliCmdDeviceReset, 0, []byte{byte(esc)})
 			log.Printf("<blheli> reset: % x\n", res.PARAMS)
 
 		case "read":
@@ -151,7 +154,7 @@ func control(fc *controller.Controller) {
 
 		case "exit":
 			log.Println("<blheli> sending exit")
-			protocol.SendBlheli(fc.Port, protocol.BLHeliCmdInterfaceExit, 0, []byte{})
+			fc.SendBlheli(controller.BLHeliCmdInterfaceExit, 0, []byte{})
 		}
 	}
 }
@@ -164,8 +167,10 @@ func main() {
 
 	go func() {
 		defer fc.Close()
-		if err := fc.Run(); err != nil {
-			log.Fatal(err)
+		for {
+			if err := fc.Run(); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}()
 

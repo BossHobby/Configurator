@@ -30,29 +30,33 @@ func OpenController(serialPort string) (*Controller, error) {
 }
 
 func (c *Controller) Run() error {
-	select {
-	case buf := <-c.writeChannel:
-		if _, err := c.port.Write(buf); err != nil {
-			return err
+	go func() {
+		for {
+			buf := <-c.writeChannel
+			if _, err := c.port.Write(buf); err != nil {
+				return
+			}
 		}
-	}
+	}()
 
 	buf := make([]byte, 1)
-	n, err := c.port.Read(buf)
-	if err != nil {
-		return err
-	}
-	if n != 1 {
-		return nil
-	}
-
-	switch buf[0] {
-	case '#':
-		if err := c.ReadQUIC(); err != nil {
+	for {
+		n, err := c.port.Read(buf)
+		if err != nil {
 			return err
 		}
-	default:
-		fmt.Print(string(buf))
+		if n != 1 {
+			continue
+		}
+
+		switch buf[0] {
+		case '#':
+			if err := c.ReadQUIC(); err != nil {
+				return err
+			}
+		default:
+			fmt.Print(string(buf))
+		}
 	}
 	return nil
 }

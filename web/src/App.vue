@@ -21,6 +21,7 @@
             size="sm"
             class="my-2 my-sm-0"
             type="submit"
+            :disabled="currentPort == ''"
           >{{ status.IsConnected ? 'Disconnect' : 'Connect' }}</b-button>
         </b-nav-form>
       </b-navbar-nav>
@@ -37,12 +38,12 @@
       <div class="jumbotron my-5">
         <h1 class="display-4">USB Configurator</h1>
         <p class="lead">Currently you are disconnected, connect to get started!</p>
-        <a
-          class="btn btn-primary btn-lg"
-          href="#"
-          role="button"
+        <b-button
+          size="lg"
+          variant="primary"
+          :disabled="currentPort == ''"
           v-on:click="toggle_connection(currentPort)"
-        >Connect</a>
+        >Connect</b-button>
       </div>
     </b-container>
   </div>
@@ -80,6 +81,7 @@ export default {
     });
     this.interval = setInterval(() => {
       this.fetch_status().then(() => {
+        this.currentPort = this.status.Port;
         if (
           this.currentPort == "" &&
           this.status.AvailablePorts &&
