@@ -21,7 +21,7 @@ else
 endif
 
 
-.PHONY: all clean web
+.PHONY: all clean web $(EXECUTABLE)_$(PLATFORM)_amd64
 all: windows linux darwin
 	@echo version: $(VERSION)
 
@@ -38,9 +38,11 @@ $(DARWIN): cmd/server/statik
 	env GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $(DARWIN) ./cmd/server
 
 serve:
-	CompileDaemon -build="make $(LINUX)" -command="./$(LINUX)" & npm --prefix web run serve
+	npm --prefix web run serve &
+	CompileDaemon -build="make $(PLATFORM)" -command="./$(EXECUTABLE)_$(PLATFORM)_amd64"
+	wait
 
-web/node_modules:
+web/node_modules: web/package.json
 	npm --prefix web install
 
 web: web/dist
