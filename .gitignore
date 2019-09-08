@@ -6,7 +6,7 @@ node_modules
 .env.local
 .env.*.local
 
-*.exe
+/usb_configurator*
 
 # Log files
 npm-debug.log*
