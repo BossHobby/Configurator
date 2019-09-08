@@ -1,0 +1,2 @@
+# QUICKSILVER USB Configurator [![Build Status](https://ci.bkleiner.codes/api/badges/bkleiner/quicksilver-usb-configurator/status.svg)](https://ci.bkleiner.codes/bkleiner/quicksilver-usb-configurator)
+USB configurator for the QUICKSILVER Flight Controller Firmware based on Silverware by Silver13
