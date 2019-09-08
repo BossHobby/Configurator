@@ -1,6 +1,9 @@
 function handleResponse(res) {
   if (res.status != 200) {
-    throw new Error(res.text())
+    return res.text().then(text => {
+      throw new Error(text)
+    });
+
   }
   return res.json()
 }

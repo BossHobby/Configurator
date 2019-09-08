@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { get } from "@/api.js";
+import { mapState, mapActions } from "vuex";
 import VuePlotly from "@statnett/vue-plotly";
 
 export default {
@@ -94,24 +94,35 @@ export default {
       }
     };
   },
+  computed: {
+    ...mapState({
+      rx: state => state.rx
+    })
+  },
+  methods: {
+    ...mapActions(["fetch_rx"])
+  },
+  watch: {
+    rx(val) {
+      const time = (Date.now() - this.start) / 1000;
+      for (let i = 0; i < 4; i++) {
+        this.raw.data[i].y.push(val.raw[i]);
+        this.raw.data[i].x.push(time);
+
+        this.copy.data[i].y.push(val.copy[i]);
+        this.copy.data[i].x.push(time);
+      }
+    }
+  },
   created() {
-    const start = Date.now();
+    this.start = Date.now();
 
     if (this.interval) {
       clearInterval(this.interval);
     }
 
     this.interval = setInterval(() => {
-      get("/api/rx").then(res => {
-        const time = (Date.now() - start) / 1000;
-        for (let i = 0; i < 4; i++) {
-          this.raw.data[i].y.push(res.raw[i]);
-          this.raw.data[i].x.push(time);
-
-          this.copy.data[i].y.push(res.copy[i]);
-          this.copy.data[i].x.push(time);
-        }
-      });
+      this.fetch_rx();
     }, 250);
   },
   destroyed() {

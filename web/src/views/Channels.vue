@@ -30,20 +30,19 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { get } from "@/api.js";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "Channels",
   components: {},
   computed: {
     ...mapState({
-      Channel: state => state.profile.Channel
+      Channel: state => state.profile.Channel,
+      aux: state => state.rx.aux
     })
   },
   data() {
     return {
-      aux: [],
       auxChannels: [
         { value: 0, text: "AUX_1" },
         { value: 1, text: "AUX_2" },
@@ -80,7 +79,12 @@ export default {
     };
   },
   methods: {
+    ...mapActions(["fetch_rx"]),
     classForIndex(index) {
+      if (!this.Channel || !this.Channel.Aux) {
+        return "";
+      }
+
       if (this.Channel.Aux[index] == 15) return "text-danger";
       if (this.Channel.Aux[index] == 14) return "text-success";
       if (this.aux[this.Channel.Aux[index]]) return "text-success";
@@ -92,9 +96,9 @@ export default {
       clearInterval(this.interval);
     }
 
-    get("/api/rx").then(res => (this.aux = res.aux));
+    this.fetch_rx();
     this.interval = setInterval(() => {
-      get("/api/rx").then(res => (this.aux = res.aux));
+      this.fetch_rx();
     }, 750);
   },
   destroyed() {

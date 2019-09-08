@@ -74,30 +74,21 @@
 </template>
 
 <script>
-import { get } from "@/api.js";
 import { mapActions, mapState } from "vuex";
 
 export default {
   name: "voltage",
-  computed: mapState(["profile"]),
-  data() {
-    return {
-      vbat: {
-        filter: 0.0,
-        compare: 0.0
-      }
-    };
-  },
+  computed: mapState(["profile", "vbat"]),
   methods: {
-    ...mapActions([])
+    ...mapActions(["fetch_vbat"])
   },
   created() {
     if (this.interval) {
       clearInterval(this.interval);
     }
-    get("/api/vbat").then(res => (this.vbat = res));
+    this.fetch_vbat();
     this.interval = setInterval(() => {
-      get("/api/vbat").then(res => (this.vbat = res));
+      this.fetch_vbat();
     }, 2500);
   },
   destroyed() {

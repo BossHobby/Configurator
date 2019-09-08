@@ -9,11 +9,11 @@
         <b-nav-item to="/plot">Plot</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form v-on:submit.prevent="toggle_connection(currentPort)" right>
+        <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
           <b-form-select
             class="mx-3 my-2 my-sm-0"
             id="serial-port"
-            v-model="currentPort"
+            v-model="status.Port"
             :options="status.AvailablePorts"
             :disabled="status.IsConnected"
           ></b-form-select>
@@ -21,7 +21,7 @@
             size="sm"
             class="my-2 my-sm-0"
             type="submit"
-            :disabled="currentPort == ''"
+            :disabled="can_connect"
           >{{ status.IsConnected ? 'Disconnect' : 'Connect' }}</b-button>
         </b-nav-form>
       </b-navbar-nav>
@@ -41,8 +41,8 @@
         <b-button
           size="lg"
           variant="primary"
-          :disabled="currentPort == ''"
-          v-on:click="toggle_connection(currentPort)"
+          :disabled="can_connect"
+          v-on:click="toggle_connection(status.Port)"
         >Connect</b-button>
       </div>
     </b-container>
@@ -54,43 +54,22 @@ import { mapActions, mapState } from "vuex";
 
 export default {
   name: "app",
-  data() {
-    return {
-      currentPort: ""
-    };
-  },
   computed: {
-    ...mapState(["status", "profile"])
+    ...mapState(["status", "profile"]),
+    can_connect() {
+      return !this.status.Port || this.status.Port.length == 0;
+    }
   },
   methods: {
-    ...mapActions(["fetch_status", "toggle_connection", "apply_profile"])
+    ...mapActions([
+      "connect_websocket",
+      "fetch_status",
+      "toggle_connection",
+      "apply_profile"
+    ])
   },
   created() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-
-    this.fetch_status().then(() => {
-      if (
-        this.currentPort == "" &&
-        this.status.AvailablePorts &&
-        this.status.AvailablePorts.length
-      ) {
-        this.currentPort = this.status.AvailablePorts[0];
-      }
-    });
-    this.interval = setInterval(() => {
-      this.fetch_status().then(() => {
-        this.currentPort = this.status.Port;
-        if (
-          this.currentPort == "" &&
-          this.status.AvailablePorts &&
-          this.status.AvailablePorts.length
-        ) {
-          this.currentPort = this.status.AvailablePorts[0];
-        }
-      });
-    }, 2500);
+    this.connect_websocket();
   },
   destroyed() {
     clearInterval(this.interval);
