@@ -17,7 +17,6 @@ import (
 	_ "github.com/NotFastEnuf/configurator/cmd/server/statik"
 	"github.com/NotFastEnuf/configurator/controller"
 	serial "github.com/bugst/go-serial"
-	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -26,6 +25,7 @@ import (
 var (
 	fc         *controller.Controller
 	disconnect = make(chan bool, 1)
+	version    = "dirty"
 )
 
 type Status struct {
@@ -42,7 +42,9 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 }
 
 func closeController() {
-	fc.Close()
+	if fc != nil {
+		fc.Close()
+	}
 	fc = nil
 }
 
@@ -89,7 +91,7 @@ func openbrowser(url string) {
 		log.Fatal(err)
 	}
 
-	log.Printf("Server running at %s!\n", url)
+	log.Printf("Configurator running at %s!\n", url)
 }
 
 func defaultPort() string {
@@ -101,9 +103,53 @@ func defaultPort() string {
 	}
 }
 
-func main() {
-	r := mux.NewRouter()
+func spaHandler() http.HandlerFunc {
+	statikFS, err := fs.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		const indexFile = "/index.html"
 
+		upath := r.URL.Path
+		if !strings.HasPrefix(upath, "/") {
+			upath = "/" + upath
+			r.URL.Path = upath
+		}
+
+		f, err := statikFS.Open(path.Clean(upath))
+		if err != nil && !os.IsNotExist(err) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if os.IsNotExist(err) {
+			f, err = statikFS.Open(indexFile)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		stat, err := f.Stat()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if stat.IsDir() {
+			f, err = statikFS.Open(indexFile)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.Header().Set("Cache-Control", "max-age=30")
+		w.Header().Set("Cache-Control", "max-age=30")
+		http.ServeContent(w, r, stat.Name(), time.Now(), f)
+	}
+}
+
+func setupRoutes(r *mux.Router) {
 	r.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		ports, err := serial.GetPortsList()
 		if err != nil {
@@ -145,14 +191,8 @@ func main() {
 			return
 		}
 
-		buf, err := fc.SendQUIC(1, []byte{2})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		value := new(map[string]interface{})
-		if err := cbor.Unmarshal(buf, value); err != nil {
+		if err := fc.GetQUIC(controller.QuicValRx, value); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -165,14 +205,8 @@ func main() {
 			return
 		}
 
-		buf, err := fc.SendQUIC(1, []byte{3})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		value := new(map[string]interface{})
-		if err := cbor.Unmarshal(buf, value); err != nil {
+		if err := fc.GetQUIC(controller.QuicValVbat, value); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -185,14 +219,8 @@ func main() {
 			return
 		}
 
-		buf, err := fc.SendQUIC(1, []byte{1})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		value := controller.Profile{}
-		if err := cbor.Unmarshal(buf, &value); err != nil {
+		if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -211,71 +239,23 @@ func main() {
 			return
 		}
 
-		data, err := cbor.Marshal(profile, cbor.EncOptions{
-			Canonical: true,
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		res, err := fc.SendQUIC(2, append([]byte{1}, data...))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if err := cbor.Unmarshal(res, &profile); err != nil {
+		if err := fc.SetQUIC(controller.QuicValProfile, &profile); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		renderJSON(w, profile)
 	}).Methods("POST")
 
-	statikFS, err := fs.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		const indexFile = "/index.html"
+	r.PathPrefix("/").HandlerFunc(spaHandler())
+}
 
-		upath := r.URL.Path
-		if !strings.HasPrefix(upath, "/") {
-			upath = "/" + upath
-			r.URL.Path = upath
-		}
+func main() {
+	log.Printf("Starting Quicksilver Configurator %s\n", version)
 
-		f, err := statikFS.Open(path.Clean(upath))
-		if err != nil && !os.IsNotExist(err) {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if os.IsNotExist(err) {
-			f, err = statikFS.Open(indexFile)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		stat, err := f.Stat()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if stat.IsDir() {
-			f, err = statikFS.Open(indexFile)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		w.Header().Set("Cache-Control", "max-age=30")
-		http.ServeContent(w, r, stat.Name(), time.Now(), f)
-	})
+	r := mux.NewRouter()
+	setupRoutes(r)
 
 	//connecController(defaultPort)
-	openbrowser("http://localhost:8000")
+	//openbrowser("http://localhost:8000")
 	http.ListenAndServe("localhost:8000", cors.Default().Handler(r))
 }
