@@ -1,0 +1,15 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: web
+    image: node:current
+    commands:
+      - npm --prefix web install
+      - npm --prefix web run build
+  - name: server
+    image: golang:1.12
+    commands:
+      - make all
