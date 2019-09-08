@@ -21,7 +21,7 @@ else
 endif
 
 
-.PHONY: all clean
+.PHONY: all clean web
 all: windows linux darwin
 	@echo version: $(VERSION)
 
@@ -43,6 +43,7 @@ serve:
 web/node_modules:
 	npm --prefix web install
 
+web: web/dist
 web/dist: web/node_modules
 	npm --prefix web run build
 
