@@ -1,7 +1,7 @@
 <template>
   <b-row>
     <b-col sm="6">
-      <Setup></Setup>
+      <Motor></Motor>
       <PIDRates class="my-3"></PIDRates>
     </b-col>
     <b-col sm="6">
@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import Setup from "@/components/Setup";
+import Motor from "@/components/Motor";
 import Voltage from "@/components/Voltage";
 import PIDRates from "@/components/PIDRates";
 
@@ -20,7 +20,7 @@ import { mapActions, mapState } from "vuex";
 export default {
   name: "home",
   components: {
-    Setup,
+    Motor,
     Voltage,
     PIDRates
   },

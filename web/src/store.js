@@ -11,7 +11,7 @@ export default new Vuex.Store({
       IsConnected: false,
     },
     profile: {
-      Setup: {
+      Motor: {
         InvertYaw: 1,
       },
       Rate: {

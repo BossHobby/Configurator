@@ -29,7 +29,7 @@ type PIDRates struct {
 	KD Vector `cbor:"kd"`
 }
 
-type Setup struct {
+type Motor struct {
 	InvertYaw uint8 `cbor:"invert_yaw"`
 }
 
@@ -47,7 +47,7 @@ type Channel struct {
 
 type Profile struct {
 	Channel Channel  `cbor:"channel"`
-	Setup   Setup    `cbor:"setup"`
+	Motor   Motor    `cbor:"motor"`
 	Voltage Voltage  `cbor:"voltage"`
 	Rate    Rates    `cbor:"rate"`
 	PID     PIDRates `cbor:"pid"`

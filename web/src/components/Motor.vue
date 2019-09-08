@@ -1,12 +1,12 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">Setup</h5>
+    <h5 slot="header" class="mb-0">Motor</h5>
     <b-row>
       <b-col sm="4" class="my-2">
         <label for="invert-yaw">Invert Yaw</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-select id="invert-yaw" v-model.number="Setup.InvertYaw" :options="invertYawModes"></b-form-select>
+        <b-form-select id="invert-yaw" v-model.number="Motor.InvertYaw" :options="invertYawModes"></b-form-select>
       </b-col>
     </b-row>
   </b-card>
@@ -16,7 +16,7 @@
 import { mapState } from "vuex";
 
 export default {
-  name: "Setup",
+  name: "Motor",
   data() {
     return {
       invertYawModes: [
@@ -26,7 +26,7 @@ export default {
     };
   },
   computed: mapState({
-    Setup: state => state.profile.Setup
+    Motor: state => state.profile.Motor
   })
 };
 </script>
