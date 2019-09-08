@@ -12,6 +12,7 @@ steps:
   - name: server
     image: golang:latest
     commands:
+      - go get github.com/rakyll/statik
       - make all
   - name: publish
     image: plugins/github-release
