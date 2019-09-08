@@ -9,6 +9,14 @@
         <b-form-select id="invert-yaw" v-model.number="Motor.InvertYaw" :options="invertYawModes"></b-form-select>
       </b-col>
     </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
+        <label for="digital-idle">Digital Idle</label>
+      </b-col>
+      <b-col sm="8" class="my-2">
+        <b-form-input id="digital-idle" type="number" step="0.1" v-model.number="Motor.DigitalIdle"></b-form-input>
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 

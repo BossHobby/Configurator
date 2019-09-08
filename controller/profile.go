@@ -30,7 +30,8 @@ type PIDRates struct {
 }
 
 type Motor struct {
-	InvertYaw uint8 `cbor:"invert_yaw"`
+	InvertYaw   uint8   `cbor:"invert_yaw"`
+	DigitalIdle float32 `cbor:"digital_idle"`
 }
 
 type Voltage struct {
