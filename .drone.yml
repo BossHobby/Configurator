@@ -10,6 +10,15 @@ steps:
       - npm --prefix web install
       - npm --prefix web run build
   - name: server
-    image: golang:1.12
+    image: golang:latest
     commands:
       - make all
+  - name: publish
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files: usb_configurator_*
+      prerelease: true
+      title: latest
+      overwrite: true
