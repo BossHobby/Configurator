@@ -39,11 +39,11 @@ export default new Vuex.Store({
       if (state.status.IsConnected) {
         path = "/api/disconnect";
       }
-      post(path, port)
+      return post(path, port)
         .then(() => dispatch("fetch_status"))
     },
     fetch_status({ commit, state, dispatch }) {
-      get("/api/status")
+      return get("/api/status")
         .then(p => {
           if (p.IsConnected && !state.status.IsConnected) {
             dispatch('fetch_profile')
@@ -52,20 +52,12 @@ export default new Vuex.Store({
         });
     },
     fetch_profile({ commit }) {
-      console.log(">> fetch profile")
-      get("/api/profile")
-        .then(p => {
-          console.log("<< fetch profile", p)
-          commit('set_profile', p)
-        });
+      return get("/api/profile")
+        .then(p => commit('set_profile', p));
     },
     apply_profile({ commit }, profile) {
-      console.log(">> apply profile", profile)
-      post("/api/profile", profile)
-        .then(p => {
-          console.log("<< apply profile", p)
-          commit('set_profile', p)
-        });
+      return post("/api/profile", profile)
+        .then(p => commit('set_profile', p));
     }
   }
 })
