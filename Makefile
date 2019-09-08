@@ -1,13 +1,11 @@
 EXECUTABLE=usb_configurator
+GO111MODULE=on
 
 WINDOWS	= $(EXECUTABLE)_windows_amd64.exe
 LINUX		= $(EXECUTABLE)_linux_amd64
 DARWIN	= $(EXECUTABLE)_darwin_amd64
 
 VERSION 		= $(shell git describe --tags --always --long --dirty)
-BUILD_FLAGS = -ldflags="-X main.version=$(VERSION)"
-
-GO111MODULE=on
 
 ifeq ($(OS), Windows_NT)
 	PLATFORM=windows
@@ -20,6 +18,14 @@ else
 	endif
 endif
 
+MODE ?= release
+ifeq ($(MODE), debug)
+	MODE = debug
+else
+	MODE = release
+endif
+
+BUILD_FLAGS = -ldflags="-X main.version=$(VERSION) -X main.mode=$(MODE)"
 
 .PHONY: all clean web $(EXECUTABLE)_$(PLATFORM)_amd64
 all: windows linux darwin
@@ -37,10 +43,11 @@ darwin: $(DARWIN)
 $(DARWIN): cmd/server/statik
 	env GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $(DARWIN) ./cmd/server
 
-serve:
-	npm --prefix web run serve &
-	CompileDaemon -build="make $(PLATFORM)" -command="./$(EXECUTABLE)_$(PLATFORM)_amd64"
-	wait
+serve-web:
+	npm --prefix web run serve
+
+serve-reload:
+	CompileDaemon -build="make MODE=debug $(PLATFORM)" -command="./$(EXECUTABLE)_$(PLATFORM)_amd64"
 
 web/node_modules: web/package.json
 	npm --prefix web install

@@ -26,6 +26,7 @@ var (
 	fc         *controller.Controller
 	disconnect = make(chan bool, 1)
 	version    = "dirty"
+	mode       = "debug"
 )
 
 type Status struct {
@@ -71,6 +72,11 @@ func connecController(p string) error {
 
 	fc = c
 
+	value := new(map[string]interface{})
+	if err := fc.GetQUIC(controller.QuicValInfo, value); err != nil {
+		closeController()
+		return err
+	}
 	return nil
 }
 
@@ -176,7 +182,11 @@ func setupRoutes(r *mux.Router) {
 			return
 		}
 
-		connecController(serialPort)
+		if err := connecController(serialPort); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		renderJSON(w, "OK")
 	}).Methods("POST")
 
@@ -256,7 +266,9 @@ func main() {
 	setupRoutes(r)
 
 	//connecController(defaultPort)
-	openbrowser("http://localhost:8000")
+	if mode == "release" {
+		openbrowser("http://localhost:8000")
+	}
 	if err := http.ListenAndServe("localhost:8000", cors.Default().Handler(r)); err != nil {
 		log.Fatal(err)
 	}
