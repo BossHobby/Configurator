@@ -9,7 +9,17 @@
         <b-nav-item to="/plot">Plot</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
+        <b-nav-form :hidden="!status.IsConnected" class="mx-2" right>
+          <input type="file" ref="file" style="display: none" />
+          <b-button size="sm" class="my-2 my-sm-0" @click="uploadProfile">Upload</b-button>
+        </b-nav-form>
         <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
+          <b-button
+            size="sm"
+            class="my-2 my-sm-0"
+            href="http://localhost:8000/api/profile/download"
+            :hidden="!status.IsConnected"
+          >Download</b-button>
           <b-form-select
             class="mx-3 my-2 my-sm-0"
             id="serial-port"
@@ -66,7 +76,27 @@ export default {
       "fetch_status",
       "toggle_connection",
       "apply_profile"
-    ])
+    ]),
+    uploadProfile() {
+      this.$refs.file.oninput = () => {
+        if (!this.$refs.file.files.length) {
+          return;
+        }
+
+        const file = this.$refs.file.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch("http://localhost:8000/api/profile/upload", {
+          method: "POST",
+          body: formData
+        })
+          .then(res => res.json())
+          .then(p => this.$store.commit("set_profile", p));
+      };
+
+      this.$refs.file.click();
+    }
   },
   created() {
     this.connect_websocket();

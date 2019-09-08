@@ -56,6 +56,9 @@ const store = new Vuex.Store({
     set_profile(state, profile) {
       state.profile = profile
     },
+    set_default_profile(state, default_profile) {
+      state.default_profile = default_profile
+    },
     set_vbat(state, vbat) {
       state.vbat = vbat
     },
@@ -92,14 +95,19 @@ const store = new Vuex.Store({
         }
       };
     },
-    toggle_connection({ state }, port) {
+    toggle_connection({ state, commit }, port) {
       var path = "/api/connect"
       if (state.status.IsConnected) {
         path = "/api/disconnect";
       }
       return post(path, port)
+        .then(() => {
+          return get("/api/default_profile")
+            .then(p => commit('set_default_profile', p));
+        })
     },
     fetch_profile({ commit }) {
+
       return get("/api/profile")
         .then(p => commit('set_profile', p));
     },

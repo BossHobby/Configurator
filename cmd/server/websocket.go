@@ -78,7 +78,6 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
-		log.Printf("ws: %+v\n", p)
 
 		value := new(map[string]interface{})
 		switch p.Channel {

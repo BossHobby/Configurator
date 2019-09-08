@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	_ "github.com/NotFastEnuf/configurator/cmd/server/statik"
 	"github.com/NotFastEnuf/configurator/controller"
+	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 )
@@ -20,6 +22,14 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func loggingMidleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf("%s %s %v\n", r.Method, r.URL.Path, time.Since(start))
+	})
 }
 
 func spaHandler() http.HandlerFunc {
@@ -69,6 +79,8 @@ func spaHandler() http.HandlerFunc {
 }
 
 func setupRoutes(r *mux.Router) {
+	r.Use(loggingMidleware)
+
 	r.HandleFunc("/api/connect", func(w http.ResponseWriter, r *http.Request) {
 		serialPort := "defaultPort"
 		if err := json.NewDecoder(r.Body).Decode(&serialPort); err != nil {
@@ -103,6 +115,20 @@ func setupRoutes(r *mux.Router) {
 		renderJSON(w, value)
 	}).Methods("GET")
 
+	r.HandleFunc("/api/default_profile", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		value := controller.Profile{}
+		if err := fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		renderJSON(w, value)
+	}).Methods("GET")
+
 	r.HandleFunc("/api/profile", func(w http.ResponseWriter, r *http.Request) {
 		if fc == nil {
 			http.NotFound(w, r)
@@ -120,6 +146,56 @@ func setupRoutes(r *mux.Router) {
 			return
 		}
 		renderJSON(w, profile)
+	}).Methods("POST")
+
+	r.HandleFunc("/api/profile/download", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		value := controller.Profile{}
+		if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Disposition", "attachment; filename=profile.cbor")
+		w.Header().Set("Content-Type", "application/octet-stream")
+		if err := cbor.NewEncoder(w, cbor.EncOptions{}).Encode(value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}).Methods("GET")
+
+	r.HandleFunc("/api/profile/upload", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		file, _, err := r.FormFile("file")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+
+		value := controller.Profile{}
+		if err := cbor.NewDecoder(file).Decode(&value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := fc.SetQUIC(controller.QuicValProfile, &value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		renderJSON(w, value)
 	}).Methods("POST")
 
 	r.HandleFunc("/api/ws", websocketHandler)
