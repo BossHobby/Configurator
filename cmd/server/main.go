@@ -256,6 +256,8 @@ func main() {
 	setupRoutes(r)
 
 	//connecController(defaultPort)
-	//openbrowser("http://localhost:8000")
-	http.ListenAndServe("localhost:8000", cors.Default().Handler(r))
+	openbrowser("http://localhost:8000")
+	if err := http.ListenAndServe("localhost:8000", cors.Default().Handler(r)); err != nil {
+		log.Fatal(err)
+	}
 }
