@@ -31,6 +31,7 @@ const (
 	QuicValVbat
 	QuicValInfo
 	QuicValDefaultProfile
+	QuicValGyro
 )
 
 type quicPacket struct {

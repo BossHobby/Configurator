@@ -91,6 +91,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println(err)
 				return
 			}
+		case "gyro":
+			if err := fc.GetQUIC(controller.QuicValGyro, value); err != nil {
+				log.Println(err)
+				return
+			}
 		}
 		if err := sendWebsocket(conn, p.Channel, value); err != nil {
 			log.Println(err)

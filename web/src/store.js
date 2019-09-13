@@ -31,6 +31,7 @@ const store = new Vuex.Store({
     rx: {
       aux: [],
     },
+    gyro: {},
     profile: {
       Motor: {
         InvertYaw: 1,
@@ -64,6 +65,9 @@ const store = new Vuex.Store({
     },
     set_rx(state, rx) {
       state.rx = rx
+    },
+    set_gyro(state, gyro) {
+      state.gyro = gyro
     }
   },
   actions: {
@@ -92,6 +96,9 @@ const store = new Vuex.Store({
           case "rx":
             commit('set_rx', msg.Payload);
             break;
+          case "gyro":
+            commit('set_gyro', msg.Payload);
+            break;
         }
       };
     },
@@ -116,6 +123,9 @@ const store = new Vuex.Store({
     },
     fetch_rx() {
       return sendWebsocket("rx")
+    },
+    fetch_gyro() {
+      return sendWebsocket("gyro")
     },
     apply_profile({ commit }, profile) {
       return post("/api/profile", profile)
