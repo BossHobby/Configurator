@@ -6,7 +6,7 @@
     </b-col>
     <b-col sm="6">
       <Motor></Motor>
-      <Voltage></Voltage>
+      <Voltage class="my-3"></Voltage>
     </b-col>
   </b-row>
 </template>
