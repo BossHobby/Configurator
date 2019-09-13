@@ -9,7 +9,7 @@
         <b-nav-item to="/plot">Plot</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form :hidden="!status.IsConnected" class="mx-2" right>
+        <b-nav-form :hidden="!status.IsConnected" ref="form" class="mx-2" right>
           <input type="file" ref="file" style="display: none" />
           <b-button size="sm" class="my-2 my-sm-0" @click="uploadProfile">Upload</b-button>
         </b-nav-form>
@@ -92,7 +92,8 @@ export default {
           body: formData
         })
           .then(res => res.json())
-          .then(p => this.$store.commit("set_profile", p));
+          .then(p => this.$store.commit("set_profile", p))
+          .then(() => this.$refs.form.reset());
       };
 
       this.$refs.file.click();
