@@ -33,6 +33,7 @@ const store = new Vuex.Store({
     },
     gyro: {},
     profile: {
+      Meta: {},
       Motor: {
         InvertYaw: 1,
       },
@@ -128,6 +129,7 @@ const store = new Vuex.Store({
       return sendWebsocket("gyro")
     },
     apply_profile({ commit }, profile) {
+      profile.Meta.Datetime = Math.floor(Date.now() / 1000);
       return post("/api/profile", profile)
         .then(p => commit('set_profile', p));
     }

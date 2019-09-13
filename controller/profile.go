@@ -46,7 +46,13 @@ type Channel struct {
 	Aux []uint `cbor:"aux"`
 }
 
+type Metadata struct {
+	Name     string `cbor:"name"`
+	Datetime uint32 `cbor:"datetime"`
+}
+
 type Profile struct {
+	Meta    Metadata `cbor:"meta"`
 	Channel Channel  `cbor:"channel"`
 	Motor   Motor    `cbor:"motor"`
 	Voltage Voltage  `cbor:"voltage"`

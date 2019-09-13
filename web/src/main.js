@@ -9,6 +9,7 @@ import router from './router'
 import store from './store'
 
 Vue.use(BootstrapVue);
+Vue.use(require('vue-moment'));
 Vue.config.productionTip = false
 
 new Vue({
