@@ -45,6 +45,12 @@ const store = new Vuex.Store({
       Voltage: {},
       Channel: {
         Aux: [],
+      },
+      PID: {
+        PIDProfile: 0,
+        PIDRates: [{}],
+        StickProfile: 0,
+        StickRates: [{}],
       }
     }
   },

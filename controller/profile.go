@@ -29,6 +29,18 @@ type PIDRates struct {
 	KD Vector `cbor:"kd"`
 }
 
+type StickRates struct {
+	Accelerator Vector `cbor:"accelerator"`
+	Transition  Vector `cbor:"transition"`
+}
+
+type PID struct {
+	PIDProfile   uint8        `cbor:"pid_profile"`
+	PIDRates     []PIDRates   `cbor:"pid_rates"`
+	StickProfile uint8        `cbor:"stick_profile"`
+	StickRates   []StickRates `cbor:"stick_rates"`
+}
+
 type Motor struct {
 	InvertYaw   uint8   `cbor:"invert_yaw"`
 	DigitalIdle float32 `cbor:"digital_idle"`
@@ -57,5 +69,5 @@ type Profile struct {
 	Motor   Motor    `cbor:"motor"`
 	Voltage Voltage  `cbor:"voltage"`
 	Rate    Rates    `cbor:"rate"`
-	PID     PIDRates `cbor:"pid"`
+	PID     PID      `cbor:"pid"`
 }

@@ -50,7 +50,8 @@ export default {
             autorange: false
           },
           xaxis: {
-            title: "Time (s)"
+            title: "Time (s)",
+            range: [0, 30]
           }
         }
       },
@@ -96,11 +97,12 @@ export default {
   },
   computed: {
     ...mapState({
-      rx: state => state.rx
+      rx: state => state.rx,
+      gyro: state => state.gyro
     })
   },
   methods: {
-    ...mapActions(["fetch_rx"])
+    ...mapActions(["fetch_rx", "fetch_gyro"])
   },
   watch: {
     rx(val) {
@@ -112,6 +114,24 @@ export default {
         this.copy.data[i].y.push(val.copy[i]);
         this.copy.data[i].x.push(time);
       }
+    },
+    gyro(val) {
+      const time = (Date.now() - this.start) / 1000;
+      if (Date.now() - this.start > 30 * 1000) {
+        this.start = Date.now();
+        for (let i = 0; i < 3; i++) {
+          this.raw.data[i].y = [];
+          this.raw.data[i].x = [];
+        }
+      }
+
+      for (let i = 0; i < 3; i++) {
+        this.raw.data[i].y.push(val.gyro_raw[i]);
+        this.raw.data[i].x.push(time);
+
+        //this.copy.data[i].y.push(val.copy[i]);
+        //this.copy.data[i].x.push(time);
+      }
     }
   },
   created() {
@@ -122,7 +142,7 @@ export default {
     }
 
     this.interval = setInterval(() => {
-      this.fetch_rx();
+      this.fetch_gyro();
     }, 250);
   },
   destroyed() {

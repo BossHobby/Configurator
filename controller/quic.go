@@ -160,8 +160,16 @@ func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
 		return err
 	}
 
-	var inTyp QuicCommand
 	dec := cbor.NewDecoder(bytes.NewReader(p.payload))
+	if p.flag == QuicFlagError {
+		var msg string
+		if err := dec.Decode(&msg); err != nil {
+			return err
+		}
+		return errors.New(msg)
+	}
+
+	var inTyp QuicCommand
 	if err := dec.Decode(&inTyp); err != nil {
 		return err
 	}
