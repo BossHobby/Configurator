@@ -57,9 +57,8 @@ export default {
         { value: 10, text: "AUX_11" },
         { value: 11, text: "AUX_12" },
         { value: 12, text: "AUX_13" },
-        { value: 13, text: "AUX_14" },
-        { value: 14, text: "ON" },
-        { value: 15, text: "OFF" }
+        { value: 13, text: "ON" },
+        { value: 14, text: "OFF" }
       ],
       auxFunctions: [
         "AUX_ARMING",
