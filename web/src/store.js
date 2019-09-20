@@ -120,7 +120,7 @@ const store = new Vuex.Store({
 
       return get("/api/default_profile")
         .then(p => commit('set_default_profile', p))
-        .then(_ => get("/api/profile"))
+        .then(() => get("/api/profile"))
         .then(p => commit('set_profile', p));
     },
     fetch_vbat() {

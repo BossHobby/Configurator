@@ -42,8 +42,9 @@ type PID struct {
 }
 
 type Motor struct {
-	InvertYaw   uint8   `cbor:"invert_yaw"`
-	DigitalIdle float32 `cbor:"digital_idle"`
+	InvertYaw       uint8   `cbor:"invert_yaw"`
+	DigitalIdle     float32 `cbor:"digital_idle"`
+	GyroOrientation uint8   `cbor:"gyro_orientation"`
 }
 
 type Voltage struct {

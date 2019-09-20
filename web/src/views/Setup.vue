@@ -1,5 +1,8 @@
 <template>
   <b-row>
+    <b-col sm="12">
+      <GyroModel class="my-3"></GyroModel>
+    </b-col>
     <b-col sm="6">
       <Metadata></Metadata>
       <PIDRates class="my-3"></PIDRates>
@@ -16,6 +19,7 @@ import Metadata from "@/components/Metadata";
 import Motor from "@/components/Motor";
 import Voltage from "@/components/Voltage";
 import PIDRates from "@/components/PIDRates";
+import GyroModel from "@/components/GyroModel";
 
 import { mapActions, mapState } from "vuex";
 
@@ -25,7 +29,8 @@ export default {
     Metadata,
     Motor,
     Voltage,
-    PIDRates
+    PIDRates,
+    GyroModel
   },
   computed: mapState(["profile"]),
   methods: {
