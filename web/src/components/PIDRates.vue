@@ -60,7 +60,7 @@
     </b-row>
     <b-row class="mt-4">
       <b-col sm="4" class="my-2">
-        <label for="stick-profile">StickProfile</label>
+        <label for="stick-profile">Stick Boost Profile</label>
       </b-col>
       <b-col sm="8" class="my-2">
         <b-form-select
@@ -134,8 +134,8 @@ export default {
         { value: 1, text: "PID Profile 2" }
       ],
       stickProfiles: [
-        { value: 0, text: "Stick Profile 1" },
-        { value: 1, text: "Stick Profile 2" }
+        { value: 0, text: "Stick Boost Profile 1" },
+        { value: 1, text: "Stick Boost Profile 2" }
       ]
     };
   },
