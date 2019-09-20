@@ -1,7 +1,10 @@
 <template>
   <div id="app">
     <b-navbar>
-      <b-navbar-brand to="/">QUICKSILVER</b-navbar-brand>
+      <b-navbar-brand to="/">
+        <img src="./assets/logo.png" class="d-inline-block" alt="Guano" height="40px" />
+        QUICKSILVER
+      </b-navbar-brand>
       <b-navbar-nav>
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
