@@ -2,9 +2,9 @@
   <b-card>
     <h5 slot="header" class="mb-0">Model</h5>
     <vgl-renderer style="width: 100%; height: 35vh" antialias>
-      <vgl-scene>
+      <vgl-scene background-color="#ffffff">
         <vgl-box-geometry name="cube" width="7.5" height="1.5" depth="7.5"></vgl-box-geometry>
-        <vgl-mesh-standard-material name="std"></vgl-mesh-standard-material>
+        <vgl-mesh-standard-material name="std" color="#777"></vgl-mesh-standard-material>
         <vgl-mesh geometry="cube" material="std" position="0 0 0" :rotation="rotation"></vgl-mesh>
         <vgl-axes-helper size="140"></vgl-axes-helper>
         <vgl-ambient-light color="#ffeecc"></vgl-ambient-light>
