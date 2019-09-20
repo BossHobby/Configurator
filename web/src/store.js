@@ -109,20 +109,18 @@ const store = new Vuex.Store({
         }
       };
     },
-    toggle_connection({ state, commit }, port) {
+    toggle_connection({ state }, port) {
       var path = "/api/connect"
       if (state.status.IsConnected) {
         path = "/api/disconnect";
       }
       return post(path, port)
-        .then(() => {
-          return get("/api/default_profile")
-            .then(p => commit('set_default_profile', p));
-        })
     },
     fetch_profile({ commit }) {
 
-      return get("/api/profile")
+      return get("/api/default_profile")
+        .then(p => commit('set_default_profile', p))
+        .then(_ => get("/api/profile"))
         .then(p => commit('set_profile', p));
     },
     fetch_vbat() {
