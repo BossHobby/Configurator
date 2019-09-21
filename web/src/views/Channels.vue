@@ -84,8 +84,8 @@ export default {
         return "";
       }
 
-      if (this.Channel.Aux[index] == 15) return "text-danger";
-      if (this.Channel.Aux[index] == 14) return "text-success";
+      if (this.Channel.Aux[index] == 14) return "text-danger";
+      if (this.Channel.Aux[index] == 13) return "text-success";
       if (this.aux[this.Channel.Aux[index]]) return "text-success";
       return "";
     }
