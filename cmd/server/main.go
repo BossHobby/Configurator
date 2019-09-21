@@ -58,6 +58,7 @@ func watchPorts() {
 		s, err := controllerStatus()
 		if err != nil {
 			log.Println(err)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 
