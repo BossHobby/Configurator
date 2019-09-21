@@ -17,23 +17,23 @@ type Status struct {
 	AvailablePorts []string
 }
 
-func controllerStatus() Status {
+func controllerStatus() (*Status, error) {
 	ports, err := serial.GetPortsList()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if fc != nil && len(ports) == 0 {
 		closeController()
 	}
 
-	s := Status{
+	s := &Status{
 		AvailablePorts: ports,
 		IsConnected:    fc != nil,
 	}
 	if fc != nil {
 		s.Port = fc.PortName
 	}
-	return s
+	return s, nil
 }
 
 func closeController() {

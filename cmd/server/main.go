@@ -55,11 +55,16 @@ func defaultPort() string {
 
 func watchPorts() {
 	for {
-		s := controllerStatus()
-		if !reflect.DeepEqual(s, status) {
+		s, err := controllerStatus()
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		if !reflect.DeepEqual(*s, status) {
 			broacastWebsocket("status", s)
 		}
-		status = s
+		status = *s
 		time.Sleep(500 * time.Millisecond)
 	}
 }
