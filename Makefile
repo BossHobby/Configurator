@@ -50,13 +50,14 @@ serve-reload:
 	CompileDaemon -build="make MODE=debug $(PLATFORM)" -command="./$(EXECUTABLE)_$(PLATFORM)_amd64"
 
 web/node_modules: web/package.json
-	npm --prefix web install
+	cd web && npm install && cd ..
 
 web: web/dist
 web/dist: web/node_modules
-	npm --prefix web run build
+	cd web && npm run build && cd ..
 
 cmd/server/statik: web/dist
+	go get github.com/rakyll/statik
 	go generate ./...
 
 clean:
