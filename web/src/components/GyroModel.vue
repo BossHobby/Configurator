@@ -30,8 +30,8 @@ export default {
       if (!rot) {
         return "0 0 0";
       }
-      const x = rot[0]; //Math.atan2(rot[0], rot[2]);
-      const y = rot[1]; //Math.atan2(rot[1], rot[2]);
+      const x = Math.atan2(rot[0], rot[2]);
+      const y = Math.atan2(rot[1], rot[2]);
       return `${x} 0 ${-y}`;
     }
   },
