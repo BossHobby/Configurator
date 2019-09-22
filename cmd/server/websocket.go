@@ -73,6 +73,10 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		if fc == nil {
+			return
+		}
+
 		p := new(websocketPacket)
 		if err := json.Unmarshal(data, p); err != nil {
 			log.Println(err)

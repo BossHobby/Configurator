@@ -58,7 +58,6 @@ func (c *Controller) Run() error {
 			fmt.Print(string(buf))
 		}
 	}
-	return nil
 }
 
 func (c *Controller) Close() error {
