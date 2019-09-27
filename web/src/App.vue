@@ -50,7 +50,7 @@
           v-for="(msg, index) in alerts"
           :key="index"
           variant="success"
-          show="1"
+          show="1.5"
           dismissible
           fade
         >{{msg}}</b-alert>
@@ -114,7 +114,8 @@ export default {
         })
           .then(res => res.json())
           .then(p => this.$store.commit("set_profile", p))
-          .then(() => this.$refs.form.reset());
+          .then(() => this.$refs.form.reset())
+          .then(() => this.$store.commit("append_alert", "profile uploaded!"));
       };
 
       this.$refs.file.click();
