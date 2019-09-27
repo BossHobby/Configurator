@@ -29,6 +29,7 @@ const store = new Vuex.Store({
       compare: 0.0
     },
     log: [],
+    alerts: [],
     rx: {
       aux: [],
     },
@@ -79,6 +80,9 @@ const store = new Vuex.Store({
     },
     append_log(state, line) {
       state.log = [...state.log, line]
+    },
+    append_alert(state, line) {
+      state.alerts = [...state.alerts, line]
     }
   },
   actions: {
@@ -142,7 +146,8 @@ const store = new Vuex.Store({
     apply_profile({ commit }, profile) {
       profile.Meta.Datetime = Math.floor(Date.now() / 1000);
       return post("/api/profile", profile)
-        .then(p => commit('set_profile', p));
+        .then(p => commit('set_profile', p))
+        .then(() => commit('append_alert', "profile applied!"));
     }
   }
 })

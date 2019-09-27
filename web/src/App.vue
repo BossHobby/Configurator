@@ -43,6 +43,20 @@
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
+
+    <div class="alert-portal">
+      <b-container>
+        <b-alert
+          v-for="(msg, index) in alerts"
+          :key="index"
+          variant="success"
+          show="1"
+          dismissible
+          fade
+        >{{msg}}</b-alert>
+      </b-container>
+    </div>
+
     <b-container v-if="status.IsConnected" class="mt-5">
       <router-view></router-view>
       <b-row class="my-5">
@@ -72,7 +86,7 @@ import { mapActions, mapState } from "vuex";
 export default {
   name: "app",
   computed: {
-    ...mapState(["status", "profile"]),
+    ...mapState(["status", "profile", "alerts"]),
     can_connect() {
       return !this.status.Port || this.status.Port.length == 0;
     }
@@ -116,4 +130,11 @@ export default {
 </script>
 
 <style>
+.alert-portal {
+  position: absolute;
+  right: 0px;
+  top: 70px;
+  z-index: 10001;
+  width: 500px;
+}
 </style>
