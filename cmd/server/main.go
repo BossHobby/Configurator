@@ -63,10 +63,16 @@ func watchPorts() {
 		}
 
 		if !reflect.DeepEqual(*s, status) {
-			broacastWebsocket("status", s)
+			broadcastWebsocket("status", s)
 		}
 		status = *s
 		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func broadcastLog() {
+	for msg := range controller.QuicLog {
+		broadcastWebsocket("log", msg)
 	}
 }
 
@@ -77,6 +83,7 @@ func main() {
 	setupRoutes(r)
 
 	go watchPorts()
+	go broadcastLog()
 
 	//connecController(defaultPort)
 	if mode == "release" {

@@ -5,11 +5,15 @@
         <img src="./assets/logo.png" class="d-inline-block" alt="Guano" height="40px" />
         QUICKSILVER
       </b-navbar-brand>
-      <b-navbar-nav>
+      <b-navbar-nav v-if="status.IsConnected">
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
         <b-nav-item to="/channels">Channels</b-nav-item>
         <b-nav-item to="/plot">Plot</b-nav-item>
+        <b-nav-item to="/log">Log</b-nav-item>
+      </b-navbar-nav>
+      <b-navbar-nav v-else>
+        <b-nav-item to="/">Home</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-form :hidden="!status.IsConnected" ref="form" class="mx-2" right>

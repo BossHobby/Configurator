@@ -44,6 +44,7 @@ type quicPacket struct {
 const quicHeaderLen = uint16(4)
 
 var quicChannel = make(map[QuicCommand]chan quicPacket)
+var QuicLog = make(chan string)
 
 func (c *Controller) ReadQUIC() error {
 	header, err := c.readAtLeast(int(quicHeaderLen - 1))
@@ -81,6 +82,7 @@ func (c *Controller) ReadQUIC() error {
 			log.Fatal(err)
 		}
 		log.Printf("<quic> log %s\n", *val)
+		QuicLog <- *val
 	} else {
 		quicChannel[cmd] <- packet
 	}

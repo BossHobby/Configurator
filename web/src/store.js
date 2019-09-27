@@ -28,6 +28,7 @@ const store = new Vuex.Store({
       filter: 0.0,
       compare: 0.0
     },
+    log: [],
     rx: {
       aux: [],
     },
@@ -75,6 +76,9 @@ const store = new Vuex.Store({
     },
     set_gyro(state, gyro) {
       state.gyro = gyro
+    },
+    append_log(state, line) {
+      state.log = [...state.log, line]
     }
   },
   actions: {
@@ -91,6 +95,9 @@ const store = new Vuex.Store({
         const msg = JSON.parse(evt.data);
         console.log(`<< ws ${msg.Channel}`, msg.Payload);
         switch (msg.Channel) {
+          case "log":
+            commit('append_log', msg.Payload);
+            break;
           case "status":
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')

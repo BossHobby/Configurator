@@ -23,7 +23,7 @@ type websocketPacket struct {
 	Payload interface{}
 }
 
-func broacastWebsocket(channel string, v interface{}) error {
+func broadcastWebsocket(channel string, v interface{}) error {
 	p := websocketPacket{
 		Channel: channel,
 		Payload: v,
@@ -60,7 +60,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		delete(clients, conn)
 	}()
 
-	broacastWebsocket("status", status)
+	broadcastWebsocket("status", status)
 
 	for {
 		typ, data, err := conn.ReadMessage()

@@ -4,6 +4,7 @@ import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
 import Plot from './views/Plot.vue'
+import Log from './views/Log.vue'
 
 Vue.use(Router)
 
@@ -34,6 +35,11 @@ export default new Router({
       path: '/plot',
       name: 'plot',
       component: Plot
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: Log
     }
   ]
 })
