@@ -1,6 +1,9 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">Model</h5>
+    <h5 slot="header" class="mb-0">
+      Model
+      <b-button size="sm" class="my-2 mx-2" @click="cal_imu()">calibrate</b-button>
+    </h5>
     <vgl-renderer style="width: 100%; height: 35vh" antialias>
       <vgl-scene background-color="#ffffff">
         <vgl-box-geometry name="cube" width="7.5" height="1.5" depth="7.5"></vgl-box-geometry>
@@ -36,7 +39,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["fetch_gyro"])
+    ...mapActions(["fetch_gyro", "cal_imu"])
   },
   created() {
     this.start = Date.now();

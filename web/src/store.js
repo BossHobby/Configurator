@@ -148,6 +148,9 @@ const store = new Vuex.Store({
       return post("/api/profile", profile)
         .then(p => commit('set_profile', p))
         .then(() => commit('append_alert', "profile applied!"));
+    },
+    cal_imu() {
+      return post("/api/cal_imu", null)
     }
   }
 })

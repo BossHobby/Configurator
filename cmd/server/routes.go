@@ -199,6 +199,20 @@ func setupRoutes(r *mux.Router) {
 		renderJSON(w, value)
 	}).Methods("POST")
 
+	r.HandleFunc("/api/cal_imu", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		_, err := fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		renderJSON(w, "OK")
+	}).Methods("POST")
+
 	r.HandleFunc("/api/ws", websocketHandler)
 	r.PathPrefix("/").HandlerFunc(spaHandler())
 }

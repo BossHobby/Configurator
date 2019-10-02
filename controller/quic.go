@@ -17,6 +17,7 @@ const (
 	QuicCmdGet
 	QuicCmdSet
 	QuicCmdLog
+	QuicCmdCalImu
 )
 
 const (
@@ -105,6 +106,13 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*quicPacket, error)
 
 	select {
 	case p := <-quicChannel[cmd]:
+		if p.flag == QuicFlagError {
+			var msg string
+			if err := cbor.Unmarshal(p.payload, &msg); err != nil {
+				return nil, err
+			}
+			return nil, errors.New(msg)
+		}
 		return &p, nil
 	case <-time.After(10 * time.Second):
 		return nil, errors.New("quic recive timeout")
@@ -122,16 +130,8 @@ func (c *Controller) GetQUIC(typ QuicCommand, v interface{}) error {
 		return err
 	}
 
-	dec := cbor.NewDecoder(bytes.NewReader(p.payload))
-	if p.flag == QuicFlagError {
-		var msg string
-		if err := dec.Decode(&msg); err != nil {
-			return err
-		}
-		return errors.New(msg)
-	}
-
 	var inTyp QuicCommand
+	dec := cbor.NewDecoder(bytes.NewReader(p.payload))
 	if err := dec.Decode(&inTyp); err != nil {
 		return err
 	}
@@ -162,16 +162,8 @@ func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
 		return err
 	}
 
-	dec := cbor.NewDecoder(bytes.NewReader(p.payload))
-	if p.flag == QuicFlagError {
-		var msg string
-		if err := dec.Decode(&msg); err != nil {
-			return err
-		}
-		return errors.New(msg)
-	}
-
 	var inTyp QuicCommand
+	dec := cbor.NewDecoder(bytes.NewReader(p.payload))
 	if err := dec.Decode(&inTyp); err != nil {
 		return err
 	}
