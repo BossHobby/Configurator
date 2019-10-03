@@ -47,10 +47,10 @@ export default {
         { value: 0, text: "ROTATE_NONE" },
         { value: 1, text: "ROTATE_45_CCW" },
         { value: 2, text: "ROTATE_45_CW" },
-        { value: 3, text: "ROTATE_90_CW" },
-        { value: 4, text: "ROTATE_90_CCW" },
-        { value: 5, text: "ROTATE_180" },
-        { value: 6, text: "FLIP_180" }
+        { value: 4, text: "ROTATE_90_CW" },
+        { value: 8, text: "ROTATE_90_CCW" },
+        { value: 16, text: "ROTATE_180" },
+        { value: 32, text: "FLIP_180" }
       ]
     };
   },
