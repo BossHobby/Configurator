@@ -19,14 +19,21 @@
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
+        <label for="gyro-flip">Flip Gyro</label>
+      </b-col>
+      <b-col sm="8" class="my-2">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="gyro-flip" v-model="gyroFlip" />
+          <label class="custom-control-label" for="gyro-flip">Enable</label>
+        </div>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
         <label for="gyro-orientation">Gyro Orientation</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-select
-          id="gyro-orientation"
-          v-model.number="Motor.GyroOrientation"
-          :options="gyroOrientations"
-        ></b-form-select>
+        <b-form-select id="gyro-orientation" v-model="gyroOrientation" :options="gyroOrientations"></b-form-select>
       </b-col>
     </b-row>
   </b-card>
@@ -49,14 +56,32 @@ export default {
         { value: 2, text: "ROTATE_45_CW" },
         { value: 4, text: "ROTATE_90_CW" },
         { value: 8, text: "ROTATE_90_CCW" },
-        { value: 16, text: "ROTATE_180" },
-        { value: 32, text: "FLIP_180" }
+        { value: 16, text: "ROTATE_180" }
       ]
     };
   },
-  computed: mapState({
-    Motor: state => state.profile.Motor
-  })
+  computed: {
+    ...mapState({
+      Motor: state => state.profile.Motor
+    }),
+    gyroOrientation: {
+      get() {
+        return this.Motor.GyroOrientation & 0xf;
+      },
+      set(value) {
+        this.Motor.GyroOrientation = value | (this.gyroFlip ? 0x20 : 0x0);
+      }
+    },
+    gyroFlip: {
+      get() {
+        return (this.Motor.GyroOrientation & 0x20) > 0;
+      },
+      set(value) {
+        this.Motor.GyroOrientation =
+          this.gyroOrientation | (value ? 0x20 : 0x0);
+      }
+    }
+  }
 };
 </script>
 
