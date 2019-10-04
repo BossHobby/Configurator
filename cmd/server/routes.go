@@ -160,7 +160,7 @@ func setupRoutes(r *mux.Router) {
 			return
 		}
 
-		filename := strings.Replace(value.Meta.Name, "\x00", "", -1) + "_profile.cbor"
+		filename := "Profile_" + strings.Replace(value.Meta.Name, "\x00", "", -1) + "_" + time.Unix(int64(value.Meta.Datetime), 0).Format("2006-01-02") + ".cbor"
 		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 		w.Header().Set("Content-Type", "application/octet-stream")
 		if err := cbor.NewEncoder(w, cbor.EncOptions{}).Encode(value); err != nil {
