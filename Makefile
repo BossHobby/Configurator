@@ -54,6 +54,7 @@ $(DARWIN).zip: $(DARWIN).app
 	@zip -r $(DARWIN).zip $(DARWIN).app
 
 $(DARWIN).app: $(DARWIN)
+	go get github.com/machinebox/appify
 	appify -name "$(DARWIN)" -icon ./web/src/assets/logo.png $(DARWIN)
 
 $(DARWIN): cmd/server/statik
