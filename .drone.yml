@@ -12,14 +12,13 @@ steps:
   - name: server
     image: golang:latest
     commands:
-      - go get github.com/rakyll/statik
       - make all
   - name: publish
     image: plugins/github-release
     settings:
       api_key:
         from_secret: github_token
-      files: usb_configurator_*
+      files: usb_configurator_*.zip
       prerelease: true
       title: latest
       overwrite: true
