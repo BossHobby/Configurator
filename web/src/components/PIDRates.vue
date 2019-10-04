@@ -134,8 +134,8 @@ export default {
         { value: 1, text: "PID Profile 2" }
       ],
       stickProfiles: [
-        { value: 0, text: "Stick Boost Profile 1" },
-        { value: 1, text: "Stick Boost Profile 2" }
+        { value: 0, text: "Stick Boost Profile Off" },
+        { value: 1, text: "Stick Boost Profile On" }
       ]
     };
   },
