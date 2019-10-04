@@ -12,6 +12,7 @@ steps:
   - name: server
     image: golang:latest
     commands:
+      - apt install -y zip
       - make all
   - name: publish
     image: plugins/github-release
