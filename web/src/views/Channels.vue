@@ -66,7 +66,7 @@ export default {
         "AUX_LEVELMODE",
         "AUX_RACEMODE",
         "AUX_HORIZON",
-        "AUX_PIDPROFILE",
+        "AUX_STICK_BOOST_PROFILE",
         "AUX_TRAVEL_CHECK",
         "AUX_RATES",
         "AUX_LEDS_ON",
