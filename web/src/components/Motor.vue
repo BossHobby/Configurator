@@ -66,7 +66,7 @@ export default {
     }),
     gyroOrientation: {
       get() {
-        return this.Motor.GyroOrientation & 0xf;
+        return this.Motor.GyroOrientation & 0x1f;
       },
       set(value) {
         this.Motor.GyroOrientation = value | (this.gyroFlip ? 0x20 : 0x0);
