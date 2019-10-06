@@ -1,40 +1,55 @@
 <template>
   <b-container>
-    <Plot
-      title="Rx Channels"
-      :interval="interval"
-      :axis="['Roll', 'Pitch', 'Yaw', 'Throttle']"
-      :input="blackbox.RxRaw"
-    ></Plot>
-    <Plot
-      title="Gyro Raw"
-      :interval="interval"
-      :axis="['Roll', 'Pitch', 'Yaw']"
-      :input="blackbox.GyroRaw"
-    ></Plot>
-    <Plot
-      title="Gyro Filter"
-      :interval="interval"
-      :axis="['Roll', 'Pitch', 'Yaw']"
-      :input="blackbox.GyroFilter"
-    ></Plot>
-    <Plot
-      title="Gyro Vector"
-      :interval="interval"
-      :axis="['Roll', 'Pitch', 'Yaw']"
-      :input="blackbox.GyroVector"
-    ></Plot>
+    <b-row>
+      <b-col sm="12">
+        <GyroModel class="my-3"></GyroModel>
+      </b-col>
+      <b-col sm="12">
+        <Plot
+          title="Rx Channels"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw', 'Throttle']"
+          :input="blackbox.RxRaw"
+        ></Plot>
+      </b-col>
+      <b-col sm="6">
+        <Plot
+          title="Gyro Raw"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw']"
+          :input="blackbox.GyroRaw"
+        ></Plot>
+      </b-col>
+      <b-col sm="6">
+        <Plot
+          title="Gyro Filter"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw']"
+          :input="blackbox.GyroFilter"
+        ></Plot>
+      </b-col>
+      <b-col sm="12">
+        <Plot
+          title="Gyro Vector"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw']"
+          :input="blackbox.GyroVector"
+        ></Plot>
+      </b-col>
+    </b-row>
   </b-container>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex";
 import Plot from "@/components/Plot";
+import GyroModel from "@/components/GyroModel";
 
 export default {
   name: "blackbox",
   components: {
-    Plot
+    Plot,
+    GyroModel
   },
   data() {
     return {
