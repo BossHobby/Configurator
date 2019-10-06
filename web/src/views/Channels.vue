@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "Channels",
@@ -38,7 +38,7 @@ export default {
   computed: {
     ...mapState({
       Channel: state => state.profile.Channel,
-      aux: state => state.rx.aux
+      aux: state => state.blackbox.RxAux
     })
   },
   data() {
@@ -78,7 +78,6 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["fetch_rx"]),
     classForIndex(index) {
       if (!this.Channel || !this.Channel.Aux) {
         return "";
@@ -89,19 +88,6 @@ export default {
       if (this.aux[this.Channel.Aux[index]]) return "text-success";
       return "";
     }
-  },
-  created() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-
-    this.fetch_rx();
-    this.interval = setInterval(() => {
-      this.fetch_rx();
-    }, 750);
-  },
-  destroyed() {
-    clearInterval(this.interval);
   }
 };
 </script>

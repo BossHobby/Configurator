@@ -18,6 +18,7 @@ const (
 	QuicCmdSet
 	QuicCmdLog
 	QuicCmdCalImu
+	QuicCmdBlackbox
 )
 
 const (
@@ -27,12 +28,10 @@ const (
 
 const (
 	QuicValInvalid = iota
-	QuicValProfile
-	QuicValRx
-	QuicValVbat
 	QuicValInfo
+	QuicValProfile
 	QuicValDefaultProfile
-	QuicValGyro
+	QuicValBlackboxRate
 )
 
 type quicPacket struct {
@@ -45,7 +44,21 @@ type quicPacket struct {
 const quicHeaderLen = uint16(4)
 
 var quicChannel = make(map[QuicCommand]chan quicPacket)
+
 var QuicLog = make(chan string)
+var QuicBlackbox = make(chan interface{})
+
+type Blackbox struct {
+	VbatFilter float32 `cbor:"vbat_filter"`
+
+	GyroRaw    [3]float32 `cbor:"gyro_raw"`
+	GyroFilter [3]float32 `cbor:"gyro_filter"`
+	GyroVector [3]float32 `cbor:"gyro_vector"`
+
+	RxRaw    [4]float32 `cbor:"rx_raw"`
+	RxFilter [4]float32 `cbor:"rx_filter"`
+	RxAux    []uint     `cbor:"rx_aux"`
+}
 
 func (c *Controller) ReadQUIC() error {
 	header, err := c.readAtLeast(int(quicHeaderLen - 1))
@@ -77,15 +90,28 @@ func (c *Controller) ReadQUIC() error {
 	}
 	log.Printf("<quic> received cmd: %d flag: %d len: %d\n", packet.cmd, packet.flag, packet.len)
 
-	if packet.cmd == QuicCmdLog {
+	switch packet.cmd {
+	case QuicCmdLog:
 		val := new(string)
 		if err := cbor.Unmarshal(packet.payload, val); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("<quic> log %s\n", *val)
 		QuicLog <- *val
-	} else {
-		quicChannel[cmd] <- packet
+		break
+	case QuicCmdBlackbox:
+		val := new(Blackbox)
+		if err := cbor.Unmarshal(packet.payload, val); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("<quic> blackbox %+v\n", *val)
+		QuicBlackbox <- *val
+		break
+	default:
+		select {
+		case quicChannel[cmd] <- packet:
+		default:
+		}
 	}
 	return nil
 }

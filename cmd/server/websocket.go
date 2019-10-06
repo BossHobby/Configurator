@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/NotFastEnuf/configurator/controller"
 	"github.com/gorilla/websocket"
 )
 
@@ -85,21 +84,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		value := new(map[string]interface{})
 		switch p.Channel {
-		case "vbat":
-			if err := fc.GetQUIC(controller.QuicValVbat, value); err != nil {
-				log.Println(err)
-				return
-			}
-		case "rx":
-			if err := fc.GetQUIC(controller.QuicValRx, value); err != nil {
-				log.Println(err)
-				return
-			}
-		case "gyro":
-			if err := fc.GetQUIC(controller.QuicValGyro, value); err != nil {
-				log.Println(err)
-				return
-			}
+
 		}
 		if err := sendWebsocket(conn, p.Channel, value); err != nil {
 			log.Println(err)

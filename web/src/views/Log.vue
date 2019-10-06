@@ -17,6 +17,9 @@ export default {
   computed: mapState(["log"]),
   methods: {
     ...mapActions([])
+  },
+  created() {
+    this.set_blackbox_rate(4);
   }
 };
 </script>

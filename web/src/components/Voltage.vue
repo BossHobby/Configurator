@@ -2,7 +2,7 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       Voltage
-      <small class="float-right">{{vbat.filter.toPrecision(3)}}V</small>
+      <small class="float-right">{{blackbox.VbatFilter.toPrecision(3)}}V</small>
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">
@@ -74,25 +74,10 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "voltage",
-  computed: mapState(["profile", "vbat"]),
-  methods: {
-    ...mapActions(["fetch_vbat"])
-  },
-  created() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-    this.fetch_vbat();
-    this.interval = setInterval(() => {
-      this.fetch_vbat();
-    }, 2500);
-  },
-  destroyed() {
-    clearInterval(this.interval);
-  }
+  computed: mapState(["profile", "blackbox"])
 };
 </script>

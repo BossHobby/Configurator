@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
-import Plot from './views/Plot.vue'
+import Blackbox from './views/Blackbox.vue'
 import Log from './views/Log.vue'
 
 Vue.use(Router)
@@ -32,9 +32,9 @@ export default new Router({
       component: Channels
     },
     {
-      path: '/plot',
-      name: 'plot',
-      component: Plot
+      path: '/blackbox',
+      name: 'blackbox',
+      component: Blackbox
     },
     {
       path: '/log',

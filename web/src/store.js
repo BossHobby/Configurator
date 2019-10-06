@@ -24,16 +24,13 @@ const store = new Vuex.Store({
     status: {
       IsConnected: false,
     },
-    vbat: {
-      filter: 0.0,
-      compare: 0.0
-    },
     log: [],
     alerts: [],
-    rx: {
-      aux: [],
+
+    blackbox: {
+      VbatFilter: 0.0,
     },
-    gyro: {},
+
     profile: {
       Meta: {},
       Motor: {
@@ -69,14 +66,8 @@ const store = new Vuex.Store({
     set_default_profile(state, default_profile) {
       state.default_profile = default_profile
     },
-    set_vbat(state, vbat) {
-      state.vbat = vbat
-    },
-    set_rx(state, rx) {
-      state.rx = rx
-    },
-    set_gyro(state, gyro) {
-      state.gyro = gyro
+    set_blackbox(state, blackbox) {
+      state.blackbox = blackbox
     },
     append_log(state, line) {
       state.log = [...state.log, line]
@@ -108,14 +99,8 @@ const store = new Vuex.Store({
             }
             commit('set_status', msg.Payload);
             break;
-          case "vbat":
-            commit('set_vbat', msg.Payload);
-            break;
-          case "rx":
-            commit('set_rx', msg.Payload);
-            break;
-          case "gyro":
-            commit('set_gyro', msg.Payload);
+          case "blackbox":
+            commit('set_blackbox', msg.Payload);
             break;
         }
       };
@@ -134,15 +119,6 @@ const store = new Vuex.Store({
         .then(() => get("/api/profile"))
         .then(p => commit('set_profile', p));
     },
-    fetch_vbat() {
-      return sendWebsocket("vbat")
-    },
-    fetch_rx() {
-      return sendWebsocket("rx")
-    },
-    fetch_gyro() {
-      return sendWebsocket("gyro")
-    },
     apply_profile({ commit }, profile) {
       profile.Meta.Datetime = Math.floor(Date.now() / 1000);
       return post("/api/profile", profile)
@@ -151,6 +127,9 @@ const store = new Vuex.Store({
     },
     cal_imu() {
       return post("/api/cal_imu", null)
+    },
+    set_blackbox_rate(ctx, rate) {
+      return post("/api/blackbox/rate", rate)
     }
   }
 })

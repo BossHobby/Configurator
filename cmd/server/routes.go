@@ -199,6 +199,39 @@ func setupRoutes(r *mux.Router) {
 		renderJSON(w, value)
 	}).Methods("POST")
 
+	r.HandleFunc("/api/blackbox/rate", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		value := 0
+		if err := fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		renderJSON(w, value)
+	}).Methods("GET")
+
+	r.HandleFunc("/api/blackbox/rate", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		value := 0
+		if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Println(value)
+		if err := fc.SetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		renderJSON(w, value)
+	}).Methods("POST")
+
 	r.HandleFunc("/api/cal_imu", func(w http.ResponseWriter, r *http.Request) {
 		if fc == nil {
 			http.NotFound(w, r)

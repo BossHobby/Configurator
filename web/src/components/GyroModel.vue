@@ -24,12 +24,12 @@ import { mapState, mapActions } from "vuex";
 export default {
   name: "GyroModel",
   computed: {
-    ...mapState(["gyro"]),
     ...mapState({
-      Rate: state => state.profile.Rate
+      Rate: state => state.profile.Rate,
+      GyroVector: state => state.blackbox.GyroVector
     }),
     rotation() {
-      const rot = this.gyro.gyro_rot;
+      const rot = this.GyroVector;
       if (!rot) {
         return "0 0 0";
       }
@@ -39,21 +39,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["fetch_gyro", "cal_imu"])
-  },
-  created() {
-    this.start = Date.now();
-
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-
-    this.interval = setInterval(() => {
-      this.fetch_gyro();
-    }, 250);
-  },
-  destroyed() {
-    clearInterval(this.interval);
+    ...mapActions(["cal_imu"])
   }
 };
 </script>

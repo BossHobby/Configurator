@@ -70,9 +70,14 @@ func watchPorts() {
 	}
 }
 
-func broadcastLog() {
-	for msg := range controller.QuicLog {
-		broadcastWebsocket("log", msg)
+func broadcastQuiuc() {
+	for {
+		select {
+		case msg := <-controller.QuicLog:
+			broadcastWebsocket("log", msg)
+		case msg := <-controller.QuicBlackbox:
+			broadcastWebsocket("blackbox", msg)
+		}
 	}
 }
 
@@ -83,7 +88,7 @@ func main() {
 	setupRoutes(r)
 
 	go watchPorts()
-	go broadcastLog()
+	go broadcastQuiuc()
 
 	//connecController(defaultPort)
 	if mode == "release" {
