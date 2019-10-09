@@ -25,3 +25,4 @@ yarn-error.log*
 /server
 /misc
 /cmd/server/statik
+/cmd/server/rsrc.syso

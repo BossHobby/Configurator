@@ -35,12 +35,12 @@ windows: $(WINDOWS).zip
 $(WINDOWS).zip: $(WINDOWS).exe
 	@zip -r $(WINDOWS).zip $(WINDOWS).exe
 
-$(WINDOWS).exe: $(WINDOWS).syso cmd/server/statik
+$(WINDOWS).exe: cmd/server/rsrc.syso cmd/server/statik
 	env GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o $(WINDOWS).exe ./cmd/server
 
-$(WINDOWS).syso: web/public/favicon.ico
+cmd/server/rsrc.syso: web/public/favicon.ico
 	go get github.com/akavel/rsrc
-	rsrc -ico web/public/favicon.ico -o $(WINDOWS).syso
+	rsrc -arch amd64 -ico web/public/favicon.ico -o cmd/server/rsrc.syso
 
 linux: $(LINUX).zip
 $(LINUX).zip: $(LINUX)
@@ -79,5 +79,5 @@ cmd/server/statik: web/dist
 
 clean:
 	@rm -rf web/node_modules web/dist || true
-	@rm -rf cmd/server/statik || true
+	@rm -rf cmd/server/statik cmd/server/rsrc.syso || true
 	@rm -r $(WINDOWS)* $(LINUX)* $(DARWIN)* || true
