@@ -36,6 +36,14 @@
           :input="blackbox.GyroVector"
         ></Plot>
       </b-col>
+      <b-col sm="12">
+        <Plot
+          title="Accel"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw']"
+          :input="blackbox.Accel"
+        ></Plot>
+      </b-col>
     </b-row>
   </b-container>
 </template>
