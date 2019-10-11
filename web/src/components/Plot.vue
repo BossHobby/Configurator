@@ -1,49 +1,46 @@
-<template>
-  <div>
-    <vue-plotly :data="data" :layout="layout"></vue-plotly>
-  </div>
-</template>
-
 <script>
-import VuePlotly from "@statnett/vue-plotly";
+import { Line } from "vue-chartjs";
 
 export default {
   name: "plot",
-  components: {
-    VuePlotly
-  },
+  extends: Line,
   props: ["title", "input", "axis", "interval"],
   data() {
     return {
       start: Date.now() / 1000,
       time: Date.now() / 1000,
-      raw_data: []
+      colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
     };
   },
   computed: {
-    data() {
-      return this.axis.map((name, i) => {
-        const axis = {
-          name: name,
-          mode: "lines"
-        };
-        if (this.raw_data[i]) {
-          axis.x = this.raw_data[i].x || [];
-          axis.y = this.raw_data[i].y || [];
-        }
-        return axis;
-      });
-    },
-    layout() {
+    chartdata() {
       return {
-        title: this.title,
-        yaxis: {
-          title: this.title,
-          autorange: true
+        labels: [],
+        datasets: this.axis.map((l, i) => {
+          return {
+            label: l,
+            data: [],
+            fill: false,
+            borderColor: this.colors[i]
+          };
+        })
+      };
+    },
+    options() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0
         },
-        xaxis: {
-          title: "Time (s)",
-          range: [this.time - this.interval, this.time]
+        title: {
+          display: true,
+          text: this.title
+        },
+        elements: {
+          line: {
+            tension: 0 // disables bezier curves
+          }
         }
       };
     }
@@ -51,23 +48,26 @@ export default {
   watch: {
     input(val) {
       this.time = Date.now() / 1000 - this.start;
+
+      const chart = this.$data._chart;
+
+      chart.data.labels.push(Math.round(this.time));
       for (let i = 0; i < val.length; i++) {
-        if (!this.raw_data[i]) {
-          this.raw_data[i] = {
-            x: [],
-            y: []
-          };
-        }
+        chart.data.datasets[i].data.push(val[i]);
+      }
 
-        this.raw_data[i].x.push(this.time);
-        this.raw_data[i].y.push(val[i]);
-
-        while (this.raw_data[i].x.length >= 1024) {
-          this.raw_data[i].x.shift();
-          this.raw_data[i].y.shift();
+      while (chart.data.labels.length >= 60) {
+        chart.data.labels.shift();
+        for (let i = 0; i < chart.data.datasets.length; i++) {
+          chart.data.datasets[i].data.shift();
         }
       }
+
+      chart.update();
     }
+  },
+  mounted() {
+    this.renderChart(this.chartdata, this.options);
   }
 };
 </script>

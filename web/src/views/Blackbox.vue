@@ -36,12 +36,20 @@
           :input="blackbox.GyroVector"
         ></Plot>
       </b-col>
-      <b-col sm="12">
+      <b-col sm="6">
         <Plot
-          title="Accel"
+          title="AccelRaw"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.Accel"
+          :input="blackbox.AccelRaw"
+        ></Plot>
+      </b-col>
+      <b-col sm="6">
+        <Plot
+          title="AccelFilter"
+          :interval="interval"
+          :axis="['Roll', 'Pitch', 'Yaw']"
+          :input="blackbox.AccelFilter"
         ></Plot>
       </b-col>
     </b-row>

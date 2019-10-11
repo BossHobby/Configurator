@@ -88,12 +88,13 @@ const store = new Vuex.Store({
       };
       ws.onmessage = function (evt) {
         const msg = JSON.parse(evt.data);
-        console.log(`<< ws ${msg.Channel}`, msg.Payload);
         switch (msg.Channel) {
           case "log":
+            console.log(`<< ws ${msg.Channel}`, msg.Payload);
             commit('append_log', msg.Payload);
             break;
           case "status":
+            console.log(`<< ws ${msg.Channel}`, msg.Payload);
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')
             }

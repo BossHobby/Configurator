@@ -59,7 +59,8 @@ type Blackbox struct {
 	RxFilter [4]float32 `cbor:"rx_filter"`
 	RxAux    []uint     `cbor:"rx_aux"`
 
-	Accel [3]float32 `cbor:"accel"`
+	AccelRaw    [3]float32 `cbor:"accel_raw"`
+	AccelFilter [3]float32 `cbor:"accel_filter"`
 }
 
 func (c *Controller) ReadQUIC() error {
