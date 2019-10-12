@@ -4,6 +4,7 @@ import * as VueGL from "vue-gl";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'chartjs-plugin-crosshair'
 
 import App from './App.vue'
 import router from './router'

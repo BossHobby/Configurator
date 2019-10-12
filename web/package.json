@@ -11,6 +11,7 @@
     "@statnett/vue-plotly": "^0.3.2",
     "bootstrap-vue": "^2.0.0-rc.28",
     "chart.js": "^2.8.0",
+    "chartjs-plugin-crosshair": "^1.1.4",
     "core-js": "^2.6.5",
     "plotly.js": "^1.49.2",
     "vue": "^2.6.10",
