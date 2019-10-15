@@ -22,5 +22,5 @@ yarn-error.log*
 
 /quic-config*
 /misc
-/cmd/quic-config/statik
+/pkg/statik
 /cmd/quic-config/rsrc.syso

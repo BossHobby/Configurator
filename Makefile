@@ -35,7 +35,7 @@ windows: $(WINDOWS).zip
 $(WINDOWS).zip: $(WINDOWS).exe
 	@zip -r $(WINDOWS).zip $(WINDOWS).exe
 
-$(WINDOWS).exe: cmd/quic-config/rsrc.syso cmd/quic-config/statik
+$(WINDOWS).exe: cmd/quic-config/rsrc.syso pkg/statik
 	env GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o $(WINDOWS).exe ./cmd/quic-config
 
 cmd/quic-config/rsrc.syso: web/public/favicon.ico
@@ -46,7 +46,7 @@ linux: $(LINUX).zip
 $(LINUX).zip: $(LINUX)
 	@zip -r $(LINUX).zip $(LINUX)
 
-$(LINUX): cmd/quic-config/statik
+$(LINUX): pkg/statik
 	env GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $(LINUX) ./cmd/quic-config
 
 darwin: $(DARWIN).zip
@@ -57,7 +57,7 @@ $(DARWIN).app: $(DARWIN)
 	go get github.com/machinebox/appify
 	appify -name "$(DARWIN)" -icon ./web/src/assets/logo.png $(DARWIN)
 
-$(DARWIN): cmd/quic-config/statik
+$(DARWIN): pkg/statik
 	env GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $(DARWIN) ./cmd/quic-config
 
 serve-web:
@@ -73,11 +73,11 @@ web: web/dist
 web/dist: web/node_modules
 	cd web && npm run build && cd ..
 
-cmd/quic-config/statik: web/dist
+pkg/statik: web/dist
 	@go get github.com/rakyll/statik
 	@go generate ./...
 
 clean:
 	@rm -rf web/node_modules web/dist || true
-	@rm -rf cmd/quic-config/statik cmd/quic-config/rsrc.syso || true
+	@rm -rf pkg/statik cmd/quic-config/rsrc.syso || true
 	@rm -r $(WINDOWS)* $(LINUX)* $(DARWIN)* || true

@@ -1,4 +1,4 @@
-//go:generate statik -f -src=../../web/dist
+//go:generate statik -f -dest ../../pkg -src=../../web/dist
 
 package main
 
@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/NotFastEnuf/configurator/controller"
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )

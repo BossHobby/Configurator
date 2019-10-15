@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/NotFastEnuf/configurator/controller"
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	serial "github.com/bugst/go-serial"
 )
 

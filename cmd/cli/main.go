@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NotFastEnuf/configurator/controller"
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/fxamacker/cbor"
 )
 
