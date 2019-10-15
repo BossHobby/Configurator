@@ -31,6 +31,9 @@ BUILD_FLAGS = -ldflags="-X main.version=$(VERSION) -X main.mode=$(MODE)"
 all: windows linux darwin
 	@echo version: $(VERSION)
 
+install: pkg/statik
+	go install $(BUILD_FLAGS) ./cmd/quic-config
+
 windows: $(WINDOWS).zip
 $(WINDOWS).zip: $(WINDOWS).exe
 	@zip -r $(WINDOWS).zip $(WINDOWS).exe
