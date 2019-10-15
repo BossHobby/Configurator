@@ -43,15 +43,6 @@ func openbrowser(url string) {
 	log.Printf("Configurator running at %s!\n", url)
 }
 
-func defaultPort() string {
-	switch runtime.GOOS {
-	case "windows":
-		return "COM13"
-	default:
-		return "/dev/ttyACM0"
-	}
-}
-
 func watchPorts() {
 	for {
 		s, err := controllerStatus()

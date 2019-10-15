@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/NotFastEnuf/configurator/pkg/controller"
+	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -82,7 +82,7 @@ func setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
 	r.HandleFunc("/api/connect", func(w http.ResponseWriter, r *http.Request) {
-		serialPort := "defaultPort"
+		serialPort := ""
 		if err := json.NewDecoder(r.Body).Decode(&serialPort); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
