@@ -69,7 +69,7 @@ func watchPorts() {
 	}
 }
 
-func broadcastQuiuc() {
+func broadcastQuic() {
 	for {
 		select {
 		case msg := <-controller.QuicLog:
@@ -87,9 +87,8 @@ func main() {
 	setupRoutes(r)
 
 	go watchPorts()
-	go broadcastQuiuc()
+	go broadcastQuic()
 
-	//connecController(defaultPort)
 	if mode == "release" {
 		openbrowser("http://localhost:8000")
 	}
