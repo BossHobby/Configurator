@@ -19,7 +19,7 @@ steps:
     settings:
       api_key:
         from_secret: github_token
-      files: usb_configurator_*.zip
+      files: quic-config*.zip
       prerelease: true
       title: latest
       overwrite: true
