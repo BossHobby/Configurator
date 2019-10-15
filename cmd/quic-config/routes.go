@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/NotFastEnuf/configurator/cmd/server/statik"
+	_ "github.com/NotFastEnuf/configurator/cmd/quic-config/statik"
 	"github.com/NotFastEnuf/configurator/controller"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"

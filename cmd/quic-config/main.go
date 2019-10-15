@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"time"
 
-	_ "github.com/NotFastEnuf/configurator/cmd/server/statik"
 	"github.com/NotFastEnuf/configurator/controller"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"

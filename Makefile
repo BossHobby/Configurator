@@ -1,4 +1,4 @@
-EXECUTABLE=usb_configurator
+EXECUTABLE=quic-config
 GO111MODULE=on
 
 WINDOWS	= $(EXECUTABLE)_windows_amd64
@@ -35,19 +35,19 @@ windows: $(WINDOWS).zip
 $(WINDOWS).zip: $(WINDOWS).exe
 	@zip -r $(WINDOWS).zip $(WINDOWS).exe
 
-$(WINDOWS).exe: cmd/server/rsrc.syso cmd/server/statik
-	env GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o $(WINDOWS).exe ./cmd/server
+$(WINDOWS).exe: cmd/quic-config/rsrc.syso cmd/quic-config/statik
+	env GOOS=windows GOARCH=amd64 go build $(BUILD_FLAGS) -o $(WINDOWS).exe ./cmd/quic-config
 
-cmd/server/rsrc.syso: web/public/favicon.ico
+cmd/quic-config/rsrc.syso: web/public/favicon.ico
 	go get github.com/akavel/rsrc
-	rsrc -arch amd64 -ico web/public/favicon.ico -o cmd/server/rsrc.syso
+	rsrc -arch amd64 -ico web/public/favicon.ico -o cmd/quic-config/rsrc.syso
 
 linux: $(LINUX).zip
 $(LINUX).zip: $(LINUX)
 	@zip -r $(LINUX).zip $(LINUX)
 
-$(LINUX): cmd/server/statik
-	env GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $(LINUX) ./cmd/server
+$(LINUX): cmd/quic-config/statik
+	env GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $(LINUX) ./cmd/quic-config
 
 darwin: $(DARWIN).zip
 $(DARWIN).zip: $(DARWIN).app
@@ -57,8 +57,8 @@ $(DARWIN).app: $(DARWIN)
 	go get github.com/machinebox/appify
 	appify -name "$(DARWIN)" -icon ./web/src/assets/logo.png $(DARWIN)
 
-$(DARWIN): cmd/server/statik
-	env GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $(DARWIN) ./cmd/server
+$(DARWIN): cmd/quic-config/statik
+	env GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $(DARWIN) ./cmd/quic-config
 
 serve-web:
 	npm --prefix web run serve
@@ -73,11 +73,11 @@ web: web/dist
 web/dist: web/node_modules
 	cd web && npm run build && cd ..
 
-cmd/server/statik: web/dist
+cmd/quic-config/statik: web/dist
 	@go get github.com/rakyll/statik
 	@go generate ./...
 
 clean:
 	@rm -rf web/node_modules web/dist || true
-	@rm -rf cmd/server/statik cmd/server/rsrc.syso || true
+	@rm -rf cmd/quic-config/statik cmd/quic-config/rsrc.syso || true
 	@rm -r $(WINDOWS)* $(LINUX)* $(DARWIN)* || true

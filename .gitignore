@@ -6,8 +6,6 @@ node_modules
 .env.local
 .env.*.local
 
-/usb_configurator*
-
 # Log files
 npm-debug.log*
 yarn-debug.log*
@@ -22,7 +20,7 @@ yarn-error.log*
 *.sln
 *.sw?
 
-/server
+/quic-config*
 /misc
-/cmd/server/statik
-/cmd/server/rsrc.syso
+/cmd/quic-config/statik
+/cmd/quic-config/rsrc.syso
