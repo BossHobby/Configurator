@@ -1,9 +1,9 @@
 EXECUTABLE=quic-config
 GO111MODULE=on
 
-WINDOWS	= $(EXECUTABLE)_windows_amd64
-LINUX		= $(EXECUTABLE)_linux_amd64
-DARWIN	= $(EXECUTABLE)_darwin_amd64
+WINDOWS	= $(EXECUTABLE)-windows-amd64
+LINUX		= $(EXECUTABLE)-linux-amd64
+DARWIN	= $(EXECUTABLE)-darwin-amd64
 
 VERSION 		= $(shell git describe --tags --always --long --dirty)
 
@@ -27,7 +27,7 @@ endif
 
 BUILD_FLAGS = -ldflags="-X main.version=$(VERSION) -X main.mode=$(MODE)"
 
-.PHONY: all clean web $(EXECUTABLE)_$(PLATFORM)_amd64
+.PHONY: all clean web $(EXECUTABLE)-$(PLATFORM)-amd64
 all: windows linux darwin
 	@echo version: $(VERSION)
 
@@ -64,7 +64,7 @@ serve-web:
 	npm --prefix web run serve
 
 serve-reload:
-	CompileDaemon -build="make MODE=debug $(PLATFORM)" -command="./$(EXECUTABLE)_$(PLATFORM)_amd64"
+	CompileDaemon -build="make MODE=debug $(PLATFORM)" -command="./$(EXECUTABLE)-$(PLATFORM)-amd64"
 
 web/node_modules: web/package.json
 	cd web && npm install && cd ..
