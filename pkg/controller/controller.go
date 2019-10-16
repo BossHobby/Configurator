@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	serial "github.com/bugst/go-serial"
 )

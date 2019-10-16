@@ -3,13 +3,16 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 	"os/exec"
-	"reflect"
 	"runtime"
-	"time"
+
+	"github.com/fxamacker/cbor"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/gorilla/mux"
@@ -21,6 +24,8 @@ var (
 	status  Status
 	version = "dirty"
 	mode    = "debug"
+
+	verbose = flag.Bool("verbose", false, "verbose logging")
 )
 
 func openbrowser(url string) {
@@ -43,35 +48,7 @@ func openbrowser(url string) {
 	log.Printf("Configurator running at %s!\n", url)
 }
 
-func watchPorts() {
-	for {
-		s, err := controllerStatus()
-		if err != nil {
-			log.Println(err)
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-
-		if !reflect.DeepEqual(*s, status) {
-			broadcastWebsocket("status", s)
-		}
-		status = *s
-		time.Sleep(500 * time.Millisecond)
-	}
-}
-
-func broadcastQuic() {
-	for {
-		select {
-		case msg := <-controller.QuicLog:
-			broadcastWebsocket("log", msg)
-		case msg := <-controller.QuicBlackbox:
-			broadcastWebsocket("blackbox", msg)
-		}
-	}
-}
-
-func main() {
+func serve() {
 	log.Printf("Starting Quicksilver Configurator %s\n", version)
 
 	r := mux.NewRouter()
@@ -85,5 +62,64 @@ func main() {
 	}
 	if err := http.ListenAndServe("localhost:8000", cors.Default().Handler(r)); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func printJson(v interface{}) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(v)
+}
+
+func main() {
+	flag.Parse()
+
+	if flag.NArg() == 0 {
+		serve()
+		return
+	}
+
+	if err := connectFirstController(); err != nil {
+		log.Fatal(err)
+	}
+
+	switch flag.Arg(0) {
+	case "download":
+		value := controller.Profile{}
+		if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+			log.Fatal(err)
+		}
+		if *verbose {
+			printJson(value)
+		}
+
+		f, err := os.Create(value.Filename())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := cbor.NewEncoder(f, cbor.EncOptions{}).Encode(value); err != nil {
+			log.Fatal(err)
+		}
+	case "upload":
+		if flag.NArg() != 2 {
+			log.Fatal("usage: quic-config upload <filename>")
+		}
+
+		f, err := os.Open(flag.Arg(1))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		value := controller.Profile{}
+		if err := cbor.NewDecoder(f).Decode(&value); err != nil {
+			log.Fatal(err)
+		}
+		if err := fc.SetQUIC(controller.QuicValProfile, &value); err != nil {
+			log.Fatal(err)
+		}
+		if *verbose {
+			printJson(value)
+		}
 	}
 }

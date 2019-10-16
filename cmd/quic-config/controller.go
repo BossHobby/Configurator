@@ -1,7 +1,11 @@
 package main
 
 import (
-	"log"
+	"errors"
+	"reflect"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	serial "github.com/bugst/go-serial"
@@ -43,17 +47,29 @@ func closeController() {
 	fc = nil
 }
 
-func connecController(p string) error {
+func connectFirstController() error {
+	ports, err := serial.GetPortsList()
+	if err != nil {
+		return err
+	}
+
+	if len(ports) == 0 {
+		return errors.New("no controller port found")
+	}
+
+	return connectController(ports[0])
+}
+
+func connectController(p string) error {
 	log.Printf("opening controller %s\n", p)
 	c, err := controller.OpenController(p)
 	if err != nil {
-		log.Printf("opening controller: %v\n", err)
 		return err
 	}
 
 	go func(fc *controller.Controller) {
 		if err := fc.Run(); err != nil {
-			log.Printf("port: %v\n", err)
+			log.Warnf("port: %v\n", err)
 			disconnect <- true
 		}
 	}(c)
@@ -80,4 +96,21 @@ func connecController(p string) error {
 
 	fc = c
 	return nil
+}
+
+func watchPorts() {
+	for {
+		s, err := controllerStatus()
+		if err != nil {
+			log.Println(err)
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		if !reflect.DeepEqual(*s, status) {
+			broadcastWebsocket("status", s)
+		}
+		status = *s
+		time.Sleep(500 * time.Millisecond)
+	}
 }

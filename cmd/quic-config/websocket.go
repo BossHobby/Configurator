@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
+
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/gorilla/websocket"
 )
 
@@ -89,6 +91,17 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		if err := sendWebsocket(conn, p.Channel, value); err != nil {
 			log.Println(err)
 			return
+		}
+	}
+}
+
+func broadcastQuic() {
+	for {
+		select {
+		case msg := <-controller.QuicLog:
+			broadcastWebsocket("log", msg)
+		case msg := <-controller.QuicBlackbox:
+			broadcastWebsocket("blackbox", msg)
 		}
 	}
 }

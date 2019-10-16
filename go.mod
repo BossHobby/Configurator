@@ -15,6 +15,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/rakyll/statik v0.1.6
 	github.com/rs/cors v1.7.0
+	github.com/sirupsen/logrus v1.4.2
 	go.bug.st/serial.v1 v0.0.0-20180827123349-5f7892a7bb45 // indirect
 	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 )

@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/fxamacker/cbor"
 )
@@ -45,8 +46,8 @@ const quicHeaderLen = uint16(4)
 
 var quicChannel = make(map[QuicCommand]chan quicPacket)
 
-var QuicLog = make(chan string)
-var QuicBlackbox = make(chan interface{})
+var QuicLog = make(chan string, 100)
+var QuicBlackbox = make(chan interface{}, 100)
 
 type Blackbox struct {
 	VbatFilter float32 `cbor:"vbat_filter"`
@@ -81,7 +82,7 @@ func (c *Controller) ReadQUIC() error {
 	}
 
 	if len(payload) != int(payloadLen) {
-		log.Printf("% x (%s)\n", payload, string(payload))
+		log.Debugf("% x (%s)\n", payload, string(payload))
 		log.Fatalf("<quic> invalid size (%d vs %d)", length, size)
 	}
 
@@ -91,7 +92,7 @@ func (c *Controller) ReadQUIC() error {
 		len:     payloadLen,
 		payload: payload,
 	}
-	log.Printf("<quic> received cmd: %d flag: %d len: %d\n", packet.cmd, packet.flag, packet.len)
+	log.Debugf("<quic> received cmd: %d flag: %d len: %d\n", packet.cmd, packet.flag, packet.len)
 
 	switch packet.cmd {
 	case QuicCmdLog:
@@ -99,7 +100,7 @@ func (c *Controller) ReadQUIC() error {
 		if err := cbor.Unmarshal(packet.payload, val); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("<quic> log %s\n", *val)
+		log.Debugf("<quic> log %s\n", *val)
 		QuicLog <- *val
 		break
 	case QuicCmdBlackbox:
@@ -107,7 +108,7 @@ func (c *Controller) ReadQUIC() error {
 		if err := cbor.Unmarshal(packet.payload, val); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("<quic> blackbox %+v\n", *val)
+		log.Debugf("<quic> blackbox %+v\n", *val)
 		QuicBlackbox <- *val
 		break
 	default:
@@ -143,7 +144,7 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*quicPacket, error)
 			return nil, errors.New(msg)
 		}
 		return &p, nil
-	case <-time.After(10 * time.Second):
+	case <-time.After(1 * time.Second):
 		return nil, errors.New("quic recive timeout")
 	}
 }

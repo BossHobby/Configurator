@@ -1,5 +1,11 @@
 package controller
 
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
 type Vector [3]float32
 
 type SilverwareRates struct {
@@ -71,4 +77,11 @@ type Profile struct {
 	Voltage Voltage  `cbor:"voltage"`
 	Rate    Rates    `cbor:"rate"`
 	PID     PID      `cbor:"pid"`
+}
+
+func (p *Profile) Filename() string {
+	return fmt.Sprintf("Profile_%s_%s.cbor",
+		strings.Replace(p.Meta.Name, "\x00", "", -1),
+		time.Unix(int64(p.Meta.Datetime), 0).Format("2006-01-02"),
+	)
 }
