@@ -6,7 +6,7 @@
         <label for="invert-yaw">Invert Yaw</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-select id="invert-yaw" v-model.number="Motor.InvertYaw" :options="invertYawModes"></b-form-select>
+        <b-form-select id="invert-yaw" v-model.number="motor.invert_yaw" :options="invertYawModes"></b-form-select>
       </b-col>
     </b-row>
     <b-row>
@@ -14,7 +14,12 @@
         <label for="digital-idle">Digital Idle</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-input id="digital-idle" type="number" step="0.1" v-model.number="Motor.DigitalIdle"></b-form-input>
+        <b-form-input
+          id="digital-idle"
+          type="number"
+          step="0.1"
+          v-model.number="motor.digital_idle"
+        ></b-form-input>
       </b-col>
     </b-row>
     <b-row>
@@ -62,22 +67,22 @@ export default {
   },
   computed: {
     ...mapState({
-      Motor: state => state.profile.Motor
+      motor: state => state.profile.motor
     }),
     gyroOrientation: {
       get() {
-        return this.Motor.GyroOrientation & 0x1f;
+        return this.motor.gyro_orientation & 0x1f;
       },
       set(value) {
-        this.Motor.GyroOrientation = value | (this.gyroFlip ? 0x20 : 0x0);
+        this.motor.gyro_orientation = value | (this.gyroFlip ? 0x20 : 0x0);
       }
     },
     gyroFlip: {
       get() {
-        return (this.Motor.GyroOrientation & 0x20) > 0;
+        return (this.motor.gyro_orientation & 0x20) > 0;
       },
       set(value) {
-        this.Motor.GyroOrientation =
+        this.motor.gyro_orientation =
           this.gyroOrientation | (value ? 0x20 : 0x0);
       }
     }

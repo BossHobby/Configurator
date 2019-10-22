@@ -25,11 +25,11 @@ export default {
   name: "GyroModel",
   computed: {
     ...mapState({
-      Rate: state => state.profile.Rate,
-      GyroVector: state => state.blackbox.GyroVector
+      rate: state => state.profile.rate,
+      gyro_vector: state => state.blackbox.gyro_vector
     }),
     rotation() {
-      const rot = this.GyroVector;
+      const rot = this.gyro_vector;
       if (!rot) {
         return "0 0 0";
       }

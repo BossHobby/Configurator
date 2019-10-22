@@ -33,6 +33,7 @@ const (
 	QuicValProfile
 	QuicValDefaultProfile
 	QuicValBlackboxRate
+	QuicValPidRatePresets
 )
 
 type quicPacket struct {
@@ -48,21 +49,6 @@ var quicChannel = make(map[QuicCommand]chan quicPacket)
 
 var QuicLog = make(chan string, 100)
 var QuicBlackbox = make(chan interface{}, 100)
-
-type Blackbox struct {
-	VbatFilter float32 `cbor:"vbat_filter"`
-
-	GyroRaw    [3]float32 `cbor:"gyro_raw"`
-	GyroFilter [3]float32 `cbor:"gyro_filter"`
-	GyroVector [3]float32 `cbor:"gyro_vector"`
-
-	RxRaw    [4]float32 `cbor:"rx_raw"`
-	RxFilter [4]float32 `cbor:"rx_filter"`
-	RxAux    []uint     `cbor:"rx_aux"`
-
-	AccelRaw    [3]float32 `cbor:"accel_raw"`
-	AccelFilter [3]float32 `cbor:"accel_filter"`
-}
 
 func (c *Controller) ReadQUIC() error {
 	header, err := c.readAtLeast(int(quicHeaderLen - 1))

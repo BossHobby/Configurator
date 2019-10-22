@@ -8,11 +8,11 @@
             <label for="rate-mode">Mode</label>
           </b-col>
           <b-col sm="8">
-            <b-form-select id="rate-mode" v-model.number="Rate.Mode" :options="rateModes"></b-form-select>
+            <b-form-select id="rate-mode" v-model.number="rate.mode" :options="rateModes"></b-form-select>
           </b-col>
 
           <b-col sm="12" v-for="mode in rateModes" :key="mode.text">
-            <b-card class="my-3" v-if="mode.value == Rate.Mode">
+            <b-card class="my-3" v-if="mode.value == rate.mode">
               <h6 slot="header" class="mb-0">{{mode.text}}</h6>
               <b-row>
                 <b-col offset="4" sm="8">
@@ -30,7 +30,7 @@
                 </b-col>
               </b-row>
 
-              <b-row v-for="(val, key) in Rate[mode.text]" :key="key">
+              <b-row v-for="(val, key) in rate[mode.text.toLowerCase()]" :key="key">
                 <b-col sm="4">
                   <label :for="`${mode.text}-${key}`">{{ key }}</label>
                 </b-col>
@@ -41,7 +41,7 @@
                         :id="`${mode.text}-${key}-roll`"
                         type="number"
                         step="0.05"
-                        v-model.number="Rate[mode.text][key][0]"
+                        v-model.number="rate[mode.text.toLowerCase()][key][0]"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
@@ -49,7 +49,7 @@
                         :id="`${mode.text}-${key}-pitch`"
                         type="number"
                         step="0.05"
-                        v-model.number="Rate[mode.text][key][1]"
+                        v-model.number="rate[mode.text.toLowerCase()][key][1]"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
@@ -57,7 +57,7 @@
                         :id="`${mode.text}-${key}-yaw`"
                         type="number"
                         step="0.05"
-                        v-model.number="Rate[mode.text][key][2]"
+                        v-model.number="rate[mode.text.toLowerCase()][key][2]"
                       ></b-form-input>
                     </b-col>
                   </b-row>
@@ -74,7 +74,7 @@
               id="level-max-angle"
               type="number"
               step="5"
-              v-model.number="Rate.LevelMaxAngle"
+              v-model.number="rate.level_max_angle"
             ></b-form-input>
           </b-col>
 
@@ -85,7 +85,7 @@
             <b-form-input
               id="low-rate-mulitplier"
               type="number"
-              v-model.number="Rate.LowRateMulitplier"
+              v-model.number="rate.low_rate_mulitplier"
               step="0.05"
             ></b-form-input>
           </b-col>
@@ -98,13 +98,13 @@
               step="0.01"
               id="sticks-deadband"
               type="number"
-              v-model.number="Rate.SticksDeadband"
+              v-model.number="rate.sticks_deadband"
             ></b-form-input>
           </b-col>
         </b-row>
       </b-col>
       <b-col sm="6">
-        <vue-plotly v-if="Rate.Silverware.AcroExpo" :data="plot.data" :layout="plot.layout"></vue-plotly>
+        <vue-plotly v-if="rate.silverware.acro_expo" :data="plot.data" :layout="plot.layout"></vue-plotly>
         <b-form-checkbox v-model="plotLowRates">Plot LowRates</b-form-checkbox>
       </b-col>
     </b-row>
@@ -122,10 +122,10 @@ export default {
   },
   computed: {
     ...mapState({
-      Rate: state => state.profile.Rate
+      rate: state => state.profile.rate
     }),
     currentMode() {
-      return this.rateModes[this.Rate.Mode].text;
+      return this.rateModes[this.rate.mode].text;
     },
     plot() {
       const data = [
@@ -149,7 +149,7 @@ export default {
         }
       ];
 
-      const rateMulit = this.plotLowRates ? this.Rate.LowRateMulitplier : 1.0;
+      const rateMulit = this.plotLowRates ? this.rate.low_rate_mulitplier : 1.0;
       for (let i = -100; i <= 100; i++) {
         const input = i / 100.0;
 
@@ -206,25 +206,25 @@ export default {
       return this.limitf(ans, 1.0);
     },
     calcSilverware(axis, val) {
-      const expo = this.Rate.Silverware.AcroExpo[axis];
-      const maxRate = this.Rate.Silverware.MaxRate[axis];
+      const expo = this.rate.silverware.acro_expo[axis];
+      const maxRate = this.rate.silverware.max_rate[axis];
       return this.rcexpo(val, expo) * maxRate;
     },
     calcBetatflight(axis, val) {
       const SETPOINT_RATE_LIMIT = 1998.0;
       const RC_RATE_INCREMENTAL = 14.54;
 
-      const expo = this.Rate.Betaflight.Expo[axis];
+      const expo = this.rate.betaflight.expo[axis];
       val = this.rcexpo(val, expo);
 
-      var rcRate = this.Rate.Betaflight.RcRate[axis];
+      var rcRate = this.rate.betaflight.rc_rate[axis];
       if (rcRate > 2.0) {
         rcRate += RC_RATE_INCREMENTAL * (rcRate - 2.0);
       }
       const rcCommandfAbs = val > 0 ? val : -val;
       var angleRate = 200.0 * rcRate * val;
 
-      const superExpo = this.Rate.Betaflight.SuperRate[axis];
+      const superExpo = this.rate.betaflight.super_rate[axis];
       if (superExpo) {
         const rcSuperfactor =
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);

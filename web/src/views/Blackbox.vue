@@ -9,7 +9,7 @@
           title="Rx Channels"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw', 'Throttle']"
-          :input="blackbox.RxRaw"
+          :input="blackbox.rx_raw"
         ></Plot>
       </b-col>
       <b-col sm="6">
@@ -17,7 +17,7 @@
           title="Gyro Raw"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.GyroRaw"
+          :input="blackbox.gyro_raw"
         ></Plot>
       </b-col>
       <b-col sm="6">
@@ -25,7 +25,7 @@
           title="Gyro Filter"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.GyroFilter"
+          :input="blackbox.gyro_filter"
         ></Plot>
       </b-col>
       <b-col sm="12">
@@ -33,7 +33,7 @@
           title="Gyro Vector"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.GyroVector"
+          :input="blackbox.gyro_vector"
         ></Plot>
       </b-col>
       <b-col sm="6">
@@ -41,7 +41,7 @@
           title="AccelRaw"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.AccelRaw"
+          :input="blackbox.accel_raw"
         ></Plot>
       </b-col>
       <b-col sm="6">
@@ -49,7 +49,7 @@
           title="AccelFilter"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.AccelFilter"
+          :input="blackbox.accel_filter"
         ></Plot>
       </b-col>
     </b-row>

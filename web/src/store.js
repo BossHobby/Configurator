@@ -22,34 +22,34 @@ function sendWebsocket(channel, payload) {
 const store = new Vuex.Store({
   state: {
     status: {
-      IsConnected: false,
+      is_connected: false,
     },
     log: [],
     alerts: [],
 
     blackbox: {
-      VbatFilter: 0.0,
+      vbat_filter: 0.0,
     },
 
     profile: {
-      Meta: {},
-      Motor: {
-        InvertYaw: 1,
+      meta: {},
+      motor: {
+        invert_yaw: 1,
       },
-      Rate: {
-        Mode: 0,
-        Silverware: {},
-        Betaflight: {},
+      rate: {
+        mode: 0,
+        silverware: {},
+        betaflight: {},
       },
-      Voltage: {},
-      Channel: {
-        Aux: [],
+      voltage: {},
+      channel: {
+        aux: [],
       },
-      PID: {
-        PIDProfile: 0,
-        PIDRates: [{}],
-        StickProfile: 0,
-        StickRates: [{}],
+      pid: {
+        pid_profile: 0,
+        pid_rates: [{}],
+        stick_profile: 0,
+        stick_rates: [{}],
       }
     }
   },
@@ -65,6 +65,9 @@ const store = new Vuex.Store({
     },
     set_default_profile(state, default_profile) {
       state.default_profile = default_profile
+    },
+    set_pid_rate_presets(state, pid_rate_presets) {
+      state.pid_rate_presets = pid_rate_presets
     },
     set_blackbox(state, blackbox) {
       state.blackbox = blackbox
@@ -114,7 +117,6 @@ const store = new Vuex.Store({
       return post(path, port)
     },
     fetch_profile({ commit }) {
-
       return get("/api/default_profile")
         .then(p => commit('set_default_profile', p))
         .then(() => get("/api/profile"))

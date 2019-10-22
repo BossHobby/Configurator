@@ -6,7 +6,7 @@
         <label for="name">Profile Name</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-input id="name" type="text" v-model="Meta.Name"></b-form-input>
+        <b-form-input id="name" type="text" v-model="meta.name"></b-form-input>
       </b-col>
     </b-row>
     <b-row>
@@ -25,10 +25,10 @@ export default {
   name: "Metadata",
   computed: {
     ...mapState({
-      Meta: state => state.profile.Meta
+      meta: state => state.profile.meta
     }),
     date() {
-      return new Date(this.Meta.Datetime * 1000);
+      return new Date(this.meta.datetime * 1000);
     }
   }
 };

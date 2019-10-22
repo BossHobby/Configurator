@@ -8,7 +8,7 @@
             <label :for="func" :class="classForIndex(index)">{{ func }}</label>
           </b-col>
           <b-col sm="3" class="my-1">
-            <b-form-select :id="func" v-model.number="Channel.Aux[index]" :options="auxChannels"></b-form-select>
+            <b-form-select :id="func" v-model.number="channel.aux[index]" :options="auxChannels"></b-form-select>
           </b-col>
         </b-row>
       </b-col>
@@ -37,8 +37,8 @@ export default {
   components: {},
   computed: {
     ...mapState({
-      Channel: state => state.profile.Channel,
-      aux: state => state.blackbox.RxAux
+      channel: state => state.profile.channel,
+      aux: state => state.blackbox.rx_aux
     })
   },
   data() {
@@ -79,13 +79,13 @@ export default {
   },
   methods: {
     classForIndex(index) {
-      if (!this.Channel || !this.Channel.Aux) {
+      if (!this.channel || !this.channel.aux) {
         return "";
       }
 
-      if (this.Channel.Aux[index] == 14) return "text-danger";
-      if (this.Channel.Aux[index] == 13) return "text-success";
-      if (this.aux[this.Channel.Aux[index]]) return "text-success";
+      if (this.channel.aux[index] == 14) return "text-danger";
+      if (this.channel.aux[index] == 13) return "text-success";
+      if (this.aux[this.channel.aux[index]]) return "text-success";
       return "";
     }
   }

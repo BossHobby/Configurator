@@ -2,7 +2,7 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       Voltage
-      <small class="float-right">{{blackbox.VbatFilter.toPrecision(3)}}V</small>
+      <small class="float-right">{{blackbox.vbat_filter.toPrecision(3)}}V</small>
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">
@@ -13,7 +13,7 @@
           id="lipo-cell-count"
           type="number"
           step="1"
-          v-model.number="profile.Voltage.LipoCellCount"
+          v-model.number="profile.voltage.lipo_cell_count"
         ></b-form-input>
       </b-col>
 
@@ -26,7 +26,7 @@
             type="checkbox"
             class="custom-control-input"
             id="pid-voltage-compensation"
-            v-model.number="profile.Voltage.PidVoltageCompensation"
+            v-model.number="profile.voltage.pid_voltage_compensation"
             true-value="1"
             false-value="0"
           />
@@ -42,7 +42,7 @@
           id="vbattlow"
           type="number"
           step="0.1"
-          v-model.number="profile.Voltage.VBattLow"
+          v-model.number="profile.voltage.v_batt_low"
         ></b-form-input>
       </b-col>
 
@@ -54,7 +54,7 @@
           id="actual-battery-voltage"
           type="number"
           step="1"
-          v-model.number="profile.Voltage.ActualBatteryVoltage"
+          v-model.number="profile.voltage.actual_battery_voltage"
         ></b-form-input>
       </b-col>
 
@@ -66,7 +66,7 @@
           id="reported-telemetry-voltage"
           type="number"
           step="1"
-          v-model.number="profile.Voltage.ReportedTelemetryVoltage"
+          v-model.number="profile.voltage.reported_telemetry_voltage"
         ></b-form-input>
       </b-col>
     </b-row>
