@@ -22,6 +22,8 @@ const store = {
       pid_rates: [{}],
       stick_profile: 0,
       stick_rates: [{}],
+      big_angle: {},
+      small_angle: {}
     }
   },
   getters: {

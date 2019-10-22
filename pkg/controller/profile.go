@@ -35,16 +35,23 @@ type PIDRates struct {
 	KD Vector `cbor:"kd" json:"kd"`
 }
 
+type AnglePIDRates struct {
+	KP float32 `cbor:"kp" json:"kp"`
+	KD float32 `cbor:"kd" json:"kd"`
+}
+
 type StickRates struct {
 	Accelerator Vector `cbor:"accelerator" json:"accelerator"`
 	Transition  Vector `cbor:"transition" json:"transition"`
 }
 
 type PID struct {
-	PIDProfile   uint8        `cbor:"pid_profile" json:"pid_profile"`
-	PIDRates     []PIDRates   `cbor:"pid_rates" json:"pid_rates"`
-	StickProfile uint8        `cbor:"stick_profile" json:"stick_profile"`
-	StickRates   []StickRates `cbor:"stick_rates" json:"stick_rates"`
+	PIDProfile   uint8         `cbor:"pid_profile" json:"pid_profile"`
+	PIDRates     []PIDRates    `cbor:"pid_rates" json:"pid_rates"`
+	StickProfile uint8         `cbor:"stick_profile" json:"stick_profile"`
+	StickRates   []StickRates  `cbor:"stick_rates" json:"stick_rates"`
+	SmallAngle   AnglePIDRates `cbor:"small_angle" json:"small_angle"`
+	BigAngle     AnglePIDRates `cbor:"big_angle" json:"big_angle"`
 }
 
 type Motor struct {

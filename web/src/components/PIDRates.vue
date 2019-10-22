@@ -132,6 +132,48 @@
         </b-row>
       </b-col>
     </b-row>
+
+    <b-row class="mt-4">
+      <b-col sm="4" class="my-2">Angle PID</b-col>
+    </b-row>
+    <b-row class="mt-3">
+      <b-col offset="4" sm="8">
+        <b-row>
+          <b-col sm="6">
+            <h6>Small</h6>
+          </b-col>
+          <b-col sm="6">
+            <h6>Big</h6>
+          </b-col>
+        </b-row>
+      </b-col>
+    </b-row>
+
+    <b-row v-for="(key, index) in ['kp', 'kd']" :key="index">
+      <b-col sm="4">
+        <label :for="`stick-${key}`">{{ key }}</label>
+      </b-col>
+      <b-col sm="8">
+        <b-row>
+          <b-col sm="6">
+            <b-form-input
+              :id="`small-angle-${key}`"
+              type="number"
+              step="0.01"
+              v-model.number="pid.small_angle[key]"
+            ></b-form-input>
+          </b-col>
+          <b-col sm="6">
+            <b-form-input
+              :id="`big-angle-${key}`"
+              type="number"
+              step="0.01"
+              v-model.number="pid.big_angle[key]"
+            ></b-form-input>
+          </b-col>
+        </b-row>
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 
