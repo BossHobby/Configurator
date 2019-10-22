@@ -41,6 +41,19 @@
         <b-form-select id="gyro-orientation" v-model="gyroOrientation" :options="gyroOrientations"></b-form-select>
       </b-col>
     </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
+        <label for="torque-boost">Torque Boost</label>
+      </b-col>
+      <b-col sm="8" class="my-2">
+        <b-form-input
+          id="torque-boost"
+          type="number"
+          step="0.1"
+          v-model.number="motor.torque_boost"
+        ></b-form-input>
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 
