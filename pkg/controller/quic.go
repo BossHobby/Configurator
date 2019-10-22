@@ -68,7 +68,7 @@ func (c *Controller) ReadQUIC() error {
 	}
 
 	if len(payload) != int(payloadLen) {
-		log.Debugf("% x (%s)\n", payload, string(payload))
+		log.Debugf("% x (%s)", payload, string(payload))
 		log.Fatalf("<quic> invalid size (%d vs %d)", length, size)
 	}
 
@@ -78,7 +78,7 @@ func (c *Controller) ReadQUIC() error {
 		len:     payloadLen,
 		payload: payload,
 	}
-	log.Debugf("<quic> received cmd: %d flag: %d len: %d\n", packet.cmd, packet.flag, packet.len)
+	log.Debugf("<quic> received cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len)
 
 	switch packet.cmd {
 	case QuicCmdLog:
@@ -86,7 +86,7 @@ func (c *Controller) ReadQUIC() error {
 		if err := cbor.Unmarshal(packet.payload, val); err != nil {
 			log.Fatal(err)
 		}
-		log.Debugf("<quic> log %s\n", *val)
+		log.Debugf("<quic> log %s", *val)
 		QuicLog <- *val
 		break
 	case QuicCmdBlackbox:
@@ -94,7 +94,7 @@ func (c *Controller) ReadQUIC() error {
 		if err := cbor.Unmarshal(packet.payload, val); err != nil {
 			log.Fatal(err)
 		}
-		log.Debugf("<quic> blackbox %+v\n", *val)
+		log.Debugf("<quic> blackbox %+v", *val)
 		QuicBlackbox <- *val
 		break
 	default:

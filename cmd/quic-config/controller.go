@@ -61,7 +61,7 @@ func connectFirstController() error {
 }
 
 func connectController(p string) error {
-	log.Printf("opening controller %s\n", p)
+	log.Printf("opening controller %s", p)
 	c, err := controller.OpenController(p)
 	if err != nil {
 		return err
@@ -69,14 +69,14 @@ func connectController(p string) error {
 
 	go func(fc *controller.Controller) {
 		if err := fc.Run(); err != nil {
-			log.Warnf("port: %v\n", err)
+			log.Warnf("port: %v", err)
 			disconnect <- true
 		}
 	}(c)
 
 	go func(fc *controller.Controller) {
 		<-disconnect
-		log.Printf("closing controller %s\n", p)
+		log.Printf("closing controller %s", p)
 		closeController()
 	}(c)
 

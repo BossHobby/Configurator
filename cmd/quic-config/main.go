@@ -45,11 +45,11 @@ func openbrowser(url string) {
 		log.Fatal(err)
 	}
 
-	log.Printf("Configurator running at %s!\n", url)
+	log.Printf("Configurator running at %s!", url)
 }
 
 func serve() {
-	log.Printf("Starting Quicksilver Configurator %s\n", version)
+	log.Printf("Starting Quicksilver Configurator %s", version)
 
 	r := mux.NewRouter()
 	setupRoutes(r)

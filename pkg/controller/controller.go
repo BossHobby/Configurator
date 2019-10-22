@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 
 	serial "github.com/bugst/go-serial"
@@ -70,7 +71,7 @@ func (c *Controller) ReadFlash(length uint16) []byte {
 
 	for offset < length {
 		res := c.SendBlheli(BLHeliCmdDeviceRead, offset, []byte{128})
-		log.Printf("<blheli> readFlash %d (%d)\n", offset, len(res.PARAMS))
+		log.Printf("<blheli> readFlash %d (%d)", offset, len(res.PARAMS))
 		copy(buf[offset:], res.PARAMS)
 		offset += uint16(len(res.PARAMS))
 	}
@@ -87,7 +88,7 @@ func (c *Controller) WriteFlash(buf []byte) {
 			size = 128
 		}
 		res := c.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
-		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)\n", res.ACK, offset, size)
+		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)", res.ACK, offset, size)
 		offset += size
 	}
 }

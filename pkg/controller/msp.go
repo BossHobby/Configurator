@@ -22,12 +22,12 @@ func (c *Controller) ReadMSP() {
 	}
 
 	if buf[0] != '$' || buf[1] != 'M' {
-		log.Printf("% x (%s)\n", buf[:length], string(buf[:length]))
+		log.Printf("% x (%s)", buf[:length], string(buf[:length]))
 		log.Fatal("<msp> invalid magic")
 	}
 
 	if buf[2] != '>' {
-		log.Printf("% x (%s)\n", buf[:length], string(buf[:length]))
+		log.Printf("% x (%s)", buf[:length], string(buf[:length]))
 		log.Fatal("<msp> invalid dir")
 	}
 
@@ -41,12 +41,12 @@ func (c *Controller) ReadMSP() {
 	length += len(payload)
 
 	if length != size {
-		log.Printf("% x (%s)\n", buf[:length], string(buf[:length]))
+		log.Printf("% x (%s)", buf[:length], string(buf[:length]))
 		log.Fatalf("<msp> invalid size (%d vs %d)", length, size)
 	}
 
 	chksum := buf[length-1]
-	log.Printf("<msp> received cmd: %d size: %d chksum: %d\n", cmd, payloadLen, chksum)
+	log.Printf("<msp> received cmd: %d size: %d chksum: %d", cmd, payloadLen, chksum)
 }
 
 func (c *Controller) SendMSP(cmd byte) {

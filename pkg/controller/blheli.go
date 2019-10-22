@@ -196,7 +196,7 @@ func (c *Controller) ReadBlheli() *BLHeliResponse {
 	}
 
 	ack := BLHeliAck(buf[5+paramLen])
-	log.Printf("<blheli> received cmd: 0x%x addr: %d ack: 0x%x paramLen: %d\n", cmd, addr, ack, paramLen)
+	log.Printf("<blheli> received cmd: 0x%x addr: %d ack: 0x%x paramLen: %d", cmd, addr, ack, paramLen)
 	return &BLHeliResponse{
 		CMD:    cmd,
 		ACK:    ack,
@@ -228,15 +228,15 @@ func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHe
 	buf = append(buf, params...)
 	buf = appendCRC16(buf)
 
-	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d\n", cmd, addr, paramLen)
+	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d", cmd, addr, paramLen)
 	c.writeChannel <- buf
 
 	res := c.ReadBlheli()
 	if res.CMD != cmd {
-		log.Fatalf("<blheli> invalid response cmd (0x%x vs 0x%x)\n", res.CMD, cmd)
+		log.Fatalf("<blheli> invalid response cmd (0x%x vs 0x%x)", res.CMD, cmd)
 	}
 	if res.ACK != BLHeliAckOk {
-		log.Fatalf("<blheli> invalid ack %s (0x%x)\n", ackToString[res.ACK], res.ACK)
+		log.Fatalf("<blheli> invalid ack %s (0x%x)", ackToString[res.ACK], res.ACK)
 	}
 	return res
 }
