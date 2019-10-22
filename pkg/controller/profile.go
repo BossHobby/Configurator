@@ -101,7 +101,7 @@ type Blackbox struct {
 	AccelFilter [3]float32 `cbor:"accel_filter" json:"accel_filter"`
 }
 
-type PidRateProfile struct {
+type PidRatePreset struct {
 	Index uint32   `cbor:"index" json:"index"`
 	Name  string   `cbor:"name" json:"name"`
 	Rate  PIDRates `cbor:"rate" json:"rate"`

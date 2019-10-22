@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { get, post } from "@/api.js";
-
 Vue.use(Vuex)
+
+import { get, post } from "@/api.js";
+import profileModule from "./profile";
 
 var ws = null
 
@@ -20,38 +21,19 @@ function sendWebsocket(channel, payload) {
 }
 
 const store = new Vuex.Store({
+  modules: {
+    profile: profileModule,
+  },
   state: {
     status: {
       is_connected: false,
     },
     log: [],
     alerts: [],
-
     blackbox: {
       vbat_filter: 0.0,
     },
-
-    profile: {
-      meta: {},
-      motor: {
-        invert_yaw: 1,
-      },
-      rate: {
-        mode: 0,
-        silverware: {},
-        betaflight: {},
-      },
-      voltage: {},
-      channel: {
-        aux: [],
-      },
-      pid: {
-        pid_profile: 0,
-        pid_rates: [{}],
-        stick_profile: 0,
-        stick_rates: [{}],
-      }
-    }
+    pid_rate_presets: []
   },
   mutations: {
     set_status(state, status) {
@@ -59,9 +41,6 @@ const store = new Vuex.Store({
         status.Port = status.AvailablePorts[0]
       }
       state.status = status
-    },
-    set_profile(state, profile) {
-      state.profile = profile
     },
     set_default_profile(state, default_profile) {
       state.default_profile = default_profile
@@ -100,6 +79,7 @@ const store = new Vuex.Store({
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')
+              dispatch('fetch_pid_rate_preset')
             }
             commit('set_status', msg.Payload);
             break;
@@ -116,17 +96,9 @@ const store = new Vuex.Store({
       }
       return post(path, port)
     },
-    fetch_profile({ commit }) {
-      return get("/api/default_profile")
-        .then(p => commit('set_default_profile', p))
-        .then(() => get("/api/profile"))
-        .then(p => commit('set_profile', p));
-    },
-    apply_profile({ commit }, profile) {
-      profile.Meta.Datetime = Math.floor(Date.now() / 1000);
-      return post("/api/profile", profile)
-        .then(p => commit('set_profile', p))
-        .then(() => commit('append_alert', "profile applied!"));
+    fetch_pid_rate_preset({ commit }) {
+      return get("/api/pid_rate_presets")
+        .then(p => commit('set_pid_rate_presets', p))
     },
     cal_imu() {
       return post("/api/cal_imu", null)

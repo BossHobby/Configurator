@@ -212,6 +212,15 @@ func postCalImu(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
+func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
+	value := make([]controller.PidRatePreset, 0)
+	if err := fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	renderJSON(w, value)
+}
+
 func setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
@@ -226,6 +235,7 @@ func setupRoutes(r *mux.Router) {
 		f.HandleFunc("/api/profile", postProfile).Methods("POST")
 
 		f.HandleFunc("/api/default_profile", getDefaultProfile).Methods("GET")
+		f.HandleFunc("/api/pid_rate_presets", getPidRatePresets).Methods("GET")
 
 		f.HandleFunc("/api/profile/download", getProfileDownload).Methods("GET")
 		f.HandleFunc("/api/profile/upload", postProfileUpload).Methods("POST")

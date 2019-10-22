@@ -1,6 +1,19 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">PID</h5>
+
+    <b-row class="my-2">
+      <b-col sm="4" class="my-2">
+        <label for="pid-preset">PID Preset</label>
+      </b-col>
+      <b-col sm="6" class="my-2">
+        <b-form-select id="pid-preset" v-model.number="current_preset" :options="presets"></b-form-select>
+      </b-col>
+      <b-col sm="2" class="my-2">
+        <b-button v-on:click="load_preset(current_preset)">Load</b-button>
+      </b-col>
+    </b-row>
+
     <b-row>
       <b-col sm="4" class="my-2">
         <label for="pid-profile">PIDProfile</label>
@@ -136,18 +149,41 @@ export default {
       stickProfiles: [
         { value: 0, text: "Stick Boost Profile AUX Off" },
         { value: 1, text: "Stick Boost Profile AUX On" }
-      ]
+      ],
+      current_preset: 0
     };
   },
-  computed: mapState({
-    pid: state => state.profile.pid,
-    pid_profile: state => state.profile.pid.pid_profile,
-    pid_rates: state =>
-      state.profile.pid.pid_rates[state.profile.pid.pid_profile],
-    stick_profile: state => state.profile.pid.stick_profile,
-    stick_rates: state =>
-      state.profile.pid.stick_rates[state.profile.pid.stick_profile]
-  })
+  computed: {
+    ...mapState({
+      pid: state => state.profile.pid,
+      pid_rate_presets: state => state.pid_rate_presets,
+      pid_profile: state => state.profile.pid.pid_profile,
+      stick_profile: state => state.profile.pid.stick_profile,
+      stick_rates: state =>
+        state.profile.pid.stick_rates[state.profile.pid.stick_profile]
+    }),
+    pid_rates: {
+      get() {
+        return this.$store.getters.current_pid_rate;
+      },
+      set(value) {
+        this.$store.commit("set_current_pid_rate", value);
+      }
+    },
+    presets() {
+      return this.pid_rate_presets.map(p => {
+        return {
+          value: p.index,
+          text: p.name
+        };
+      });
+    }
+  },
+  methods: {
+    load_preset(index) {
+      this.pid_rates = this.pid_rate_presets[index].rate;
+    }
+  }
 };
 </script>
 

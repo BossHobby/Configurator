@@ -74,6 +74,10 @@ func printJson(v interface{}) error {
 func main() {
 	flag.Parse()
 
+	if mode == "debug" {
+		log.SetLevel(log.DebugLevel)
+	}
+
 	if flag.NArg() == 0 {
 		serve()
 		return
