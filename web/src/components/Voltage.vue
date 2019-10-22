@@ -42,7 +42,7 @@
           id="vbattlow"
           type="number"
           step="0.1"
-          v-model.number="profile.voltage.v_batt_low"
+          v-model.number="profile.voltage.vbattlow"
         ></b-form-input>
       </b-col>
 
