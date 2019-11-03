@@ -170,11 +170,7 @@ func postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	value := controller.Profile{}
-	if err := cbor.NewDecoder(file).Decode(&value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := fc.SetQUIC(controller.QuicValProfile, &value); err != nil {
+	if err := fc.SetQUICReader(controller.QuicValProfile, file, &value); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
