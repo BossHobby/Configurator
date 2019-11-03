@@ -17,7 +17,7 @@
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-form :hidden="!status.IsConnected" ref="form" class="mx-2" right>
-          <input type="file" ref="file" style="display: none" />
+          <input accept=".cbor" type="file" ref="file" style="display: none" />
           <b-button size="sm" class="my-2 my-sm-0" @click="uploadProfile">Upload</b-button>
         </b-nav-form>
         <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
