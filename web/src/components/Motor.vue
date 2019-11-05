@@ -54,6 +54,21 @@
         ></b-form-input>
       </b-col>
     </b-row>
+    <b-card class="my-3">
+      <h6 slot="header" class="mb-0">Motor Pins</h6>
+      <b-row class="my-2" v-for="(name, index) in motorNames" :key="name+index">
+        <b-col sm="4">
+          <label :for="'motor-pin-' + index">{{name}}</label>
+        </b-col>
+        <b-col sm="8">
+          <b-form-select
+            :id="'motor-pin-' + index"
+            v-model="motor.motor_pins[index]"
+            :options="motorPins"
+          ></b-form-select>
+        </b-col>
+      </b-row>
+    </b-card>
   </b-card>
 </template>
 
@@ -75,6 +90,18 @@ export default {
         { value: 4, text: "ROTATE_90_CW" },
         { value: 8, text: "ROTATE_90_CCW" },
         { value: 16, text: "ROTATE_180" }
+      ],
+      motorNames: [
+        "Motor 0 (BL)",
+        "Motor 1 (FL)",
+        "Motor 2 (BR)",
+        "Motor 3 (FR)"
+      ],
+      motorPins: [
+        { value: 0, text: "Pin 0" },
+        { value: 1, text: "Pin 1" },
+        { value: 2, text: "Pin 2" },
+        { value: 3, text: "Pin 3" }
       ]
     };
   },

@@ -55,10 +55,11 @@ type PID struct {
 }
 
 type Motor struct {
-	InvertYaw       uint8   `cbor:"invert_yaw" json:"invert_yaw"`
-	DigitalIdle     float32 `cbor:"digital_idle" json:"digital_idle"`
-	GyroOrientation uint8   `cbor:"gyro_orientation" json:"gyro_orientation"`
-	TorqueBoost     float32 `cbor:"torque_boost" json:"torque_boost"`
+	InvertYaw       uint8    `cbor:"invert_yaw" json:"invert_yaw"`
+	DigitalIdle     float32  `cbor:"digital_idle" json:"digital_idle"`
+	GyroOrientation uint8    `cbor:"gyro_orientation" json:"gyro_orientation"`
+	TorqueBoost     float32  `cbor:"torque_boost" json:"torque_boost"`
+	MotorPins       [4]uint8 `cbor:"motor_pins" json:"motor_pins"`
 }
 
 type Voltage struct {
