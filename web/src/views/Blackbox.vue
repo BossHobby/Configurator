@@ -9,7 +9,7 @@
           title="Rx Channels"
           :interval="interval"
           :axis="['Roll', 'Pitch', 'Yaw', 'Throttle']"
-          :input="blackbox.rx_raw"
+          :input="blackbox.rx_filter"
         ></Plot>
       </b-col>
       <b-col sm="6">
