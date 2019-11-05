@@ -56,11 +56,11 @@
     </b-row>
     <b-card class="my-3">
       <h6 slot="header" class="mb-0">Motor Pins</h6>
-      <b-row class="my-2" v-for="(name, index) in motorNames" :key="name+index">
+      <b-row class="my-2" v-for="(name, index) in motorNames" :key="'motor-pin-' + index">
         <b-col sm="4">
           <label :for="'motor-pin-' + index">{{name}}</label>
         </b-col>
-        <b-col sm="8">
+        <b-col sm="8" v-if="motor.motor_pins">
           <b-form-select
             :id="'motor-pin-' + index"
             v-model="motor.motor_pins[index]"
