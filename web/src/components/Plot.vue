@@ -4,7 +4,7 @@ import { Scatter } from "vue-chartjs";
 export default {
   name: "plot",
   extends: Scatter,
-  props: ["title", "input", "axis", "interval"],
+  props: ["title", "input", "axis"],
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
