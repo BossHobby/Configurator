@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <b-navbar>
+    <b-navbar fixed="top" class="navbar-top">
       <b-navbar-brand to="/">
         <img src="./assets/logo.png" class="d-inline-block" alt="Guano" height="40px" />
         QUICKSILVER
@@ -50,20 +50,15 @@
           v-for="(msg, index) in alerts"
           :key="index"
           variant="success"
-          show="1.5"
+          show="2.0"
           dismissible
           fade
         >{{msg}}</b-alert>
       </b-container>
     </div>
 
-    <b-container v-if="status.IsConnected" class="mt-5">
+    <b-container v-if="status.IsConnected" class="mb-5" style="margin-top: 5rem">
       <router-view></router-view>
-      <b-row class="my-5">
-        <b-col offset="11" sm="1">
-          <b-button v-on:click="apply_profile(profile)">Apply</b-button>
-        </b-col>
-      </b-row>
     </b-container>
     <b-container v-else class="mt-5">
       <div class="jumbotron my-5">
@@ -77,6 +72,13 @@
         >Connect</b-button>
       </div>
     </b-container>
+
+    <b-navbar fixed="bottom" class="navbar">
+      <b-navbar-brand>{{ profile.meta.name }}</b-navbar-brand>
+      <b-navbar-nav class="ml-auto">
+        <b-button class="my-2 my-sm-0" v-on:click="apply_profile(profile)">Apply</b-button>
+      </b-navbar-nav>
+    </b-navbar>
   </div>
 </template>
 
@@ -132,10 +134,14 @@ export default {
 
 <style>
 .alert-portal {
-  position: absolute;
-  right: 0px;
-  top: 70px;
+  position: fixed;
+  right: 5px;
+  top: 85px;
   z-index: 10001;
   width: 500px;
+}
+.navbar {
+  background-color: #fff;
+  box-shadow: 0px 0px 1px 0px #000;
 }
 </style>
