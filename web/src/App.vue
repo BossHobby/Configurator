@@ -64,8 +64,11 @@
       </div>
     </b-container>
 
-    <b-navbar fixed="bottom" class="navbar">
-      <b-navbar-brand>{{ profile.meta.name }}</b-navbar-brand>
+    <b-navbar v-if="status.IsConnected" fixed="bottom" class="navbar">
+      <b-navbar-brand>
+        {{ profile.meta.name }}
+        <small class="text-muted ml-2">Modified {{ date | moment("from") }}</small>
+      </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-button class="my-2 my-sm-0" v-on:click="apply_profile(profile)">Apply</b-button>
       </b-navbar-nav>
@@ -82,6 +85,9 @@ export default {
     ...mapState(["status", "profile", "alerts"]),
     can_connect() {
       return !this.status.Port || this.status.Port.length == 0;
+    },
+    date() {
+      return new Date(this.profile.meta.datetime * 1000);
     }
   },
   methods: {
