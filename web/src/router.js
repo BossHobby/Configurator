@@ -5,6 +5,7 @@ import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
 import Blackbox from './views/Blackbox.vue'
 import Log from './views/Log.vue'
+import Profile from './views/Profile.vue'
 
 Vue.use(Router)
 
@@ -14,7 +15,12 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/setup'
+      redirect: '/profile'
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
     },
     {
       path: '/setup',

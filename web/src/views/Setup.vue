@@ -1,23 +1,19 @@
 <template>
   <b-row>
     <b-col sm="12">
-      <GyroModel class="my-3"></GyroModel>
+      <GyroModel class="my-2"></GyroModel>
     </b-col>
-    <b-col sm="6">
-      <Metadata></Metadata>
-      <PIDRates class="my-3"></PIDRates>
+    <b-col sm="12">
+      <Motor class="my-2"></Motor>
     </b-col>
-    <b-col sm="6">
-      <Motor></Motor>
-      <Voltage class="my-3"></Voltage>
+    <b-col sm="12">
+      <PIDRates class="my-2"></PIDRates>
     </b-col>
   </b-row>
 </template>
 
 <script>
-import Metadata from "@/components/Metadata";
 import Motor from "@/components/Motor";
-import Voltage from "@/components/Voltage";
 import PIDRates from "@/components/PIDRates";
 import GyroModel from "@/components/GyroModel";
 
@@ -26,9 +22,7 @@ import { mapActions, mapState } from "vuex";
 export default {
   name: "home",
   components: {
-    Metadata,
     Motor,
-    Voltage,
     PIDRates,
     GyroModel
   },

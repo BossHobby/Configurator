@@ -15,6 +15,23 @@
       </b-col>
       <b-col sm="8" class="my-2">{{ date | moment("from") }}</b-col>
     </b-row>
+    <b-row>
+      <b-col sm="6">
+        <b-button
+          class="my-2"
+          href="http://localhost:8000/api/profile/download"
+          :hidden="!status.IsConnected"
+        >Download Profile</b-button>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="6">
+        <form :hidden="!status.IsConnected" ref="form">
+          <input accept=".cbor" type="file" ref="file" style="display: none" />
+          <b-button class="my-2" @click="uploadProfile">Upload Profile</b-button>
+        </form>
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 
@@ -25,10 +42,35 @@ export default {
   name: "Metadata",
   computed: {
     ...mapState({
-      meta: state => state.profile.meta
+      meta: state => state.profile.meta,
+      status: state => state.status
     }),
     date() {
       return new Date(this.meta.datetime * 1000);
+    }
+  },
+  methods: {
+    uploadProfile() {
+      this.$refs.file.oninput = () => {
+        if (!this.$refs.file.files.length) {
+          return;
+        }
+
+        const file = this.$refs.file.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch("http://localhost:8000/api/profile/upload", {
+          method: "POST",
+          body: formData
+        })
+          .then(res => res.json())
+          .then(p => this.$store.commit("set_profile", p))
+          .then(() => this.$refs.form.reset())
+          .then(() => this.$store.commit("append_alert", "profile uploaded!"));
+      };
+
+      this.$refs.file.click();
     }
   }
 };

@@ -2,174 +2,179 @@
   <b-card>
     <h5 slot="header" class="mb-0">PID</h5>
 
-    <b-row class="my-2">
-      <b-col sm="4" class="my-2">
-        <label for="pid-preset">PID Preset</label>
-      </b-col>
-      <b-col sm="6" class="my-2">
-        <b-form-select id="pid-preset" v-model.number="current_preset" :options="presets"></b-form-select>
-      </b-col>
-      <b-col sm="2" class="my-2">
-        <b-button v-on:click="load_preset(current_preset)">Load</b-button>
-      </b-col>
-    </b-row>
-
     <b-row>
-      <b-col sm="4" class="my-2">
-        <label for="pid-profile">PIDProfile</label>
-      </b-col>
-      <b-col sm="8" class="my-2">
-        <b-form-select id="pid-profile" v-model.number="pid.pid_profile" :options="pidProfiles"></b-form-select>
-      </b-col>
-    </b-row>
-    <b-row class="mt-3">
-      <b-col offset="4" sm="8">
-        <b-row>
-          <b-col sm="4">
-            <h6>Roll</h6>
+      <b-col sm="6">
+        <b-row class="my-2">
+          <b-col sm="4" class="my-2">
+            <label for="pid-preset">PID Preset</label>
           </b-col>
-          <b-col sm="4">
-            <h6>Pitch</h6>
+          <b-col sm="6" class="my-2">
+            <b-form-select id="pid-preset" v-model.number="current_preset" :options="presets"></b-form-select>
           </b-col>
-          <b-col sm="4">
-            <h6>Yaw</h6>
+          <b-col sm="2" class="my-2">
+            <b-button v-on:click="load_preset(current_preset)">Load</b-button>
           </b-col>
         </b-row>
-      </b-col>
-    </b-row>
+        <b-row>
+          <b-col sm="4" class="my-2">
+            <label for="pid-profile">PIDProfile</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-select id="pid-profile" v-model.number="pid.pid_profile" :options="pidProfiles"></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row class="mt-3">
+          <b-col offset="4" sm="8">
+            <b-row>
+              <b-col sm="4">
+                <h6>Roll</h6>
+              </b-col>
+              <b-col sm="4">
+                <h6>Pitch</h6>
+              </b-col>
+              <b-col sm="4">
+                <h6>Yaw</h6>
+              </b-col>
+            </b-row>
+          </b-col>
+        </b-row>
 
-    <b-row v-for="(val, key) in pid_rates" :key="key">
-      <b-col sm="4">
-        <label :for="`pid-${key}`">{{ key }}</label>
-      </b-col>
-      <b-col sm="8">
-        <b-row>
+        <b-row v-for="(val, key) in pid_rates" :key="key">
           <b-col sm="4">
-            <b-form-input
-              :id="`pid-${key}-roll`"
-              type="number"
-              step="0.01"
-              v-model.number="pid_rates[key][0]"
-            ></b-form-input>
+            <label :for="`pid-${key}`">{{ key }}</label>
           </b-col>
-          <b-col sm="4">
-            <b-form-input
-              :id="`pid-${key}-pitch`"
-              type="number"
-              step="0.01"
-              v-model.number="pid_rates[key][1]"
-            ></b-form-input>
-          </b-col>
-          <b-col sm="4">
-            <b-form-input
-              :id="`pid-${key}-yaw`"
-              type="number"
-              step="0.01"
-              v-model.number="pid_rates[key][2]"
-            ></b-form-input>
-          </b-col>
-        </b-row>
-      </b-col>
-    </b-row>
-    <b-row class="mt-4">
-      <b-col sm="4" class="my-2">
-        <label for="stick-profile">Stick Boost Profile</label>
-      </b-col>
-      <b-col sm="8" class="my-2">
-        <b-form-select
-          id="stick-profile"
-          v-model.number="pid.stick_profile"
-          :options="stickProfiles"
-        ></b-form-select>
-      </b-col>
-    </b-row>
-    <b-row class="mt-3">
-      <b-col offset="4" sm="8">
-        <b-row>
-          <b-col sm="4">
-            <h6>Roll</h6>
-          </b-col>
-          <b-col sm="4">
-            <h6>Pitch</h6>
-          </b-col>
-          <b-col sm="4">
-            <h6>Yaw</h6>
+          <b-col sm="8">
+            <b-row>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`pid-${key}-roll`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="pid_rates[key][0]"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`pid-${key}-pitch`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="pid_rates[key][1]"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`pid-${key}-yaw`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="pid_rates[key][2]"
+                ></b-form-input>
+              </b-col>
+            </b-row>
           </b-col>
         </b-row>
       </b-col>
-    </b-row>
+      <b-col sm="6">
+        <b-row class="mt-2">
+          <b-col sm="4" class="my-2">
+            <label for="stick-profile">Stick Boost Profile</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-select
+              id="stick-profile"
+              v-model.number="pid.stick_profile"
+              :options="stickProfiles"
+            ></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row class="mt-3">
+          <b-col offset="4" sm="8">
+            <b-row>
+              <b-col sm="4">
+                <h6>Roll</h6>
+              </b-col>
+              <b-col sm="4">
+                <h6>Pitch</h6>
+              </b-col>
+              <b-col sm="4">
+                <h6>Yaw</h6>
+              </b-col>
+            </b-row>
+          </b-col>
+        </b-row>
 
-    <b-row v-for="(val, key) in stick_rates" :key="key">
-      <b-col sm="4">
-        <label :for="`stick-${key}`">{{ key }}</label>
-      </b-col>
-      <b-col sm="8">
-        <b-row>
+        <b-row v-for="(val, key) in stick_rates" :key="key">
           <b-col sm="4">
-            <b-form-input
-              :id="`stick-${key}-roll`"
-              type="number"
-              step="0.01"
-              v-model.number="stick_rates[key][0]"
-            ></b-form-input>
+            <label :for="`stick-${key}`">{{ key }}</label>
           </b-col>
-          <b-col sm="4">
-            <b-form-input
-              :id="`stick-${key}-pitch`"
-              type="number"
-              step="0.01"
-              v-model.number="stick_rates[key][1]"
-            ></b-form-input>
-          </b-col>
-          <b-col sm="4">
-            <b-form-input
-              :id="`stick-${key}-yaw`"
-              type="number"
-              step="0.01"
-              v-model.number="stick_rates[key][2]"
-            ></b-form-input>
+          <b-col sm="8">
+            <b-row>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`stick-${key}-roll`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="stick_rates[key][0]"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`stick-${key}-pitch`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="stick_rates[key][1]"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="4">
+                <b-form-input
+                  :id="`stick-${key}-yaw`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="stick_rates[key][2]"
+                ></b-form-input>
+              </b-col>
+            </b-row>
           </b-col>
         </b-row>
-      </b-col>
-    </b-row>
 
-    <b-row class="mt-4">
-      <b-col sm="4" class="my-2">Angle PID</b-col>
-    </b-row>
-    <b-row class="mt-3">
-      <b-col offset="4" sm="8">
-        <b-row>
-          <b-col sm="6">
-            <h6>Small</h6>
-          </b-col>
-          <b-col sm="6">
-            <h6>Big</h6>
+        <b-row class="mt-4">
+          <b-col sm="4" class="my-2">Angle PID</b-col>
+        </b-row>
+        <b-row class="mt-3">
+          <b-col offset="4" sm="8">
+            <b-row>
+              <b-col sm="6">
+                <h6>Small</h6>
+              </b-col>
+              <b-col sm="6">
+                <h6>Big</h6>
+              </b-col>
+            </b-row>
           </b-col>
         </b-row>
-      </b-col>
-    </b-row>
 
-    <b-row v-for="(key, index) in ['kp', 'kd']" :key="index">
-      <b-col sm="4">
-        <label :for="`stick-${key}`">{{ key }}</label>
-      </b-col>
-      <b-col sm="8">
-        <b-row>
-          <b-col sm="6">
-            <b-form-input
-              :id="`small-angle-${key}`"
-              type="number"
-              step="0.01"
-              v-model.number="pid.small_angle[key]"
-            ></b-form-input>
+        <b-row v-for="(key, index) in ['kp', 'kd']" :key="index">
+          <b-col sm="4">
+            <label :for="`stick-${key}`">{{ key }}</label>
           </b-col>
-          <b-col sm="6">
-            <b-form-input
-              :id="`big-angle-${key}`"
-              type="number"
-              step="0.01"
-              v-model.number="pid.big_angle[key]"
-            ></b-form-input>
+          <b-col sm="8">
+            <b-row>
+              <b-col sm="6">
+                <b-form-input
+                  :id="`small-angle-${key}`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="pid.small_angle[key]"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="6">
+                <b-form-input
+                  :id="`big-angle-${key}`"
+                  type="number"
+                  step="0.01"
+                  v-model.number="pid.big_angle[key]"
+                ></b-form-input>
+              </b-col>
+            </b-row>
           </b-col>
         </b-row>
       </b-col>
