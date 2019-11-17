@@ -138,3 +138,8 @@ type PidRatePreset struct {
 	Name  string   `cbor:"name" json:"name"`
 	Rate  PIDRates `cbor:"rate" json:"rate"`
 }
+
+type VtxSettings struct {
+	Band    uint `cbor:"band" json:"band"`
+	Channel uint `cbor:"channel" json:"channel"`
+}

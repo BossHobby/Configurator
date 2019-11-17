@@ -217,6 +217,28 @@ func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
+func getVtxSettings(w http.ResponseWriter, r *http.Request) {
+	value := controller.VtxSettings{}
+	if err := fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	renderJSON(w, value)
+}
+
+func postVtxSettings(w http.ResponseWriter, r *http.Request) {
+	value := controller.VtxSettings{}
+	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := fc.SetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	renderJSON(w, value)
+}
+
 func setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
@@ -238,6 +260,10 @@ func setupRoutes(r *mux.Router) {
 
 		f.HandleFunc("/api/blackbox/rate", getBlackboxRate).Methods("GET")
 		f.HandleFunc("/api/blackbox/rate", postBlackboxRate).Methods("POST")
+
+		f.HandleFunc("/api/vtx/settings", getVtxSettings).Methods("GET")
+		f.HandleFunc("/api/vtx/settings", postVtxSettings).Methods("POST")
+
 		f.HandleFunc("/api/cal_imu", postCalImu).Methods("POST")
 	}
 

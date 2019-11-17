@@ -35,6 +35,7 @@ const (
 	QuicValDefaultProfile
 	QuicValBlackboxRate
 	QuicValPidRatePresets
+	QuicValVtxSettings
 )
 
 type quicPacket struct {
@@ -134,7 +135,7 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*quicPacket, error)
 			return nil, errors.New(msg)
 		}
 		return &p, nil
-	case <-time.After(1 * time.Second):
+	case <-time.After(5 * time.Second):
 		return nil, errors.New("quic recive timeout")
 	}
 }

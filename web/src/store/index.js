@@ -33,7 +33,8 @@ const store = new Vuex.Store({
     blackbox: {
       vbat_filter: 0.0,
     },
-    pid_rate_presets: []
+    pid_rate_presets: [],
+    vtx_settings: {}
   },
   mutations: {
     set_status(state, status) {
@@ -47,6 +48,9 @@ const store = new Vuex.Store({
     },
     set_pid_rate_presets(state, pid_rate_presets) {
       state.pid_rate_presets = pid_rate_presets
+    },
+    set_vtx_settings(state, vtx_settings) {
+      state.vtx_settings = vtx_settings
     },
     set_blackbox(state, blackbox) {
       state.blackbox = blackbox
@@ -79,7 +83,8 @@ const store = new Vuex.Store({
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')
-              dispatch('fetch_pid_rate_preset')
+              dispatch('fetch_pid_rate_presets')
+              dispatch('fetch_vtx_settings')
             }
             commit('set_status', msg.Payload);
             break;
@@ -96,9 +101,17 @@ const store = new Vuex.Store({
       }
       return post(path, port)
     },
-    fetch_pid_rate_preset({ commit }) {
+    fetch_pid_rate_presets({ commit }) {
       return get("/api/pid_rate_presets")
         .then(p => commit('set_pid_rate_presets', p))
+    },
+    fetch_vtx_settings({ commit }) {
+      return get("/api/vtx/settings")
+        .then(p => commit('set_vtx_settings', p))
+    },
+    apply_vtx_settings({ commit }, vtx_settings) {
+      return post("/api/vtx/settings", vtx_settings)
+        .then(p => commit('set_vtx_settings', p))
     },
     cal_imu() {
       return post("/api/cal_imu", null)

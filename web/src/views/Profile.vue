@@ -6,7 +6,10 @@
     <b-col sm="6">
       <Voltage></Voltage>
     </b-col>
-    <b-col offset="6" sm="6" class="my-2">
+    <b-col sm="6" class="my-2">
+      <VTX></VTX>
+    </b-col>
+    <b-col sm="6" class="my-2">
       <Serial></Serial>
     </b-col>
   </b-row>
@@ -16,19 +19,18 @@
 import Metadata from "@/components/Metadata";
 import Voltage from "@/components/Voltage";
 import Serial from "@/components/Serial";
+import VTX from "@/components/VTX";
 
-import { mapActions, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "home",
   components: {
     Metadata,
     Voltage,
-    Serial
+    Serial,
+    VTX
   },
-  computed: mapState(["profile"]),
-  methods: {
-    ...mapActions([])
-  }
+  computed: mapState(["profile"])
 };
 </script>
