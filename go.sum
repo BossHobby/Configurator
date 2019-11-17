@@ -1,3 +1,5 @@
+github.com/JackMordaunt/icns v1.0.0/go.mod h1:ubRqphS0f2OD07BuNaQSuw9uHUVQNBX5g38n6i2bdqM=
+github.com/akavel/rsrc v0.8.0/go.mod h1:uLoCtb9J+EyAqh+26kdrTgmzRBFPGOolLWKpdxkKq+c=
 github.com/bugst/go-serial v0.0.0-20180827123349-5f7892a7bb45 h1:sFMEhCifLQY7a1/I8yZHySQ23GXdjZQOykV4Ud8EOAg=
 github.com/bugst/go-serial v0.0.0-20180827123349-5f7892a7bb45/go.mod h1:U7uQkqX1pwwSjfu7ShagRDZfPdtNlSJKQ64IluVXHwc=
 github.com/creack/goselect v0.1.0 h1:4QiXIhcpSQF50XGaBsFzesjwX/1qOY5bOveQPmN9CXY=
@@ -14,6 +16,9 @@ github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvK
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
+github.com/machinebox/appify v0.0.0-20180512101119-15c1e09ce924/go.mod h1:sqsRpT+VgEXox31qA9IQ9sEO8VQ/q7v7Y9WFxWkQTF0=
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rakyll/statik v0.1.6 h1:uICcfUXpgqtw2VopbIncslhAmE5hwc4g20TEyEENBNs=
