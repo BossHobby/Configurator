@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/fxamacker/cbor"
 )
 
 type Vector [3]float32
@@ -59,6 +61,7 @@ type Motor struct {
 	DigitalIdle     float32 `cbor:"digital_idle" json:"digital_idle"`
 	GyroOrientation uint8   `cbor:"gyro_orientation" json:"gyro_orientation"`
 	TorqueBoost     float32 `cbor:"torque_boost" json:"torque_boost"`
+	ThrottleBoost   float32 `cbor:"throttle_boost" json:"throttle_boost"`
 	MotorPins       [4]uint `cbor:"motor_pins" json:"motor_pins"`
 }
 
@@ -74,15 +77,35 @@ type Channel struct {
 	Aux []uint `cbor:"aux" json:"aux"`
 }
 
+type Serial struct {
+	RX         uint `cbor:"rx" json:"rx"`
+	SmartAudio uint `cbor:"smart_audio" json:"smart_audio"`
+	PortMax    uint `cbor:"port_max" json:"port_max"`
+}
+
 type Metadata struct {
 	Name     string `cbor:"name" json:"name"`
 	Datetime uint32 `cbor:"datetime" json:"datetime"`
+}
+
+func (m *Metadata) UnmarshalCBOR(data []byte) error {
+	type proxy Metadata
+
+	var p proxy
+	if err := cbor.Unmarshal(data, &p); err != nil {
+		return err
+	}
+
+	m.Name = strings.Replace(p.Name, "\x00", "", -1)
+	m.Datetime = p.Datetime
+	return nil
 }
 
 type Profile struct {
 	Meta    Metadata `cbor:"meta" json:"meta"`
 	Channel Channel  `cbor:"channel" json:"channel"`
 	Motor   Motor    `cbor:"motor" json:"motor"`
+	Serial  Serial   `cbor:"serial" json:"serial"`
 	Voltage Voltage  `cbor:"voltage" json:"voltage"`
 	Rate    Rates    `cbor:"rate" json:"rate"`
 	PID     PID      `cbor:"pid" json:"pid"`

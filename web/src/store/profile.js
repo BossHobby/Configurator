@@ -2,6 +2,11 @@ import { get, post } from "@/api.js";
 
 const store = {
   state: {
+    serial: {
+      rx: 0,
+      smart_audio: 0,
+      port_max: 1,
+    },
     meta: {
       datetime: 0,
     },
