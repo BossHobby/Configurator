@@ -72,8 +72,9 @@ export default {
         "AUX_LEDS_ON",
         "AUX_BUZZER_ENABLE",
         "AUX_STARTFLIP",
-        "AUX_FN_INVERTED",
-        "AUX_MOTORS_TO_THROTTLE_MODE"
+        "AUX_MOTORS_TO_THROTTLE_MODE",
+        "AUX_RSSI",
+        "AUX_FPV_ON"
       ]
     };
   },
