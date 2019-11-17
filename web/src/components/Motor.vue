@@ -64,6 +64,19 @@
             ></b-form-input>
           </b-col>
         </b-row>
+        <b-row>
+          <b-col sm="4" class="my-2">
+            <label for="throttle-boost">Throttle Boost</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-input
+              id="throttle-boost"
+              type="number"
+              step="0.1"
+              v-model.number="motor.throttle_boost"
+            ></b-form-input>
+          </b-col>
+        </b-row>
       </b-col>
       <b-col sm="6">
         <b-card class="my-2">
