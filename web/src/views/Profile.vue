@@ -7,7 +7,7 @@
       <Voltage></Voltage>
     </b-col>
     <b-col sm="6" class="my-2">
-      <VTX></VTX>
+      <VTX v-if="serial.smart_audio != 0"></VTX>
     </b-col>
     <b-col sm="6" class="my-2">
       <Serial></Serial>
@@ -31,6 +31,8 @@ export default {
     Serial,
     VTX
   },
-  computed: mapState(["profile"])
+  computed: mapState({
+    serial: state => state.profile.serial
+  })
 };
 </script>

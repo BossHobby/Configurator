@@ -87,7 +87,6 @@ const store = new Vuex.Store({
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')
               dispatch('fetch_pid_rate_presets')
-              dispatch('fetch_vtx_settings')
             }
             commit('set_status', msg.Payload);
             break;

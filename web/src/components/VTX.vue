@@ -72,7 +72,10 @@ export default {
     ...mapState(["vtx_settings"])
   },
   methods: {
-    ...mapActions(["apply_vtx_settings"])
+    ...mapActions(["apply_vtx_settings", "fetch_vtx_settings"])
+  },
+  created() {
+    this.fetch_vtx_settings();
   }
 };
 </script>
