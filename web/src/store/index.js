@@ -103,6 +103,9 @@ const store = new Vuex.Store({
       }
       return post(path, port)
     },
+    soft_reboot() {
+      return post("/api/soft_reboot", {})
+    },
     fetch_pid_rate_presets({ commit }) {
       return get("/api/pid_rate_presets")
         .then(p => commit('set_pid_rate_presets', p))

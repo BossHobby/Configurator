@@ -265,6 +265,16 @@ func setupRoutes(r *mux.Router) {
 		f.HandleFunc("/api/vtx/settings", postVtxSettings).Methods("POST")
 
 		f.HandleFunc("/api/cal_imu", postCalImu).Methods("POST")
+
+		f.HandleFunc("/api/soft_reboot", func(w http.ResponseWriter, r *http.Request) {
+			fc.SoftReboot()
+			autoConnect = true
+			renderJSON(w, "OK")
+		}).Methods("POST")
+		f.HandleFunc("/api/hard_reboot", func(w http.ResponseWriter, r *http.Request) {
+			fc.HardReboot()
+			renderJSON(w, "OK")
+		}).Methods("POST")
 	}
 
 	r.HandleFunc("/api/ws", websocketHandler)

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 
@@ -17,6 +18,7 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
+var clientsMu sync.Mutex
 var clients = make(map[*websocket.Conn]bool)
 
 type websocketPacket struct {
@@ -29,6 +31,10 @@ func broadcastWebsocket(channel string, v interface{}) error {
 		Channel: channel,
 		Payload: v,
 	}
+
+	clientsMu.Lock()
+	defer clientsMu.Unlock()
+
 	for conn := range clients {
 		if err := conn.WriteJSON(p); err != nil {
 			log.Println(err)

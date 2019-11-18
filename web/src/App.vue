@@ -19,7 +19,7 @@
       <b-navbar-nav class="ml-auto">
         <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
           <b-form-select
-            class="mx-3 my-2 my-sm-0"
+            class="mx-3 my-2"
             id="serial-port"
             v-model="status.Port"
             :options="status.AvailablePorts"
@@ -27,7 +27,7 @@
           ></b-form-select>
           <b-button
             size="sm"
-            class="my-2 my-sm-0"
+            class="my-2"
             type="submit"
             :disabled="can_connect"
           >{{ status.IsConnected ? 'Disconnect' : 'Connect' }}</b-button>
@@ -70,7 +70,8 @@
         <small class="text-muted ml-2">Modified {{ date | moment("from") }}</small>
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
-        <b-button class="my-2 my-sm-0" v-on:click="apply_profile(profile)">Apply</b-button>
+        <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
+        <b-button class="my-1 mx-2" v-on:click="apply_profile(profile)">Apply</b-button>
       </b-navbar-nav>
     </b-navbar>
   </div>
@@ -95,7 +96,8 @@ export default {
       "connect_websocket",
       "fetch_status",
       "toggle_connection",
-      "apply_profile"
+      "apply_profile",
+      "soft_reboot"
     ])
   },
   created() {

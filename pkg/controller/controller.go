@@ -32,8 +32,7 @@ func OpenController(serialPort string) (*Controller, error) {
 
 func (c *Controller) Run() error {
 	go func() {
-		for {
-			buf := <-c.writeChannel
+		for buf := range c.writeChannel {
 			if _, err := c.port.Write(buf); err != nil {
 				return
 			}
@@ -63,6 +62,14 @@ func (c *Controller) Run() error {
 
 func (c *Controller) Close() error {
 	return c.port.Close()
+}
+
+func (c *Controller) SoftReboot() {
+	c.writeChannel <- []byte{'S'}
+}
+
+func (c *Controller) HardReboot() {
+	c.writeChannel <- []byte{'R'}
 }
 
 func (c *Controller) ReadFlash(length uint16) []byte {

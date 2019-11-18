@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	disconnect = make(chan bool, 1)
+	disconnect  = make(chan bool, 1)
+	autoConnect = false
 )
 
 type Status struct {
@@ -28,6 +29,12 @@ func controllerStatus() (*Status, error) {
 	}
 	if fc != nil && len(ports) == 0 {
 		closeController()
+	}
+	if fc == nil && len(ports) != 0 && autoConnect {
+		if err := connectFirstController(); err != nil {
+			return nil, err
+		}
+		autoConnect = false
 	}
 
 	s := &Status{
@@ -57,7 +64,7 @@ func connectFirstController() error {
 		return errors.New("no controller port found")
 	}
 
-	return connectController(ports[0])
+	return connectController(ports[len(ports)-1])
 }
 
 func connectController(p string) error {
@@ -81,7 +88,7 @@ func connectController(p string) error {
 	}(c)
 
 	// try 10 times to get sync
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		value := new(map[string]interface{})
 		err = c.GetQUIC(controller.QuicValInfo, value)
 		if err == nil {
