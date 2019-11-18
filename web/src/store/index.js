@@ -34,7 +34,10 @@ const store = new Vuex.Store({
       vbat_filter: 0.0,
     },
     pid_rate_presets: [],
-    vtx_settings: {}
+    vtx_settings: {
+      channel: 0,
+      band: 0,
+    }
   },
   mutations: {
     set_status(state, status) {
