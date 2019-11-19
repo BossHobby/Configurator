@@ -1,16 +1,16 @@
 <template>
   <b-row>
     <b-col sm="6">
-      <Metadata></Metadata>
+      <Metadata class="control-card"></Metadata>
     </b-col>
     <b-col sm="6">
-      <Voltage></Voltage>
+      <Voltage class="control-card"></Voltage>
     </b-col>
-    <b-col sm="6" class="my-2">
-      <VTX v-if="serial.smart_audio != 0"></VTX>
+    <b-col sm="6" class="my-4">
+      <Serial class="control-card"></Serial>
     </b-col>
-    <b-col sm="6" class="my-2">
-      <Serial></Serial>
+    <b-col sm="6" class="my-4">
+      <VTX class="control-card" v-if="serial.smart_audio != 0"></VTX>
     </b-col>
   </b-row>
 </template>
