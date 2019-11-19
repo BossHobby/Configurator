@@ -37,6 +37,11 @@ const store = new Vuex.Store({
     vtx_settings: {
       channel: 0,
       band: 0,
+    },
+    default_profile: {
+      serial: {
+        port_max: 0,
+      }
     }
   },
   mutations: {

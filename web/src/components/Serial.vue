@@ -30,10 +30,10 @@ import { mapState } from "vuex";
 export default {
   name: "serial",
   computed: {
-    ...mapState(["profile"]),
+    ...mapState(["profile", "default_profile"]),
     serialPorts() {
       const ports = [{ value: 0, text: "None" }];
-      for (let i = 1; i < this.profile.serial.port_max; i++) {
+      for (let i = 1; i < this.default_profile.serial.port_max; i++) {
         ports.push({ value: i, text: "UART " + i });
       }
       return ports;
