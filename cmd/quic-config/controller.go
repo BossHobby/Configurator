@@ -87,8 +87,8 @@ func connectController(p string) error {
 		closeController()
 	}(c)
 
-	// try 10 times to get sync
-	for i := 0; i < 3; i++ {
+	// try 5 times to get sync
+	for i := 0; i < 5; i++ {
 		value := new(map[string]interface{})
 		err = c.GetQUIC(controller.QuicValInfo, value)
 		if err == nil {
