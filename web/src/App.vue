@@ -48,9 +48,7 @@
       </b-container>
     </div>
 
-    <b-container v-if="status.IsConnected" style="margin-top: 5rem; margin-bottom: 5rem;">
-      <router-view></router-view>
-    </b-container>
+    <router-view v-if="status.IsConnected" style="margin-top: 5rem; margin-bottom: 5rem;"></router-view>
     <b-container v-else style="margin-top: 5rem; margin-bottom: 5rem;">
       <div class="jumbotron my-5">
         <h1 class="display-4">USB Configurator</h1>

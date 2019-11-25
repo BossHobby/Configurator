@@ -1,32 +1,34 @@
 <template>
-  <b-card>
-    <h5 slot="header" class="mb-0">Channels</h5>
-    <b-row>
-      <b-col sm="8">
-        <b-row v-for="(func, index) in auxFunctions" :key="func">
-          <b-col sm="6" class="my-1">
-            <label :for="func" :class="classForIndex(index)">{{ func }}</label>
-          </b-col>
-          <b-col sm="3" class="my-1">
-            <b-form-select :id="func" v-model.number="channel.aux[index]" :options="auxChannels"></b-form-select>
-          </b-col>
-        </b-row>
-      </b-col>
-      <b-col offset="1" sm="3">
-        <b-card>
-          <h6 slot="header" class="mb-0">Current AUX State</h6>
-          <b-row v-for="(v, index) in aux" :key="auxChannels[index].text">
-            <b-col sm="6" class="my-1">{{ auxChannels[index].text }}</b-col>
-            <b-col
-              sm="6"
-              class="my-1"
-              :class="v ? 'text-success' : 'text-danger'"
-            >{{ v ? "ON" : "OFF"}}</b-col>
+  <b-container>
+    <b-card>
+      <h5 slot="header" class="mb-0">Channels</h5>
+      <b-row>
+        <b-col sm="8">
+          <b-row v-for="(func, index) in auxFunctions" :key="func">
+            <b-col sm="6" class="my-1">
+              <label :for="func" :class="classForIndex(index)">{{ func }}</label>
+            </b-col>
+            <b-col sm="3" class="my-1">
+              <b-form-select :id="func" v-model.number="channel.aux[index]" :options="auxChannels"></b-form-select>
+            </b-col>
           </b-row>
-        </b-card>
-      </b-col>
-    </b-row>
-  </b-card>
+        </b-col>
+        <b-col offset="1" sm="3">
+          <b-card>
+            <h6 slot="header" class="mb-0">Current AUX State</h6>
+            <b-row v-for="(v, index) in aux" :key="auxChannels[index].text">
+              <b-col sm="6" class="my-1">{{ auxChannels[index].text }}</b-col>
+              <b-col
+                sm="6"
+                class="my-1"
+                :class="v ? 'text-success' : 'text-danger'"
+              >{{ v ? "ON" : "OFF"}}</b-col>
+            </b-row>
+          </b-card>
+        </b-col>
+      </b-row>
+    </b-card>
+  </b-container>
 </template>
 
 <script>

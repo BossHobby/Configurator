@@ -4,7 +4,7 @@
       Model
       <b-button size="sm" class="my-2 mx-2" @click="cal_imu()">calibrate</b-button>
     </h5>
-    <vgl-renderer style="width: 100%; height: 35vh" antialias>
+    <vgl-renderer style="width: 100%; height: 25vh" antialias>
       <vgl-scene background-color="#ffffff">
         <vgl-box-geometry name="cube" width="7.5" height="1.5" depth="7.5"></vgl-box-geometry>
         <vgl-mesh-standard-material name="std" color="#777"></vgl-mesh-standard-material>

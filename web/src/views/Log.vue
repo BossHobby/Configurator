@@ -1,12 +1,14 @@
 <template>
-  <b-row>
-    <b-col sm="12">
-      <b-card>
-        <h5 slot="header" class="mb-0">Log</h5>
-        <samp v-for="(line, index) in log" :key="line+'-'+index">>> {{line}}</samp>
-      </b-card>
-    </b-col>
-  </b-row>
+  <b-container>
+    <b-row>
+      <b-col sm="12">
+        <b-card>
+          <h5 slot="header" class="mb-0">Log</h5>
+          <samp v-for="(line, index) in log" :key="line+'-'+index">>> {{line}}</samp>
+        </b-card>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
