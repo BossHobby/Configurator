@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	disconnect  = make(chan bool, 1)
 	autoConnect = false
 )
 
@@ -20,6 +19,7 @@ type Status struct {
 	IsConnected    bool
 	Port           string
 	AvailablePorts []string
+	Info           *controller.TargetInfo
 }
 
 func controllerStatus() (*Status, error) {
@@ -43,6 +43,7 @@ func controllerStatus() (*Status, error) {
 	}
 	if fc != nil {
 		s.Port = fc.PortName
+		s.Info = fc.Info
 	}
 	return s, nil
 }
@@ -73,35 +74,14 @@ func connectController(p string) error {
 	if err != nil {
 		return err
 	}
+	fc = c
 
 	go func(fc *controller.Controller) {
-		if err := fc.Run(); err != nil {
-			log.Warnf("port: %v", err)
-			disconnect <- true
-		}
-	}(c)
-
-	go func(fc *controller.Controller) {
-		<-disconnect
+		log.Warnf("port: %v", <-c.Disconnect)
 		log.Printf("closing controller %s", p)
 		closeController()
 	}(c)
 
-	// try 5 times to get sync
-	for i := 0; i < 5; i++ {
-		value := new(map[string]interface{})
-		err = c.GetQUIC(controller.QuicValInfo, value)
-		if err == nil {
-			break
-		}
-	}
-
-	if err != nil {
-		closeController()
-		return err
-	}
-
-	fc = c
 	return nil
 }
 

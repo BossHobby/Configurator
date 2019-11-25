@@ -118,6 +118,12 @@ func (p *Profile) Filename() string {
 	)
 }
 
+type TargetInfo struct {
+	QuicProtocolVersion uint     `cbor:"quic_protocol_version" json:"quic_protocol_version"`
+	MotorPins           []string `cbor:"motor_pins" json:"motor_pins"`
+	UsartPorts          []string `cbor:"usart_ports" json:"usart_ports"`
+}
+
 type Blackbox struct {
 	VbatFilter float32 `cbor:"vbat_filter" json:"vbat_filter"`
 

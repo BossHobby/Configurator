@@ -9,7 +9,9 @@ import (
 )
 
 type Controller struct {
-	PortName string
+	PortName   string
+	Info       *TargetInfo
+	Disconnect chan error
 
 	port         serial.Port
 	writeChannel chan []byte
@@ -23,14 +25,37 @@ func OpenController(serialPort string) (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Controller{
-		PortName:     serialPort,
+
+	c := &Controller{
+		PortName:   serialPort,
+		Disconnect: make(chan error, 1),
+		Info:       new(TargetInfo),
+
 		port:         port,
 		writeChannel: make(chan []byte),
-	}, nil
+	}
+	go func(fc *Controller) {
+		if err := fc.run(); err != nil {
+			fc.Disconnect <- err
+		}
+	}(c)
+
+	// try 5 times to get sync
+	for i := 0; i < 5; i++ {
+		err = c.GetQUIC(QuicValInfo, c.Info)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		port.Close()
+		return nil, err
+	}
+
+	return c, nil
 }
 
-func (c *Controller) Run() error {
+func (c *Controller) run() error {
 	go func() {
 		for buf := range c.writeChannel {
 			if _, err := c.port.Write(buf); err != nil {
