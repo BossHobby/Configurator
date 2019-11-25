@@ -13,7 +13,7 @@
             </b-col>
           </b-row>
         </b-col>
-        <b-col offset="1" sm="3">
+        <b-col offset="0" sm="4">
           <b-card>
             <h6 slot="header" class="mb-0">Current AUX State</h6>
             <b-row v-for="(v, index) in aux" :key="auxChannels[index].text">
@@ -58,7 +58,7 @@ export default {
         { value: 9, text: "AUX_10" },
         { value: 10, text: "AUX_11" },
         { value: 11, text: "AUX_12" },
-        { value: 12, text: "AUX_13" },
+        { value: 12, text: "AUX_GESTURE" },
         { value: 13, text: "ON" },
         { value: 14, text: "OFF" }
       ],
