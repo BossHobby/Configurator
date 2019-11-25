@@ -123,18 +123,13 @@ export default {
         "Motor 1 (FL)",
         "Motor 2 (BR)",
         "Motor 3 (FR)"
-      ],
-      motorPins: [
-        { value: 0, text: "Pin 0" },
-        { value: 1, text: "Pin 1" },
-        { value: 2, text: "Pin 2" },
-        { value: 3, text: "Pin 3" }
       ]
     };
   },
   computed: {
     ...mapState({
-      motor: state => state.profile.motor
+      motor: state => state.profile.motor,
+      motor_pins: state => state.status.Info.motor_pins
     }),
     gyroOrientation: {
       get() {
@@ -152,6 +147,14 @@ export default {
         this.motor.gyro_orientation =
           this.gyroOrientation | (value ? 0x20 : 0x0);
       }
+    },
+    motorPins() {
+      return this.motor_pins.map((v, i) => {
+        return {
+          value: i,
+          text: `Pin ${i} (${v})`
+        };
+      });
     }
   }
 };

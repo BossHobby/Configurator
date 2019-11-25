@@ -26,7 +26,11 @@ const store = new Vuex.Store({
   },
   state: {
     status: {
-      is_connected: false,
+      Info: {
+        usart_ports: [],
+        motor_pins: []
+      },
+      IsConnected: false,
     },
     log: [],
     alerts: [],

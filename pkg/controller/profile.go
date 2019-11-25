@@ -80,7 +80,6 @@ type Channel struct {
 type Serial struct {
 	RX         uint `cbor:"rx" json:"rx"`
 	SmartAudio uint `cbor:"smart_audio" json:"smart_audio"`
-	PortMax    uint `cbor:"port_max" json:"port_max"`
 }
 
 type Metadata struct {
