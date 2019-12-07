@@ -21,7 +21,7 @@ const (
 	reqAbort
 )
 
-func Open() (DfuDevice, error) {
+func Open() (*Dfu, error) {
 	d := &Dfu{
 		ctx: gousb.NewContext(),
 	}
@@ -83,7 +83,26 @@ func (d *Dfu) GetStatus() (*Status, error) {
 	}, nil
 }
 
+func (d *Dfu) GetState() (State, error) {
+	buf := make([]byte, 1)
+	_, err := d.dev.Control(0xa1, reqGetState, 0, 0, buf)
+	if err != nil {
+		return 0, err
+	}
+	return State(buf[0]), nil
+}
+
 func (d *Dfu) Upload(blockNumber uint16, buf []byte) error {
 	_, err := d.dev.Control(0xa1, reqUpload, blockNumber, 0, buf)
+	return err
+}
+
+func (d *Dfu) Dnload(blockNumber uint16, buf []byte) error {
+	_, err := d.dev.Control(0x21, reqDNLoad, blockNumber, 0, buf)
+	return err
+}
+
+func (d *Dfu) Abort() error {
+	_, err := d.dev.Control(0x21, reqAbort, 0, 0, nil)
 	return err
 }

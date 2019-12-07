@@ -6,6 +6,8 @@ import Channels from './views/Channels.vue'
 import Blackbox from './views/Blackbox.vue'
 import Log from './views/Log.vue'
 import Profile from './views/Profile.vue'
+import Flash from './views/Flash.vue'
+import Home from './views/Home.vue'
 
 Vue.use(Router)
 
@@ -15,7 +17,17 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/profile'
+      redirect: '/home'
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/flash',
+      name: 'flash',
+      component: Flash
     },
     {
       path: '/profile',

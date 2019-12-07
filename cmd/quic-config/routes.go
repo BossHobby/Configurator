@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -12,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
@@ -240,13 +240,50 @@ func postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func flashFirmware() error {
-	_, err := dfu.NewLoader()
-	if err != nil {
-		return err
+func postFlashLocal(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return nil
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	fw, err := ioutil.ReadAll(file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dfuMu.Lock()
+	defer dfuMu.Unlock()
+
+	if err := flashFirmware(dfuLoader, fw); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	closeController()
+
+	renderJSON(w, "OK")
+}
+
+func postFlashRemote(w http.ResponseWriter, r *http.Request) {
+	/*
+		dfuMu.Lock()
+		defer dfuMu.Unlock()
+
+		if err := flashFirmware(dfuLoader, fw); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		closeController()
+
+		renderJSON(w, "OK")
+	*/
 }
 
 func setupRoutes(r *mux.Router) {
@@ -254,6 +291,8 @@ func setupRoutes(r *mux.Router) {
 
 	r.HandleFunc("/api/connect", postConnect).Methods("POST")
 	r.HandleFunc("/api/disconnect", postDisconnect).Methods("POST")
+
+	r.HandleFunc("/api/flash/local", postFlashLocal).Methods("POST")
 
 	{
 		f := r.NewRoute().Subrouter()

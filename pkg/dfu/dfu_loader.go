@@ -7,7 +7,7 @@ import (
 const wTransferSize = 2048
 
 type Loader struct {
-	dfu         DfuDevice
+	dfu         *Dfu
 	pollTimeout time.Duration
 }
 
@@ -57,5 +57,64 @@ func (l *Loader) Read(data []byte) error {
 		time.Sleep(l.pollTimeout)
 	}
 
+	time.Sleep(l.pollTimeout)
 	return nil
+}
+
+func (l *Loader) Alive() error {
+	_, err := l.dfu.GetStatus()
+	return err
+}
+
+func (l *Loader) EnterState(state State) error {
+	for {
+		s, err := l.dfu.GetState()
+		if err != nil {
+			return err
+		}
+
+		if state == s {
+			break
+		}
+
+		switch s {
+		case DfuUploadIdle, DfuDownloadIdle:
+			if err := l.dfu.Abort(); err != nil {
+				return err
+			}
+			break
+		default:
+			time.Sleep(100 * time.Millisecond)
+			break
+		}
+	}
+	return nil
+}
+
+func (l *Loader) Write(data []byte) error {
+	bytesWritten, blockIndex := 0, 2
+
+	for bytesWritten < len(data) {
+		if err := l.dfu.Upload(uint16(blockIndex), data[bytesWritten:bytesWritten+wTransferSize]); err != nil {
+			return err
+		}
+		bytesWritten += wTransferSize
+		blockIndex++
+
+		time.Sleep(l.pollTimeout)
+	}
+
+	time.Sleep(l.pollTimeout)
+	return nil
+}
+
+func (l *Loader) Leave() error {
+	if err := l.dfu.Dnload(0, []byte{}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (l *Loader) Close() error {
+	return l.dfu.Close()
 }

@@ -1,4 +1,4 @@
-import { get, post } from "@/api.js";
+import { get, post } from "@/store/api.js";
 
 const store = {
   state: {

@@ -120,11 +120,4 @@ type Status struct {
 	IString     uint8
 }
 
-type DfuDevice interface {
-	Close() error
-	GetStatus() (*Status, error)
-	ClrStatus() error
-	Upload(blockNumber uint16, buf []byte) error
-}
-
 var ErrDeviceNotFound = errors.New("dfu device not found")

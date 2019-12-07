@@ -15,6 +15,7 @@
       </b-navbar-nav>
       <b-navbar-nav v-else>
         <b-nav-item to="/">Home</b-nav-item>
+        <b-nav-item to="/flash">Flash</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
@@ -48,19 +49,7 @@
       </b-container>
     </div>
 
-    <router-view v-if="status.IsConnected" style="margin-top: 5rem; margin-bottom: 5rem;"></router-view>
-    <b-container v-else style="margin-top: 5rem; margin-bottom: 5rem;">
-      <div class="jumbotron my-5">
-        <h1 class="display-4">USB Configurator</h1>
-        <p class="lead">Currently you are disconnected, connect to get started!</p>
-        <b-button
-          size="lg"
-          variant="primary"
-          :disabled="can_connect"
-          v-on:click="toggle_connection(status.Port)"
-        >Connect</b-button>
-      </div>
-    </b-container>
+    <router-view style="margin-top: 5rem; margin-bottom: 5rem;"></router-view>
 
     <b-navbar v-if="status.IsConnected" fixed="bottom" class="navbar">
       <b-navbar-brand>

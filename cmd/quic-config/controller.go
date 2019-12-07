@@ -3,20 +3,25 @@ package main
 import (
 	"errors"
 	"reflect"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
+	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	serial "github.com/bugst/go-serial"
 )
 
 var (
 	autoConnect = false
+	dfuMu       sync.Mutex
+	dfuLoader   *dfu.Loader
 )
 
 type Status struct {
 	IsConnected    bool
+	HasDFU         bool
 	Port           string
 	AvailablePorts []string
 	Info           *controller.TargetInfo
@@ -37,9 +42,29 @@ func controllerStatus() (*Status, error) {
 		autoConnect = false
 	}
 
+	dfuMu.Lock()
+	defer dfuMu.Unlock()
+
+	if dfuLoader == nil {
+		d, err := dfu.NewLoader()
+		if err != nil {
+			dfuLoader = nil
+			if err != dfu.ErrDeviceNotFound {
+				return nil, err
+			}
+		} else {
+			dfuLoader = d
+		}
+	} else {
+		if err := dfuLoader.Alive(); err != nil {
+			dfuLoader = nil
+		}
+	}
+
 	s := &Status{
 		AvailablePorts: ports,
 		IsConnected:    fc != nil,
+		HasDFU:         dfuLoader != nil,
 	}
 	if fc != nil {
 		s.Port = fc.PortName
@@ -49,6 +74,11 @@ func controllerStatus() (*Status, error) {
 }
 
 func closeController() {
+	if dfuLoader != nil {
+		dfuLoader.Close()
+	}
+	dfuLoader = nil
+
 	if fc != nil {
 		fc.Close()
 	}

@@ -3,8 +3,9 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-import { get, post } from "@/api.js";
+import { get, post } from "@/store/api.js";
 import profileModule from "./profile";
+import router from '../router';
 
 var ws = null
 
@@ -30,6 +31,7 @@ const store = new Vuex.Store({
         usart_ports: [],
         motor_pins: []
       },
+      AvailablePorts: [],
       IsConnected: false,
     },
     log: [],
@@ -107,13 +109,20 @@ const store = new Vuex.Store({
     },
     toggle_connection({ state }, port) {
       var path = "/api/connect"
+      var route = "/profile"
       if (state.status.IsConnected) {
         path = "/api/disconnect";
+        route = "/home";
       }
       return post(path, port)
+        .then(() => router.push(route))
     },
     soft_reboot() {
       return post("/api/soft_reboot", {})
+    },
+    hard_reboot_first_port({ state }) {
+      return post("/api/connect", state.status.Port)
+        .then(() => post("/api/hard_reboot", {}))
     },
     fetch_pid_rate_presets({ commit }) {
       return get("/api/pid_rate_presets")
