@@ -20,10 +20,11 @@ import (
 )
 
 var (
-	fc      *controller.Controller
-	status  Status
-	version = "dirty"
-	mode    = "debug"
+	fc          *controller.Controller
+	status      Status
+	githubToken = ""
+	version     = "dirty"
+	mode        = "debug"
 
 	verbose = flag.Bool("verbose", false, "verbose logging")
 )

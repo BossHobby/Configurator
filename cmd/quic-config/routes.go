@@ -272,18 +272,37 @@ func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 }
 
 func postFlashRemote(w http.ResponseWriter, r *http.Request) {
-	/*
-		dfuMu.Lock()
-		defer dfuMu.Unlock()
+	value := RemoteFirmware{}
+	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		if err := flashFirmware(dfuLoader, fw); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		closeController()
+	fw, err := fetchFirmwareRelease(value.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		renderJSON(w, "OK")
-	*/
+	dfuMu.Lock()
+	defer dfuMu.Unlock()
+
+	if err := flashFirmware(dfuLoader, fw); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	closeController()
+
+	renderJSON(w, "OK")
+}
+
+func getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
+	releases, err := listFirmwareReleases()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	renderJSON(w, releases)
 }
 
 func setupRoutes(r *mux.Router) {
@@ -292,7 +311,9 @@ func setupRoutes(r *mux.Router) {
 	r.HandleFunc("/api/connect", postConnect).Methods("POST")
 	r.HandleFunc("/api/disconnect", postDisconnect).Methods("POST")
 
+	r.HandleFunc("/api/flash/releases", getFirmwareReleases).Methods("GET")
 	r.HandleFunc("/api/flash/local", postFlashLocal).Methods("POST")
+	r.HandleFunc("/api/flash/remote", postFlashRemote).Methods("POST")
 
 	{
 		f := r.NewRoute().Subrouter()

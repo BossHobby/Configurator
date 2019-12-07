@@ -48,7 +48,9 @@ const store = new Vuex.Store({
       serial: {
         port_max: 0,
       }
-    }
+    },
+    firmware_releases: [],
+    flash: {}
   },
   mutations: {
     set_status(state, status) {
@@ -66,8 +68,14 @@ const store = new Vuex.Store({
     set_vtx_settings(state, vtx_settings) {
       state.vtx_settings = vtx_settings
     },
+    set_firmware_releases(state, firmware_releases) {
+      state.firmware_releases = firmware_releases
+    },
     set_blackbox(state, blackbox) {
       state.blackbox = blackbox
+    },
+    set_flash(state, flash) {
+      state.flash = flash
     },
     append_log(state, line) {
       state.log = [...state.log, line]
@@ -104,6 +112,10 @@ const store = new Vuex.Store({
           case "blackbox":
             commit('set_blackbox', msg.Payload);
             break;
+          case "flash":
+            console.log(`<< ws ${msg.Channel}`, msg.Payload);
+            commit('set_flash', msg.Payload);
+            break;
         }
       };
     },
@@ -131,6 +143,10 @@ const store = new Vuex.Store({
     fetch_vtx_settings({ commit }) {
       return get("/api/vtx/settings")
         .then(p => commit('set_vtx_settings', p))
+    },
+    fetch_firmware_releases({ commit }) {
+      return get("/api/flash/releases")
+        .then(p => commit('set_firmware_releases', p))
     },
     apply_vtx_settings({ commit }, vtx_settings) {
       return post("/api/vtx/settings", vtx_settings)

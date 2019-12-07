@@ -30,3 +30,15 @@ export function post(url, payload) {
       return res
     })
 }
+
+export function upload(url, formData) {
+  console.log(`>> upload ${url} `, formData)
+  return fetch("http://localhost:8000" + url, {
+    method: "POST",
+    body: formData
+  })
+    .then(res => {
+      console.log(`<< post ${url}`, res);
+      return res
+    })
+}

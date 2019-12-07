@@ -42,7 +42,7 @@ func NewLoader() (*Loader, error) {
 	return l, nil
 }
 
-func (l *Loader) Read(data []byte) error {
+func (l *Loader) Read(data []byte, progress func(total, current int)) error {
 	buf := make([]byte, wTransferSize)
 	bytesRead, blockIndex := 0, 2
 
@@ -53,6 +53,10 @@ func (l *Loader) Read(data []byte) error {
 		copy(data[bytesRead:], buf)
 		bytesRead += len(buf)
 		blockIndex++
+
+		if progress != nil {
+			progress(len(data), bytesRead)
+		}
 
 		time.Sleep(l.pollTimeout)
 	}
@@ -91,7 +95,7 @@ func (l *Loader) EnterState(state State) error {
 	return nil
 }
 
-func (l *Loader) Write(data []byte) error {
+func (l *Loader) Write(data []byte, progress func(total, current int)) error {
 	bytesWritten, blockIndex := 0, 2
 
 	for bytesWritten < len(data) {
@@ -100,6 +104,10 @@ func (l *Loader) Write(data []byte) error {
 		}
 		bytesWritten += wTransferSize
 		blockIndex++
+
+		if progress != nil {
+			progress(len(data), bytesWritten)
+		}
 
 		time.Sleep(l.pollTimeout)
 	}

@@ -18,10 +18,42 @@
           <b-row v-else>
             <b-col sm="6">
               <b-form @submit="onSubmit">
-                <b-form-group label="File" label-for="file-local" label-cols-sm="2">
+                <b-form-group label="Source" label-for="source" label-cols-sm="2">
+                  <b-form-select id="source" v-model="source" :options="sourceOptions"></b-form-select>
+                </b-form-group>
+
+                <b-form-group
+                  v-if="source == 'local'"
+                  label="File"
+                  label-for="file-local"
+                  label-cols-sm="2"
+                >
                   <b-form-file id="file-local" v-model="file" accept=".hex, .bin"></b-form-file>
                 </b-form-group>
-                <b-button class="my-2" type="submit">Flash</b-button>
+
+                <b-form-group
+                  v-if="source != 'local'"
+                  label="Target"
+                  label-for="file-remote"
+                  label-cols-sm="2"
+                >
+                  <b-form-select id="file-remote" v-model="target" :options="targetOptions"></b-form-select>
+                </b-form-group>
+
+                <b-row v-for="(v, k) in progress" :key="k" class="my-2 mx-2">
+                  <b-col sm="2">{{k}}</b-col>
+                  <b-col sm="10">
+                    <b-progress
+                      height="20px"
+                      :value="v.Current"
+                      :max="v.Total"
+                      show-progress
+                      animated
+                    ></b-progress>
+                  </b-col>
+                </b-row>
+
+                <b-button class="my-2" :disabled="!canFlash" type="submit">Flash</b-button>
               </b-form>
             </b-col>
           </b-row>
@@ -32,31 +64,72 @@
 </template>
 
 <script>
+import { post, upload } from "@/store/api.js";
 import { mapActions, mapState } from "vuex";
 
 export default {
   name: "flash",
   data() {
     return {
-      file: null
+      loading: false,
+      sourceOptions: [
+        { value: "guano", text: "Guano" },
+        { value: "local", text: "Local" }
+      ],
+      source: "guano",
+      target: null,
+      file: null,
+      progress: {}
     };
   },
+  watch: {
+    flash(val) {
+      const u = { ...this.progress };
+      u[val.Task] = val;
+      this.progress = u;
+    }
+  },
   computed: {
-    ...mapState(["status"])
+    ...mapState(["status", "firmware_releases", "flash"]),
+    targetOptions() {
+      return this.firmware_releases.map(r => {
+        return { value: r, text: r.Name };
+      });
+    },
+    canFlash() {
+      if (this.loading) {
+        return false;
+      }
+      if (this.source == "local") {
+        return !!this.file;
+      }
+      return !!this.target;
+    }
   },
   methods: {
-    ...mapActions(["hard_reboot_first_port"]),
+    ...mapActions(["hard_reboot_first_port", "fetch_firmware_releases"]),
     onSubmit(evt) {
       evt.preventDefault();
 
-      const formData = new FormData();
-      formData.append("file", this.file);
+      var promise = null;
+      if (this.source == "local") {
+        const formData = new FormData();
+        formData.append("file", this.file);
+        promise = upload("/api/flash/local", formData);
+      } else if (this.target) {
+        promise = post("/api/flash/remote", this.target);
+      }
 
-      fetch("http://localhost:8000/api/flash/local", {
-        method: "POST",
-        body: formData
-      }).then(() => this.$store.commit("append_alert", "firmware flashed!"));
+      if (promise) {
+        this.loading = true;
+        return promise
+          .then(() => this.$store.commit("append_alert", "firmware flashed!"))
+          .then(() => (this.loading = false));
+      }
     }
+  },
+  created() {
+    this.fetch_firmware_releases();
   }
 };
 </script>

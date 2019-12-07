@@ -11,6 +11,9 @@ steps:
       - npm --prefix web run build
   - name: server
     image: hanfer/xgo-libusb:latest
+    environment:
+      GITHUB_TOKEN:
+        from_secret: config_github_token
     commands:
       - /run-env.sh linux make linux
       - /run-env.sh windows make windows

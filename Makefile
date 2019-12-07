@@ -25,7 +25,7 @@ else
 	MODE = release
 endif
 
-BUILD_FLAGS = -ldflags="-X main.version=$(VERSION) -X main.mode=$(MODE)"
+BUILD_FLAGS = -ldflags="-X main.version=$(VERSION) -X main.mode=$(MODE) -X main.githubToken=$(GITHUB_TOKEN)"
 
 .PHONY: all clean web $(EXECUTABLE)-$(PLATFORM)-amd64
 all: windows linux darwin
