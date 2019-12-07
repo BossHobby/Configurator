@@ -8,8 +8,10 @@ require (
 	github.com/bugst/go-serial v0.0.0-20180827123349-5f7892a7bb45
 	github.com/creack/goselect v0.1.0 // indirect
 	github.com/fxamacker/cbor v1.2.0
+	github.com/google/gousb v0.0.0-20190812193832-18f4c1d8a750
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1
+	github.com/karalabe/xgo v0.0.0-20191115072854-c5ccff8648a7 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/machinebox/appify v0.0.0-20180512101119-15c1e09ce924 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect

@@ -10,10 +10,11 @@ steps:
       - npm --prefix web install
       - npm --prefix web run build
   - name: server
-    image: golang:latest
+    image: hanfer/xgo-libusb:latest
     commands:
-      - apt update && apt install -y zip
-      - make all
+      - /run-env.sh linux make linux
+      - /run-env.sh windows make windows
+      - /run-env.sh darwin make darwin
   - name: publish
     image: plugins/github-release
     settings:

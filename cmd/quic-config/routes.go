@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
+	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
@@ -237,6 +238,15 @@ func postVtxSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	renderJSON(w, value)
+}
+
+func flashFirmware() error {
+	_, err := dfu.NewLoader()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func setupRoutes(r *mux.Router) {
