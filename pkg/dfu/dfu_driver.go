@@ -29,6 +29,9 @@ func Open() (*Dfu, error) {
 	dev, err := d.ctx.OpenDeviceWithVIDPID(dfuVendor, dfuProduct)
 	if err != nil {
 		d.Close()
+		if err == gousb.ErrorNotFound {
+			return nil, ErrDeviceNotFound
+		}
 		return nil, err
 	}
 	if dev == nil {
