@@ -26,6 +26,11 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 	}
 }
 
+func handleError(w http.ResponseWriter, err error) {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	log.Error(err)
+}
+
 func loggingMidleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -50,26 +55,26 @@ func spaHandler() http.HandlerFunc {
 
 		f, err := statikFS.Open(path.Clean(upath))
 		if err != nil && !os.IsNotExist(err) {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			handleError(w, err)
 			return
 		}
 		if os.IsNotExist(err) {
 			f, err = statikFS.Open(indexFile)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				handleError(w, err)
 				return
 			}
 		}
 
 		stat, err := f.Stat()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			handleError(w, err)
 			return
 		}
 		if stat.IsDir() {
 			f, err = statikFS.Open(indexFile)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				handleError(w, err)
 				return
 			}
 		}
@@ -83,12 +88,12 @@ func spaHandler() http.HandlerFunc {
 func postConnect(w http.ResponseWriter, r *http.Request) {
 	serialPort := ""
 	if err := json.NewDecoder(r.Body).Decode(&serialPort); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	if err := connectController(serialPort); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
@@ -113,7 +118,7 @@ func fcMidleware(next http.Handler) http.Handler {
 func getProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -122,12 +127,12 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 func postProfile(w http.ResponseWriter, r *http.Request) {
 	profile := controller.Profile{}
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	if err := fc.SetQUIC(controller.QuicValProfile, &profile); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, profile)
@@ -136,7 +141,7 @@ func postProfile(w http.ResponseWriter, r *http.Request) {
 func getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -145,21 +150,21 @@ func getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 func getProfileDownload(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+value.Filename())
 	w.Header().Set("Content-Type", "application/octet-stream")
 	if err := cbor.NewEncoder(w, cbor.EncOptions{}).Encode(value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 }
 
 func postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
@@ -172,7 +177,7 @@ func postProfileUpload(w http.ResponseWriter, r *http.Request) {
 
 	value := controller.Profile{}
 	if err := fc.SetQUICReader(controller.QuicValProfile, file, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -181,7 +186,7 @@ func postProfileUpload(w http.ResponseWriter, r *http.Request) {
 func getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
 	if err := fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -190,11 +195,11 @@ func getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 func postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	if err := fc.SetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -203,7 +208,7 @@ func postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 func postCalImu(w http.ResponseWriter, r *http.Request) {
 	_, err := fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, "OK")
@@ -212,7 +217,7 @@ func postCalImu(w http.ResponseWriter, r *http.Request) {
 func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 	value := make([]controller.PidRatePreset, 0)
 	if err := fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -221,7 +226,7 @@ func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 func getVtxSettings(w http.ResponseWriter, r *http.Request) {
 	value := controller.VtxSettings{}
 	if err := fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -230,11 +235,11 @@ func getVtxSettings(w http.ResponseWriter, r *http.Request) {
 func postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	value := controller.VtxSettings{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	if err := fc.SetQUIC(controller.QuicValVtxSettings, &value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, value)
@@ -242,37 +247,37 @@ func postVtxSettings(w http.ResponseWriter, r *http.Request) {
 
 func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	defer file.Close()
 
 	hex, err := ioutil.ReadAll(file)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	fw, err := parseIntelHex(hex)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	dfuMu.Lock()
 	defer dfuMu.Unlock()
+	defer closeController()
 
 	if err := flashFirmware(dfuLoader, fw); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
-	closeController()
 
 	renderJSON(w, "OK")
 }
@@ -280,37 +285,37 @@ func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 func postFlashRemote(w http.ResponseWriter, r *http.Request) {
 	value := RemoteFirmware{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	hex, err := fetchFirmwareRelease(value.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	fw, err := parseIntelHex(hex)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
 	dfuMu.Lock()
 	defer dfuMu.Unlock()
+	defer closeController()
 
 	if err := flashFirmware(dfuLoader, fw); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
-	closeController()
 	renderJSON(w, "OK")
 }
 
 func getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
 	releases, err := listFirmwareReleases()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	renderJSON(w, releases)
