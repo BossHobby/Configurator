@@ -26,6 +26,10 @@ func TestDfuLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if err := l.MassErase(); err != nil {
+		t.Fatal(err)
+	}
+
 	if err := l.Write(input, nil); err != nil {
 		t.Fatal(err)
 	}

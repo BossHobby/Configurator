@@ -1,18 +1,17 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"context"
-	"encoding/hex"
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"path/filepath"
 
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/google/go-github/v28/github"
+	"github.com/marcinbor85/gohex"
 	"golang.org/x/oauth2"
 )
 
@@ -86,28 +85,45 @@ func fetchFirmwareRelease(id int64) ([]byte, error) {
 	return buf, nil
 }
 
+func parseIntelHex(input []byte) ([]byte, error) {
+	r := bytes.NewReader(input)
+	mem := gohex.NewMemory()
+
+	if err := mem.ParseIntelHex(r); err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, 0)
+	for _, segment := range mem.GetDataSegments() {
+		addr := int(segment.Address) - 0x08000000
+		if addr < 0 {
+			continue
+		}
+
+		end := (addr + len(segment.Data))
+		if end > len(buf) {
+			buf = append(buf, make([]byte, end-len(buf))...)
+		}
+
+		for i, d := range segment.Data {
+			buf[addr+i] = d
+		}
+	}
+
+	return buf, nil
+}
+
 func readFirmware(file string) ([]byte, error) {
 	ext := filepath.Ext(file)
 
 	if ext == ".bin" {
 		return ioutil.ReadFile(file)
 	} else if ext == ".hex" {
-		f, err := os.Open(file)
+		buf, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err
 		}
-		defer f.Close()
-
-		buf := make([]byte, 0)
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			decoded, err := hex.DecodeString(scanner.Text()[1:])
-			if err != nil {
-				return nil, err
-			}
-			buf = append(buf, decoded...)
-		}
-		return buf, nil
+		return parseIntelHex(buf)
 	}
 
 	return nil, errors.New("unknown file type")
@@ -130,13 +146,22 @@ func broadcastProgress(task string) func(total, current int) {
 }
 
 func flashFirmware(l *dfu.Loader, input []byte) error {
+	eraseProgress := broadcastProgress("erase")
+	eraseProgress(100, 0)
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
+	eraseProgress(100, 10)
 
 	if err := l.SetAddress(0x08000000); err != nil {
 		return err
 	}
+	eraseProgress(100, 20)
+
+	if err := l.MassErase(); err != nil {
+		return err
+	}
+	eraseProgress(100, 100)
 
 	if err := l.Write(input, broadcastProgress("write")); err != nil {
 		return err

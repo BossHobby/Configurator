@@ -28,7 +28,7 @@
                   label-for="file-local"
                   label-cols-sm="2"
                 >
-                  <b-form-file id="file-local" v-model="file" accept=".hex, .bin"></b-form-file>
+                  <b-form-file id="file-local" v-model="file" accept=".hex"></b-form-file>
                 </b-form-group>
 
                 <b-form-group

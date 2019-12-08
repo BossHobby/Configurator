@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/marcinbor85/gohex v0.0.0-20180128172054-7a43cd876e46
 	github.com/rakyll/statik v0.1.6
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.4.2

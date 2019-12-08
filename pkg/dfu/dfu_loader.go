@@ -129,6 +129,25 @@ func (l *Loader) SetAddress(address uint32) error {
 	return nil
 }
 
+func (l *Loader) MassErase() error {
+	cmd := []byte{
+		0x41,
+	}
+	if err := l.dfu.Dnload(0, cmd); err != nil {
+		return err
+	}
+
+	s, err := l.applyStatus()
+	if err != nil {
+		return err
+	}
+	if s.State != DfuDownloadIdle {
+		return errors.New("invalid state")
+	}
+
+	return nil
+}
+
 func (l *Loader) Write(data []byte, progress func(total, current int)) error {
 	bytesWritten, blockIndex := 0, 2
 

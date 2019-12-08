@@ -253,7 +253,13 @@ func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	fw, err := ioutil.ReadAll(file)
+	hex, err := ioutil.ReadAll(file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fw, err := parseIntelHex(hex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -278,7 +284,13 @@ func postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fw, err := fetchFirmwareRelease(value.ID)
+	hex, err := fetchFirmwareRelease(value.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fw, err := parseIntelHex(hex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -292,7 +304,6 @@ func postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	closeController()
-
 	renderJSON(w, "OK")
 }
 
