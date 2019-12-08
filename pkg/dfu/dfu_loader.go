@@ -1,6 +1,7 @@
 package dfu
 
 import (
+	"errors"
 	"time"
 )
 
@@ -95,13 +96,61 @@ func (l *Loader) EnterState(state State) error {
 	return nil
 }
 
+func (l *Loader) applyStatus() (*Status, error) {
+	// apply
+	if _, err := l.dfu.GetStatus(); err != nil {
+		return nil, err
+	}
+
+	// check
+	return l.dfu.GetStatus()
+}
+
+func (l *Loader) SetAddress(address uint32) error {
+	cmd := []byte{
+		0x21,
+		byte(address),
+		byte((address >> 8)),
+		byte((address >> 16)),
+		byte((address >> 24)),
+	}
+	if err := l.dfu.Dnload(0, cmd); err != nil {
+		return err
+	}
+
+	s, err := l.applyStatus()
+	if err != nil {
+		return err
+	}
+	if s.State != DfuDownloadIdle {
+		return errors.New("invalid state")
+	}
+
+	return nil
+}
+
 func (l *Loader) Write(data []byte, progress func(total, current int)) error {
 	bytesWritten, blockIndex := 0, 2
 
 	for bytesWritten < len(data) {
-		if err := l.dfu.Upload(uint16(blockIndex), data[bytesWritten:bytesWritten+wTransferSize]); err != nil {
+		end := bytesWritten + wTransferSize
+		if end > len(data) {
+			end = len(data)
+		}
+
+		buf := data[bytesWritten:end]
+		if err := l.dfu.Dnload(uint16(blockIndex), buf); err != nil {
 			return err
 		}
+
+		s, err := l.applyStatus()
+		if err != nil {
+			return err
+		}
+		if s.State != DfuDownloadIdle {
+			return errors.New("invalid state")
+		}
+
 		bytesWritten += wTransferSize
 		blockIndex++
 

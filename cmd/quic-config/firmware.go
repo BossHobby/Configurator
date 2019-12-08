@@ -130,7 +130,19 @@ func broadcastProgress(task string) func(total, current int) {
 }
 
 func flashFirmware(l *dfu.Loader, input []byte) error {
+	if err := l.EnterState(dfu.DfuIdle); err != nil {
+		return err
+	}
+
+	if err := l.SetAddress(0x08000000); err != nil {
+		return err
+	}
+
 	if err := l.Write(input, broadcastProgress("write")); err != nil {
+		return err
+	}
+
+	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
 

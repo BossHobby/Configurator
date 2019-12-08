@@ -13,11 +13,20 @@ func TestDfuLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	buf := make([]byte, 512*1024)
-	if err := l.Read(buf); err != nil {
+	input, err := ioutil.ReadFile("test.bin")
+	if err != nil {
 		t.Fatal(err)
 	}
-	if err := ioutil.WriteFile("test.bin", buf, 0755); err != nil {
+
+	if err := l.EnterState(dfu.DfuIdle); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := l.SetAddress(0x08000000); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := l.Write(input, nil); err != nil {
 		t.Fatal(err)
 	}
 	//log.Print(buf)
