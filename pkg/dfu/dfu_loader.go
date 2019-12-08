@@ -188,6 +188,7 @@ func (l *Loader) Leave() error {
 	if err := l.dfu.Dnload(0, []byte{}); err != nil {
 		return err
 	}
+	time.Sleep(500 * time.Millisecond)
 	return nil
 }
 

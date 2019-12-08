@@ -53,11 +53,8 @@ func controllerStatus() (*Status, error) {
 				return nil, err
 			}
 		} else {
+			log.Debug("detected dfu")
 			dfuLoader = d
-		}
-	} else {
-		if err := dfuLoader.Alive(); err != nil {
-			dfuLoader = nil
 		}
 	}
 
@@ -75,12 +72,23 @@ func controllerStatus() (*Status, error) {
 
 func closeController() {
 	if dfuLoader != nil {
-		dfuLoader.Close()
+		if err := dfuLoader.Close(); err != nil {
+			log.Error(err)
+		}
+		for {
+			d, err := dfu.NewLoader()
+			if err != nil {
+				break
+			}
+			d.Close()
+		}
 	}
 	dfuLoader = nil
 
 	if fc != nil {
-		fc.Close()
+		if err := fc.Close(); err != nil {
+			log.Error(err)
+		}
 	}
 	fc = nil
 }
@@ -119,7 +127,7 @@ func watchPorts() {
 	for {
 		s, err := controllerStatus()
 		if err != nil {
-			log.Println(err)
+			log.Error("controllerStatus:", err)
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
