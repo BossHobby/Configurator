@@ -1,0 +1,1 @@
+docker run -it --rm -v "%cd%":/src hanfer/xgo-libusb:latest /run-env.sh windows make windows
