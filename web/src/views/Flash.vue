@@ -93,7 +93,7 @@ export default {
     ...mapState(["status", "firmware_releases", "flash"]),
     targetOptions() {
       return this.firmware_releases.map(r => {
-        return { value: r, text: r.Name };
+        return { value: r, text: r.Name.replace("quicksilver.", "") };
       });
     },
     canFlash() {
