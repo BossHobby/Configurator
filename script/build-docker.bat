@@ -1,1 +1,1 @@
-docker run -it --rm -v "%cd%":/src hanfer/xgo-libusb:latest /run-env.sh windows make windows
+docker run -it --rm -v "%cd%":/src hanfer/xgo-libusb:latest /run-env.sh windows make MODE=debug windows
