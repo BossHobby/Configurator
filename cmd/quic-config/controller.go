@@ -60,6 +60,7 @@ func closeController() {
 			log.Error(err)
 		}
 		for {
+			time.Sleep(750 * time.Millisecond)
 			d, err := dfu.NewLoader()
 			if err != nil {
 				break
