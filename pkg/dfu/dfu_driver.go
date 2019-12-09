@@ -1,8 +1,6 @@
 package dfu
 
 import (
-	"time"
-
 	"github.com/google/gousb"
 )
 
@@ -40,7 +38,7 @@ func Open() (*Dfu, error) {
 		d.Close()
 		return nil, ErrDeviceNotFound
 	}
-	dev.ControlTimeout = 500 * time.Millisecond
+	dev.ControlTimeout = 0
 	d.dev = dev
 
 	iface, ifaceDone, err := dev.DefaultInterface()

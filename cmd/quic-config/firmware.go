@@ -137,12 +137,19 @@ type FlashProgress struct {
 }
 
 func broadcastProgress(task string) func(total, current int) {
+	last := 0
 	return func(total, current int) {
+		percent := int(float64(current) / float64(total) * 100)
+		if last == percent {
+			return
+		}
+
 		broadcastWebsocket("flash", FlashProgress{
 			Task:    task,
-			Total:   total,
-			Current: current,
+			Total:   100,
+			Current: percent,
 		})
+		last = percent
 	}
 }
 
