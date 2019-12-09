@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
+	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
@@ -321,6 +322,27 @@ func getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, releases)
 }
 
+func postFlashConnect(w http.ResponseWriter, r *http.Request) {
+	dfuMu.Lock()
+	defer dfuMu.Unlock()
+
+	if dfuLoader == nil {
+		d, err := dfu.NewLoader()
+		if err != nil {
+			dfuLoader = nil
+			if err != dfu.ErrDeviceNotFound {
+				handleError(w, err)
+				return
+			}
+		} else {
+			log.Debug("detected dfu")
+			dfuLoader = d
+		}
+	}
+
+	renderJSON(w, "OK")
+}
+
 func setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
@@ -328,6 +350,7 @@ func setupRoutes(r *mux.Router) {
 	r.HandleFunc("/api/disconnect", postDisconnect).Methods("POST")
 
 	r.HandleFunc("/api/flash/releases", getFirmwareReleases).Methods("GET")
+	r.HandleFunc("/api/flash/connect", postFlashConnect).Methods("POST")
 	r.HandleFunc("/api/flash/local", postFlashLocal).Methods("POST")
 	r.HandleFunc("/api/flash/remote", postFlashRemote).Methods("POST")
 

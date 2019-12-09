@@ -132,9 +132,15 @@ const store = new Vuex.Store({
     soft_reboot() {
       return post("/api/soft_reboot", {})
     },
+    connect_flash() {
+      return post("/api/flash/connect", {})
+    },
     hard_reboot_first_port({ state }) {
       return post("/api/connect", state.status.Port)
         .then(() => post("/api/hard_reboot", {}))
+        .then(() => {
+          setTimeout(() => post("/api/flash/connect", {}), 1000)
+        })
     },
     fetch_pid_rate_presets({ commit }) {
       return get("/api/pid_rate_presets")

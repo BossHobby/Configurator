@@ -42,22 +42,6 @@ func controllerStatus() (*Status, error) {
 		autoConnect = false
 	}
 
-	dfuMu.Lock()
-	defer dfuMu.Unlock()
-
-	if dfuLoader == nil {
-		d, err := dfu.NewLoader()
-		if err != nil {
-			dfuLoader = nil
-			if err != dfu.ErrDeviceNotFound {
-				return nil, err
-			}
-		} else {
-			log.Debug("detected dfu")
-			dfuLoader = d
-		}
-	}
-
 	s := &Status{
 		AvailablePorts: ports,
 		IsConnected:    fc != nil,
@@ -124,7 +108,7 @@ func connectController(p string) error {
 }
 
 func watchPorts() {
-	interval := 1500 * time.Millisecond
+	interval := 500 * time.Millisecond
 	for {
 		s, err := controllerStatus()
 		if err != nil {

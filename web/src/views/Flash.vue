@@ -13,7 +13,10 @@
             >Reset to Bootloader</b-button>
           </h5>
           <b-row v-if="!status.HasDFU">
-            <b-col sm="6">No DFU detected</b-col>
+            <b-col sm="6">
+              <h4>No DFU detected</h4>
+              <b-button class="my-2" type="button" @click="connect_flash()">Scan</b-button>
+            </b-col>
           </b-row>
           <b-row v-else>
             <b-col sm="6">
@@ -107,7 +110,11 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["hard_reboot_first_port", "fetch_firmware_releases"]),
+    ...mapActions([
+      "hard_reboot_first_port",
+      "fetch_firmware_releases",
+      "connect_flash"
+    ]),
     onSubmit(evt) {
       evt.preventDefault();
 
