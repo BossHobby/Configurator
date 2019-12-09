@@ -124,11 +124,12 @@ func connectController(p string) error {
 }
 
 func watchPorts() {
+	interval := 1500 * time.Millisecond
 	for {
 		s, err := controllerStatus()
 		if err != nil {
 			log.Error("controllerStatus:", err)
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(interval)
 			continue
 		}
 
@@ -136,6 +137,6 @@ func watchPorts() {
 			broadcastWebsocket("status", s)
 		}
 		status = *s
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(interval)
 	}
 }
