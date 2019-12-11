@@ -115,6 +115,14 @@
 <script>
 import { mapState } from "vuex";
 
+const GYRO_ROTATE_NONE = 0x0;
+const GYRO_ROTATE_45_CCW = 0x1;
+const GYRO_ROTATE_45_CW = 0x2;
+const GYRO_ROTATE_90_CW = 0x4;
+const GYRO_ROTATE_90_CCW = 0x8;
+const GYRO_ROTATE_180 = 0x10;
+const GYRO_FLIP_180 = 0x20;
+
 export default {
   name: "Motor",
   data() {
@@ -124,12 +132,20 @@ export default {
         { value: 1, text: "Props Out" }
       ],
       gyroOrientations: [
-        { value: 0, text: "ROTATE_NONE" },
-        { value: 1, text: "ROTATE_45_CCW" },
-        { value: 2, text: "ROTATE_45_CW" },
-        { value: 4, text: "ROTATE_90_CW" },
-        { value: 8, text: "ROTATE_90_CCW" },
-        { value: 16, text: "ROTATE_180" }
+        { value: GYRO_ROTATE_NONE, text: "ROTATE_NONE" },
+        { value: GYRO_ROTATE_45_CCW, text: "ROTATE_45_CCW" },
+        { value: GYRO_ROTATE_45_CW, text: "ROTATE_45_CW" },
+        { value: GYRO_ROTATE_90_CW, text: "ROTATE_90_CW" },
+        { value: GYRO_ROTATE_90_CCW, text: "ROTATE_90_CCW" },
+        {
+          value: GYRO_ROTATE_90_CCW | GYRO_ROTATE_45_CCW,
+          text: "ROTATE_135_CW"
+        },
+        {
+          value: GYRO_ROTATE_90_CW | GYRO_ROTATE_45_CW,
+          text: "ROTATE_135_CCW"
+        },
+        { value: GYRO_ROTATE_180, text: "ROTATE_180" }
       ],
       motorNames: [
         "Motor 0 (BL)",
@@ -149,16 +165,17 @@ export default {
         return this.motor.gyro_orientation & 0x1f;
       },
       set(value) {
-        this.motor.gyro_orientation = value | (this.gyroFlip ? 0x20 : 0x0);
+        this.motor.gyro_orientation =
+          value | (this.gyroFlip ? GYRO_FLIP_180 : 0x0);
       }
     },
     gyroFlip: {
       get() {
-        return (this.motor.gyro_orientation & 0x20) > 0;
+        return (this.motor.gyro_orientation & GYRO_FLIP_180) > 0;
       },
       set(value) {
         this.motor.gyro_orientation =
-          this.gyroOrientation | (value ? 0x20 : 0x0);
+          this.gyroOrientation | (value ? GYRO_FLIP_180 : 0x0);
       }
     },
     motorPins() {
