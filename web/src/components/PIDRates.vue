@@ -49,7 +49,7 @@
                 <b-form-input
                   :id="`pid-${key}-roll`"
                   type="number"
-                  step="0.01"
+                  step="1.0"
                   v-model.number="pid_rates[key][0]"
                 ></b-form-input>
               </b-col>
@@ -57,7 +57,7 @@
                 <b-form-input
                   :id="`pid-${key}-pitch`"
                   type="number"
-                  step="0.01"
+                  step="1.0"
                   v-model.number="pid_rates[key][1]"
                 ></b-form-input>
               </b-col>
@@ -65,7 +65,7 @@
                 <b-form-input
                   :id="`pid-${key}-yaw`"
                   type="number"
-                  step="0.01"
+                  step="1.0"
                   v-model.number="pid_rates[key][2]"
                 ></b-form-input>
               </b-col>
