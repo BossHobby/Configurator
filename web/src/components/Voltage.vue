@@ -21,15 +21,10 @@
         <label for="pid-voltage-compensation">PidVoltageCompensation</label>
       </b-col>
       <b-col sm="7" class="my-2">
-        <div class="custom-control custom-checkbox">
-          <input
-            type="checkbox"
-            class="custom-control-input"
-            id="pid-voltage-compensation"
-            v-model="pid_voltage_compensation"
-          />
-          <label class="custom-control-label" for="pid-voltage-compensation">Enable</label>
-        </div>
+        <b-form-select
+          v-model.number="profile.voltage.pid_voltage_compensation"
+          :options="pidVoltageCompensationOptions"
+        ></b-form-select>
       </b-col>
 
       <b-col sm="5" class="my-2">
@@ -76,6 +71,16 @@ import { mapState } from "vuex";
 
 export default {
   name: "voltage",
+  data() {
+    return {
+      pidVoltageCompensationOptions: [
+        { value: 0, text: "NONE" },
+        { value: 1, text: "EXACT_VOLTS" },
+        { value: 2, text: "FILTERED_VOLTS" },
+        { value: 3, text: "FUELGAUGE_VOLTS" }
+      ]
+    };
+  },
   computed: {
     ...mapState(["profile", "blackbox"]),
     pid_voltage_compensation: {
