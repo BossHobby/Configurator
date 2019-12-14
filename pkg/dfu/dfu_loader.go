@@ -3,6 +3,8 @@ package dfu
 import (
 	"errors"
 	"time"
+
+	"github.com/google/gousb"
 )
 
 const wTransferSize = 2048
@@ -137,8 +139,13 @@ func (l *Loader) MassErase() error {
 		return err
 	}
 
+applyLabel:
 	s, err := l.applyStatus()
 	if err != nil {
+		if err == gousb.ErrorTimeout {
+			time.Sleep(5 * time.Second)
+			goto applyLabel
+		}
 		return err
 	}
 	if s.State != DfuDownloadIdle {

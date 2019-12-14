@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"runtime"
 
 	"path/filepath"
 
@@ -166,10 +165,8 @@ func flashFirmware(l *dfu.Loader, input []byte) error {
 	}
 	eraseProgress(100, 20)
 
-	if runtime.GOOS != "windows" {
-		if err := l.MassErase(); err != nil {
-			return err
-		}
+	if err := l.MassErase(); err != nil {
+		return err
 	}
 	eraseProgress(100, 100)
 
