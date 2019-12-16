@@ -272,8 +272,10 @@ func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dfuMu.Lock()
-	defer dfuMu.Unlock()
-	defer closeController()
+	defer func() {
+		closeController()
+		dfuMu.Unlock()
+	}()
 
 	if err := flashFirmware(dfuLoader, fw); err != nil {
 		handleError(w, err)
@@ -303,8 +305,10 @@ func postFlashRemote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dfuMu.Lock()
-	defer dfuMu.Unlock()
-	defer closeController()
+	defer func() {
+		closeController()
+		dfuMu.Unlock()
+	}()
 
 	if err := flashFirmware(dfuLoader, fw); err != nil {
 		handleError(w, err)
