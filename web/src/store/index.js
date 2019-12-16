@@ -26,6 +26,7 @@ const store = new Vuex.Store({
     profile: profileModule,
   },
   state: {
+    return_url: null,
     status: {
       Info: {
         usart_ports: [],
@@ -106,6 +107,10 @@ const store = new Vuex.Store({
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
               dispatch('fetch_profile')
               dispatch('fetch_pid_rate_presets')
+              router.push(state.return_url || "/profile")
+            } else if (state.status.IsConnected) {
+              state.return_url = router.currentRoute.fullPath
+              router.push("/home")
             }
             commit('set_status', msg.Payload);
             break;
@@ -121,13 +126,10 @@ const store = new Vuex.Store({
     },
     toggle_connection({ state }, port) {
       var path = "/api/connect"
-      var route = "/profile"
       if (state.status.IsConnected) {
         path = "/api/disconnect";
-        route = "/home";
       }
       return post(path, port)
-        .then(() => router.push(route))
     },
     soft_reboot() {
       return post("/api/soft_reboot", {})
