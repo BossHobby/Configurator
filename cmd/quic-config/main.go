@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -75,9 +76,14 @@ func printJson(v interface{}) error {
 func main() {
 	flag.Parse()
 
-	if mode == "debug" {
-		log.SetLevel(log.DebugLevel)
+	//if mode == "debug" {
+	log.SetLevel(log.DebugLevel)
+	logFile, err := os.Create("quicksilver.log")
+	if err != nil {
+		log.Fatal(err)
 	}
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+	//}
 
 	if flag.NArg() == 0 {
 		serve()
