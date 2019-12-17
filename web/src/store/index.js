@@ -109,7 +109,9 @@ const store = new Vuex.Store({
               dispatch('fetch_pid_rate_presets')
               router.push(state.return_url || "/profile")
             } else if (state.status.IsConnected) {
-              state.return_url = router.currentRoute.fullPath
+              if (router.currentRoute.fullPath != "/home") {
+                state.return_url = router.currentRoute.fullPath
+              }
               router.push("/home")
             }
             commit('set_status', msg.Payload);
