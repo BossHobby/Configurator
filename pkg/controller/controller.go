@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,19 @@ type Controller struct {
 
 	port         serial.Port
 	writeChannel chan []byte
+}
+
+func OpenFirstController() (*Controller, error) {
+	ports, err := serial.GetPortsList()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ports) == 0 {
+		return nil, errors.New("no controller port found")
+	}
+
+	return OpenController(ports[len(ports)-1])
 }
 
 func OpenController(serialPort string) (*Controller, error) {

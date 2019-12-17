@@ -18,8 +18,6 @@ import (
 )
 
 var (
-	fc          *controller.Controller
-	status      Status
 	githubToken = ""
 	version     = "dirty"
 	mode        = "debug"
@@ -97,9 +95,11 @@ func main() {
 		return
 	}
 
-	if err := connectFirstController(); err != nil {
+	fc, err := controller.OpenFirstController()
+	if err != nil {
 		log.Fatal(err)
 	}
+	defer fc.Close()
 
 	switch flag.Arg(0) {
 	case "download":

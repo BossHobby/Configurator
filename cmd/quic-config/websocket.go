@@ -53,7 +53,7 @@ func sendWebsocket(conn *websocket.Conn, channel string, v interface{}) error {
 	return nil
 }
 
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -66,7 +66,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		delete(clients, conn)
 	}()
 
-	broadcastWebsocket("status", status)
+	sendWebsocket(conn, "status", s.status)
 
 	for {
 		typ, data, err := conn.ReadMessage()
@@ -79,7 +79,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if fc == nil {
+		if s.fc == nil {
 			return
 		}
 

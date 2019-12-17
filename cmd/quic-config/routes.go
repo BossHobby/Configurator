@@ -41,9 +41,9 @@ func loggingMidleware(next http.Handler) http.Handler {
 	})
 }
 
-func fcMidleware(next http.Handler) http.Handler {
+func (s *Server) fcMidleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if fc == nil {
+		if s.fc == nil {
 			http.NotFound(w, r)
 			return
 		}
@@ -104,7 +104,7 @@ func (s *Server) postConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := connectController(serialPort); err != nil {
+	if err := s.connectController(serialPort); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -113,13 +113,13 @@ func (s *Server) postConnect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postDisconnect(w http.ResponseWriter, r *http.Request) {
-	closeController()
+	s.closeController()
 	renderJSON(w, "OK")
 }
 
 func (s *Server) getProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
-	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -133,7 +133,7 @@ func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := fc.SetQUIC(controller.QuicValProfile, &profile); err != nil {
+	if err := s.fc.SetQUIC(controller.QuicValProfile, &profile); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -142,7 +142,7 @@ func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
-	if err := fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -151,7 +151,7 @@ func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getProfileDownload(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
-	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -178,7 +178,7 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	value := controller.Profile{}
-	if err := fc.SetQUICReader(controller.QuicValProfile, file, &value); err != nil {
+	if err := s.fc.SetQUICReader(controller.QuicValProfile, file, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -187,7 +187,7 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
-	if err := fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -200,7 +200,7 @@ func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-	if err := fc.SetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+	if err := s.fc.SetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -208,7 +208,7 @@ func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
-	_, err := fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
+	_, err := s.fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
 	if err != nil {
 		handleError(w, err)
 		return
@@ -218,7 +218,7 @@ func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 	value := make([]controller.PidRatePreset, 0)
-	if err := fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -227,7 +227,7 @@ func (s *Server) getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getVtxSettings(w http.ResponseWriter, r *http.Request) {
 	value := controller.VtxSettings{}
-	if err := fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+	if err := s.fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -240,7 +240,7 @@ func (s *Server) postVtxSettings(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-	if err := fc.SetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+	if err := s.fc.SetQUIC(controller.QuicValVtxSettings, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -289,13 +289,13 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dfuMu.Lock()
+	s.dfuMu.Lock()
 	defer func() {
-		closeController()
-		dfuMu.Unlock()
+		s.closeController()
+		s.dfuMu.Unlock()
 	}()
 
-	if err := s.fl.Flash(dfuLoader, fw, broadcastProgress); err != nil {
+	if err := s.fl.Flash(s.dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -322,13 +322,13 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dfuMu.Lock()
+	s.dfuMu.Lock()
 	defer func() {
-		closeController()
-		dfuMu.Unlock()
+		s.closeController()
+		s.dfuMu.Unlock()
 	}()
 
-	if err := s.fl.Flash(dfuLoader, fw, broadcastProgress); err != nil {
+	if err := s.fl.Flash(s.dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -345,20 +345,20 @@ func (s *Server) getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postFlashConnect(w http.ResponseWriter, r *http.Request) {
-	dfuMu.Lock()
-	defer dfuMu.Unlock()
+	s.dfuMu.Lock()
+	defer s.dfuMu.Unlock()
 
-	if dfuLoader == nil {
+	if s.dfuLoader == nil {
 		d, err := dfu.NewLoader()
 		if err != nil {
-			dfuLoader = nil
+			s.dfuLoader = nil
 			if err != dfu.ErrDeviceNotFound {
 				handleError(w, err)
 				return
 			}
 		} else {
 			log.Debug("detected dfu")
-			dfuLoader = d
+			s.dfuLoader = d
 		}
 	}
 
@@ -377,29 +377,45 @@ func (s *Server) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/api/flash/remote", s.postFlashRemote).Methods("POST")
 
 	r.HandleFunc("/api/hard_reboot", func(w http.ResponseWriter, r *http.Request) {
-		if fc == nil {
-			connectFirstController()
-		}
-		if fc != nil {
+		if s.fc == nil {
+			fc, err := controller.OpenFirstController()
+			if err != nil {
+				handleError(w, err)
+				return
+			}
+			go func() {
+				<-fc.Disconnect
+				fc.Close()
+			}()
 			fc.HardReboot()
+		} else {
+			s.fc.HardReboot()
 		}
 		renderJSON(w, "OK")
 	}).Methods("POST")
 
 	r.HandleFunc("/api/soft_reboot", func(w http.ResponseWriter, r *http.Request) {
-		if fc == nil {
-			connectFirstController()
-		}
-		if fc != nil {
+		if s.fc == nil {
+			fc, err := controller.OpenFirstController()
+			if err != nil {
+				handleError(w, err)
+				return
+			}
+			go func() {
+				<-fc.Disconnect
+				fc.Close()
+			}()
 			fc.SoftReboot()
+		} else {
+			s.fc.SoftReboot()
 		}
-		autoConnect = true
+		s.autoConnect = true
 		renderJSON(w, "OK")
 	}).Methods("POST")
 
 	{
 		f := r.NewRoute().Subrouter()
-		f.Use(fcMidleware)
+		f.Use(s.fcMidleware)
 
 		f.HandleFunc("/api/profile", s.getProfile).Methods("GET")
 		f.HandleFunc("/api/profile", s.postProfile).Methods("POST")
@@ -417,9 +433,8 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f.HandleFunc("/api/vtx/settings", s.postVtxSettings).Methods("POST")
 
 		f.HandleFunc("/api/cal_imu", s.postCalImu).Methods("POST")
-
 	}
 
-	r.HandleFunc("/api/ws", websocketHandler)
+	r.HandleFunc("/api/ws", s.websocketHandler)
 	r.PathPrefix("/").HandlerFunc(spaHandler())
 }
