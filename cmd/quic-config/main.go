@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -16,8 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 var (
@@ -50,21 +47,25 @@ func openbrowser(url string) {
 	log.Printf("Configurator running at %s!", url)
 }
 
-func serve() {
-	log.Printf("Starting Quicksilver Configurator %s", version)
-
-	r := mux.NewRouter()
-	setupRoutes(r)
-
-	go watchPorts()
-	go broadcastQuic()
-
-	if mode == "release" {
-		openbrowser("http://localhost:8000")
+func cacheDir() string {
+	var dir string
+	switch runtime.GOOS {
+	case "linux":
+		dir = os.ExpandEnv("${XDG_CACHE_HOME}/quic-config")
+		if dir == "/quic-config" {
+			dir = os.ExpandEnv("${HOME}/.cache/quic-config")
+		}
+	case "windows":
+		dir = os.ExpandEnv("${LOCALAPPDATA}/quic-config")
+	case "darwin":
+		dir = os.ExpandEnv("${HOME}/Library/Caches/quic-config")
+	default:
+		dir = "./cache"
 	}
-	if err := http.ListenAndServe("localhost:8000", cors.Default().Handler(r)); err != nil {
+	if err := os.Mkdir(dir, 0775); err != nil && !os.IsExist(err) {
 		log.Fatal(err)
 	}
+	return dir
 }
 
 func printJson(v interface{}) error {
@@ -86,7 +87,13 @@ func main() {
 	//}
 
 	if flag.NArg() == 0 {
-		serve()
+		s, err := NewServer()
+		if err != nil {
+			log.Fatal()
+		}
+		defer s.Close()
+
+		s.Serve()
 		return
 	}
 

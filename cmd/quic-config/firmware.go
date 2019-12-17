@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
-
-	"path/filepath"
+	"time"
 
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/google/go-github/v28/github"
 	"github.com/marcinbor85/gohex"
 	"golang.org/x/oauth2"
+	"gopkg.in/djherbis/fscache.v0"
 )
 
 const (
@@ -25,7 +27,44 @@ type RemoteFirmware struct {
 	Name string
 }
 
-func listFirmwareReleases() ([]RemoteFirmware, error) {
+type FirmwareLoader struct {
+	cache fscache.Cache
+}
+
+type FlashProgress struct {
+	Task    string
+	Total   int
+	Current int
+}
+
+func broadcastProgress(task string) func(total, current int) {
+	last := 0
+	return func(total, current int) {
+		percent := int(float64(current) / float64(total) * 100)
+		if last == percent {
+			return
+		}
+
+		broadcastWebsocket("flash", FlashProgress{
+			Task:    task,
+			Total:   100,
+			Current: percent,
+		})
+		last = percent
+	}
+}
+
+func NewFirmwareLoader() (*FirmwareLoader, error) {
+	c, err := fscache.New(cacheDir(), 0755, time.Hour)
+	if err != nil {
+		return nil, err
+	}
+	return &FirmwareLoader{
+		cache: c,
+	}, nil
+}
+
+func (l *FirmwareLoader) listReleases() ([]RemoteFirmware, error) {
 	ctx := context.Background()
 
 	ts := oauth2.StaticTokenSource(
@@ -54,30 +93,39 @@ func listFirmwareReleases() ([]RemoteFirmware, error) {
 	return res, nil
 }
 
-func fetchFirmwareRelease(id int64) ([]byte, error) {
-	ctx := context.Background()
-
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: githubToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-
-	rc, url, err := client.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, id)
+func (l *FirmwareLoader) fetchRelease(fw RemoteFirmware) ([]byte, error) {
+	r, w, err := l.cache.Get(fmt.Sprintf("%d-%s", fw.ID, fw.Name))
 	if err != nil {
 		return nil, err
 	}
-	if rc == nil {
-		res, err := http.Get(url)
+
+	if w != nil {
+		ctx := context.Background()
+
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: githubToken},
+		)
+		tc := oauth2.NewClient(ctx, ts)
+		client := github.NewClient(tc)
+
+		rc, url, err := client.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID)
 		if err != nil {
 			return nil, err
 		}
-		defer res.Body.Close()
+		if rc == nil {
+			res, err := http.Get(url)
+			if err != nil {
+				return nil, err
+			}
+			defer res.Body.Close()
 
-		rc = res.Body
+			rc = res.Body
+		}
+
+		io.Copy(w, rc)
 	}
 
-	buf, err := ioutil.ReadAll(rc)
+	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 
@@ -111,45 +159,6 @@ func parseIntelHex(input []byte) ([]byte, error) {
 	}
 
 	return buf, nil
-}
-
-func readFirmware(file string) ([]byte, error) {
-	ext := filepath.Ext(file)
-
-	if ext == ".bin" {
-		return ioutil.ReadFile(file)
-	} else if ext == ".hex" {
-		buf, err := ioutil.ReadFile(file)
-		if err != nil {
-			return nil, err
-		}
-		return parseIntelHex(buf)
-	}
-
-	return nil, errors.New("unknown file type")
-}
-
-type FlashProgress struct {
-	Task    string
-	Total   int
-	Current int
-}
-
-func broadcastProgress(task string) func(total, current int) {
-	last := 0
-	return func(total, current int) {
-		percent := int(float64(current) / float64(total) * 100)
-		if last == percent {
-			return
-		}
-
-		broadcastWebsocket("flash", FlashProgress{
-			Task:    task,
-			Total:   100,
-			Current: percent,
-		})
-		last = percent
-	}
 }
 
 func flashFirmware(l *dfu.Loader, input []byte) error {

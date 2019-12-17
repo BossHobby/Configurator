@@ -40,6 +40,16 @@ func loggingMidleware(next http.Handler) http.Handler {
 	})
 }
 
+func fcMidleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			http.NotFound(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func spaHandler() http.HandlerFunc {
 	statikFS, err := fs.New()
 	if err != nil {
@@ -86,7 +96,7 @@ func spaHandler() http.HandlerFunc {
 	}
 }
 
-func postConnect(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postConnect(w http.ResponseWriter, r *http.Request) {
 	serialPort := ""
 	if err := json.NewDecoder(r.Body).Decode(&serialPort); err != nil {
 		handleError(w, err)
@@ -101,22 +111,12 @@ func postConnect(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func postDisconnect(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postDisconnect(w http.ResponseWriter, r *http.Request) {
 	closeController()
 	renderJSON(w, "OK")
 }
 
-func fcMidleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if fc == nil {
-			http.NotFound(w, r)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
-func getProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
 		handleError(w, err)
@@ -125,7 +125,7 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func postProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
 	profile := controller.Profile{}
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 		handleError(w, err)
@@ -139,7 +139,7 @@ func postProfile(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, profile)
 }
 
-func getDefaultProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
 		handleError(w, err)
@@ -148,7 +148,7 @@ func getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func getProfileDownload(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getProfileDownload(w http.ResponseWriter, r *http.Request) {
 	value := controller.Profile{}
 	if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
 		handleError(w, err)
@@ -163,7 +163,7 @@ func getProfileDownload(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func postProfileUpload(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		handleError(w, err)
 		return
@@ -184,7 +184,7 @@ func postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func getBlackboxRate(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
 	if err := fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
 		handleError(w, err)
@@ -193,7 +193,7 @@ func getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func postBlackboxRate(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
@@ -206,7 +206,7 @@ func postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func postCalImu(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
 	_, err := fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
 	if err != nil {
 		handleError(w, err)
@@ -215,7 +215,7 @@ func postCalImu(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 	value := make([]controller.PidRatePreset, 0)
 	if err := fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
 		handleError(w, err)
@@ -224,7 +224,7 @@ func getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func getVtxSettings(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getVtxSettings(w http.ResponseWriter, r *http.Request) {
 	value := controller.VtxSettings{}
 	if err := fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
 		handleError(w, err)
@@ -233,7 +233,7 @@ func getVtxSettings(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func postVtxSettings(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	value := controller.VtxSettings{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
@@ -246,7 +246,7 @@ func postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
-func postFlashLocal(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		handleError(w, err)
 		return
@@ -285,14 +285,14 @@ func postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func postFlashRemote(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 	value := RemoteFirmware{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
 		return
 	}
 
-	hex, err := fetchFirmwareRelease(value.ID)
+	hex, err := s.fl.fetchRelease(value)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -317,8 +317,8 @@ func postFlashRemote(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
-	releases, err := listFirmwareReleases()
+func (s *Server) getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
+	releases, err := s.fl.listReleases()
 	if err != nil {
 		handleError(w, err)
 		return
@@ -326,7 +326,7 @@ func getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, releases)
 }
 
-func postFlashConnect(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postFlashConnect(w http.ResponseWriter, r *http.Request) {
 	dfuMu.Lock()
 	defer dfuMu.Unlock()
 
@@ -347,37 +347,37 @@ func postFlashConnect(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func setupRoutes(r *mux.Router) {
+func (s *Server) setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
-	r.HandleFunc("/api/connect", postConnect).Methods("POST")
-	r.HandleFunc("/api/disconnect", postDisconnect).Methods("POST")
+	r.HandleFunc("/api/connect", s.postConnect).Methods("POST")
+	r.HandleFunc("/api/disconnect", s.postDisconnect).Methods("POST")
 
-	r.HandleFunc("/api/flash/releases", getFirmwareReleases).Methods("GET")
-	r.HandleFunc("/api/flash/connect", postFlashConnect).Methods("POST")
-	r.HandleFunc("/api/flash/local", postFlashLocal).Methods("POST")
-	r.HandleFunc("/api/flash/remote", postFlashRemote).Methods("POST")
+	r.HandleFunc("/api/flash/releases", s.getFirmwareReleases).Methods("GET")
+	r.HandleFunc("/api/flash/connect", s.postFlashConnect).Methods("POST")
+	r.HandleFunc("/api/flash/local", s.postFlashLocal).Methods("POST")
+	r.HandleFunc("/api/flash/remote", s.postFlashRemote).Methods("POST")
 
 	{
 		f := r.NewRoute().Subrouter()
 		f.Use(fcMidleware)
 
-		f.HandleFunc("/api/profile", getProfile).Methods("GET")
-		f.HandleFunc("/api/profile", postProfile).Methods("POST")
+		f.HandleFunc("/api/profile", s.getProfile).Methods("GET")
+		f.HandleFunc("/api/profile", s.postProfile).Methods("POST")
 
-		f.HandleFunc("/api/default_profile", getDefaultProfile).Methods("GET")
-		f.HandleFunc("/api/pid_rate_presets", getPidRatePresets).Methods("GET")
+		f.HandleFunc("/api/default_profile", s.getDefaultProfile).Methods("GET")
+		f.HandleFunc("/api/pid_rate_presets", s.getPidRatePresets).Methods("GET")
 
-		f.HandleFunc("/api/profile/download", getProfileDownload).Methods("GET")
-		f.HandleFunc("/api/profile/upload", postProfileUpload).Methods("POST")
+		f.HandleFunc("/api/profile/download", s.getProfileDownload).Methods("GET")
+		f.HandleFunc("/api/profile/upload", s.postProfileUpload).Methods("POST")
 
-		f.HandleFunc("/api/blackbox/rate", getBlackboxRate).Methods("GET")
-		f.HandleFunc("/api/blackbox/rate", postBlackboxRate).Methods("POST")
+		f.HandleFunc("/api/blackbox/rate", s.getBlackboxRate).Methods("GET")
+		f.HandleFunc("/api/blackbox/rate", s.postBlackboxRate).Methods("POST")
 
-		f.HandleFunc("/api/vtx/settings", getVtxSettings).Methods("GET")
-		f.HandleFunc("/api/vtx/settings", postVtxSettings).Methods("POST")
+		f.HandleFunc("/api/vtx/settings", s.getVtxSettings).Methods("GET")
+		f.HandleFunc("/api/vtx/settings", s.postVtxSettings).Methods("POST")
 
-		f.HandleFunc("/api/cal_imu", postCalImu).Methods("POST")
+		f.HandleFunc("/api/cal_imu", s.postCalImu).Methods("POST")
 
 		f.HandleFunc("/api/soft_reboot", func(w http.ResponseWriter, r *http.Request) {
 			fc.SoftReboot()

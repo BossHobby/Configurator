@@ -18,4 +18,7 @@ require (
 	go.bug.st/serial.v1 v0.0.0-20180827123349-5f7892a7bb45 // indirect
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sys v0.0.0-20191115151921-52ab43148777 // indirect
+	gopkg.in/djherbis/atime.v1 v1.0.0 // indirect
+	gopkg.in/djherbis/fscache.v0 v0.9.0
+	gopkg.in/djherbis/stream.v1 v1.2.0 // indirect
 )
