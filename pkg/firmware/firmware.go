@@ -1,4 +1,4 @@
-package main
+package firmware
 
 import (
 	"bytes"
@@ -28,7 +28,8 @@ type RemoteFirmware struct {
 }
 
 type FirmwareLoader struct {
-	cache fscache.Cache
+	cache  fscache.Cache
+	github *github.Client
 }
 
 type FlashProgress struct {
@@ -37,48 +38,32 @@ type FlashProgress struct {
 	Current int
 }
 
-func broadcastProgress(task string) func(total, current int) {
-	last := 0
-	return func(total, current int) {
-		percent := int(float64(current) / float64(total) * 100)
-		if last == percent {
-			return
-		}
-
-		broadcastWebsocket("flash", FlashProgress{
-			Task:    task,
-			Total:   100,
-			Current: percent,
-		})
-		last = percent
-	}
-}
-
-func NewFirmwareLoader() (*FirmwareLoader, error) {
-	c, err := fscache.New(cacheDir(), 0755, time.Hour)
+func NewFirmwareLoader(cacheDir string, githubToken string) (*FirmwareLoader, error) {
+	c, err := fscache.New(cacheDir, 0755, time.Hour)
 	if err != nil {
 		return nil, err
 	}
-	return &FirmwareLoader{
-		cache: c,
-	}, nil
-}
-
-func (l *FirmwareLoader) listReleases() ([]RemoteFirmware, error) {
 	ctx := context.Background()
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: githubToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	return &FirmwareLoader{
+		cache:  c,
+		github: github.NewClient(tc),
+	}, nil
+}
 
-	release, _, err := client.Repositories.GetReleaseByTag(ctx, repoOwner, repoName, "latest")
+func (l *FirmwareLoader) ListReleases() ([]RemoteFirmware, error) {
+	ctx := context.Background()
+
+	release, _, err := l.github.Repositories.GetReleaseByTag(ctx, repoOwner, repoName, "latest")
 	if err != nil {
 		return nil, err
 	}
 
-	assets, _, err := client.Repositories.ListReleaseAssets(ctx, repoOwner, repoName, release.GetID(), nil)
+	assets, _, err := l.github.Repositories.ListReleaseAssets(ctx, repoOwner, repoName, release.GetID(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +78,7 @@ func (l *FirmwareLoader) listReleases() ([]RemoteFirmware, error) {
 	return res, nil
 }
 
-func (l *FirmwareLoader) fetchRelease(fw RemoteFirmware) ([]byte, error) {
+func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 	r, w, err := l.cache.Get(fmt.Sprintf("%d-%s", fw.ID, fw.Name))
 	if err != nil {
 		return nil, err
@@ -101,14 +86,7 @@ func (l *FirmwareLoader) fetchRelease(fw RemoteFirmware) ([]byte, error) {
 
 	if w != nil {
 		ctx := context.Background()
-
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: githubToken},
-		)
-		tc := oauth2.NewClient(ctx, ts)
-		client := github.NewClient(tc)
-
-		rc, url, err := client.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID)
+		rc, url, err := l.github.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -133,35 +111,7 @@ func (l *FirmwareLoader) fetchRelease(fw RemoteFirmware) ([]byte, error) {
 	return buf, nil
 }
 
-func parseIntelHex(input []byte) ([]byte, error) {
-	r := bytes.NewReader(input)
-	mem := gohex.NewMemory()
-
-	if err := mem.ParseIntelHex(r); err != nil {
-		return nil, err
-	}
-
-	buf := make([]byte, 0)
-	for _, segment := range mem.GetDataSegments() {
-		addr := int(segment.Address) - 0x08000000
-		if addr < 0 {
-			continue
-		}
-
-		end := (addr + len(segment.Data))
-		if end > len(buf) {
-			buf = append(buf, make([]byte, end-len(buf))...)
-		}
-
-		for i, d := range segment.Data {
-			buf[addr+i] = d
-		}
-	}
-
-	return buf, nil
-}
-
-func flashFirmware(l *dfu.Loader, input []byte) error {
+func (fl *FirmwareLoader) Flash(l *dfu.Loader, input []byte, broadcastProgress func(task string) func(total, current int)) error {
 	eraseProgress := broadcastProgress("erase")
 	eraseProgress(100, 0)
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
@@ -207,4 +157,32 @@ func flashFirmware(l *dfu.Loader, input []byte) error {
 	}
 
 	return nil
+}
+
+func ParseIntelHex(input []byte) ([]byte, error) {
+	r := bytes.NewReader(input)
+	mem := gohex.NewMemory()
+
+	if err := mem.ParseIntelHex(r); err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, 0)
+	for _, segment := range mem.GetDataSegments() {
+		addr := int(segment.Address) - 0x08000000
+		if addr < 0 {
+			continue
+		}
+
+		end := (addr + len(segment.Data))
+		if end > len(buf) {
+			buf = append(buf, make([]byte, end-len(buf))...)
+		}
+
+		for i, d := range segment.Data {
+			buf[addr+i] = d
+		}
+	}
+
+	return buf, nil
 }

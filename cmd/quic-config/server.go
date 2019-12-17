@@ -3,17 +3,19 @@ package main
 import (
 	"net/http"
 
+	"github.com/NotFastEnuf/configurator/pkg/controller"
+	"github.com/NotFastEnuf/configurator/pkg/firmware"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	fl *FirmwareLoader
+	fl *firmware.FirmwareLoader
 }
 
 func NewServer() (*Server, error) {
-	fl, err := NewFirmwareLoader()
+	fl, err := firmware.NewFirmwareLoader(cacheDir(), githubToken)
 	if err != nil {
 		return nil, err
 	}
@@ -23,6 +25,17 @@ func NewServer() (*Server, error) {
 }
 
 func (s *Server) Close() {
+}
+
+func broadcastQuic() {
+	for {
+		select {
+		case msg := <-controller.QuicLog:
+			broadcastWebsocket("log", msg)
+		case msg := <-controller.QuicBlackbox:
+			broadcastWebsocket("blackbox", msg)
+		}
+	}
 }
 
 func (s *Server) Serve() {

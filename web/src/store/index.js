@@ -137,9 +137,8 @@ const store = new Vuex.Store({
     connect_flash() {
       return post("/api/flash/connect", {})
     },
-    hard_reboot_first_port({ state }) {
-      return post("/api/connect", state.status.Port)
-        .then(() => post("/api/hard_reboot", {}))
+    hard_reboot_first_port() {
+      return post("/api/hard_reboot", {})
         .then(() => {
           setTimeout(() => post("/api/flash/connect", {}), 1000)
         })

@@ -14,6 +14,7 @@ import (
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
+	"github.com/NotFastEnuf/configurator/pkg/firmware"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
@@ -246,6 +247,23 @@ func (s *Server) postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
+func broadcastProgress(task string) func(total, current int) {
+	last := 0
+	return func(total, current int) {
+		percent := int(float64(current) / float64(total) * 100)
+		if last == percent {
+			return
+		}
+
+		broadcastWebsocket("flash", firmware.FlashProgress{
+			Task:    task,
+			Total:   100,
+			Current: percent,
+		})
+		last = percent
+	}
+}
+
 func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		handleError(w, err)
@@ -265,7 +283,7 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fw, err := parseIntelHex(hex)
+	fw, err := firmware.ParseIntelHex(hex)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -277,7 +295,7 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 		dfuMu.Unlock()
 	}()
 
-	if err := flashFirmware(dfuLoader, fw); err != nil {
+	if err := s.fl.Flash(dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -286,19 +304,19 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
-	value := RemoteFirmware{}
+	value := firmware.RemoteFirmware{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
 		return
 	}
 
-	hex, err := s.fl.fetchRelease(value)
+	hex, err := s.fl.FetchRelease(value)
 	if err != nil {
 		handleError(w, err)
 		return
 	}
 
-	fw, err := parseIntelHex(hex)
+	fw, err := firmware.ParseIntelHex(hex)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -310,7 +328,7 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		dfuMu.Unlock()
 	}()
 
-	if err := flashFirmware(dfuLoader, fw); err != nil {
+	if err := s.fl.Flash(dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -318,7 +336,7 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
-	releases, err := s.fl.listReleases()
+	releases, err := s.fl.ListReleases()
 	if err != nil {
 		handleError(w, err)
 		return
@@ -358,6 +376,27 @@ func (s *Server) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/api/flash/local", s.postFlashLocal).Methods("POST")
 	r.HandleFunc("/api/flash/remote", s.postFlashRemote).Methods("POST")
 
+	r.HandleFunc("/api/hard_reboot", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			connectFirstController()
+		}
+		if fc != nil {
+			fc.HardReboot()
+		}
+		renderJSON(w, "OK")
+	}).Methods("POST")
+
+	r.HandleFunc("/api/soft_reboot", func(w http.ResponseWriter, r *http.Request) {
+		if fc == nil {
+			connectFirstController()
+		}
+		if fc != nil {
+			fc.SoftReboot()
+		}
+		autoConnect = true
+		renderJSON(w, "OK")
+	}).Methods("POST")
+
 	{
 		f := r.NewRoute().Subrouter()
 		f.Use(fcMidleware)
@@ -379,15 +418,6 @@ func (s *Server) setupRoutes(r *mux.Router) {
 
 		f.HandleFunc("/api/cal_imu", s.postCalImu).Methods("POST")
 
-		f.HandleFunc("/api/soft_reboot", func(w http.ResponseWriter, r *http.Request) {
-			fc.SoftReboot()
-			autoConnect = true
-			renderJSON(w, "OK")
-		}).Methods("POST")
-		f.HandleFunc("/api/hard_reboot", func(w http.ResponseWriter, r *http.Request) {
-			fc.HardReboot()
-			renderJSON(w, "OK")
-		}).Methods("POST")
 	}
 
 	r.HandleFunc("/api/ws", websocketHandler)
