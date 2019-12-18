@@ -13,6 +13,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/google/go-github/v28/github"
 	"github.com/marcinbor85/gohex"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"gopkg.in/djherbis/fscache.v0"
 )
@@ -79,12 +80,17 @@ func (l *FirmwareLoader) ListReleases() ([]RemoteFirmware, error) {
 }
 
 func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
-	r, w, err := l.cache.Get(fmt.Sprintf("%d-%s", fw.ID, fw.Name))
+	file := fmt.Sprintf("%d-%s", fw.ID, fw.Name)
+	log.Debugf("fetching firmware %s", file)
+
+	r, w, err := l.cache.Get(file)
 	if err != nil {
 		return nil, err
 	}
+	defer r.Close()
 
 	if w != nil {
+		log.Debugf("firmware %s not found in cache, downloading", file)
 		ctx := context.Background()
 		rc, url, err := l.github.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID)
 		if err != nil {
@@ -95,19 +101,20 @@ func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			defer res.Body.Close()
-
 			rc = res.Body
 		}
 
 		io.Copy(w, rc)
+
+		w.Close()
+		rc.Close()
 	}
 
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
-
 	}
+	log.Debugf("firmware %s downloaded", file)
 	return buf, nil
 }
 
