@@ -78,6 +78,10 @@ type Channel struct {
 	Aux []uint `cbor:"aux" json:"aux"`
 }
 
+type OSD struct {
+	Elements []uint `cbor:"elements" json:"elements"`
+}
+
 type Serial struct {
 	RX         uint `cbor:"rx" json:"rx"`
 	SmartAudio uint `cbor:"smart_audio" json:"smart_audio"`
@@ -106,6 +110,7 @@ type Profile struct {
 	Channel Channel  `cbor:"channel" json:"channel"`
 	Motor   Motor    `cbor:"motor" json:"motor"`
 	Serial  Serial   `cbor:"serial" json:"serial"`
+	OSD     OSD      `cbor:"osd" json:"osd"`
 	Voltage Voltage  `cbor:"voltage" json:"voltage"`
 	Rate    Rates    `cbor:"rate" json:"rate"`
 	PID     PID      `cbor:"pid" json:"pid"`

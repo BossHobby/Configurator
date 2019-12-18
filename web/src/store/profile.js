@@ -7,6 +7,9 @@ const store = {
       smart_audio: 0,
       port_max: 1,
     },
+    osd: {
+      elements: []
+    },
     meta: {
       datetime: 0,
     },
@@ -50,6 +53,11 @@ const store = {
       state.pid = {
         ...state.pid,
         pid_rates: rates
+      };
+    },
+    set_osd_elements(state, elements) {
+      state.osd = {
+        elements
       };
     }
   },

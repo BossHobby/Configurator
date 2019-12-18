@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
+import OSD from './views/OSD.vue'
 import Blackbox from './views/Blackbox.vue'
 import Log from './views/Log.vue'
 import Profile from './views/Profile.vue'
@@ -48,6 +49,11 @@ export default new Router({
       path: '/channels',
       name: 'channels',
       component: Channels
+    },
+    {
+      path: '/osd',
+      name: 'osd',
+      component: OSD
     },
     {
       path: '/blackbox',
