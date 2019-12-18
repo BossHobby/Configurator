@@ -70,6 +70,9 @@
         </b-card>
       </b-col>
     </b-row>
+    <div v-else>
+      <h1>OSD not active</h1>
+    </div>
   </b-container>
 </template>
 
