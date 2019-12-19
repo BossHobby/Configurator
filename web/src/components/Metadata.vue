@@ -1,6 +1,7 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">Metadata</h5>
+
     <b-row>
       <b-col sm="4" class="my-2">
         <label for="name">Profile Name</label>
@@ -14,6 +15,18 @@
         <label for="datetime">Last Modified</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ date | moment("from") }}</b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
+        <label for="datetime">Target Name</label>
+      </b-col>
+      <b-col sm="8" class="my-2">{{ status.Info.target_name }}</b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
+        <label for="datetime">Version</label>
+      </b-col>
+      <b-col sm="8" class="my-2">{{ status.Info.git_version }}</b-col>
     </b-row>
     <b-row>
       <b-col sm="6">

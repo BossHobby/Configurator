@@ -304,6 +304,9 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
+	downloadProgress := broadcastProgress("download")
+
+	downloadProgress(100, 0)
 	value := firmware.RemoteFirmware{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
@@ -321,6 +324,7 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+	downloadProgress(100, 100)
 
 	s.dfuMu.Lock()
 	defer func() {
@@ -384,7 +388,10 @@ func (s *Server) setupRoutes(r *mux.Router) {
 				return
 			}
 			go func() {
-				<-fc.Disconnect
+				select {
+				case <-fc.Disconnect:
+				case <-time.After(500 * time.Millisecond):
+				}
 				fc.Close()
 			}()
 			fc.HardReboot()
@@ -402,7 +409,10 @@ func (s *Server) setupRoutes(r *mux.Router) {
 				return
 			}
 			go func() {
-				<-fc.Disconnect
+				select {
+				case <-fc.Disconnect:
+				case <-time.After(500 * time.Millisecond):
+				}
 				fc.Close()
 			}()
 			fc.SoftReboot()
