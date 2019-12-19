@@ -19,7 +19,7 @@
             </b-col>
           </b-row>
           <b-row v-else>
-            <b-col sm="6">
+            <b-col sm="8">
               <b-form @submit="onSubmit">
                 <b-form-group label="Source" label-for="source" label-cols-sm="2">
                   <b-form-select id="source" v-model="source" :options="sourceOptions"></b-form-select>
