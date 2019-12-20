@@ -18,18 +18,6 @@ steps:
       - /run-env.sh linux make linux
       - /run-env.sh windows make windows
       - /run-env.sh darwin make darwin
-  - name: publish-github
-    image: plugins/github-release
-    settings:
-      api_key:
-        from_secret: github_token
-      files: quic-config*.zip
-      prerelease: true
-      title: latest
-      overwrite: true
-    when:
-      event:
-        - tag
   - name: publish-hanfer
     image: appleboy/drone-scp
     settings:
@@ -39,3 +27,23 @@ steps:
         from_secret: ssh_password
       source: quic-config*.zip
       target: /mnt/hanfer/public
+    when:
+      event:
+        - tag
+  - name: publish-github
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files: quic-config*.zip
+      prerelease: true
+      title: latest
+      note: |-
+        Download Links
+        https://bkleiner.codes/public/quic-config-windows-amd64.zip
+        https://bkleiner.codes/public/quic-config-linux-amd64.zip
+        https://bkleiner.codes/public/quic-config-darwin-amd64.zip
+      overwrite: true
+    when:
+      event:
+        - tag
