@@ -138,7 +138,7 @@ func (l *Loader) MassErase() error {
 	if err := l.dfu.Dnload(0, cmd); err != nil {
 		return err
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 applyLabel:
 	s, err := l.applyStatus()
