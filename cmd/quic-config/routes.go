@@ -312,12 +312,14 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+	downloadProgress(100, 10)
 
 	hex, err := s.fl.FetchRelease(value)
 	if err != nil {
 		handleError(w, err)
 		return
 	}
+	downloadProgress(100, 90)
 
 	fw, err := firmware.ParseIntelHex(hex)
 	if err != nil {
