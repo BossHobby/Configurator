@@ -160,7 +160,7 @@ export default {
       filterTypeOptions: [
         { value: 0, text: "None" },
         { value: 1, text: "PT1 1st Order" },
-        { value: 1, text: "PT1 2nd Order" }
+        { value: 2, text: "PT1 2nd Order" }
       ],
       toggleOptions: [{ value: 0, text: "Off" }, { value: 1, text: "On" }]
     };
