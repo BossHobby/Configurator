@@ -74,10 +74,8 @@ export default {
   data() {
     return {
       pidVoltageCompensationOptions: [
-        { value: 0, text: "NONE" },
-        { value: 1, text: "EXACT_VOLTS" },
-        { value: 2, text: "FILTERED_VOLTS" },
-        { value: 3, text: "FUELGAUGE_VOLTS" }
+        { value: 0, text: "Off" },
+        { value: 1, text: "On" }
       ]
     };
   },
