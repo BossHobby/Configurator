@@ -72,6 +72,45 @@
             </b-row>
           </b-col>
         </b-row>
+
+        <b-row class="mt-4">
+          <b-col sm="4" class="my-2">
+            <label for="throttle_dterm_attenuation-enable">Throttle DTerm Attenuation</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-select
+              id="throttle_dterm_attenuation-enable"
+              v-model.number="pid.throttle_dterm_attenuation.tda_active"
+              :options="tdaOptions"
+            ></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col sm="4" class="my-2">
+            <label for="throttle_dterm_attenuation-breakpoint">TDA Breakpoint</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-input
+              id="throttle_dterm_attenuation-breakpoint"
+              type="number"
+              step="0.05"
+              v-model.number="pid.throttle_dterm_attenuation.tda_breakpoint"
+            ></b-form-input>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col sm="4" class="my-2">
+            <label for="throttle_dterm_attenuation-percent">TDA Percent</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-input
+              id="throttle_dterm_attenuation-percent"
+              type="number"
+              step="0.05"
+              v-model.number="pid.throttle_dterm_attenuation.tda_percent"
+            ></b-form-input>
+          </b-col>
+        </b-row>
       </b-col>
       <b-col sm="6">
         <b-row class="mt-2">
@@ -196,6 +235,11 @@ export default {
       stickProfiles: [
         { value: 0, text: "Stick Boost Profile AUX Off" },
         { value: 1, text: "Stick Boost Profile AUX On" }
+      ],
+      tdaOptions: [
+        { value: 0, text: "None" },
+        { value: 1, text: "Active" },
+        { value: 2, text: "Max" }
       ],
       current_preset: 0
     };

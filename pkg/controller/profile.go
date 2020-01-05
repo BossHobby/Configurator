@@ -47,13 +47,20 @@ type StickRates struct {
 	Transition  Vector `cbor:"transition" json:"transition"`
 }
 
+type ThrottleDTermAttenuation struct {
+	TDAActive     uint8   `cbor:"tda_active" json:"tda_active"`
+	TDABreakpoint float32 `cbor:"tda_breakpoint" json:"tda_breakpoint"`
+	TDAPercent    float32 `cbor:"tda_percent" json:"tda_percent"`
+}
+
 type PID struct {
-	PIDProfile   uint8         `cbor:"pid_profile" json:"pid_profile"`
-	PIDRates     []PIDRates    `cbor:"pid_rates" json:"pid_rates"`
-	StickProfile uint8         `cbor:"stick_profile" json:"stick_profile"`
-	StickRates   []StickRates  `cbor:"stick_rates" json:"stick_rates"`
-	SmallAngle   AnglePIDRates `cbor:"small_angle" json:"small_angle"`
-	BigAngle     AnglePIDRates `cbor:"big_angle" json:"big_angle"`
+	PIDProfile               uint8                    `cbor:"pid_profile" json:"pid_profile"`
+	PIDRates                 []PIDRates               `cbor:"pid_rates" json:"pid_rates"`
+	StickProfile             uint8                    `cbor:"stick_profile" json:"stick_profile"`
+	StickRates               []StickRates             `cbor:"stick_rates" json:"stick_rates"`
+	SmallAngle               AnglePIDRates            `cbor:"small_angle" json:"small_angle"`
+	BigAngle                 AnglePIDRates            `cbor:"big_angle" json:"big_angle"`
+	ThrottleDTermAttenuation ThrottleDTermAttenuation `cbor:"throttle_dterm_attenuation" json:"throttle_dterm_attenuation"`
 }
 
 type Motor struct {
@@ -88,14 +95,14 @@ type Serial struct {
 }
 
 type FilterParameter struct {
-	Type       uint    `cbor:"type" json:"type"`
+	Type       uint8   `cbor:"type" json:"type"`
 	CutoffFreq float32 `cbor:"cutoff_freq" json:"cutoff_freq"`
 }
 
 type Filter struct {
 	Gyro               []FilterParameter `cbor:"gyro" json:"gyro"`
 	DTerm              []FilterParameter `cbor:"dterm" json:"dterm"`
-	DTermDynamicEnable uint              `cbor:"dterm_dynamic_enable" json:"dterm_dynamic_enable"`
+	DTermDynamicEnable uint8             `cbor:"dterm_dynamic_enable" json:"dterm_dynamic_enable"`
 	DTermDynamicMin    float32           `cbor:"dterm_dynamic_min" json:"dterm_dynamic_min"`
 	DTermDynamicMax    float32           `cbor:"dterm_dynamic_max" json:"dterm_dynamic_max"`
 }
