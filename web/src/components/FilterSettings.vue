@@ -5,7 +5,7 @@
       <b-col sm="6" v-if="profile.filter.gyro">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-1-type">Gyro Slot 1 Type</label>
+            <label for="gyro-1-type">Gyro Pass 1 Type</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -17,7 +17,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-1-freq">Gyro Slot 1 Freq</label>
+            <label for="gyro-1-freq">Gyro Pass 1 Freq</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -30,7 +30,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-2-type">Gyro Slot 2 Type</label>
+            <label for="gyro-2-type">Gyro Pass 2 Type</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -42,7 +42,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-2-freq">Gyro Slot 2 Freq</label>
+            <label for="gyro-2-freq">Gyro Pass 2 Freq</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -58,7 +58,7 @@
       <b-col sm="6" v-if="profile.filter.dterm">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-1-type">DTerm Slot 1 Type</label>
+            <label for="dterm-1-type">DTerm Pass 1 Type</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -70,7 +70,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-1-freq">DTerm Slot 1 Freq</label>
+            <label for="dterm-1-freq">DTerm Pass 1 Freq</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -83,7 +83,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-2-type">DTerm Slot 2 Type</label>
+            <label for="dterm-2-type">DTerm Pass 2 Type</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -95,7 +95,7 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-2-freq">DTerm Slot 2 Freq</label>
+            <label for="dterm-2-freq">DTerm Pass 2 Freq</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
