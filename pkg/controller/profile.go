@@ -87,6 +87,19 @@ type Serial struct {
 	SmartAudio uint `cbor:"smart_audio" json:"smart_audio"`
 }
 
+type FilterParameter struct {
+	Type       uint    `cbor:"type" json:"type"`
+	CutoffFreq float32 `cbor:"cutoff_freq" json:"cutoff_freq"`
+}
+
+type Filter struct {
+	Gyro               []FilterParameter `cbor:"gyro" json:"gyro"`
+	DTerm              []FilterParameter `cbor:"dterm" json:"dterm"`
+	DTermDynamicEnable uint              `cbor:"dterm_dynamic_enable" json:"dterm_dynamic_enable"`
+	DTermDynamicMin    float32           `cbor:"dterm_dynamic_min" json:"dterm_dynamic_min"`
+	DTermDynamicMax    float32           `cbor:"dterm_dynamic_max" json:"dterm_dynamic_max"`
+}
+
 type Metadata struct {
 	Name     string `cbor:"name" json:"name"`
 	Datetime uint32 `cbor:"datetime" json:"datetime"`
@@ -110,6 +123,7 @@ type Profile struct {
 	Channel Channel  `cbor:"channel" json:"channel"`
 	Motor   Motor    `cbor:"motor" json:"motor"`
 	Serial  Serial   `cbor:"serial" json:"serial"`
+	Filter  Filter   `cbor:"filter" json:"filter"`
 	OSD     OSD      `cbor:"osd" json:"osd"`
 	Voltage Voltage  `cbor:"voltage" json:"voltage"`
 	Rate    Rates    `cbor:"rate" json:"rate"`
