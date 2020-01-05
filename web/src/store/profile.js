@@ -7,6 +7,10 @@ const store = {
       smart_audio: 0,
       port_max: 1,
     },
+    filter: {
+      gyro: [],
+      dterm: []
+    },
     osd: {
       elements: []
     },
