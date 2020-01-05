@@ -8,8 +8,8 @@ const store = {
       port_max: 1,
     },
     filter: {
-      gyro: [],
-      dterm: []
+      gyro: [{}, {}],
+      dterm: [{}, {}]
     },
     osd: {
       elements: []
@@ -35,7 +35,8 @@ const store = {
       stick_profile: 0,
       stick_rates: [{}],
       big_angle: {},
-      small_angle: {}
+      small_angle: {},
+      throttle_dterm_attenuation: {}
     }
   },
   getters: {

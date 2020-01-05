@@ -1,8 +1,8 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">Filter</h5>
-    <b-row>
-      <b-col sm="6">
+    <b-row v-if="profile.filter">
+      <b-col sm="6" v-if="profile.filter.gyro">
         <b-row>
           <b-col sm="4" class="my-2">
             <label for="gyro-1-type">Gyro Slot 1 Type</label>
@@ -55,7 +55,7 @@
         </b-row>
       </b-col>
 
-      <b-col sm="6">
+      <b-col sm="6" v-if="profile.filter.dterm">
         <b-row>
           <b-col sm="4" class="my-2">
             <label for="dterm-1-type">DTerm Slot 1 Type</label>
