@@ -38,6 +38,7 @@ const store = new Vuex.Store({
     log: [],
     alerts: [],
     blackbox: {
+      cpu_load: 0.0,
       vbat_filter: 0.0,
     },
     pid_rate_presets: [],

@@ -56,6 +56,7 @@
       <b-navbar-brand>
         {{ profile.meta.name }}
         <small class="text-muted ml-2">Modified {{ date | moment("from") }}</small>
+        <small class="text-muted ml-2" style="font-size: 60%">CPU Load {{ blackbox.cpu_load }}</small>
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
@@ -71,7 +72,7 @@ import { mapActions, mapState } from "vuex";
 export default {
   name: "app",
   computed: {
-    ...mapState(["status", "profile", "alerts"]),
+    ...mapState(["status", "profile", "alerts", "blackbox"]),
     can_connect() {
       return !this.status.Port || this.status.Port.length == 0;
     },

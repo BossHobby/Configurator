@@ -153,6 +153,7 @@ type TargetInfo struct {
 }
 
 type Blackbox struct {
+	CPULoad    float32 `cbor:"cpu_load" json:"cpu_load"`
 	VbatFilter float32 `cbor:"vbat_filter" json:"vbat_filter"`
 
 	GyroRaw    [3]float32 `cbor:"gyro_raw" json:"gyro_raw"`
