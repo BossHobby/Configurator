@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	serial "github.com/bugst/go-serial"
+	serial "go.bug.st/serial"
 )
 
 type Controller struct {
