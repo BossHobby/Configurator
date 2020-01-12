@@ -175,6 +175,9 @@ type PidRatePreset struct {
 }
 
 type VtxSettings struct {
-	Band    uint `cbor:"band" json:"band"`
-	Channel uint `cbor:"channel" json:"channel"`
+	Detected   uint `cbor:"detected" json:"detected"`
+	Band       uint `cbor:"band" json:"band"`
+	Channel    uint `cbor:"channel" json:"channel"`
+	PitMode    uint `cbor:"pit_mode" json:"pit_mode"`
+	PowerLevel uint `cbor:"power_level" json:"power_level"`
 }

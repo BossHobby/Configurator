@@ -1,37 +1,64 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">VTX</h5>
-    <b-row>
-      <b-col sm="4" class="my-2">
-        <label for="vtx-band">Frequency</label>
-      </b-col>
-      <b-col sm="8" class="my-2">{{ frequencyTable[vtx_settings.band][vtx_settings.channel] }}</b-col>
-    </b-row>
-    <b-row>
-      <b-col sm="4" class="my-2">
-        <label for="vtx-band">Band</label>
-      </b-col>
-      <b-col sm="8" class="my-2">
-        <b-form-select id="vtx-band" v-model.number="vtx_settings.band" :options="vtxBandOptions"></b-form-select>
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col sm="4" class="my-2">
-        <label for="vtx-channel">Channel</label>
-      </b-col>
-      <b-col sm="8" class="my-2">
-        <b-form-select
-          id="vtx-channel"
-          v-model.number="vtx_settings.channel"
-          :options="vtxChannelOptions"
-        ></b-form-select>
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col offset="9" sm="3">
-        <b-button class="ml-4 mt-2" v-on:click="apply_vtx_settings(vtx_settings)">Apply</b-button>
-      </b-col>
-    </b-row>
+    <div v-if="vtx_settings.detected">
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label for="vtx-band">Frequency</label>
+        </b-col>
+        <b-col sm="8" class="my-2">{{ frequencyTable[vtx_settings.band][vtx_settings.channel] }}</b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label for="vtx-band">Band</label>
+        </b-col>
+        <b-col sm="8" class="my-2">
+          <b-form-select id="vtx-band" v-model.number="vtx_settings.band" :options="vtxBandOptions"></b-form-select>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label for="vtx-channel">Channel</label>
+        </b-col>
+        <b-col sm="8" class="my-2">
+          <b-form-select
+            id="vtx-channel"
+            v-model.number="vtx_settings.channel"
+            :options="vtxChannelOptions"
+          ></b-form-select>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label for="vtx-pit-mode">Pit Mode</label>
+        </b-col>
+        <b-col sm="8" class="my-2">
+          <b-form-select
+            id="vtx-pit-mode"
+            v-model.number="vtx_settings.pit_mode"
+            :options="vtxPitModeOptions"
+          ></b-form-select>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label for="vtx-power-level">Power Level</label>
+        </b-col>
+        <b-col sm="8" class="my-2">
+          <b-form-select
+            id="vtx-power-level"
+            v-model.number="vtx_settings.power_level"
+            :options="vtxPowerLevelOptions"
+          ></b-form-select>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col offset="9" sm="3">
+          <b-button class="ml-4 mt-2" v-on:click="apply_vtx_settings(vtx_settings)">Apply</b-button>
+        </b-col>
+      </b-row>
+    </div>
+    <div v-else>Not detected</div>
   </b-card>
 </template>
 
@@ -58,6 +85,13 @@ export default {
         { value: 5, text: "VTX_CHANNEL_6" },
         { value: 6, text: "VTX_CHANNEL_7" },
         { value: 7, text: "VTX_CHANNEL_8" }
+      ],
+      vtxPitModeOptions: [{ value: 0, text: "Off" }, { value: 1, text: "On" }],
+      vtxPowerLevelOptions: [
+        { value: 0, text: "VTX_POWER_LEVEL_1" },
+        { value: 1, text: "VTX_POWER_LEVEL_2" },
+        { value: 2, text: "VTX_POWER_LEVEL_3" },
+        { value: 3, text: "VTX_POWER_LEVEL_4" }
       ],
       frequencyTable: [
         [5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725],
