@@ -6,10 +6,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 
 	"github.com/fxamacker/cbor"
 	log "github.com/sirupsen/logrus"
@@ -81,7 +85,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	//}
 
 	if flag.NArg() == 0 {
@@ -102,6 +106,57 @@ func main() {
 	defer fc.Close()
 
 	switch flag.Arg(0) {
+	case "get_char":
+		str := flag.Arg(1)
+
+		val, err := strconv.Atoi(str)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		req, err := cbor.Marshal(val, cbor.EncOptions{})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		p, err := fc.SendQUIC(controller.QuicCmdGetOSDChar, req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		width, height := 12, 18
+		img := image.NewGray(image.Rectangle{
+			image.Point{0, 0},
+			image.Point{width, height},
+		})
+
+		for i, b := range p.Payload {
+			if ((i * 4) % width) == 0 {
+				fmt.Println()
+			}
+
+			for offset, j := 0, 0; offset <= 6; offset += 2 {
+				v := (b >> uint(offset)) & 0x3
+				x, y := (i*4+j)%width, (i*4+j)/width
+
+				if v == 0 {
+					fmt.Print("x")
+					img.Set(x, y, color.Black)
+				} else {
+					fmt.Print(" ")
+					img.Set(x, y, color.White)
+				}
+				j++
+			}
+		}
+
+		f, err := os.Create("image.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		png.Encode(f, img)
+
 	case "download":
 		value := controller.Profile{}
 		if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
