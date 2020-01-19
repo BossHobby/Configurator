@@ -3,7 +3,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -14,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strconv"
 
 	"github.com/fxamacker/cbor"
 	log "github.com/sirupsen/logrus"
@@ -107,46 +105,43 @@ func main() {
 	defer fc.Close()
 
 	switch flag.Arg(0) {
-	case "get_char":
-		str := flag.Arg(1)
-
-		val, err := strconv.Atoi(str)
+	case "get_osd_font":
+		r, err := fc.GetQUICReader(controller.QuicValOSDFont)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		req, err := cbor.Marshal(val, cbor.EncOptions{})
-		if err != nil {
-			log.Fatal(err)
+		dec := cbor.NewDecoder(r)
+
+		width, height, border := 12, 18, 1
+		img := image.NewNRGBA(image.Rect(0, 0, 16*(width+border)+border, 16*(height+border)+border))
+
+		for y := 0; y < img.Bounds().Dy(); y++ {
+			for x := 0; x < img.Bounds().Dx(); x++ {
+				img.Set(x, y, color.RGBA{255, 0, 0, 255})
+			}
 		}
-
-		p, err := fc.SendQUIC(controller.QuicCmdGetOSDChar, req)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
-
-		width, height := 12, 18
-		img := image.NewGray(image.Rect(0, 0, 16*width, 16*height))
 
 		for cy := 0; cy < 16; cy++ {
 			for cx := 0; cx < 16; cx++ {
+				setPixel := func(x, y int, v uint8) {
+					switch v {
+					case 0:
+						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Black)
+					case 2:
+						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.White)
+					default:
+						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Transparent)
+					}
+				}
+
 				var buf []byte
 				if err := dec.Decode(&buf); err != nil {
 					log.Fatal(err)
 				}
 
-				setPixel := func(x, y int, v uint8) {
-					if v == 0 {
-						img.Set(x+cx*width, y+cy*height, color.Black)
-					} else {
-						img.Set(x+cx*width, y+cy*height, color.White)
-					}
-				}
-
 				x, y := 0, 0
-				for _, b := range buf[:54] {
+				for _, b := range buf {
 					setPixel(x+0, y, (b>>6)&0x3)
 					setPixel(x+1, y, (b>>4)&0x3)
 					setPixel(x+2, y, (b>>2)&0x3)
@@ -161,7 +156,7 @@ func main() {
 			}
 		}
 
-		f, err := os.Create("image.png")
+		f, err := os.Create("font.png")
 		if err != nil {
 			log.Fatal(err)
 		}

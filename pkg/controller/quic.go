@@ -21,7 +21,6 @@ const (
 	QuicCmdLog
 	QuicCmdCalImu
 	QuicCmdBlackbox
-	QuicCmdGetOSDChar
 )
 
 const (
@@ -37,7 +36,7 @@ const (
 	QuicValBlackboxRate
 	QuicValPidRatePresets
 	QuicValVtxSettings
-	QuicValOSDCharacter
+	QuicValOSDFont
 )
 
 type QuicPacket struct {
@@ -143,33 +142,6 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*QuicPacket, error)
 	}
 }
 
-func (c *Controller) GetQUIC(typ QuicCommand, v interface{}) error {
-	req, err := cbor.Marshal(typ, cbor.EncOptions{})
-	if err != nil {
-		return err
-	}
-
-	p, err := c.SendQUIC(QuicCmdGet, req)
-	if err != nil {
-		return err
-	}
-
-	var inTyp QuicCommand
-	dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
-	if err := dec.Decode(&inTyp); err != nil {
-		return err
-	}
-	if typ != inTyp {
-		return fmt.Errorf("typ (%d) != inTyp (%d)", typ, inTyp)
-	}
-
-	if err := dec.Decode(v); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
 	req, err := cbor.Marshal(typ, cbor.EncOptions{})
 	if err != nil {
@@ -181,8 +153,7 @@ func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
 		return nil, err
 	}
 
-	r := bytes.NewReader(p.Payload)
-	dec := cbor.NewDecoder(r)
+	dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
 
 	var inTyp QuicCommand
 	if err := dec.Decode(&inTyp); err != nil {
@@ -192,7 +163,20 @@ func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
 		return nil, fmt.Errorf("typ (%d) != inTyp (%d)", typ, inTyp)
 	}
 
-	return r, nil
+	return bytes.NewReader(p.Payload[dec.NumBytesRead():]), nil
+}
+
+func (c *Controller) GetQUIC(typ QuicCommand, v interface{}) error {
+	r, err := c.GetQUICReader(typ)
+	if err != nil {
+		return err
+	}
+
+	if err := cbor.NewDecoder(r).Decode(v); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
