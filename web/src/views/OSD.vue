@@ -68,6 +68,23 @@
             </g>
           </svg>
         </b-card>
+        <b-card class="my-2">
+          <h5 slot="header" class="mb-0">Font</h5>
+          <b-row class="my-2">
+            <b-col sm="2" class="my-2">
+              <label for="font-file">File</label>
+            </b-col>
+            <b-col sm="6" class="my-2">
+              <b-form-select id="font-file" v-model="current_font_file" :options="fontFiles"></b-form-select>
+            </b-col>
+            <b-col sm="2" class="my-2">
+              <b-button v-on:click="apply_osd_font(current_font_file)">Upload</b-button>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
+          </b-row>
+        </b-card>
       </b-col>
     </b-row>
     <div v-else>
@@ -77,7 +94,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "osd",
@@ -105,7 +122,10 @@ export default {
         { name: "arm_disarm", enabled: true, text: "__**ARMED**____" },
         { name: "osd_throttle", enabled: true, text: "50" },
         { name: "osd_vtx", enabled: false, text: "" }
-      ]
+      ],
+      fontFiles: [{ text: "Clarity", value: "clarity" }],
+      current_font_file: "clarity",
+      imageSource: "http://localhost:8000/api/osd/font"
     };
   },
   computed: {
@@ -137,6 +157,12 @@ export default {
     }
   },
   methods: {
+    ...mapActions(["set_osd_font"]),
+    apply_osd_font(name) {
+      const oldSrc = this.imageSource;
+      this.imageSource = "";
+      return this.set_osd_font(name).then(() => (this.imageSource = oldSrc));
+    },
     osd_set(i, attr, val) {
       const copy = [...this.profile.osd.elements];
       copy[i] = this.osd_encode(this.profile.osd.elements[i], attr, val);

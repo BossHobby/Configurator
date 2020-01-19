@@ -9,7 +9,9 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
+	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	serial "go.bug.st/serial"
@@ -30,6 +32,8 @@ type Server struct {
 	fl *firmware.FirmwareLoader
 	fc *controller.Controller
 
+	fs http.FileSystem
+
 	dfuMu     sync.Mutex
 	dfuLoader *dfu.Loader
 }
@@ -39,8 +43,13 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	statikFS, err := fs.New()
+	if err != nil {
+		return nil, err
+	}
 	return &Server{
 		fl: fl,
+		fs: statikFS,
 	}, nil
 }
 

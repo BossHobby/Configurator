@@ -25,4 +25,4 @@ yarn-error.log*
 /misc
 /pkg/statik
 /cmd/quic-config/rsrc.syso
-/quicksilver.log
+quicksilver.log

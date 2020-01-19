@@ -15,10 +15,8 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
-	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/fxamacker/cbor"
 	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
 )
 
 func renderJSON(w http.ResponseWriter, v interface{}) {
@@ -51,11 +49,7 @@ func (s *Server) fcMidleware(next http.Handler) http.Handler {
 	})
 }
 
-func spaHandler() http.HandlerFunc {
-	statikFS, err := fs.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+func (s *Server) spaHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const indexFile = "/index.html"
 
@@ -65,13 +59,13 @@ func spaHandler() http.HandlerFunc {
 			r.URL.Path = upath
 		}
 
-		f, err := statikFS.Open(path.Clean(upath))
+		f, err := s.fs.Open(path.Clean(upath))
 		if err != nil && !os.IsNotExist(err) {
 			handleError(w, err)
 			return
 		}
 		if os.IsNotExist(err) {
-			f, err = statikFS.Open(indexFile)
+			f, err = s.fs.Open(indexFile)
 			if err != nil {
 				handleError(w, err)
 				return
@@ -84,7 +78,7 @@ func spaHandler() http.HandlerFunc {
 			return
 		}
 		if stat.IsDir() {
-			f, err = statikFS.Open(indexFile)
+			f, err = s.fs.Open(indexFile)
 			if err != nil {
 				handleError(w, err)
 				return
@@ -124,6 +118,36 @@ func (s *Server) getProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	renderJSON(w, value)
+}
+
+func (s *Server) getOSDFont(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Disposition", "attachment; filename=font.png")
+	w.Header().Set("Content-Type", "image/png")
+	if err := getOSDFont(s.fc, w); err != nil {
+		handleError(w, err)
+		return
+	}
+}
+
+func (s *Server) postOSDFont(w http.ResponseWriter, r *http.Request) {
+	file := ""
+	if err := json.NewDecoder(r.Body).Decode(&file); err != nil {
+		handleError(w, err)
+		return
+	}
+
+	f, err := s.fs.Open("/" + file + ".png")
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	defer f.Close()
+
+	if err := setOSDFont(s.fc, f); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, "OK")
 }
 
 func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
@@ -444,9 +468,12 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f.HandleFunc("/api/vtx/settings", s.getVtxSettings).Methods("GET")
 		f.HandleFunc("/api/vtx/settings", s.postVtxSettings).Methods("POST")
 
+		f.HandleFunc("/api/osd/font", s.getOSDFont).Methods("GET")
+		f.HandleFunc("/api/osd/font", s.postOSDFont).Methods("POST")
+
 		f.HandleFunc("/api/cal_imu", s.postCalImu).Methods("POST")
 	}
 
 	r.HandleFunc("/api/ws", s.websocketHandler)
-	r.PathPrefix("/").HandlerFunc(spaHandler())
+	r.PathPrefix("/").HandlerFunc(s.spaHandler())
 }

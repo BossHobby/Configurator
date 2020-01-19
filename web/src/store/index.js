@@ -8,7 +8,7 @@ import profileModule from "./profile";
 import router from '../router';
 
 var ws = null
-
+/*
 function sendWebsocket(channel, payload) {
   if (ws == null || !ws.readyState) {
     return;
@@ -20,7 +20,7 @@ function sendWebsocket(channel, payload) {
   })
   return ws.send(data)
 }
-
+*/
 const store = new Vuex.Store({
   modules: {
     profile: profileModule,
@@ -167,6 +167,9 @@ const store = new Vuex.Store({
     },
     set_blackbox_rate(ctx, rate) {
       return post("/api/blackbox/rate", rate)
+    },
+    set_osd_font(ctx, name) {
+      return post("/api/osd/font", name)
     }
   }
 })

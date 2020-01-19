@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -75,6 +76,114 @@ func printJson(v interface{}) error {
 	return enc.Encode(v)
 }
 
+func getOSDFont(fc *controller.Controller, w io.Writer) error {
+	r, err := fc.GetQUICReader(controller.QuicValOSDFont)
+	if err != nil {
+		return err
+	}
+
+	dec := cbor.NewDecoder(r)
+
+	width, height, border := 12, 18, 1
+	img := image.NewNRGBA(image.Rect(0, 0, 16*(width+border)+border, 16*(height+border)+border))
+
+	for y := 0; y < img.Bounds().Dy(); y++ {
+		for x := 0; x < img.Bounds().Dx(); x++ {
+			img.Set(x, y, color.RGBA{255, 0, 0, 255})
+		}
+	}
+
+	for cy := 0; cy < 16; cy++ {
+		for cx := 0; cx < 16; cx++ {
+			setPixel := func(x, y int, v uint8) {
+				switch v {
+				case 0:
+					img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Black)
+				case 2:
+					img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.White)
+				default:
+					img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Transparent)
+				}
+			}
+
+			var buf []byte
+			if err := dec.Decode(&buf); err != nil {
+				return err
+			}
+
+			x, y := 0, 0
+			for _, b := range buf {
+				setPixel(x+0, y, (b>>6)&0x3)
+				setPixel(x+1, y, (b>>4)&0x3)
+				setPixel(x+2, y, (b>>2)&0x3)
+				setPixel(x+3, y, (b>>0)&0x3)
+
+				x += 4
+				if x == width {
+					x = 0
+					y++
+				}
+			}
+		}
+	}
+
+	return png.Encode(w, img)
+}
+
+func setOSDFont(fc *controller.Controller, r io.Reader) error {
+	img, err := png.Decode(r)
+	if err != nil {
+		return err
+	}
+
+	w, buf := new(bytes.Buffer), make([]byte, 54)
+	enc := cbor.NewEncoder(w, cbor.EncOptions{})
+
+	width, height, border := 12, 18, 1
+	for cy := 0; cy < 16; cy++ {
+		for cx := 0; cx < 16; cx++ {
+
+			getPixel := func(x, y int) byte {
+				v := img.At(x+cx*(width+border)+border, y+cy*(height+border)+border)
+
+				switch color.RGBAModel.Convert(v) {
+				case color.RGBA{0, 0, 0, 255}:
+					return 0
+				case color.RGBA{255, 255, 255, 255}:
+					return 2
+				default:
+					return 1
+				}
+			}
+
+			x, y := 0, 0
+			for j := 0; j < 54; j++ {
+				buf[j] = (getPixel(x+0, y)&0x3)<<6 |
+					(getPixel(x+1, y)&0x3)<<4 |
+					(getPixel(x+2, y)&0x3)<<2 |
+					(getPixel(x+3, y)&0x3)<<0
+
+				x += 4
+				if x == width {
+					x = 0
+					y++
+				}
+			}
+
+			if err := enc.Encode(buf); err != nil {
+				return err
+			}
+		}
+	}
+
+	var val string
+	if err := fc.SetQUICReader(controller.QuicValOSDFont, w, &val); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -106,62 +215,34 @@ func main() {
 
 	switch flag.Arg(0) {
 	case "get_osd_font":
-		r, err := fc.GetQUICReader(controller.QuicValOSDFont)
+		if flag.NArg() != 2 {
+			log.Fatal("must supply a <filename>")
+		}
+
+		f, err := os.Create(flag.Arg(1))
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer f.Close()
 
-		dec := cbor.NewDecoder(r)
-
-		width, height, border := 12, 18, 1
-		img := image.NewNRGBA(image.Rect(0, 0, 16*(width+border)+border, 16*(height+border)+border))
-
-		for y := 0; y < img.Bounds().Dy(); y++ {
-			for x := 0; x < img.Bounds().Dx(); x++ {
-				img.Set(x, y, color.RGBA{255, 0, 0, 255})
-			}
-		}
-
-		for cy := 0; cy < 16; cy++ {
-			for cx := 0; cx < 16; cx++ {
-				setPixel := func(x, y int, v uint8) {
-					switch v {
-					case 0:
-						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Black)
-					case 2:
-						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.White)
-					default:
-						img.Set(x+cx*(width+border)+border, y+cy*(height+border)+border, color.Transparent)
-					}
-				}
-
-				var buf []byte
-				if err := dec.Decode(&buf); err != nil {
-					log.Fatal(err)
-				}
-
-				x, y := 0, 0
-				for _, b := range buf {
-					setPixel(x+0, y, (b>>6)&0x3)
-					setPixel(x+1, y, (b>>4)&0x3)
-					setPixel(x+2, y, (b>>2)&0x3)
-					setPixel(x+3, y, (b>>0)&0x3)
-
-					x += 4
-					if x == width {
-						x = 0
-						y++
-					}
-				}
-			}
-		}
-
-		f, err := os.Create("font.png")
-		if err != nil {
+		if err := getOSDFont(fc, f); err != nil {
 			log.Fatal(err)
 		}
 
-		png.Encode(f, img)
+	case "set_osd_font":
+		if flag.NArg() != 2 {
+			log.Fatal("must supply a <filename>")
+		}
+
+		f, err := os.Open(flag.Arg(1))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		if err := setOSDFont(fc, f); err != nil {
+			log.Fatal(err)
+		}
 
 	case "download":
 		value := controller.Profile{}
@@ -176,6 +257,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer f.Close()
 
 		if err := cbor.NewEncoder(f, cbor.EncOptions{}).Encode(value); err != nil {
 			log.Fatal(err)
@@ -189,6 +271,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer f.Close()
 
 		value := controller.Profile{}
 		if err := cbor.NewDecoder(f).Decode(&value); err != nil {
