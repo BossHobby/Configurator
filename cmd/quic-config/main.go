@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -124,29 +125,39 @@ func main() {
 			log.Fatal(err)
 		}
 
+		dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
+
 		width, height := 12, 18
-		img := image.NewGray(image.Rectangle{
-			image.Point{0, 0},
-			image.Point{width, height},
-		})
+		img := image.NewGray(image.Rect(0, 0, 16*width, 16*height))
 
-		for i, b := range p.Payload {
-			if ((i * 4) % width) == 0 {
-				fmt.Println()
-			}
-
-			for offset, j := 0, 0; offset <= 6; offset += 2 {
-				v := (b >> uint(offset)) & 0x3
-				x, y := (i*4+j)%width, (i*4+j)/width
-
-				if v == 0 {
-					fmt.Print("x")
-					img.Set(x, y, color.Black)
-				} else {
-					fmt.Print(" ")
-					img.Set(x, y, color.White)
+		for cy := 0; cy < 16; cy++ {
+			for cx := 0; cx < 16; cx++ {
+				var buf []byte
+				if err := dec.Decode(&buf); err != nil {
+					log.Fatal(err)
 				}
-				j++
+
+				setPixel := func(x, y int, v uint8) {
+					if v == 0 {
+						img.Set(x+cx*width, y+cy*height, color.Black)
+					} else {
+						img.Set(x+cx*width, y+cy*height, color.White)
+					}
+				}
+
+				x, y := 0, 0
+				for _, b := range buf[:54] {
+					setPixel(x+0, y, (b>>6)&0x3)
+					setPixel(x+1, y, (b>>4)&0x3)
+					setPixel(x+2, y, (b>>2)&0x3)
+					setPixel(x+3, y, (b>>0)&0x3)
+
+					x += 4
+					if x == width {
+						x = 0
+						y++
+					}
+				}
 			}
 		}
 

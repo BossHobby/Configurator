@@ -66,6 +66,9 @@ func (c *Controller) ReadQUIC() error {
 	flag := (header[0] >> 5)
 	payloadLen := uint16(header[1])<<8 | uint16(header[2])
 	size := int(quicHeaderLen + payloadLen)
+	if cmd != QuicCmdBlackbox {
+		log.Debugf("<quic> received cmd: %d flag: %d len: %d", cmd, flag, payloadLen)
+	}
 
 	payload, err := c.readAtLeast(int(payloadLen))
 	if err != nil {
@@ -82,9 +85,6 @@ func (c *Controller) ReadQUIC() error {
 		flag:    flag,
 		len:     payloadLen,
 		Payload: payload,
-	}
-	if packet.cmd != QuicCmdBlackbox {
-		log.Debugf("<quic> received cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len)
 	}
 
 	switch packet.cmd {
