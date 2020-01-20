@@ -28,7 +28,7 @@
           ></b-form-select>
         </b-col>
       </b-row>
-      <b-row v-if="vtx_settings.pit_mode != 0">
+      <b-row v-if="vtx_settings.pit_mode != 2">
         <b-col sm="4" class="my-2">
           <label for="vtx-pit-mode">Pit Mode</label>
         </b-col>
@@ -87,9 +87,9 @@ export default {
         { value: 7, text: "VTX_CHANNEL_8" }
       ],
       vtxPitModeOptions: [
-        { value: 0, text: "NO SUPPORT" },
-        { value: 1, text: "Off" },
-        { value: 2, text: "On" }
+        { value: 0, text: "Off" },
+        { value: 1, text: "On" },
+        { value: 2, text: "NO SUPPORT" }
       ],
       vtxPowerLevelOptions: [
         { value: 0, text: "VTX_POWER_LEVEL_1" },
