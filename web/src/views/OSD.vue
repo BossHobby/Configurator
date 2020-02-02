@@ -121,7 +121,7 @@ export default {
         { name: "stopwatch", enabled: true, text: "120" },
         { name: "arm_disarm", enabled: true, text: "__**ARMED**____" },
         { name: "osd_throttle", enabled: true, text: "50" },
-        { name: "osd_vtx", enabled: false, text: "" }
+        { name: "osd_vtx", enabled: true, text: "" }
       ],
       fontFiles: [{ text: "Clarity", value: "clarity" }],
       current_font_file: "clarity",
