@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
 	serial "go.bug.st/serial"
 )
 
@@ -62,8 +60,7 @@ func OpenController(serialPort string) (*Controller, error) {
 		}
 	}
 	if err != nil {
-		port.Close()
-		return nil, err
+		return nil, c.Close()
 	}
 
 	return c, nil
@@ -109,34 +106,6 @@ func (c *Controller) SoftReboot() {
 
 func (c *Controller) HardReboot() {
 	c.writeChannel <- []byte{'R'}
-}
-
-func (c *Controller) ReadFlash(length uint16) []byte {
-	buf := make([]byte, length)
-	offset := uint16(0)
-
-	for offset < length {
-		res := c.SendBlheli(BLHeliCmdDeviceRead, offset, []byte{128})
-		log.Printf("<blheli> readFlash %d (%d)", offset, len(res.PARAMS))
-		copy(buf[offset:], res.PARAMS)
-		offset += uint16(len(res.PARAMS))
-	}
-
-	return buf
-}
-
-func (c *Controller) WriteFlash(buf []byte) {
-	offset, length := uint16(0), uint16(len(buf))
-
-	for offset < length {
-		size := length - offset
-		if size > 128 {
-			size = 128
-		}
-		res := c.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
-		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)", res.ACK, offset, size)
-		offset += size
-	}
 }
 
 func (c *Controller) readAtLeast(size int) ([]byte, error) {

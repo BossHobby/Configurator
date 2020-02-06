@@ -240,3 +240,31 @@ func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHe
 	}
 	return res
 }
+
+func (c *Controller) ReadFlash(length uint16) []byte {
+	buf := make([]byte, length)
+	offset := uint16(0)
+
+	for offset < length {
+		res := c.SendBlheli(BLHeliCmdDeviceRead, offset, []byte{128})
+		log.Printf("<blheli> readFlash %d (%d)", offset, len(res.PARAMS))
+		copy(buf[offset:], res.PARAMS)
+		offset += uint16(len(res.PARAMS))
+	}
+
+	return buf
+}
+
+func (c *Controller) WriteFlash(buf []byte) {
+	offset, length := uint16(0), uint16(len(buf))
+
+	for offset < length {
+		size := length - offset
+		if size > 128 {
+			size = 128
+		}
+		res := c.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
+		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)", res.ACK, offset, size)
+		offset += size
+	}
+}
