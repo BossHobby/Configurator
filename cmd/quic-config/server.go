@@ -141,9 +141,6 @@ func (s *Server) watchPorts() {
 			continue
 		}
 
-		if s.fc != nil && len(cs.AvailablePorts) == 0 {
-			s.closeController()
-		}
 		if s.fc == nil && len(cs.AvailablePorts) != 0 && s.autoConnect {
 			if err = s.connectController(cs.AvailablePorts[0]); err != nil {
 				log.Error(err)

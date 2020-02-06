@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	serial "go.bug.st/serial"
 )
@@ -67,33 +68,46 @@ func OpenController(serialPort string) (*Controller, error) {
 }
 
 func (c *Controller) run() error {
+	errChan := make(chan error)
+
 	go func() {
 		for buf := range c.writeChannel {
 			if _, err := c.port.Write(buf); err != nil {
+				errChan <- err
 				return
 			}
 		}
 	}()
 
-	buf := make([]byte, 1)
-	for {
-		n, err := c.port.Read(buf)
-		if err != nil {
-			return err
-		}
-		if n != 1 {
-			continue
-		}
-
-		switch buf[0] {
-		case '#':
-			if err := c.ReadQUIC(); err != nil {
-				return err
+	go func() {
+		buf := make([]byte, 1)
+		for {
+			n, err := c.port.Read(buf)
+			if err != nil {
+				errChan <- err
+				return
 			}
-		default:
-			fmt.Print(string(buf))
+			if n == 0 {
+				errChan <- io.EOF
+				return
+			}
+			if n != 1 {
+				continue
+			}
+
+			switch buf[0] {
+			case '#':
+				if err := c.ReadQUIC(); err != nil {
+					errChan <- err
+					return
+				}
+			default:
+				fmt.Print(string(buf))
+			}
 		}
-	}
+	}()
+
+	return <-errChan
 }
 
 func (c *Controller) Close() error {

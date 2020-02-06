@@ -137,7 +137,7 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*QuicPacket, error)
 			return nil, errors.New(msg)
 		}
 		return &p, nil
-	case <-time.After(30 * time.Second):
+	case <-time.After(5 * time.Second):
 		return nil, errors.New("quic recive timeout")
 	}
 }
