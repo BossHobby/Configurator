@@ -34,14 +34,14 @@
           class="my-2"
           href="http://localhost:8000/api/profile/download"
           :hidden="!status.IsConnected"
-        >Download Profile</b-button>
+        >Save Profile</b-button>
       </b-col>
     </b-row>
     <b-row>
       <b-col sm="6">
         <form :hidden="!status.IsConnected" ref="form">
           <input accept=".cbor" type="file" ref="file" style="display: none" />
-          <b-button class="my-2" @click="uploadProfile">Upload Profile</b-button>
+          <b-button class="my-2" @click="uploadProfile">Load Profile</b-button>
         </form>
       </b-col>
     </b-row>
