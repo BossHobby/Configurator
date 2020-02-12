@@ -79,8 +79,15 @@ const store = new Vuex.Store({
     set_flash(state, flash) {
       state.flash = flash
     },
+    clear_log(state) {
+      state.log = []
+    },
     append_log(state, line) {
-      state.log = [...state.log, line]
+      if (state.log.length < 500) {
+        state.log = [...state.log, line]
+      } else {
+        state.log = [line]
+      }
     },
     append_alert(state, line) {
       state.alerts = [...state.alerts, line]
@@ -106,10 +113,12 @@ const store = new Vuex.Store({
           case "status":
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
             if (msg.Payload.IsConnected && !state.status.IsConnected) {
+              commit('clear_log')
               dispatch('fetch_profile')
               dispatch('fetch_pid_rate_presets')
               router.push(state.return_url || "/profile")
-            } else if (state.status.IsConnected) {
+            } else if (!msg.Payload.IsConnected) {
+              commit('clear_log')
               if (router.currentRoute.fullPath != "/home") {
                 state.return_url = router.currentRoute.fullPath
               }

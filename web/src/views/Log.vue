@@ -4,7 +4,9 @@
       <b-col sm="12">
         <b-card>
           <h5 slot="header" class="mb-0">Log</h5>
-          <samp v-for="(line, index) in log" :key="line+'-'+index">>> {{line}}</samp>
+          <div v-for="(line, index) in log" :key="line+'-'+index">
+            <samp>>> {{line}}</samp>
+          </div>
         </b-card>
       </b-col>
     </b-row>
