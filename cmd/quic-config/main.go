@@ -14,8 +14,9 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 
-	"github.com/fxamacker/cbor"
+	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
@@ -137,7 +138,7 @@ func setOSDFont(fc *controller.Controller, r io.Reader) error {
 	}
 
 	w, buf := new(bytes.Buffer), make([]byte, 54)
-	enc := cbor.NewEncoder(w, cbor.EncOptions{})
+	enc := cbor.NewEncoder(w)
 
 	width, height, border := 12, 18, 1
 	for cy := 0; cy < 16; cy++ {
@@ -214,6 +215,26 @@ func main() {
 	defer fc.Close()
 
 	switch flag.Arg(0) {
+	case "get":
+		if flag.NArg() != 2 {
+			log.Fatal("must supply a <val>")
+		}
+
+		val, err := strconv.ParseInt(flag.Arg(1), 10, 32)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		value := new([]map[string]interface{})
+		if err := fc.GetQUIC(controller.QuicValue(val), value); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("%+v", *value)
+
+		if err := printJson(value); err != nil {
+			log.Fatal(err)
+		}
+
 	case "get_osd_font":
 		if flag.NArg() != 2 {
 			log.Fatal("must supply a <filename>")
@@ -250,7 +271,9 @@ func main() {
 			log.Fatal(err)
 		}
 		if *verbose {
-			printJson(value)
+			if err := printJson(value); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		f, err := os.Create(value.Filename())
@@ -259,7 +282,7 @@ func main() {
 		}
 		defer f.Close()
 
-		if err := cbor.NewEncoder(f, cbor.EncOptions{}).Encode(value); err != nil {
+		if err := cbor.NewEncoder(f).Encode(value); err != nil {
 			log.Fatal(err)
 		}
 	case "upload":
@@ -281,7 +304,13 @@ func main() {
 			log.Fatal(err)
 		}
 		if *verbose {
-			printJson(value)
+			if err := printJson(value); err != nil {
+				log.Fatal(err)
+			}
 		}
+	default:
+		fmt.Printf("unknown command %q\n", flag.Arg(0))
+		flag.Usage()
+		os.Exit(1)
 	}
 }

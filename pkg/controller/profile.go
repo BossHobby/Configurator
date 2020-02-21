@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fxamacker/cbor"
+	"github.com/fxamacker/cbor/v2"
 )
 
 type Vector [3]float32
@@ -153,6 +153,7 @@ type TargetInfo struct {
 }
 
 type Blackbox struct {
+	Time       uint    `cbor:"time" json:"time"`
 	CPULoad    float32 `cbor:"cpu_load" json:"cpu_load"`
 	VbatFilter float32 `cbor:"vbat_filter" json:"vbat_filter"`
 
@@ -166,6 +167,8 @@ type Blackbox struct {
 
 	AccelRaw    [3]float32 `cbor:"accel_raw" json:"accel_raw"`
 	AccelFilter [3]float32 `cbor:"accel_filter" json:"accel_filter"`
+
+	PidOutput [3]float32 `cbor:"pid_output" json:"pid_output"`
 }
 
 type PidRatePreset struct {

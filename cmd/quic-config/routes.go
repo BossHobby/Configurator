@@ -15,7 +15,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
-	"github.com/fxamacker/cbor"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/gorilla/mux"
 )
 
@@ -182,7 +182,7 @@ func (s *Server) getProfileDownload(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+value.Filename())
 	w.Header().Set("Content-Type", "application/octet-stream")
-	if err := cbor.NewEncoder(w, cbor.EncOptions{}).Encode(value); err != nil {
+	if err := cbor.NewEncoder(w).Encode(value); err != nil {
 		handleError(w, err)
 		return
 	}

@@ -61,7 +61,8 @@ func OpenController(serialPort string) (*Controller, error) {
 		}
 	}
 	if err != nil {
-		return nil, c.Close()
+		c.Close()
+		return nil, err
 	}
 
 	return c, nil

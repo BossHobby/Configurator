@@ -3,7 +3,7 @@ module github.com/NotFastEnuf/configurator
 go 1.12
 
 require (
-	github.com/fxamacker/cbor v1.5.0
+	github.com/fxamacker/cbor/v2 v2.1.0
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-github/v28 v28.1.1
 	github.com/google/gousb v0.0.0-20190812193832-18f4c1d8a750
@@ -14,7 +14,6 @@ require (
 	github.com/rakyll/statik v0.1.6
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/x448/float16 v0.8.4 // indirect
 	go.bug.st/serial v1.0.0
 	golang.org/x/crypto v0.0.0-20200206161412-a0c6ece9d31a // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect

@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/fxamacker/cbor"
+	"github.com/fxamacker/cbor/v2"
 )
 
 type QuicCommand uint8
@@ -26,10 +26,13 @@ const (
 const (
 	QuicFlagNone = iota
 	QuicFlagError
+	QuicFlagStreaming
 )
 
+type QuicValue uint8
+
 const (
-	QuicValInvalid = iota
+	QuicValInvalid QuicValue = iota
 	QuicValInfo
 	QuicValProfile
 	QuicValDefaultProfile
@@ -44,7 +47,7 @@ type QuicPacket struct {
 	flag uint8
 	len  uint16
 
-	Payload []byte
+	Payload io.Reader
 }
 
 const quicHeaderLen = uint16(4)
@@ -59,56 +62,74 @@ func (c *Controller) ReadQUIC() error {
 	if err != nil {
 		return err
 	}
-	length := int(quicHeaderLen)
-
-	cmd := QuicCommand(header[0] & (0xff >> 3))
-	flag := (header[0] >> 5)
-	payloadLen := uint16(header[1])<<8 | uint16(header[2])
-	size := int(quicHeaderLen + payloadLen)
-	if cmd != QuicCmdBlackbox {
-		log.Debugf("<quic> received cmd: %d flag: %d len: %d", cmd, flag, payloadLen)
-	}
-
-	payload, err := c.readAtLeast(int(payloadLen))
-	if err != nil {
-		return err
-	}
-
-	if len(payload) != int(payloadLen) {
-		log.Debugf("% x (%s)", payload, string(payload))
-		log.Fatalf("<quic> invalid size (%d vs %d)", length, size)
-	}
 
 	packet := QuicPacket{
-		cmd:     cmd,
-		flag:    flag,
-		len:     payloadLen,
-		Payload: payload,
+		cmd:  QuicCommand(header[0] & (0xff >> 3)),
+		flag: (header[0] >> 5),
+		len:  uint16(header[1])<<8 | uint16(header[2]),
 	}
 
-	switch packet.cmd {
-	case QuicCmdLog:
-		val := new(string)
-		if err := cbor.Unmarshal(packet.Payload, val); err != nil {
-			log.Fatal(err)
-		}
-		log.Debugf("<quic> log %s", *val)
-		QuicLog <- *val
-		break
-	case QuicCmdBlackbox:
-		val := new(Blackbox)
-		if err := cbor.Unmarshal(packet.Payload, val); err != nil {
-			log.Fatal(err)
-		}
-		QuicBlackbox <- *val
-		break
-	default:
-		select {
-		case quicChannel[cmd] <- packet:
+	r, w := io.Pipe()
+	packet.Payload = r
+
+	if packet.cmd != QuicCmdBlackbox {
+		log.Debugf("<quic> received cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len)
+	}
+
+	errorChan := make(chan error)
+
+	go func() {
+		switch packet.cmd {
+		case QuicCmdLog:
+			val := new(string)
+			if err := cbor.NewDecoder(packet.Payload).Decode(val); err != nil {
+				errorChan <- err
+				return
+			}
+			log.Debugf("<quic> log %s", *val)
+			QuicLog <- *val
+			break
+		case QuicCmdBlackbox:
+			val := new(Blackbox)
+			if err := cbor.NewDecoder(packet.Payload).Decode(val); err != nil {
+				errorChan <- err
+				return
+			}
+			QuicBlackbox <- *val
+			break
 		default:
+			select {
+			case quicChannel[packet.cmd] <- packet:
+			default:
+			}
+		}
+		errorChan <- nil
+	}()
+
+	if packet.flag&QuicFlagStreaming != 0 {
+		buf := make([]byte, 2048)
+		for {
+			n, err := c.port.Read(buf)
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+			log.Debugf("read %d bytes %q", n, buf[:n])
+			if n == 0 {
+				break
+			}
+			w.Write(buf[:n])
+		}
+	} else {
+		_, err := io.CopyN(w, c.port, int64(packet.len))
+		if err != nil {
+			return err
 		}
 	}
-	return nil
+
+	return <-errorChan
 }
 
 func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*QuicPacket, error) {
@@ -120,30 +141,30 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*QuicPacket, error)
 	}
 	buf = append(buf, data...)
 
+	log.Debugf("<quic> sent cmd: %d len: %d", cmd, len(data))
+
 	if quicChannel[cmd] == nil {
 		quicChannel[cmd] = make(chan QuicPacket)
 	}
 	c.writeChannel <- buf
 
-	log.Debugf("<quic> sent cmd: %d len: %d", cmd, len(data))
-
 	select {
 	case p := <-quicChannel[cmd]:
 		if p.flag == QuicFlagError {
 			var msg string
-			if err := cbor.Unmarshal(p.Payload, &msg); err != nil {
+			if err := cbor.NewDecoder(p.Payload).Decode(&msg); err != nil {
 				return nil, err
 			}
 			return nil, errors.New(msg)
 		}
 		return &p, nil
-	case <-time.After(5 * time.Second):
+	case <-time.After(60 * time.Second):
 		return nil, errors.New("quic recive timeout")
 	}
 }
 
-func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
-	req, err := cbor.Marshal(typ, cbor.EncOptions{})
+func (c *Controller) GetQUICReader(typ QuicValue) (io.Reader, error) {
+	req, err := cbor.Marshal(typ)
 	if err != nil {
 		return nil, err
 	}
@@ -153,9 +174,9 @@ func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
 		return nil, err
 	}
 
-	dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
+	dec := cbor.NewDecoder(io.LimitReader(p.Payload, 1))
 
-	var inTyp QuicCommand
+	var inTyp QuicValue
 	if err := dec.Decode(&inTyp); err != nil {
 		return nil, err
 	}
@@ -163,10 +184,10 @@ func (c *Controller) GetQUICReader(typ QuicCommand) (io.Reader, error) {
 		return nil, fmt.Errorf("typ (%d) != inTyp (%d)", typ, inTyp)
 	}
 
-	return bytes.NewReader(p.Payload[dec.NumBytesRead():]), nil
+	return p.Payload, nil
 }
 
-func (c *Controller) GetQUIC(typ QuicCommand, v interface{}) error {
+func (c *Controller) GetQUIC(typ QuicValue, v interface{}) error {
 	r, err := c.GetQUICReader(typ)
 	if err != nil {
 		return err
@@ -179,10 +200,10 @@ func (c *Controller) GetQUIC(typ QuicCommand, v interface{}) error {
 	return nil
 }
 
-func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
+func (c *Controller) SetQUIC(typ QuicValue, v interface{}) error {
 	req := new(bytes.Buffer)
 
-	enc := cbor.NewEncoder(req, cbor.EncOptions{})
+	enc := cbor.NewEncoder(req)
 	if err := enc.Encode(&typ); err != nil {
 		return err
 	}
@@ -195,8 +216,8 @@ func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
 		return err
 	}
 
-	var inTyp QuicCommand
-	dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
+	var inTyp QuicValue
+	dec := cbor.NewDecoder(p.Payload)
 	if err := dec.Decode(&inTyp); err != nil {
 		return err
 	}
@@ -211,10 +232,10 @@ func (c *Controller) SetQUIC(typ QuicCommand, v interface{}) error {
 	return nil
 }
 
-func (c *Controller) SetQUICReader(typ QuicCommand, r io.Reader, v interface{}) error {
+func (c *Controller) SetQUICReader(typ QuicValue, r io.Reader, v interface{}) error {
 	req := new(bytes.Buffer)
 
-	enc := cbor.NewEncoder(req, cbor.EncOptions{})
+	enc := cbor.NewEncoder(req)
 	if err := enc.Encode(&typ); err != nil {
 		return err
 	}
@@ -228,8 +249,8 @@ func (c *Controller) SetQUICReader(typ QuicCommand, r io.Reader, v interface{}) 
 		return err
 	}
 
-	var inTyp QuicCommand
-	dec := cbor.NewDecoder(bytes.NewReader(p.Payload))
+	var inTyp QuicValue
+	dec := cbor.NewDecoder(p.Payload)
 	if err := dec.Decode(&inTyp); err != nil {
 		return err
 	}
