@@ -209,6 +209,15 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
+func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
+	value := make([]map[string]interface{}, 0)
+	if err := s.fc.GetQUIC(controller.QuicValBlackbox, &value); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, value)
+}
+
 func (s *Server) getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
 	if err := s.fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
@@ -452,6 +461,8 @@ func (s *Server) setupRoutes(r *mux.Router) {
 	{
 		f := r.NewRoute().Subrouter()
 		f.Use(s.fcMidleware)
+
+		f.HandleFunc("/api/blackbox", s.getBlackbox).Methods("GET")
 
 		f.HandleFunc("/api/profile", s.getProfile).Methods("GET")
 		f.HandleFunc("/api/profile", s.postProfile).Methods("POST")

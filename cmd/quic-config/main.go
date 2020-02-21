@@ -82,6 +82,7 @@ func getOSDFont(fc *controller.Controller, w io.Writer) error {
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
 	dec := cbor.NewDecoder(r)
 

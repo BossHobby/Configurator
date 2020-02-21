@@ -40,6 +40,7 @@ const (
 	QuicValPidRatePresets
 	QuicValVtxSettings
 	QuicValOSDFont
+	QuicValBlackbox
 )
 
 type QuicPacket struct {
@@ -47,7 +48,7 @@ type QuicPacket struct {
 	flag uint8
 	len  uint16
 
-	Payload io.Reader
+	Payload io.ReadCloser
 }
 
 const quicHeaderLen = uint16(4)
@@ -120,7 +121,12 @@ func (c *Controller) ReadQUIC() error {
 			if n == 0 {
 				break
 			}
-			w.Write(buf[:n])
+			if _, err := w.Write(buf[:n]); err != nil {
+				if err == io.ErrClosedPipe {
+					break
+				}
+				return err
+			}
 		}
 	} else {
 		_, err := io.CopyN(w, c.port, int64(packet.len))
@@ -163,7 +169,7 @@ func (c *Controller) SendQUIC(cmd QuicCommand, data []byte) (*QuicPacket, error)
 	}
 }
 
-func (c *Controller) GetQUICReader(typ QuicValue) (io.Reader, error) {
+func (c *Controller) GetQUICReader(typ QuicValue) (io.ReadCloser, error) {
 	req, err := cbor.Marshal(typ)
 	if err != nil {
 		return nil, err
@@ -192,6 +198,7 @@ func (c *Controller) GetQUIC(typ QuicValue, v interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
 	if err := cbor.NewDecoder(r).Decode(v); err != nil {
 		return err
