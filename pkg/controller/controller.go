@@ -2,19 +2,22 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"io"
+	"sync"
 
+	log "github.com/sirupsen/logrus"
 	serial "go.bug.st/serial"
 )
 
 type Controller struct {
+	io.ReadWriteCloser
+
 	PortName   string
-	Info       *TargetInfo
 	Disconnect chan error
 
-	port         serial.Port
-	writeChannel chan []byte
+	port    serial.Port
+	muRead  sync.Mutex
+	muWrite sync.Mutex
 }
 
 func OpenFirstController() (*Controller, error) {
@@ -32,7 +35,8 @@ func OpenFirstController() (*Controller, error) {
 
 func OpenController(serialPort string) (*Controller, error) {
 	mode := &serial.Mode{
-		BaudRate: 115200,
+		//BaudRate: 115200,
+		BaudRate: 921600,
 	}
 	port, err := serial.Open(serialPort, mode)
 	if err != nil {
@@ -41,74 +45,45 @@ func OpenController(serialPort string) (*Controller, error) {
 
 	c := &Controller{
 		PortName:   serialPort,
+		port:       port,
 		Disconnect: make(chan error, 1),
-		Info:       new(TargetInfo),
-
-		port:         port,
-		writeChannel: make(chan []byte),
 	}
-	go func(fc *Controller) {
-		if err := fc.run(); err != nil {
-			fc.Disconnect <- err
-		}
-	}(c)
-
-	// try 5 times to get sync
-	for i := 0; i < 5; i++ {
-		err = c.GetQUIC(QuicValInfo, c.Info)
-		if err == nil {
-			break
-		}
-	}
-	if err != nil {
-		c.Close()
-		return nil, err
-	}
-
 	return c, nil
 }
 
-func (c *Controller) run() error {
-	errChan := make(chan error)
+func (c *Controller) Read(p []byte) (int, error) {
+	c.muRead.Lock()
+	defer c.muRead.Unlock()
 
-	go func() {
-		for buf := range c.writeChannel {
-			if _, err := c.port.Write(buf); err != nil {
-				errChan <- err
-				return
-			}
-		}
-	}()
+	n, err := c.port.Read(p)
+	if err != nil {
+		c.Disconnect <- err
+		return n, err
+	}
+	if n == 0 {
+		c.Disconnect <- io.EOF
+		return n, err
+	}
 
-	go func() {
-		buf := make([]byte, 1)
-		for {
-			n, err := c.port.Read(buf)
-			if err != nil {
-				errChan <- err
-				return
-			}
-			if n == 0 {
-				errChan <- io.EOF
-				return
-			}
-			if n != 1 {
-				continue
-			}
+	log.Tracef("n %d bytes %q", n, p[:n])
+	return n, nil
+}
 
-			switch buf[0] {
-			case '#':
-				if err := c.ReadQUIC(); err != nil {
-					errChan <- err
-					return
-				}
-			default:
-				fmt.Print(string(buf))
-			}
-		}
-	}()
+func (c *Controller) Write(p []byte) (int, error) {
+	c.muWrite.Lock()
+	defer c.muWrite.Unlock()
 
-	return <-errChan
+	n, err := c.port.Write(p)
+	if err != nil {
+		c.Disconnect <- err
+		return n, err
+	}
+	if n == 0 {
+		c.Disconnect <- io.EOF
+		return n, err
+	}
+	log.Tracef("wrote %d bytes %q", n, p[:n])
+	return n, err
 }
 
 func (c *Controller) Close() error {
@@ -116,24 +91,9 @@ func (c *Controller) Close() error {
 }
 
 func (c *Controller) SoftReboot() {
-	c.writeChannel <- []byte{'S'}
+	c.Write([]byte{'S'})
 }
 
 func (c *Controller) HardReboot() {
-	c.writeChannel <- []byte{'R'}
-}
-
-func (c *Controller) readAtLeast(size int) ([]byte, error) {
-	length := 0
-
-	buf := make([]byte, size)
-	for length != size {
-		n, err := c.port.Read(buf[length:size])
-		if err != nil {
-			return nil, err
-		}
-		length += n
-	}
-
-	return buf, nil
+	c.Write([]byte{'R'})
 }

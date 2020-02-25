@@ -1,6 +1,8 @@
-package controller
+package msp
 
+/*
 import (
+	"github.com/NotFastEnuf/configurator/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,7 +36,7 @@ func (c *Controller) ReadMSP() {
 	payloadLen, cmd := buf[3], buf[4]
 	size := int(mspHeaderLen + payloadLen + 1)
 
-	payload, err := c.readAtLeast(int(payloadLen))
+	payload, err := util.ReadAtLeast(c.port, int(payloadLen))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,8 +59,9 @@ func (c *Controller) SendMSP(cmd byte) {
 		0,
 		cmd,
 	}
-	buf = appendCRC8(buf)
+	buf = util.AppendCRC8(buf)
 
 	c.writeChannel <- buf
 	c.ReadMSP()
 }
+*/

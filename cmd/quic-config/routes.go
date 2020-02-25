@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -15,6 +17,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
+	"github.com/NotFastEnuf/configurator/pkg/quic"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/gorilla/mux"
 )
@@ -112,8 +115,8 @@ func (s *Server) postDisconnect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getProfile(w http.ResponseWriter, r *http.Request) {
-	value := controller.Profile{}
-	if err := s.fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+	value := quic.Profile{}
+	if err := s.qp.GetValue(quic.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -123,7 +126,7 @@ func (s *Server) getProfile(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getOSDFont(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=font.png")
 	w.Header().Set("Content-Type", "image/png")
-	if err := getOSDFont(s.fc, w); err != nil {
+	if err := getOSDFont(s.qp, w); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -143,7 +146,7 @@ func (s *Server) postOSDFont(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
-	if err := setOSDFont(s.fc, f); err != nil {
+	if err := setOSDFont(s.qp, f); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -151,13 +154,13 @@ func (s *Server) postOSDFont(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
-	profile := controller.Profile{}
+	profile := quic.Profile{}
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 		handleError(w, err)
 		return
 	}
 
-	if err := s.fc.SetQUIC(controller.QuicValProfile, &profile); err != nil {
+	if err := s.qp.SetValue(quic.QuicValProfile, &profile); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -165,8 +168,8 @@ func (s *Server) postProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
-	value := controller.Profile{}
-	if err := s.fc.GetQUIC(controller.QuicValDefaultProfile, &value); err != nil {
+	value := quic.Profile{}
+	if err := s.qp.GetValue(quic.QuicValDefaultProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -174,8 +177,8 @@ func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getProfileDownload(w http.ResponseWriter, r *http.Request) {
-	value := controller.Profile{}
-	if err := s.fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+	value := quic.Profile{}
+	if err := s.qp.GetValue(quic.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -201,26 +204,78 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	value := controller.Profile{}
-	if err := s.fc.SetQUICReader(controller.QuicValProfile, file, &value); err != nil {
+	p, err := s.qp.Set(quic.QuicValProfile, file)
+	if err != nil {
 		handleError(w, err)
 		return
 	}
+
+	value := quic.Profile{}
+	if err := cbor.NewDecoder(p).Decode(&value); err != nil {
+		handleError(w, err)
+		return
+	}
+
 	renderJSON(w, value)
 }
 
 func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
-	value := make([]map[string]interface{}, 0)
-	if err := s.fc.GetQUIC(controller.QuicValBlackbox, &value); err != nil {
+	p, err := s.qp.Get(quic.QuicValBlackbox)
+	if err != nil {
 		handleError(w, err)
 		return
 	}
+	defer p.Close()
+
+	dec := cbor.NewDecoder(p)
+	value := quic.BlackboxCompact{}
+	for {
+		if err := dec.Decode(&value); err != nil {
+			if err != io.EOF {
+				break
+			}
+			handleError(w, err)
+			return
+		}
+		renderJSON(w, value)
+		w.Write([]byte{'\n'})
+	}
+}
+
+func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
+	req := new(bytes.Buffer)
+	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxList); err != nil {
+		log.Fatal(err)
+	}
+
+	p, err := s.qp.Send(quic.QuicCmdBlackbox, req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	value := new(interface{})
+	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+		log.Fatal(err)
+	}
+
 	renderJSON(w, value)
+}
+
+func (s *Server) posResetBlackbox(w http.ResponseWriter, r *http.Request) {
+	req := new(bytes.Buffer)
+	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxReset); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := s.qp.Send(quic.QuicCmdBlackbox, req); err != nil {
+		log.Fatal(err)
+	}
+
+	renderJSON(w, "OK")
 }
 
 func (s *Server) getBlackboxRate(w http.ResponseWriter, r *http.Request) {
 	value := 0
-	if err := s.fc.GetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+	if err := s.qp.GetValue(quic.QuicValBlackboxRate, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -233,7 +288,7 @@ func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-	if err := s.fc.SetQUIC(controller.QuicValBlackboxRate, &value); err != nil {
+	if err := s.qp.SetValue(quic.QuicValBlackboxRate, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -241,7 +296,7 @@ func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
-	_, err := s.fc.SendQUIC(controller.QuicCmdCalImu, []byte{})
+	_, err := s.qp.Send(quic.QuicCmdCalImu, new(bytes.Buffer))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -250,8 +305,8 @@ func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getPidRatePresets(w http.ResponseWriter, r *http.Request) {
-	value := make([]controller.PidRatePreset, 0)
-	if err := s.fc.GetQUIC(controller.QuicValPidRatePresets, &value); err != nil {
+	value := make([]quic.PidRatePreset, 0)
+	if err := s.qp.GetValue(quic.QuicValPidRatePresets, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -259,8 +314,8 @@ func (s *Server) getPidRatePresets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getVtxSettings(w http.ResponseWriter, r *http.Request) {
-	value := controller.VtxSettings{}
-	if err := s.fc.GetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+	value := quic.VtxSettings{}
+	if err := s.qp.GetValue(quic.QuicValVtxSettings, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -268,12 +323,12 @@ func (s *Server) getVtxSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postVtxSettings(w http.ResponseWriter, r *http.Request) {
-	value := controller.VtxSettings{}
+	value := quic.VtxSettings{}
 	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
 		handleError(w, err)
 		return
 	}
-	if err := s.fc.SetQUIC(controller.QuicValVtxSettings, &value); err != nil {
+	if err := s.qp.SetValue(quic.QuicValVtxSettings, &value); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -463,6 +518,8 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f.Use(s.fcMidleware)
 
 		f.HandleFunc("/api/blackbox", s.getBlackbox).Methods("GET")
+		f.HandleFunc("/api/blackbox/list", s.getBlackboxList).Methods("GET")
+		f.HandleFunc("/api/blackbox/reset", s.posResetBlackbox).Methods("POST")
 
 		f.HandleFunc("/api/profile", s.getProfile).Methods("GET")
 		f.HandleFunc("/api/profile", s.postProfile).Methods("POST")

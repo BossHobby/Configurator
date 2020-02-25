@@ -9,6 +9,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
+	"github.com/NotFastEnuf/configurator/pkg/quic"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -22,7 +23,7 @@ type Status struct {
 	HasDFU         bool
 	Port           string
 	AvailablePorts []string
-	Info           *controller.TargetInfo
+	Info           *quic.TargetInfo
 }
 
 type Server struct {
@@ -31,6 +32,7 @@ type Server struct {
 
 	fl *firmware.FirmwareLoader
 	fc *controller.Controller
+	qp *quic.QuicProtocol
 
 	fs http.FileSystem
 
@@ -57,19 +59,40 @@ func (s *Server) Close() {
 	s.closeController()
 }
 
-func (s *Server) connectController(p string) error {
-	log.Printf("opening controller %s", p)
-	c, err := controller.OpenController(p)
+func (s *Server) broadcastQuic(qp *quic.QuicProtocol) {
+	for {
+		select {
+		case msg := <-qp.Log:
+			broadcastWebsocket("log", msg)
+		case msg := <-qp.Blackbox:
+			broadcastWebsocket("blackbox", msg)
+		}
+	}
+}
+
+func (s *Server) connectController(port string) error {
+	log.Printf("opening controller %s", port)
+	c, err := controller.OpenController(port)
 	if err != nil {
 		return err
 	}
-	s.fc = c
 
 	go func(fc *controller.Controller) {
 		log.Warnf("port: %v", <-c.Disconnect)
-		log.Printf("closing controller %s", p)
+		log.Printf("closing controller %s", port)
 		s.closeController()
 	}(c)
+
+	p, err := quic.NewQuicProtocol(c)
+	if err != nil {
+		c.Close()
+		return err
+	}
+
+	go s.broadcastQuic(p)
+
+	s.fc = c
+	s.qp = p
 
 	return nil
 }
@@ -91,7 +114,7 @@ func (s *Server) controllerStatus() (*Status, error) {
 	}
 	if s.fc != nil {
 		status.Port = s.fc.PortName
-		status.Info = s.fc.Info
+		status.Info = s.qp.Info
 	}
 	return status, nil
 }
@@ -118,17 +141,6 @@ func (s *Server) closeController() {
 		}
 	}
 	s.fc = nil
-}
-
-func broadcastQuic() {
-	for {
-		select {
-		case msg := <-controller.QuicLog:
-			broadcastWebsocket("log", msg)
-		case msg := <-controller.QuicBlackbox:
-			broadcastWebsocket("blackbox", msg)
-		}
-	}
 }
 
 func (s *Server) watchPorts() {
@@ -164,7 +176,6 @@ func (s *Server) Serve() {
 	s.setupRoutes(r)
 
 	go s.watchPorts()
-	go broadcastQuic()
 
 	if mode == "release" {
 		openbrowser("http://localhost:8000")

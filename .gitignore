@@ -21,6 +21,9 @@ yarn-error.log*
 *.sln
 *.sw?
 
+*.perf
+
+__debug*
 /quic-config*
 /misc
 /pkg/statik

@@ -1,4 +1,4 @@
-package controller
+package quic
 
 import (
 	"fmt"
@@ -161,14 +161,19 @@ type Blackbox struct {
 	GyroFilter [3]float32 `cbor:"gyro_filter" json:"gyro_filter"`
 	GyroVector [3]float32 `cbor:"gyro_vector" json:"gyro_vector"`
 
-	RxRaw    [4]float32 `cbor:"rx_raw" json:"rx_raw"`
-	RxFilter [4]float32 `cbor:"rx_filter" json:"rx_filter"`
-	RxAux    []uint     `cbor:"rx_aux" json:"rx_aux"`
+	RxRaw    [4]float32  `cbor:"rx_raw" json:"rx_raw"`
+	RxFilter [4]float32  `cbor:"rx_filter" json:"rx_filter"`
+	RxAux    interface{} `cbor:"rx_aux" json:"rx_aux"`
 
 	AccelRaw    [3]float32 `cbor:"accel_raw" json:"accel_raw"`
 	AccelFilter [3]float32 `cbor:"accel_filter" json:"accel_filter"`
 
 	PidOutput [3]float32 `cbor:"pid_output" json:"pid_output"`
+}
+
+type BlackboxCompact struct {
+	_ struct{} `cbor:",toarray"`
+	Blackbox
 }
 
 type PidRatePreset struct {

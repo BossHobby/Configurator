@@ -1,6 +1,8 @@
-package controller
+package blheli
 
+/*
 import (
+	"github.com/NotFastEnuf/configurator/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -187,7 +189,7 @@ func (c *Controller) ReadBlheli() *BLHeliResponse {
 
 	crcActual := uint16(0)
 	for i := 0; i < size-2; i++ {
-		crcActual = updateCRC16(crcActual, uint16(buf[i]))
+		crcActual = util.UpdateCRC16(crcActual, uint16(buf[i]))
 	}
 	crcExpected := uint16(buf[5+paramLen+2]) | uint16(buf[5+paramLen+1])<<8
 
@@ -226,7 +228,7 @@ func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHe
 		paramLen,                  // PARAM_LEN
 	}
 	buf = append(buf, params...)
-	buf = appendCRC16(buf)
+	buf = util.AppendCRC16(buf)
 
 	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d", cmd, addr, paramLen)
 	c.writeChannel <- buf
@@ -268,3 +270,4 @@ func (c *Controller) WriteFlash(buf []byte) {
 		offset += size
 	}
 }
+*/

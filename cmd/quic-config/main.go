@@ -13,13 +13,17 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"runtime"
+	"runtime/pprof"
 	"strconv"
+	"syscall"
 
 	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
+	"github.com/NotFastEnuf/configurator/pkg/quic"
 )
 
 var (
@@ -77,12 +81,11 @@ func printJson(v interface{}) error {
 	return enc.Encode(v)
 }
 
-func getOSDFont(fc *controller.Controller, w io.Writer) error {
-	r, err := fc.GetQUICReader(controller.QuicValOSDFont)
+func getOSDFont(q *quic.QuicProtocol, w io.Writer) error {
+	r, err := q.Get(quic.QuicValOSDFont)
 	if err != nil {
 		return err
 	}
-	defer r.Close()
 
 	dec := cbor.NewDecoder(r)
 
@@ -132,7 +135,7 @@ func getOSDFont(fc *controller.Controller, w io.Writer) error {
 	return png.Encode(w, img)
 }
 
-func setOSDFont(fc *controller.Controller, r io.Reader) error {
+func setOSDFont(qp *quic.QuicProtocol, r io.Reader) error {
 	img, err := png.Decode(r)
 	if err != nil {
 		return err
@@ -178,8 +181,13 @@ func setOSDFont(fc *controller.Controller, r io.Reader) error {
 		}
 	}
 
+	qr, err := qp.Set(quic.QuicValOSDFont, w)
+	if err != nil {
+		return err
+	}
+
 	var val string
-	if err := fc.SetQUICReader(controller.QuicValOSDFont, w, &val); err != nil {
+	if err := cbor.NewDecoder(qr).Decode(&val); err != nil {
 		return err
 	}
 
@@ -198,14 +206,33 @@ func main() {
 	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	//}
 
+	f, err := os.Create("quic-config.perf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer func() {
+		log.Debugf("closing")
+		pprof.StopCPUProfile()
+		f.Close()
+	}()
+
 	if flag.NArg() == 0 {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c,
+			syscall.SIGHUP,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+			syscall.SIGQUIT)
+
 		s, err := NewServer()
 		if err != nil {
 			log.Fatal()
 		}
 		defer s.Close()
+		go s.Serve()
 
-		s.Serve()
+		log.Printf("got signal %s", <-c)
 		return
 	}
 
@@ -214,6 +241,13 @@ func main() {
 		log.Fatal(err)
 	}
 	defer fc.Close()
+
+	qp, err := quic.NewQuicProtocol(fc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("connected to %s@%s", qp.Info.TargetName, qp.Info.GITVersion)
 
 	switch flag.Arg(0) {
 	case "get":
@@ -226,16 +260,60 @@ func main() {
 			log.Fatal(err)
 		}
 
-		value := new([]map[string]interface{})
-		if err := fc.GetQUIC(controller.QuicValue(val), value); err != nil {
+		r, err := qp.Get(quic.QuicValue(val))
+		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("%+v", *value)
+		defer r.Close()
+
+		dec := cbor.NewDecoder(r)
+		value := new(interface{})
+		for {
+			if err := dec.Decode(&value); err != nil {
+				if err == io.EOF {
+					break
+				}
+				log.Error(err)
+				return
+			}
+
+			log.Printf("%+v", *value)
+
+			if err := printJson(value); err != nil {
+				//log.Fatal(err)
+			}
+		}
+		break
+	case "blackbox":
+		if flag.NArg() != 2 {
+			log.Fatal("must supply a <cmd>")
+		}
+
+		val, err := strconv.ParseInt(flag.Arg(1), 10, 32)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		req := new(bytes.Buffer)
+		if err := cbor.NewEncoder(req).Encode(val); err != nil {
+			log.Fatal(err)
+		}
+
+		p, err := qp.Send(quic.QuicCmdBlackbox, req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer p.Payload.Close()
+
+		value := new(interface{})
+		if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+			log.Fatal(err)
+		}
 
 		if err := printJson(value); err != nil {
 			log.Fatal(err)
 		}
-
+		break
 	case "get_osd_font":
 		if flag.NArg() != 2 {
 			log.Fatal("must supply a <filename>")
@@ -247,10 +325,10 @@ func main() {
 		}
 		defer f.Close()
 
-		if err := getOSDFont(fc, f); err != nil {
+		if err := getOSDFont(qp, f); err != nil {
 			log.Fatal(err)
 		}
-
+		break
 	case "set_osd_font":
 		if flag.NArg() != 2 {
 			log.Fatal("must supply a <filename>")
@@ -262,13 +340,13 @@ func main() {
 		}
 		defer f.Close()
 
-		if err := setOSDFont(fc, f); err != nil {
+		if err := setOSDFont(qp, f); err != nil {
 			log.Fatal(err)
 		}
-
+		break
 	case "download":
-		value := controller.Profile{}
-		if err := fc.GetQUIC(controller.QuicValProfile, &value); err != nil {
+		value := quic.Profile{}
+		if err := qp.GetValue(quic.QuicValProfile, &value); err != nil {
 			log.Fatal(err)
 		}
 		if *verbose {
@@ -286,6 +364,7 @@ func main() {
 		if err := cbor.NewEncoder(f).Encode(value); err != nil {
 			log.Fatal(err)
 		}
+		break
 	case "upload":
 		if flag.NArg() != 2 {
 			log.Fatal("usage: quic-config upload <filename>")
@@ -297,11 +376,11 @@ func main() {
 		}
 		defer f.Close()
 
-		value := controller.Profile{}
+		value := quic.Profile{}
 		if err := cbor.NewDecoder(f).Decode(&value); err != nil {
 			log.Fatal(err)
 		}
-		if err := fc.SetQUIC(controller.QuicValProfile, &value); err != nil {
+		if err := qp.SetValue(quic.QuicValProfile, &value); err != nil {
 			log.Fatal(err)
 		}
 		if *verbose {
@@ -309,9 +388,12 @@ func main() {
 				log.Fatal(err)
 			}
 		}
+		break
 	default:
 		fmt.Printf("unknown command %q\n", flag.Arg(0))
 		flag.Usage()
 		os.Exit(1)
+		break
 	}
+
 }
