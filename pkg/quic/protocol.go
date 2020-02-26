@@ -1,6 +1,7 @@
 package quic
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -76,7 +77,7 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 	return p, nil
 }
 
-func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
+func (proto *QuicProtocol) readHeader() (*QuicPacket, error) {
 	magic := make([]byte, 1)
 	for {
 		n, err := proto.br.Read(magic)
@@ -98,10 +99,17 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		return nil, err
 	}
 
-	p := QuicPacket{
+	return &QuicPacket{
 		cmd:  QuicCommand(header[0] & (0xff >> 3)),
 		flag: (header[0] >> 5),
 		len:  uint16(header[1])<<8 | uint16(header[2]),
+	}, nil
+}
+
+func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
+	p, err := proto.readHeader()
+	if err != nil {
+		return nil, err
 	}
 
 	if p.cmd != QuicCmdBlackbox {
@@ -113,10 +121,14 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	}
 
 	r, w := io.Pipe()
-	b := new(bytes.Buffer)
+	bw := bufio.NewWriter(w)
 	if p.flag == QuicFlagStreaming {
+		if _, err := io.CopyN(bw, proto.br, int64(p.len)); err != nil {
+			return nil, err
+		}
 		p.Payload = r
 	} else {
+		b := new(bytes.Buffer)
 		for b.Len() != int(p.len) {
 			n, err := io.CopyN(b, proto.br, int64(p.len)-int64(b.Len()))
 			if err != nil {
@@ -159,38 +171,29 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		if p.cmd != ticket.cmd {
 			return nil, ErrInvalidCommand
 		}
-		proto.packetChan <- &p
+		proto.packetChan <- p
 		break
 	}
 
 	if p.flag == QuicFlagStreaming {
-		buf := make([]byte, 4096)
 		for {
-			n, err := proto.br.Read(buf)
+			h, err := proto.readHeader()
 			if err != nil {
-				if err == io.EOF {
-					break
-				}
 				return nil, err
 			}
-			if n == 0 {
+			if h.len == 0 {
+				bw.Flush()
+				w.Close()
 				break
 			}
-			if _, err := w.Write(buf[:n]); err != nil {
-				if err == io.ErrClosedPipe {
-					break
-				}
+
+			if _, err := io.CopyN(bw, proto.br, int64(h.len)); err != nil {
 				return nil, err
 			}
 		}
-		/*
-			if _, err := io.Copy(w, proto.br); err != nil {
-				return nil, err
-			}
-		*/
 	}
 
-	return &p, nil
+	return p, nil
 }
 
 func (proto *QuicProtocol) Read() (*QuicPacket, error) {
@@ -337,14 +340,7 @@ func (proto *QuicProtocol) SetValue(typ QuicValue, v interface{}) error {
 
 func (proto *QuicProtocol) sync() (info *TargetInfo, err error) {
 	info = new(TargetInfo)
-
-	for i := 0; i < 5; i++ {
-		if err = proto.GetValue(QuicValInfo, info); err == nil {
-			break
-		}
-		log.Error(err)
-	}
-	if err != nil {
+	if err = proto.GetValue(QuicValInfo, info); err != nil {
 		return nil, err
 	}
 	return info, nil

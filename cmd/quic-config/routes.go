@@ -231,7 +231,7 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 	value := quic.BlackboxCompact{}
 	for {
 		if err := dec.Decode(&value); err != nil {
-			if err != io.EOF {
+			if err == io.EOF {
 				break
 			}
 			handleError(w, err)
