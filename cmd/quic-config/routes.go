@@ -220,14 +220,14 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.Get(quic.QuicValBlackbox)
+	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet)
 	if err != nil {
 		handleError(w, err)
 		return
 	}
-	defer p.Close()
+	defer p.Payload.Close()
 
-	dec := cbor.NewDecoder(p)
+	dec := cbor.NewDecoder(p.Payload)
 	value := quic.BlackboxCompact{}
 	for {
 		if err := dec.Decode(&value); err != nil {
@@ -245,17 +245,20 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
 	req := new(bytes.Buffer)
 	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxList); err != nil {
-		log.Fatal(err)
+		handleError(w, err)
+		return
 	}
 
 	p, err := s.qp.Send(quic.QuicCmdBlackbox, req)
 	if err != nil {
-		log.Fatal(err)
+		handleError(w, err)
+		return
 	}
 
 	value := new(interface{})
 	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
-		log.Fatal(err)
+		handleError(w, err)
+		return
 	}
 
 	renderJSON(w, value)
@@ -264,10 +267,12 @@ func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
 func (s *Server) posResetBlackbox(w http.ResponseWriter, r *http.Request) {
 	req := new(bytes.Buffer)
 	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxReset); err != nil {
-		log.Fatal(err)
+		handleError(w, err)
+		return
 	}
 	if _, err := s.qp.Send(quic.QuicCmdBlackbox, req); err != nil {
-		log.Fatal(err)
+		handleError(w, err)
+		return
 	}
 
 	renderJSON(w, "OK")

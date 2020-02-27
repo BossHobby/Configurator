@@ -20,6 +20,7 @@ const (
 const (
 	QuicBlackboxReset = iota
 	QuicBlackboxList
+	QuicBlackboxGet
 )
 
 const (
@@ -40,7 +41,6 @@ const (
 	QuicValPidRatePresets
 	QuicValVtxSettings
 	QuicValOSDFont
-	QuicValBlackbox
 )
 
 type QuicPacket struct {

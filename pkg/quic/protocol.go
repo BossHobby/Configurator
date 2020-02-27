@@ -202,7 +202,7 @@ func (proto *QuicProtocol) Read() (*QuicPacket, error) {
 		return p, nil
 	case err := <-proto.errChan:
 		return nil, err
-	case <-time.After(30 * time.Second):
+	case <-time.After(60 * time.Second):
 		<-proto.ticketChan
 		return nil, ErrTimeout
 	}
@@ -251,15 +251,21 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 	return p, nil
 }
 
-func (proto *QuicProtocol) Get(typ QuicValue) (io.ReadCloser, error) {
+func (proto *QuicProtocol) SendValue(cmd QuicCommand, val ...interface{}) (*QuicPacket, error) {
 	buf := new(bytes.Buffer)
 
 	enc := cbor.NewEncoder(buf)
-	if err := enc.Encode(typ); err != nil {
-		return nil, err
+	for _, v := range val {
+		if err := enc.Encode(v); err != nil {
+			return nil, err
+		}
 	}
 
-	p, err := proto.Send(QuicCmdGet, buf)
+	return proto.Send(cmd, buf)
+}
+
+func (proto *QuicProtocol) Get(typ QuicValue) (io.ReadCloser, error) {
+	p, err := proto.SendValue(QuicCmdGet, typ)
 	if err != nil {
 		return nil, err
 	}
