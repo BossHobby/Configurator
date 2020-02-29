@@ -16,13 +16,13 @@
         <b-col offset="0" sm="4">
           <b-card>
             <h6 slot="header" class="mb-0">Current AUX State</h6>
-            <b-row v-for="(v, index) in aux" :key="auxChannels[index].text">
-              <b-col sm="6" class="my-1">{{ auxChannels[index].text }}</b-col>
+            <b-row v-for="(v, index) in auxChannels" :key="v.text">
+              <b-col sm="6" class="my-1">{{ v.text }}</b-col>
               <b-col
                 sm="6"
                 class="my-1"
-                :class="v ? 'text-success' : 'text-danger'"
-              >{{ v ? "ON" : "OFF"}}</b-col>
+                :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
+              >{{ valueForIndex(index) ? "ON" : "OFF"}}</b-col>
             </b-row>
           </b-card>
         </b-col>
@@ -81,6 +81,9 @@ export default {
     };
   },
   methods: {
+    valueForIndex(index) {
+      return (this.aux >> index) & 0x1;
+    },
     classForIndex(index) {
       if (!this.channel || !this.channel.aux) {
         return "";
@@ -88,7 +91,9 @@ export default {
 
       if (this.channel.aux[index] == 14) return "text-danger";
       if (this.channel.aux[index] == 13) return "text-success";
-      if (this.aux[this.channel.aux[index]]) return "text-success";
+      if (this.valueForIndex(this.channel.aux[index])) {
+        return "text-success";
+      }
       return "";
     }
   }
