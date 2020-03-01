@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -206,7 +208,7 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("file")
+	file, header, err := r.FormFile("file")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -214,9 +216,20 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	var value quic.Profile
-	if err := json.NewDecoder(file).Decode(&value); err != nil {
-		handleError(w, err)
-		return
+
+	ext := filepath.Ext(header.Filename)
+	if ext == ".json" {
+		if err := json.NewDecoder(file).Decode(&value); err != nil {
+			handleError(w, err)
+			return
+		}
+	} else if ext == ".cbor" {
+		if err := cbor.NewDecoder(file).Decode(&value); err != nil {
+			handleError(w, err)
+			return
+		}
+	} else {
+		handleError(w, errors.New("unsupported file type"))
 	}
 
 	if err := s.qp.SetValue(quic.QuicValProfile, &value); err != nil {

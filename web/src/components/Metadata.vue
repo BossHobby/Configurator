@@ -40,7 +40,7 @@
     <b-row>
       <b-col sm="6">
         <form :hidden="!status.IsConnected" ref="form">
-          <input accept=".json" type="file" ref="file" style="display: none" />
+          <input accept=".json, .cbor" type="file" ref="file" style="display: none" />
           <b-button class="my-2" @click="uploadProfile">Load Profile</b-button>
         </form>
       </b-col>
