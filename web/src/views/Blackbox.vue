@@ -12,8 +12,7 @@
       </b-col>
 
       <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
-        {{ plot.name }} {{ blackbox[plot.name] }}
-        <Plot title="Rx Channels" ref="plot" :axis="plot.axis" :input="blackbox[plot.name]"></Plot>
+        <Plot :title="plot.title" ref="plot" :axis="plot.axis" :input="blackbox[plot.name]"></Plot>
       </b-col>
     </b-row>
   </b-container>
