@@ -4,7 +4,7 @@ import { Scatter } from "vue-chartjs";
 export default {
   name: "plot",
   extends: Scatter,
-  props: ["title", "input", "axis"],
+  props: ["title", "time", "input", "axis"],
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
@@ -57,7 +57,7 @@ export default {
           ]
         },
         tooltips: {
-          mode: "interpolate",
+          mode: "index",
           intersect: false,
           callbacks: {
             label: function(tooltipItem, data) {
@@ -65,7 +65,7 @@ export default {
               if (label) {
                 label += ": ";
               }
-              label += tooltipItem.value;
+              label += tooltipItem.yLabel;
               return label;
             }
           }
@@ -92,9 +92,11 @@ export default {
         return this.renderChart(this.chartdata, this.options);
       }
 
+      const time = this.time || Date.now();
+
       for (let i = 0; i < this.axis.length; i++) {
         chart.data.datasets[i].data.push({
-          x: Date.now(),
+          x: time,
           y: val[i]
         });
 
@@ -105,12 +107,21 @@ export default {
 
       if (Date.now() - this.lastUpdate > 100) {
         chart.update();
-        this.lastUpdate = Date.now();
+        this.lastUpdate = time;
       }
     }
   },
   mounted() {
     this.renderChart(this.chartdata, this.options);
+  },
+  methods: {
+    reset() {
+      const chart = this.$data._chart;
+      for (let i = 0; i < this.axis.length; i++) {
+        chart.data.datasets[i].data = [];
+      }
+      this.renderChart(this.chartdata, this.options);
+    }
   }
 };
 </script>

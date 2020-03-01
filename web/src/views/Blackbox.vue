@@ -1,56 +1,19 @@
 <template>
   <b-container>
     <b-row>
+      <!--
+      <b-col sm="12">
+        <b-button size="sm" class="my-2 mx-2" @click="fetch()">fetch</b-button>
+        <b-button size="sm" class="my-2 mx-2" @click="reset_blackbox()">reset</b-button>
+      </b-col>
+      -->
       <b-col sm="12">
         <GyroModel class="my-3"></GyroModel>
       </b-col>
-      <b-col sm="12">
-        <Plot
-          title="Rx Channels"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw', 'Throttle']"
-          :input="blackbox.rx_filter"
-        ></Plot>
-      </b-col>
-      <b-col sm="6">
-        <Plot
-          title="Gyro Raw"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.gyro_raw"
-        ></Plot>
-      </b-col>
-      <b-col sm="6">
-        <Plot
-          title="Gyro Filter"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.gyro_filter"
-        ></Plot>
-      </b-col>
-      <b-col sm="12">
-        <Plot
-          title="Gyro Vector"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.gyro_vector"
-        ></Plot>
-      </b-col>
-      <b-col sm="6">
-        <Plot
-          title="AccelRaw"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.accel_raw"
-        ></Plot>
-      </b-col>
-      <b-col sm="6">
-        <Plot
-          title="AccelFilter"
-          :interval="interval"
-          :axis="['Roll', 'Pitch', 'Yaw']"
-          :input="blackbox.accel_filter"
-        ></Plot>
+
+      <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
+        {{ plot.name }} {{ blackbox[plot.name] }}
+        <Plot title="Rx Channels" ref="plot" :axis="plot.axis" :input="blackbox[plot.name]"></Plot>
       </b-col>
     </b-row>
   </b-container>
@@ -69,8 +32,50 @@ export default {
   },
   data() {
     return {
-      start: Date.now(),
-      interval: 10
+      plots: [
+        {
+          name: "rx_filter",
+          size: 12,
+          title: "Rx Channels",
+          axis: ["Roll", "Pitch", "Yaw", "Throttle"]
+        },
+        {
+          name: "gyro_raw",
+          size: 6,
+          title: "Gyro Raw",
+          axis: ["Roll", "Pitch", "Yaw"]
+        },
+        {
+          name: "gyro_filter",
+          size: 6,
+          title: "Gyro Filter",
+          axis: ["Roll", "Pitch", "Yaw"]
+        },
+        {
+          name: "gyro_vector",
+          size: 12,
+          title: "Gyro Vector",
+          axis: ["Roll", "Pitch", "Yaw"]
+        },
+        {
+          name: "accel_raw",
+          size: 6,
+          title: "AccelRaw",
+          axis: ["Roll", "Pitch", "Yaw"]
+        },
+        {
+          name: "accel_filter",
+          size: 6,
+          title: "AccelFilter",
+          axis: ["Roll", "Pitch", "Yaw"]
+        },
+        {
+          name: "pid_output",
+          size: 12,
+          title: "Pid Output",
+          axis: ["Roll", "Pitch", "Yaw"]
+        }
+      ]
     };
   },
   computed: {
@@ -78,7 +83,15 @@ export default {
       blackbox: state => state.blackbox
     })
   },
-  methods: mapActions(["set_blackbox_rate"]),
+  methods: {
+    ...mapActions(["set_blackbox_rate", "fetch_blackbox", "reset_blackbox"]),
+    fetch() {
+      for (const p of this.$refs.plot) {
+        p.reset();
+      }
+      this.fetch_blackbox();
+    }
+  },
   created() {
     this.set_blackbox_rate(4);
   },

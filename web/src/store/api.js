@@ -18,6 +18,44 @@ export function get(url) {
     })
 }
 
+export function get_stream(url, cb) {
+  console.log(`>> get_stream ${url} `)
+
+  const td = new TextDecoder("utf-8");
+
+
+  return fetch("http://localhost:8000" + url)
+    .then(async res => {
+      const reader = res.body.getReader();
+      let buf = "", done = false;
+
+      while (!done) {
+        const p = await reader.read();
+        if (p.done) {
+          done = true;
+          break;
+        }
+
+        buf += td.decode(p.value);
+
+        let index = buf.indexOf("\n");
+        while (index > 0) {
+          try {
+            const str = buf.substr(0, index);
+            const obj = JSON.parse(str);
+            console.log(`<< get_stream ${url}`, obj);
+            cb(obj);
+            buf = buf.substr(index + 2, buf.length - index - 2)
+          } catch (e) {
+            console.log(e)
+          }
+          index = buf.indexOf("\n")
+        }
+      }
+    })
+}
+
+
 export function post(url, payload) {
   console.log(`>> post ${url} `, payload)
   return fetch("http://localhost:8000" + url, {

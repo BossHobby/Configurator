@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-import { get, post } from "@/store/api.js";
+import { get, post, get_stream } from "@/store/api.js";
 import profileModule from "./profile";
 import router from '../router';
 
@@ -27,6 +27,7 @@ const store = new Vuex.Store({
   },
   state: {
     return_url: null,
+    blackbox_pause: false,
     status: {
       Info: {
         usart_ports: [],
@@ -75,6 +76,9 @@ const store = new Vuex.Store({
     },
     set_blackbox(state, blackbox) {
       state.blackbox = blackbox
+    },
+    set_blackbox_pause(state, pause) {
+      state.blackbox_pause = pause
     },
     set_flash(state, flash) {
       state.flash = flash
@@ -127,7 +131,9 @@ const store = new Vuex.Store({
             commit('set_status', msg.Payload);
             break;
           case "blackbox":
-            commit('set_blackbox', msg.Payload);
+            if (!state.blackbox_pause) {
+              commit('set_blackbox', msg.Payload);
+            }
             break;
           case "flash":
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
@@ -163,6 +169,12 @@ const store = new Vuex.Store({
       return get("/api/vtx/settings")
         .then(p => commit('set_vtx_settings', p))
     },
+    fetch_blackbox({ commit }) {
+      commit('set_blackbox_pause', true)
+      return get_stream("/api/blackbox", blackbox => {
+        commit('set_blackbox', blackbox);
+      })
+    },
     fetch_firmware_releases({ commit }) {
       return get("/api/flash/releases")
         .then(p => commit('set_firmware_releases', p))
@@ -173,6 +185,9 @@ const store = new Vuex.Store({
     },
     cal_imu() {
       return post("/api/cal_imu", null)
+    },
+    reset_blackbox() {
+      return post("/api/blackbox/reset", null)
     },
     set_blackbox_rate(ctx, rate) {
       return post("/api/blackbox/rate", rate)
