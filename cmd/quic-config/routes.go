@@ -18,6 +18,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
 	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/util"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/gorilla/mux"
 )
@@ -176,16 +177,24 @@ func (s *Server) getDefaultProfile(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
+func profileFilename(v interface{}) string {
+	meta := v.(map[interface{}]interface{})["meta"].(map[interface{}]interface{})
+	return fmt.Sprintf("Profile_%s_%s.json",
+		strings.Replace(meta["name"].(string), "\x00", "", -1),
+		time.Unix(int64(meta["datetime"].(uint64)), 0).Format("2006-01-02"),
+	)
+}
+
 func (s *Server) getProfileDownload(w http.ResponseWriter, r *http.Request) {
-	value := quic.Profile{}
+	var value interface{}
 	if err := s.qp.GetValue(quic.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+value.Filename())
-	w.Header().Set("Content-Type", "application/octet-stream")
-	if err := cbor.NewEncoder(w).Encode(value); err != nil {
+	w.Header().Set("Content-Disposition", "attachment; filename="+profileFilename(value))
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(util.ConvertForJSON(value)); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -204,14 +213,13 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	p, err := s.qp.Set(quic.QuicValProfile, file)
-	if err != nil {
+	var value quic.Profile
+	if err := json.NewDecoder(file).Decode(&value); err != nil {
 		handleError(w, err)
 		return
 	}
 
-	value := quic.Profile{}
-	if err := cbor.NewDecoder(p).Decode(&value); err != nil {
+	if err := s.qp.SetValue(quic.QuicValProfile, &value); err != nil {
 		handleError(w, err)
 		return
 	}

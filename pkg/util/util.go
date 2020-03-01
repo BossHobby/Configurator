@@ -1,6 +1,9 @@
 package util
 
-import "io"
+import (
+	"io"
+	"reflect"
+)
 
 func AppendCRC8(buf []byte) []byte {
 	chksum := byte(0)
@@ -48,4 +51,38 @@ func ReadAtLeast(r io.Reader, size int) ([]byte, error) {
 	}
 
 	return buf, nil
+}
+
+func ConvertForJSON(data interface{}) interface{} {
+	val := reflect.ValueOf(data)
+	kind := val.Kind()
+
+	switch kind {
+	case reflect.Ptr:
+		return ConvertForJSON(val.Elem().Interface())
+
+	case reflect.Slice:
+		tmp, result := make([]interface{}, val.Len()), make([]interface{}, val.Len())
+		for i := 0; i < val.Len(); i++ {
+			tmp[i] = val.Index(i).Interface()
+		}
+		for i, v := range tmp {
+			result[i] = ConvertForJSON(v)
+		}
+		return result
+
+	case reflect.Map:
+		tmp := make(map[string]interface{})
+		for _, k := range val.MapKeys() {
+			typeOfValue := reflect.TypeOf(val.MapIndex(k).Interface()).Kind()
+			if typeOfValue == reflect.Map || typeOfValue == reflect.Slice {
+				tmp[k.Elem().String()] = ConvertForJSON(val.MapIndex(k).Interface())
+			} else {
+				tmp[k.Elem().String()] = val.MapIndex(k).Interface()
+			}
+		}
+		return tmp
+	}
+
+	return data
 }

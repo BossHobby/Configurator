@@ -24,6 +24,7 @@ import (
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/util"
 )
 
 var (
@@ -75,7 +76,7 @@ func cacheDir() string {
 	return dir
 }
 
-func printJson(v interface{}) error {
+func printJSON(v interface{}) error {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
@@ -277,10 +278,9 @@ func main() {
 				return
 			}
 
-			log.Printf("%+v", *value)
-
-			if err := printJson(value); err != nil {
-				//log.Fatal(err)
+			log.Debugf("%+v", *value)
+			if err := printJSON(util.ConvertForJSON(value)); err != nil {
+				log.Fatal(err)
 			}
 		}
 		break
@@ -310,7 +310,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if err := printJson(value); err != nil {
+		if err := printJSON(value); err != nil {
 			log.Fatal(err)
 		}
 		break
@@ -350,7 +350,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if *verbose {
-			if err := printJson(value); err != nil {
+			if err := printJSON(value); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -384,7 +384,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if *verbose {
-			if err := printJson(value); err != nil {
+			if err := printJSON(value); err != nil {
 				log.Fatal(err)
 			}
 		}

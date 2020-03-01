@@ -153,9 +153,9 @@ type TargetInfo struct {
 }
 
 type Blackbox struct {
-	Time       uint    `cbor:"time" json:"time"`
-	CPULoad    float32 `cbor:"cpu_load" json:"cpu_load"`
-	VbatFilter float32 `cbor:"vbat_filter" json:"vbat_filter"`
+	Time       uint        `cbor:"time" json:"time"`
+	CPULoad    interface{} `cbor:"cpu_load" json:"cpu_load"`
+	VbatFilter interface{} `cbor:"vbat_filter" json:"vbat_filter"`
 
 	GyroRaw    [3]float32 `cbor:"gyro_raw" json:"gyro_raw"`
 	GyroFilter [3]float32 `cbor:"gyro_filter" json:"gyro_filter"`
