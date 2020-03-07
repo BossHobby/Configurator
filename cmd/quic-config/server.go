@@ -136,6 +136,7 @@ func (s *Server) closeController() {
 	s.dfuLoader = nil
 
 	if s.fc != nil {
+		log.Debug("closing fc")
 		if err := s.fc.Close(); err != nil {
 			log.Error(err)
 		}
