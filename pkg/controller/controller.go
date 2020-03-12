@@ -87,7 +87,10 @@ func (c *Controller) Write(p []byte) (int, error) {
 }
 
 func (c *Controller) Close() error {
-	return c.port.Close()
+	if c.port != nil {
+		return c.port.Close()
+	}
+	return nil
 }
 
 func (c *Controller) SoftReboot() {
