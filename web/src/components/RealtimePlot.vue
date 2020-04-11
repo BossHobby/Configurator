@@ -2,7 +2,7 @@
 import { Scatter } from "vue-chartjs";
 
 export default {
-  name: "plot",
+  name: "RealtimePlot",
   extends: Scatter,
   props: ["title", "time", "input", "axis"],
   data() {
