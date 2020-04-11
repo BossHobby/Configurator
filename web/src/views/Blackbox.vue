@@ -12,7 +12,7 @@
       </b-col>
 
       <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
-        <Plot :title="plot.title" ref="plot" :axis="plot.axis" :input="blackbox[plot.name]"></Plot>
+        <RealtimePlot :title="plot.title" ref="plot" :axis="plot.axis" :input="blackbox[plot.name]"></RealtimePlot>
       </b-col>
     </b-row>
   </b-container>
@@ -20,13 +20,13 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
-import Plot from "@/components/Plot";
+import RealtimePlot from "@/components/RealtimePlot";
 import GyroModel from "@/components/GyroModel";
 
 export default {
   name: "blackbox",
   components: {
-    Plot,
+    RealtimePlot,
     GyroModel
   },
   data() {

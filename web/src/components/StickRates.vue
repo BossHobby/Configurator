@@ -104,7 +104,12 @@
         </b-row>
       </b-col>
       <b-col sm="6">
-        <vue-plotly v-if="rate.silverware.acro_expo" :data="plot.data" :layout="plot.layout"></vue-plotly>
+        <LineChart
+          v-if="rate.silverware.acro_expo"
+          title="Rates"
+          :labels="plot.labels"
+          :axis="plot.axis"
+        ></LineChart>
         <b-form-checkbox v-model="plotLowRates">Plot LowRates</b-form-checkbox>
       </b-col>
     </b-row>
@@ -112,13 +117,13 @@
 </template>
 
 <script>
-import VuePlotly from "@statnett/vue-plotly";
+import LineChart from "@/components/LineChart";
 import { mapState } from "vuex";
 
 export default {
   name: "StickRates",
   components: {
-    VuePlotly
+    LineChart
   },
   computed: {
     ...mapState({
@@ -128,54 +133,41 @@ export default {
       return this.rateModes[this.rate.mode].text;
     },
     plot() {
-      const data = [
+      const axis = [
         {
-          name: "Roll",
-          x: [],
-          y: [],
-          mode: "lines"
+          label: "Roll",
+          data: []
         },
         {
-          name: "Pitch",
-          x: [],
-          y: [],
-          mode: "lines"
+          label: "Pitch",
+          data: []
         },
         {
-          name: "Yaw",
-          x: [],
-          y: [],
-          mode: "lines"
+          label: "Yaw",
+          data: []
         }
       ];
+
+      const labels = [];
 
       const rateMulit = this.plotLowRates ? this.rate.low_rate_mulitplier : 1.0;
       for (let i = -100; i <= 100; i++) {
         const input = i / 100.0;
 
-        for (let j = 0; j < 3; j++) {
-          data[j].x.push(input);
+        labels.push("" + i);
 
+        for (let j = 0; j < 3; j++) {
           if (this.currentMode == "Silverware") {
-            data[j].y.push(this.calcSilverware(j, input) * rateMulit);
+            axis[j].data.push(this.calcSilverware(j, input) * rateMulit);
           } else if (this.currentMode == "Betaflight") {
-            data[j].y.push(this.calcBetatflight(j, input) * rateMulit);
+            axis[j].data.push(this.calcBetatflight(j, input) * rateMulit);
           }
         }
       }
 
       return {
-        data,
-        layout: {
-          title: this.currentMode + " Expo",
-          yaxis: {
-            title: "Output"
-          },
-          xaxis: {
-            range: [-1.1, 1.1],
-            title: "Input"
-          }
-        }
+        labels,
+        axis
       };
     }
   },
