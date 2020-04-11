@@ -158,9 +158,15 @@ export default {
 
         for (let j = 0; j < 3; j++) {
           if (this.currentMode == "Silverware") {
-            axis[j].data.push(this.calcSilverware(j, input) * rateMulit);
+            axis[j].data.push({
+              x: i,
+              y: this.calcSilverware(j, input) * rateMulit
+            });
           } else if (this.currentMode == "Betaflight") {
-            axis[j].data.push(this.calcBetatflight(j, input) * rateMulit);
+            axis[j].data.push({
+              x: i,
+              y: this.calcBetatflight(j, input) * rateMulit
+            });
           }
         }
       }

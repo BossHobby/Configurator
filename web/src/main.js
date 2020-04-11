@@ -3,7 +3,7 @@ import BootstrapVue from 'bootstrap-vue'
 import * as VueGL from "vue-gl";
 
 import './style.scss'
-import 'chartjs-plugin-crosshair'
+// import 'chartjs-plugin-crosshair'
 
 import App from './App.vue'
 import router from './router'

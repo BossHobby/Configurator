@@ -38,6 +38,7 @@ export default {
         scales: {
           xAxes: [
             {
+              type: "linear",
               gridLines: {
                 display: true
               },
@@ -61,9 +62,6 @@ export default {
           position: "average",
           mode: "index",
           intersect: false
-        },
-        plugins: {
-          crosshair: false
         }
       };
     }
