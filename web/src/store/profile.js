@@ -47,9 +47,7 @@ const store = {
   mutations: {
     set_profile(state, profile) {
       for (const key in profile) {
-        if (profile.hasOwnProperty(key)) {
-          state[key] = profile[key];
-        }
+        state[key] = profile[key];
       }
     },
     set_current_pid_rate(state, rate) {

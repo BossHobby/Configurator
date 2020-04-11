@@ -8,19 +8,7 @@ import profileModule from "./profile";
 import router from '../router';
 
 var ws = null
-/*
-function sendWebsocket(channel, payload) {
-  if (ws == null || !ws.readyState) {
-    return;
-  }
 
-  const data = JSON.stringify({
-    Channel: channel,
-    Payload: payload,
-  })
-  return ws.send(data)
-}
-*/
 const store = new Vuex.Store({
   modules: {
     profile: profileModule,
