@@ -6,7 +6,7 @@ LINUX		= $(EXECUTABLE)-linux-amd64
 DARWIN	= $(EXECUTABLE)-darwin-amd64
 
 VERSION = $(DRONE_TAG)
-ifneq ($VERSION,)
+ifneq ($(VERSION),)
 	VERSION = dirty
 endif
 
