@@ -3,7 +3,7 @@
 PREFIX="v"
 
 find_latest_semver() {
-  pattern="^$PREFIX([0-9]+\.[0-9]+\.[0-9]+)\$"
+  pattern="^$PREFIX([0-9]+\.[0-9]+\.[0-9]+)$"
   versions=$(for tag in $(git tag); do
     [[ "$tag" =~ $pattern ]] && echo "${BASH_REMATCH[1]}"
   done)
@@ -24,8 +24,8 @@ bump() {
     echo "refusing to tag; $latest_ver already tagged for HEAD ($head_commit)"
   else
     next_major=$(($(echo $latest_semver | cut -d "." -f 1) + "$1"))
-    next_minor=$(($(echo $latest_semver | cut -d "." -f 1) + "$2"))
-    next_patch=$(($(echo $latest_semver | cut -d "." -f 1) + "$3"))
+    next_minor=$(($(echo $latest_semver | cut -d "." -f 2) + "$2"))
+    next_patch=$(($(echo $latest_semver | cut -d "." -f 3) + "$3"))
 
     next_ver="${PREFIX}${next_major}.${next_minor}.${next_patch}"
 
