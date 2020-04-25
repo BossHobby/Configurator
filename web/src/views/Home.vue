@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <div class="jumbotron my-5">
-      <h1 class="display-4">USB Configurator</h1>
+      <h1 class="display-4">USB Configurator {{ status.Version }}</h1>
       <p class="lead">Currently you are disconnected, connect to get started!</p>
       <b-button
         size="lg"

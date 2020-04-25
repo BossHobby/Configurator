@@ -19,11 +19,12 @@ import (
 )
 
 type Status struct {
-	IsConnected    bool
-	HasDFU         bool
+	Version        string
 	Port           string
 	AvailablePorts []string
 	Info           *quic.TargetInfo
+	IsConnected    bool
+	HasDFU         bool
 	HasUpdate      bool
 }
 
@@ -111,6 +112,7 @@ func (s *Server) controllerStatus() (*Status, error) {
 	}
 
 	status := &Status{
+		Version:        version,
 		AvailablePorts: ports,
 		IsConnected:    s.fc != nil,
 		HasDFU:         s.dfuLoader != nil,
