@@ -202,25 +202,25 @@ func main() {
 		githubToken = os.Getenv("GITHUB_TOKEN")
 	}
 
-	//if mode == "debug" {
 	log.SetLevel(log.DebugLevel)
 	logFile, err := os.Create("quicksilver.log")
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
-	//}
 
-	f, err := os.Create("quic-config.perf")
-	if err != nil {
-		log.Fatal(err)
+	if mode == "debug" {
+		f, err := os.Create("quic-config.perf")
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer func() {
+			log.Debugf("closing")
+			pprof.StopCPUProfile()
+			f.Close()
+		}()
 	}
-	pprof.StartCPUProfile(f)
-	defer func() {
-		log.Debugf("closing")
-		pprof.StopCPUProfile()
-		f.Close()
-	}()
 
 	if flag.NArg() == 0 {
 		c := make(chan os.Signal, 1)
