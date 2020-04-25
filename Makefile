@@ -5,10 +5,7 @@ WINDOWS	= $(EXECUTABLE)-windows-amd64
 LINUX		= $(EXECUTABLE)-linux-amd64
 DARWIN	= $(EXECUTABLE)-darwin-amd64
 
-VERSION = $(DRONE_TAG)
-ifneq ($(VERSION),)
-	VERSION = dirty
-endif
+VERSION = $(if $(DRONE_TAG),$(DRONE_TAG),dirty)
 
 ifeq ($(OS), Windows_NT)
 	PLATFORM=windows
