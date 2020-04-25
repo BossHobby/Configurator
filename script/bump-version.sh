@@ -29,7 +29,9 @@ bump() {
 
     next_ver="${PREFIX}${next_major}.${next_minor}.${next_patch}"
 
-    echo $next_ver
+    echo "tagging $next_ver $head_commit"
+    git tag "$next_ver" $head_commit
+    git push origin master --tags
   fi
 }
 
