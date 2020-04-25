@@ -3,9 +3,10 @@ module github.com/NotFastEnuf/configurator
 go 1.12
 
 require (
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/golang/protobuf v1.3.5 // indirect
-	github.com/google/go-github/v28 v28.1.1
+	github.com/google/go-github/v31 v31.0.0
 	github.com/google/gousb v0.0.0-20190812193832-18f4c1d8a750
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2

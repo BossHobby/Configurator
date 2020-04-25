@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v31/github"
 	"github.com/marcinbor85/gohex"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -46,9 +46,7 @@ func NewFirmwareLoader(cacheDir string, githubToken string) (*FirmwareLoader, er
 	}
 	ctx := context.Background()
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: githubToken},
-	)
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: githubToken})
 	tc := oauth2.NewClient(ctx, ts)
 	return &FirmwareLoader{
 		cache:  c,
@@ -92,7 +90,7 @@ func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 	if w != nil {
 		log.Debugf("firmware %s not found in cache, downloading", file)
 		ctx := context.Background()
-		rc, url, err := l.github.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID)
+		rc, url, err := l.github.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID, http.DefaultClient)
 		if err != nil {
 			return nil, err
 		}

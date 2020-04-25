@@ -36,8 +36,6 @@ steps:
       api_key:
         from_secret: github_token
       files: quic-config*.zip
-      prerelease: true
-      title: latest
       note: |-
         Download Links
         https://bkleiner.codes/public/quic-config-windows-amd64.zip
