@@ -198,6 +198,10 @@ func setOSDFont(qp *quic.QuicProtocol, r io.Reader) error {
 func main() {
 	flag.Parse()
 
+	if githubToken == "" {
+		githubToken = os.Getenv("GITHUB_TOKEN")
+	}
+
 	//if mode == "debug" {
 	log.SetLevel(log.DebugLevel)
 	logFile, err := os.Create("quicksilver.log")

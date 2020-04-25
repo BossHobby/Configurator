@@ -485,11 +485,21 @@ func (s *Server) postFlashConnect(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
+func (s *Server) postUpdate(w http.ResponseWriter, r *http.Request) {
+	if err := s.updater.Update(); err != nil {
+		handleError(w, err)
+		return
+	}
+
+	renderJSON(w, "OK")
+}
+
 func (s *Server) setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
 	r.HandleFunc("/api/connect", s.postConnect).Methods("POST")
 	r.HandleFunc("/api/disconnect", s.postDisconnect).Methods("POST")
+	r.HandleFunc("/api/update", s.postUpdate).Methods("POST")
 
 	r.HandleFunc("/api/flash/releases", s.getFirmwareReleases).Methods("GET")
 	r.HandleFunc("/api/flash/connect", s.postFlashConnect).Methods("POST")

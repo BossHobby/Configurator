@@ -10,6 +10,7 @@ require (
 	github.com/google/gousb v0.0.0-20190812193832-18f4c1d8a750
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2
+	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/marcinbor85/gohex v0.0.0-20180128172054-7a43cd876e46
 	github.com/rakyll/statik v0.1.7

@@ -24,6 +24,7 @@ type Status struct {
 	Port           string
 	AvailablePorts []string
 	Info           *quic.TargetInfo
+	HasUpdate      bool
 }
 
 type Server struct {
@@ -38,6 +39,7 @@ type Server struct {
 
 	dfuMu     sync.Mutex
 	dfuLoader *dfu.Loader
+	updater   *Updater
 }
 
 func NewServer() (*Server, error) {
@@ -50,8 +52,9 @@ func NewServer() (*Server, error) {
 		return nil, err
 	}
 	return &Server{
-		fl: fl,
-		fs: statikFS,
+		fl:      fl,
+		fs:      statikFS,
+		updater: NewUpdater(),
 	}, nil
 }
 
@@ -111,6 +114,7 @@ func (s *Server) controllerStatus() (*Status, error) {
 		AvailablePorts: ports,
 		IsConnected:    s.fc != nil,
 		HasDFU:         s.dfuLoader != nil,
+		HasUpdate:      s.updater.found,
 	}
 	if s.fc != nil {
 		status.Port = s.fc.PortName
@@ -176,6 +180,7 @@ func (s *Server) Serve() {
 	r := mux.NewRouter()
 	s.setupRoutes(r)
 
+	go s.updater.Check(version)
 	go s.watchPorts()
 
 	if mode == "release" {

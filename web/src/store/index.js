@@ -143,6 +143,15 @@ const store = new Vuex.Store({
     connect_flash() {
       return post("/api/flash/connect", {})
     },
+    update({ commit }) {
+      return post("/api/update", {})
+        .then(() => {
+          commit('append_alert', "update succeeded, restart to apply");
+        })
+        .catch(err => {
+          commit('append_alert', err);
+        })
+    },
     hard_reboot_first_port() {
       return post("/api/hard_reboot", {})
         .then(() => {
