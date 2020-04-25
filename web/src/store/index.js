@@ -3,33 +3,26 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-import { get, post, get_stream } from "@/store/api.js";
-import profileModule from "./profile";
+import { get, post } from "@/store/api.js";
 import router from '../router';
+
+import profileModule from "./profile";
+import statusModule from "./status";
+import blackboxModule from "./blackbox";
 
 var ws = null
 
 const store = new Vuex.Store({
   modules: {
     profile: profileModule,
+    status: statusModule,
+    blackbox: blackboxModule,
   },
   state: {
     return_url: null,
     blackbox_pause: false,
-    status: {
-      Info: {
-        usart_ports: [],
-        motor_pins: []
-      },
-      AvailablePorts: [],
-      IsConnected: false,
-    },
     log: [],
     alerts: [],
-    blackbox: {
-      cpu_load: 0.0,
-      vbat_filter: 0.0,
-    },
     pid_rate_presets: [],
     vtx_settings: {
       channel: 0,
@@ -44,12 +37,6 @@ const store = new Vuex.Store({
     flash: {}
   },
   mutations: {
-    set_status(state, status) {
-      if (!status.Port || status.Port == "") {
-        status.Port = status.AvailablePorts[0]
-      }
-      state.status = status
-    },
     set_default_profile(state, default_profile) {
       state.default_profile = default_profile
     },
@@ -61,9 +48,6 @@ const store = new Vuex.Store({
     },
     set_firmware_releases(state, firmware_releases) {
       state.firmware_releases = firmware_releases
-    },
-    set_blackbox(state, blackbox) {
-      state.blackbox = blackbox
     },
     set_blackbox_pause(state, pause) {
       state.blackbox_pause = pause
@@ -130,34 +114,6 @@ const store = new Vuex.Store({
         }
       };
     },
-    toggle_connection({ state }, port) {
-      var path = "/api/connect"
-      if (state.status.IsConnected) {
-        path = "/api/disconnect";
-      }
-      return post(path, port)
-    },
-    soft_reboot() {
-      return post("/api/soft_reboot", {})
-    },
-    connect_flash() {
-      return post("/api/flash/connect", {})
-    },
-    update({ commit }) {
-      return post("/api/update", {})
-        .then(() => {
-          commit('append_alert', "update succeeded, restart to apply");
-        })
-        .catch(err => {
-          commit('append_alert', err);
-        })
-    },
-    hard_reboot_first_port() {
-      return post("/api/hard_reboot", {})
-        .then(() => {
-          setTimeout(() => post("/api/flash/connect", {}), 1000)
-        })
-    },
     fetch_pid_rate_presets({ commit }) {
       return get("/api/pid_rate_presets")
         .then(p => commit('set_pid_rate_presets', p))
@@ -165,12 +121,6 @@ const store = new Vuex.Store({
     fetch_vtx_settings({ commit }) {
       return get("/api/vtx/settings")
         .then(p => commit('set_vtx_settings', p))
-    },
-    fetch_blackbox({ commit }) {
-      commit('set_blackbox_pause', true)
-      return get_stream("/api/blackbox", blackbox => {
-        commit('set_blackbox', blackbox);
-      })
     },
     fetch_firmware_releases({ commit }) {
       return get("/api/flash/releases")
@@ -182,12 +132,6 @@ const store = new Vuex.Store({
     },
     cal_imu() {
       return post("/api/cal_imu", null)
-    },
-    reset_blackbox() {
-      return post("/api/blackbox/reset", null)
-    },
-    set_blackbox_rate(ctx, rate) {
-      return post("/api/blackbox/rate", rate)
     },
     set_osd_font(ctx, name) {
       return post("/api/osd/font", name)

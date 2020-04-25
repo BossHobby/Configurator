@@ -78,9 +78,7 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      blackbox: state => state.blackbox
-    })
+    ...mapState(["blackbox"])
   },
   methods: {
     ...mapActions(["set_blackbox_rate", "fetch_blackbox", "reset_blackbox"]),

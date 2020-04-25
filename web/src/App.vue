@@ -67,15 +67,13 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex";
 
 export default {
   name: "app",
   computed: {
     ...mapState(["status", "profile", "alerts", "blackbox"]),
-    can_connect() {
-      return !this.status.Port || this.status.Port.length == 0;
-    },
+    ...mapGetters(["can_connect"]),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
     }
