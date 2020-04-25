@@ -5,7 +5,10 @@ WINDOWS	= $(EXECUTABLE)-windows-amd64
 LINUX		= $(EXECUTABLE)-linux-amd64
 DARWIN	= $(EXECUTABLE)-darwin-amd64
 
-VERSION 		= $(shell git describe --tags --always --long --dirty)
+VERSION = $(DRONE_TAG)
+ifneq ($VERSION,)
+	VERSION = dirty
+endif
 
 ifeq ($(OS), Windows_NT)
 	PLATFORM=windows
