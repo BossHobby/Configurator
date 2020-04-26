@@ -1,7 +1,8 @@
 package blheli
 
-/*
 import (
+	"io"
+
 	"github.com/NotFastEnuf/configurator/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
@@ -150,12 +151,22 @@ type BLHeliResponse struct {
 	PARAMS []byte
 }
 
-func (c *Controller) ReadBlheli() *BLHeliResponse {
+type BLHeliProtocol struct {
+	rw io.ReadWriter
+}
+
+func NewBLHeliProtocol(rw io.ReadWriter) (*BLHeliProtocol, error) {
+	return &BLHeliProtocol{
+		rw: rw,
+	}, nil
+}
+
+func (p *BLHeliProtocol) readBlheli() *BLHeliResponse {
 	buf := make([]byte, 512)
 	length := 0
 
 	{
-		n, err := c.port.Read(buf)
+		n, err := p.rw.Read(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -173,7 +184,7 @@ func (c *Controller) ReadBlheli() *BLHeliResponse {
 	}
 	size := int(5 + paramLen + 1 + 2)
 	for length != size {
-		n, err := c.port.Read(buf[length:size])
+		n, err := p.rw.Read(buf[length:size])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -207,7 +218,7 @@ func (c *Controller) ReadBlheli() *BLHeliResponse {
 	}
 }
 
-func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHeliResponse {
+func (p *BLHeliProtocol) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHeliResponse {
 	if len(params) > 256 {
 		log.Fatal("<blheli> params >= 256")
 	}
@@ -231,9 +242,9 @@ func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHe
 	buf = util.AppendCRC16(buf)
 
 	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d", cmd, addr, paramLen)
-	c.writeChannel <- buf
+	p.rw.Write(buf)
 
-	res := c.ReadBlheli()
+	res := p.readBlheli()
 	if res.CMD != cmd {
 		log.Fatalf("<blheli> invalid response cmd (0x%x vs 0x%x)", res.CMD, cmd)
 	}
@@ -243,31 +254,36 @@ func (c *Controller) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHe
 	return res
 }
 
-func (c *Controller) ReadFlash(length uint16) []byte {
+func (p *BLHeliProtocol) ReadFlash(offset, length uint16) []byte {
 	buf := make([]byte, length)
-	offset := uint16(0)
+	read := uint16(0)
 
-	for offset < length {
-		res := c.SendBlheli(BLHeliCmdDeviceRead, offset, []byte{128})
-		log.Printf("<blheli> readFlash %d (%d)", offset, len(res.PARAMS))
-		copy(buf[offset:], res.PARAMS)
-		offset += uint16(len(res.PARAMS))
+	for read < length {
+		size := length - read
+		if size > 128 {
+			size = 128
+		}
+
+		res := p.SendBlheli(BLHeliCmdDeviceRead, offset+read, []byte{uint8(size)})
+		log.Printf("<blheli> readFlash %d (%d)", offset+read, len(res.PARAMS))
+
+		copy(buf[read:], res.PARAMS)
+		read += uint16(len(res.PARAMS))
 	}
 
 	return buf
 }
 
-func (c *Controller) WriteFlash(buf []byte) {
-	offset, length := uint16(0), uint16(len(buf))
+func (p *BLHeliProtocol) WriteFlash(offset uint16, buf []byte) {
+	length := uint16(len(buf))
 
 	for offset < length {
 		size := length - offset
 		if size > 128 {
 			size = 128
 		}
-		res := c.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
+		res := p.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
 		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)", res.ACK, offset, size)
 		offset += size
 	}
 }
-*/
