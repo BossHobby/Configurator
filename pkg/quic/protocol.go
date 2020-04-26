@@ -31,40 +31,50 @@ type quicTicket struct {
 type QuicProtocol struct {
 	Info *TargetInfo
 
-	rw io.Writer
-	br io.Reader
+	rw io.ReadWriter
 
-	errChan    chan error
+	stopChan chan interface{}
+	errChan  chan error
+
 	ticketChan chan quicTicket
 	packetChan chan *QuicPacket
-	Blackbox   chan Blackbox
-	Log        chan string
+
+	Blackbox chan Blackbox
+	Log      chan string
 }
 
 func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 	p := &QuicProtocol{
-		rw:         rw,
-		br:         rw,
+		rw: rw,
+
+		stopChan:   make(chan interface{}),
 		errChan:    make(chan error),
 		ticketChan: make(chan quicTicket, 100),
 		packetChan: make(chan *QuicPacket, 100),
-		Blackbox:   make(chan Blackbox, 100),
-		Log:        make(chan string, 100),
+
+		Blackbox: make(chan Blackbox, 100),
+		Log:      make(chan string, 100),
 	}
 
 	go func() {
 		for {
-			_, err := p.readPacket()
-			if err != nil {
-				if err == errUpdatePacket || err == ErrInvalidMagic || err == ErrInvalidCommand || err == io.EOF {
+			select {
+			case <-p.stopChan:
+				return
+			default:
+				_, err := p.readPacket()
+				if err != nil {
+					if err == errUpdatePacket || err == ErrInvalidMagic || err == ErrInvalidCommand || err == io.EOF {
+						continue
+					}
+					select {
+					case p.errChan <- err:
+					default:
+					}
 					continue
 				}
-				select {
-				case p.errChan <- err:
-				default:
-				}
-				continue
 			}
+
 		}
 	}()
 
@@ -77,10 +87,14 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 	return p, nil
 }
 
+func (proto *QuicProtocol) Close() {
+	close(proto.stopChan)
+}
+
 func (proto *QuicProtocol) readHeader() (*QuicPacket, error) {
 	magic := make([]byte, 1)
 	for {
-		n, err := proto.br.Read(magic)
+		n, err := proto.rw.Read(magic)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +108,7 @@ func (proto *QuicProtocol) readHeader() (*QuicPacket, error) {
 		continue
 	}
 
-	header, err := util.ReadAtLeast(proto.br, int(quicHeaderLen-1))
+	header, err := util.ReadAtLeast(proto.rw, int(quicHeaderLen-1))
 	if err != nil {
 		return nil, err
 	}
@@ -123,14 +137,14 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	r, w := io.Pipe()
 	bw := bufio.NewWriter(w)
 	if p.flag == QuicFlagStreaming {
-		if _, err := io.CopyN(bw, proto.br, int64(p.len)); err != nil {
+		if _, err := io.CopyN(bw, proto.rw, int64(p.len)); err != nil {
 			return nil, err
 		}
 		p.Payload = r
 	} else {
 		b := new(bytes.Buffer)
 		for b.Len() != int(p.len) {
-			n, err := io.CopyN(b, proto.br, int64(p.len)-int64(b.Len()))
+			n, err := io.CopyN(b, proto.rw, int64(p.len)-int64(b.Len()))
 			if err != nil {
 				if err == io.EOF {
 					continue
@@ -188,10 +202,14 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 				break
 			}
 
-			if _, err := io.CopyN(bw, proto.br, int64(h.len)); err != nil {
+			if _, err := io.CopyN(bw, proto.rw, int64(h.len)); err != nil {
 				return nil, err
 			}
 		}
+	}
+
+	if p.flag == QuicFlagExit {
+		proto.Close()
 	}
 
 	return p, nil

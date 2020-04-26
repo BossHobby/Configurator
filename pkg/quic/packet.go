@@ -13,7 +13,7 @@ const (
 	QuicCmdLog
 	QuicCmdCalImu
 	QuicCmdBlackbox
-	QuicCmdMotorTest
+	QuicCmdMotor
 	QuicCmdMax
 )
 
@@ -28,13 +28,14 @@ const (
 	QuicMotorTestEnable
 	QuicMotorTestDisable
 	QuicMotorTestSetValue
+	QuicMotorEsc4Way
 )
 
 const (
 	QuicFlagNone uint8 = iota
 	QuicFlagError
 	QuicFlagStreaming
-	QuicFlagUpdate
+	QuicFlagExit
 )
 
 type QuicValue uint8

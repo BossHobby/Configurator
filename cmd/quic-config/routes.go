@@ -495,7 +495,7 @@ func (s *Server) postUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getMotorTest(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestStatus)
+	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestStatus)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -511,7 +511,7 @@ func (s *Server) getMotorTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postMotorTestEnable(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestEnable)
+	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestEnable)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -526,7 +526,7 @@ func (s *Server) postMotorTestEnable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postMotorTestDisable(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestDisable)
+	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestDisable)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -547,7 +547,7 @@ func (s *Server) postMotorTestValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestSetValue, input)
+	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestSetValue, input)
 	if err != nil {
 		handleError(w, err)
 		return
