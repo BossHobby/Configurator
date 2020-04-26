@@ -298,12 +298,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		req := new(bytes.Buffer)
-		if err := cbor.NewEncoder(req).Encode(val); err != nil {
-			log.Fatal(err)
-		}
-
-		p, err := qp.Send(quic.QuicCmdBlackbox, req)
+		p, err := qp.SendValue(quic.QuicCmdBlackbox, val)
 		if err != nil {
 			log.Fatal(err)
 		}
