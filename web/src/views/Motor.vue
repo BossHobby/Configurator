@@ -4,78 +4,118 @@
       <b-col sm="12" class="my-4">
         <b-card>
           <h5 slot="header" class="mb-0">
-            Motor
+            Motor Test
             <b-button
               size="sm"
               class="my-2 mx-2"
               @click="motor_test_toggle()"
             >{{ motor_test.active ? "Disable" : "Enable"}}</b-button>
-            <small class="float-right">{{(blackbox.vbat_filter / 10).toPrecision(3)}}V</small>
+            <small class="float-right my-3">{{(blackbox.vbat_filter / 10).toPrecision(3)}}V</small>
           </h5>
           <div>
             <b-row>
-              <b-col sm="4" class="my-2">
-                <label for="MOTOR_BL">MOTOR_BL</label>
+              <b-col sm="2" class="my-2">
+                <label for="MOTOR_FL">Front Left</label>
               </b-col>
-              <b-col sm="8" class="my-2">
-                <b-form-input
-                  id="MOTOR_BL"
-                  type="number"
-                  :step="step"
-                  min="0"
-                  max="100"
-                  v-model.number="value[0]"
-                  @change="update()"
-                ></b-form-input>
-              </b-col>
-            </b-row>
-
-            <b-row>
-              <b-col sm="4" class="my-2">
-                <label for="MOTOR_FL">MOTOR_FL</label>
-              </b-col>
-              <b-col sm="8" class="my-2">
+              <b-col sm="3" class="my-2">
                 <b-form-input
                   id="MOTOR_FL"
-                  type="number"
-                  :step="step"
+                  type="range"
+                  step="1"
                   min="0"
                   max="100"
                   v-model.number="value[1]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
-            </b-row>
-
-            <b-row>
-              <b-col sm="4" class="my-2">
-                <label for="MOTOR_BR">MOTOR_BR</label>
-              </b-col>
-              <b-col sm="8" class="my-2">
+              <b-col sm="1">
                 <b-form-input
-                  id="MOTOR_BR"
+                  id="MOTOR_FL"
                   type="number"
-                  :step="step"
+                  step="1"
                   min="0"
                   max="100"
-                  v-model.number="value[2]"
+                  v-model.number="value[1]"
+                  @change="update()"
+                ></b-form-input>
+              </b-col>
+
+              <b-col sm="2" class="my-2">
+                <label for="MOTOR_FR">Front Right</label>
+              </b-col>
+              <b-col sm="3" class="my-2">
+                <b-form-input
+                  id="MOTOR_FR"
+                  type="range"
+                  step="1"
+                  min="0"
+                  max="100"
+                  v-model.number="value[3]"
+                  @change="update()"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="1">
+                <b-form-input
+                  id="MOTOR_FR"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  v-model.number="value[3]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
             </b-row>
 
             <b-row>
-              <b-col sm="4" class="my-2">
-                <label for="MOTOR_FR">MOTOR_FR</label>
+              <b-col sm="2" class="my-2">
+                <label for="MOTOR_BL">Back Left</label>
               </b-col>
-              <b-col sm="8" class="my-2">
+              <b-col sm="3" class="my-2">
                 <b-form-input
-                  id="MOTOR_FR"
-                  type="number"
-                  :step="step"
+                  id="MOTOR_BL"
+                  type="range"
+                  step="1"
                   min="0"
                   max="100"
-                  v-model.number="value[3]"
+                  v-model.number="value[0]"
+                  @change="update()"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="1">
+                <b-form-input
+                  id="MOTOR_BL"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  v-model.number="value[0]"
+                  @change="update()"
+                ></b-form-input>
+              </b-col>
+
+              <b-col sm="2" class="my-2">
+                <label for="MOTOR_BR">Back Right</label>
+              </b-col>
+              <b-col sm="3" class="my-2">
+                <b-form-input
+                  id="MOTOR_BR"
+                  type="range"
+                  step="1"
+                  min="0"
+                  max="100"
+                  v-model.number="value[2]"
+                  @change="update()"
+                ></b-form-input>
+              </b-col>
+              <b-col sm="1">
+                <b-form-input
+                  id="MOTOR_BR"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  v-model.number="value[2]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
@@ -94,9 +134,7 @@ export default {
   name: "motor",
   components: {},
   data() {
-    return {
-      step: 1
-    };
+    return {};
   },
   computed: {
     ...mapState(["motor_test", "blackbox"]),
