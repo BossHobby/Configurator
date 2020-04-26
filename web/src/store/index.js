@@ -9,6 +9,7 @@ import router from '../router';
 import profileModule from "./profile";
 import statusModule from "./status";
 import blackboxModule from "./blackbox";
+import motorTestModule from "./motor_test";
 
 var ws = null
 
@@ -17,6 +18,7 @@ const store = new Vuex.Store({
     profile: profileModule,
     status: statusModule,
     blackbox: blackboxModule,
+    motor_test: motorTestModule,
   },
   state: {
     return_url: null,

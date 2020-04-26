@@ -11,6 +11,7 @@
         <b-nav-item to="/rates">Rates</b-nav-item>
         <b-nav-item to="/channels">Channels</b-nav-item>
         <b-nav-item to="/osd">OSD</b-nav-item>
+        <b-nav-item to="/motor">Motor</b-nav-item>
         <b-nav-item to="/blackbox">Blackbox</b-nav-item>
         <b-nav-item to="/log">Log</b-nav-item>
       </b-navbar-nav>

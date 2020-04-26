@@ -13,7 +13,7 @@ const (
 	QuicCmdLog
 	QuicCmdCalImu
 	QuicCmdBlackbox
-	QuicCmdResetBlackbox
+	QuicCmdMotorTest
 	QuicCmdMax
 )
 
@@ -21,6 +21,13 @@ const (
 	QuicBlackboxReset = iota
 	QuicBlackboxList
 	QuicBlackboxGet
+)
+
+const (
+	QuicMotorTestStatus = iota
+	QuicMotorTestEnable
+	QuicMotorTestDisable
+	QuicMotorTestSetValue
 )
 
 const (

@@ -494,6 +494,73 @@ func (s *Server) postUpdate(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
+func (s *Server) getMotorTest(w http.ResponseWriter, r *http.Request) {
+	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestStatus)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	value := new(map[string]interface{})
+	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+		handleError(w, err)
+		return
+	}
+
+	renderJSON(w, value)
+}
+
+func (s *Server) postMotorTestEnable(w http.ResponseWriter, r *http.Request) {
+	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestEnable)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	value := new(interface{})
+	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, value)
+}
+
+func (s *Server) postMotorTestDisable(w http.ResponseWriter, r *http.Request) {
+	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestDisable)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	value := new(interface{})
+	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, value)
+}
+
+func (s *Server) postMotorTestValue(w http.ResponseWriter, r *http.Request) {
+	input := make([]float32, 4)
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		handleError(w, err)
+		return
+	}
+
+	p, err := s.qp.SendValue(quic.QuicCmdMotorTest, quic.QuicMotorTestSetValue, input)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	value := new(interface{})
+	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, value)
+}
+
 func (s *Server) setupRoutes(r *mux.Router) {
 	r.Use(loggingMidleware)
 
@@ -568,6 +635,11 @@ func (s *Server) setupRoutes(r *mux.Router) {
 
 		f.HandleFunc("/api/blackbox/rate", s.getBlackboxRate).Methods("GET")
 		f.HandleFunc("/api/blackbox/rate", s.postBlackboxRate).Methods("POST")
+
+		f.HandleFunc("/api/motor_test", s.getMotorTest).Methods("GET")
+		f.HandleFunc("/api/motor_test/enable", s.postMotorTestEnable).Methods("POST")
+		f.HandleFunc("/api/motor_test/disable", s.postMotorTestDisable).Methods("POST")
+		f.HandleFunc("/api/motor_test/value", s.postMotorTestValue).Methods("POST")
 
 		f.HandleFunc("/api/vtx/settings", s.getVtxSettings).Methods("GET")
 		f.HandleFunc("/api/vtx/settings", s.postVtxSettings).Methods("POST")
