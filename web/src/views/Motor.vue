@@ -10,6 +10,7 @@
               class="my-2 mx-2"
               @click="motor_test_toggle()"
             >{{ motor_test.active ? "Disable" : "Enable"}}</b-button>
+            <small class="float-right">{{(blackbox.vbat_filter / 10).toPrecision(3)}}V</small>
           </h5>
           <div>
             <b-row>
@@ -21,7 +22,9 @@
                   id="MOTOR_BL"
                   type="number"
                   :step="step"
-                  v-model.number="motor_test.value[0]"
+                  min="0"
+                  max="100"
+                  v-model.number="value[0]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
@@ -36,7 +39,9 @@
                   id="MOTOR_FL"
                   type="number"
                   :step="step"
-                  v-model.number="motor_test.value[1]"
+                  min="0"
+                  max="100"
+                  v-model.number="value[1]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
@@ -51,7 +56,9 @@
                   id="MOTOR_BR"
                   type="number"
                   :step="step"
-                  v-model.number="motor_test.value[2]"
+                  min="0"
+                  max="100"
+                  v-model.number="value[2]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
@@ -66,7 +73,9 @@
                   id="MOTOR_FR"
                   type="number"
                   :step="step"
-                  v-model.number="motor_test.value[3]"
+                  min="0"
+                  max="100"
+                  v-model.number="value[3]"
                   @change="update()"
                 ></b-form-input>
               </b-col>
@@ -86,10 +95,15 @@ export default {
   components: {},
   data() {
     return {
-      step: 0.01
+      step: 1
     };
   },
-  computed: mapState(["motor_test"]),
+  computed: {
+    ...mapState(["motor_test", "blackbox"]),
+    value() {
+      return this.motor_test.value.map(v => v * 100);
+    }
+  },
   methods: {
     ...mapActions([
       "fetch_motor_test",
@@ -97,7 +111,7 @@ export default {
       "motor_test_set_value"
     ]),
     update() {
-      return this.motor_test_set_value(this.motor_test.value);
+      return this.motor_test_set_value(this.value.map(v => v / 100));
     }
   },
   created() {
