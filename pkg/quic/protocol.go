@@ -131,6 +131,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	}
 
 	if p.cmd == QuicCmdInvalid || p.cmd >= QuicCmdMax {
+		<-proto.ticketChan
 		return nil, ErrInvalidCommand
 	}
 
