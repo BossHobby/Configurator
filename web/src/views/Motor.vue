@@ -195,7 +195,7 @@ export default {
   },
   created() {
     this.fetch_motor_test();
-    if (!this.motor.settings) {
+    if (!this.motor.settings && this.blackbox.vbat_filter > 3.8) {
       this.fetch_motor_settings();
     }
   }
