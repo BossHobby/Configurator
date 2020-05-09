@@ -6,6 +6,7 @@ const store = {
     cpu_load: 0.0,
     vbat_filter: 0.0,
     rx_filter: [],
+    gyro_vector: null,
   },
   getters: {},
   mutations: {

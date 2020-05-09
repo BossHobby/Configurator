@@ -28,7 +28,7 @@ const (
 	QuicMotorTestEnable
 	QuicMotorTestDisable
 	QuicMotorTestSetValue
-	QuicMotorEsc4Way
+	QuicMotorEsc4WayIf
 )
 
 const (
@@ -49,6 +49,7 @@ const (
 	QuicValPidRatePresets
 	QuicValVtxSettings
 	QuicValOSDFont
+	QuicValBLHeliSettings
 )
 
 type QuicPacket struct {

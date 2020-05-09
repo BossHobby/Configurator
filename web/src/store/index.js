@@ -9,7 +9,7 @@ import router from '../router';
 import profileModule from "./profile";
 import statusModule from "./status";
 import blackboxModule from "./blackbox";
-import motorTestModule from "./motor_test";
+import motorModule from "./motor";
 
 var ws = null
 
@@ -18,7 +18,7 @@ const store = new Vuex.Store({
     profile: profileModule,
     status: statusModule,
     blackbox: blackboxModule,
-    motor_test: motorTestModule,
+    motor: motorModule,
   },
   state: {
     return_url: null,
@@ -97,6 +97,7 @@ const store = new Vuex.Store({
               router.push(state.return_url || "/profile")
             } else if (!msg.Payload.IsConnected) {
               commit('clear_log')
+              commit('set_motor_settings', null);
               if (router.currentRoute.fullPath != "/home") {
                 state.return_url = router.currentRoute.fullPath
               }

@@ -1,6 +1,8 @@
 package blheli
 
 import (
+	"errors"
+	"fmt"
 	"io"
 
 	"github.com/NotFastEnuf/configurator/pkg/util"
@@ -161,20 +163,20 @@ func NewBLHeliProtocol(rw io.ReadWriter) (*BLHeliProtocol, error) {
 	}, nil
 }
 
-func (p *BLHeliProtocol) readBlheli() *BLHeliResponse {
+func (p *BLHeliProtocol) readBlheli() (*BLHeliResponse, error) {
 	buf := make([]byte, 512)
 	length := 0
 
 	{
 		n, err := p.rw.Read(buf)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		length += n
 	}
 
 	if buf[0] != blheliEscapeRemote {
-		log.Fatal("<blheli> invalid magic")
+		return nil, errors.New("invalid magic")
 	}
 
 	addr := uint16(buf[3]) | uint16(buf[2])<<8
@@ -186,7 +188,7 @@ func (p *BLHeliProtocol) readBlheli() *BLHeliResponse {
 	for length != size {
 		n, err := p.rw.Read(buf[length:size])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		if n == 0 {
 			break
@@ -195,7 +197,7 @@ func (p *BLHeliProtocol) readBlheli() *BLHeliResponse {
 	}
 
 	if length != size {
-		log.Fatalf("<msp> invalid size (%d vs %d)", length, size)
+		return nil, fmt.Errorf("<msp> invalid size (%d vs %d)", length, size)
 	}
 
 	crcActual := uint16(0)
@@ -205,22 +207,22 @@ func (p *BLHeliProtocol) readBlheli() *BLHeliResponse {
 	crcExpected := uint16(buf[5+paramLen+2]) | uint16(buf[5+paramLen+1])<<8
 
 	if crcExpected != crcActual {
-		log.Fatalf("<msp> invalid crc (%d vs %d)", crcActual, crcExpected)
+		return nil, fmt.Errorf("<msp> invalid crc (%d vs %d)", crcActual, crcExpected)
 	}
 
 	ack := BLHeliAck(buf[5+paramLen])
-	log.Printf("<blheli> received cmd: 0x%x addr: %d ack: 0x%x paramLen: %d", cmd, addr, ack, paramLen)
+	log.Debugf("<blheli> received cmd: 0x%x addr: %d ack: 0x%x paramLen: %d", cmd, addr, ack, paramLen)
 	return &BLHeliResponse{
 		CMD:    cmd,
 		ACK:    ack,
 		ADDR:   addr,
 		PARAMS: buf[5 : 5+paramLen],
-	}
+	}, nil
 }
 
-func (p *BLHeliProtocol) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *BLHeliResponse {
+func (p *BLHeliProtocol) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) (*BLHeliResponse, error) {
 	if len(params) > 256 {
-		log.Fatal("<blheli> params >= 256")
+		return nil, errors.New("params >= 256")
 	}
 
 	if len(params) == 0 {
@@ -244,17 +246,20 @@ func (p *BLHeliProtocol) SendBlheli(cmd BLHeliCmd, addr uint16, params []byte) *
 	log.Printf("<blheli> sent cmd: 0x%x addr: %d paramLen: %d", cmd, addr, paramLen)
 	p.rw.Write(buf)
 
-	res := p.readBlheli()
+	res, err := p.readBlheli()
+	if err != nil {
+		return nil, err
+	}
 	if res.CMD != cmd {
-		log.Fatalf("<blheli> invalid response cmd (0x%x vs 0x%x)", res.CMD, cmd)
+		return nil, fmt.Errorf("<blheli> invalid response cmd (0x%x vs 0x%x)", res.CMD, cmd)
 	}
 	if res.ACK != BLHeliAckOk {
-		log.Fatalf("<blheli> invalid ack %s (0x%x)", ackToString[res.ACK], res.ACK)
+		return nil, fmt.Errorf("<blheli> invalid ack %s (0x%x)", ackToString[res.ACK], res.ACK)
 	}
-	return res
+	return res, nil
 }
 
-func (p *BLHeliProtocol) ReadFlash(offset, length uint16) []byte {
+func (p *BLHeliProtocol) ReadFlash(offset, length uint16) ([]byte, error) {
 	buf := make([]byte, length)
 	read := uint16(0)
 
@@ -264,17 +269,20 @@ func (p *BLHeliProtocol) ReadFlash(offset, length uint16) []byte {
 			size = 128
 		}
 
-		res := p.SendBlheli(BLHeliCmdDeviceRead, offset+read, []byte{uint8(size)})
+		res, err := p.SendBlheli(BLHeliCmdDeviceRead, offset+read, []byte{uint8(size)})
+		if err != nil {
+			return nil, err
+		}
 		log.Printf("<blheli> readFlash %d (%d)", offset+read, len(res.PARAMS))
 
 		copy(buf[read:], res.PARAMS)
 		read += uint16(len(res.PARAMS))
 	}
 
-	return buf
+	return buf, nil
 }
 
-func (p *BLHeliProtocol) WriteFlash(offset uint16, buf []byte) {
+func (p *BLHeliProtocol) WriteFlash(offset uint16, buf []byte) error {
 	length := uint16(len(buf))
 
 	for offset < length {
@@ -282,8 +290,13 @@ func (p *BLHeliProtocol) WriteFlash(offset uint16, buf []byte) {
 		if size > 128 {
 			size = 128
 		}
-		res := p.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
+		res, err := p.SendBlheli(BLHeliCmdDeviceWrite, offset, buf[offset:offset+size])
+		if err != nil {
+			return err
+		}
 		log.Printf("<blheli> writeFlash ack: %d offset: %d (%d)", res.ACK, offset, size)
 		offset += size
 	}
+
+	return nil
 }

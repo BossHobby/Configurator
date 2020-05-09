@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/binary"
+	"io"
+	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/blheli"
@@ -66,36 +69,39 @@ var BLHELI_LAYOUT = map[string]descriptor{
 	"NAME":   {offset: 0x60, size: 16},
 }
 
-func main() {
-	fc, err := controller.OpenFirstController()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fc.Close()
+func run(bl *blheli.BLHeliProtocol) error {
+	defer func() {
+		res, err := bl.SendBlheli(blheli.BLHeliCmdInterfaceExit, 0, []byte{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("%+v %s", res, res.PARAMS)
+	}()
 
-	qp, err := quic.NewQuicProtocol(fc)
+	res, err := bl.SendBlheli(blheli.BLHeliCmdInterfaceGetName, 0, []byte{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-
-	p, err := qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorEsc4Way)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(p)
-
-	bl, err := blheli.NewBLHeliProtocol(fc)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	res := bl.SendBlheli(blheli.BLHeliCmdInterfaceGetName, 0, []byte{})
 	log.Printf("%+v %s", res, res.PARAMS)
 
-	res = bl.SendBlheli(blheli.BLHeliCmdDeviceInitFlash, 0, []byte{0})
+	res, err = bl.SendBlheli(blheli.BLHeliCmdProtocolGetVersion, 0, []byte{})
+	if err != nil {
+		return err
+	}
 	log.Printf("%+v %s", res, res.PARAMS)
 
-	flash := bl.ReadFlash(0x1A00, 0x70)
+	time.Sleep(500 * time.Millisecond)
+
+	res, err = bl.SendBlheli(blheli.BLHeliCmdDeviceInitFlash, 0, []byte{1})
+	if err != nil {
+		return err
+	}
+	log.Printf("%+v %s", res, res.PARAMS)
+
+	flash, err := bl.ReadFlash(0x1A00, 0x70)
+	if err != nil {
+		return err
+	}
 
 	values := make(map[string]interface{})
 	for key, d := range BLHELI_LAYOUT {
@@ -110,6 +116,46 @@ func main() {
 	}
 	log.Println(values)
 
-	res = bl.SendBlheli(blheli.BLHeliCmdInterfaceExit, 0, []byte{})
-	log.Printf("%+v %s", res, res.PARAMS)
+	return nil
+}
+
+func main() {
+	fc, err := controller.OpenFirstController()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fc.Close()
+
+	qp, err := quic.NewQuicProtocol(fc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	p, err := qp.Get(quic.QuicValBLHeliSettings)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	value := new(interface{})
+	dec := cbor.NewDecoder(p)
+	for {
+		if err := dec.Decode(&value); err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatal(err)
+		}
+		log.Printf("%+v", *value)
+	}
+
+	/*
+		bl, err := blheli.NewBLHeliProtocol(fc)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := run(bl); err != nil {
+			log.Fatal(err)
+		}
+	*/
 }
