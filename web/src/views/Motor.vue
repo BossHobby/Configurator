@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <b-row>
-      <b-col sm="12" class="my-4">
+      <b-col v-if="motor.test" sm="12" class="my-4">
         <b-card>
           <h5 slot="header" class="mb-0">
             Motor Test

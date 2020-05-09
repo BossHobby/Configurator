@@ -3,10 +3,7 @@ import { post, get } from "@/store/api.js";
 
 const store = {
   state: {
-    test: {
-      active: 0,
-      value: [0, 0, 0, 0]
-    },
+    test: null,
     settings: null,
   },
   getters: {},

@@ -64,7 +64,7 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 			default:
 				_, err := p.readPacket()
 				if err != nil {
-					if err == errUpdatePacket || err == ErrInvalidMagic || err == ErrInvalidCommand || err == io.EOF {
+					if err == errUpdatePacket || err == ErrInvalidMagic || err == io.EOF {
 						continue
 					}
 					select {
