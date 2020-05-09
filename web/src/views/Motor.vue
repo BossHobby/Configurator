@@ -17,7 +17,9 @@
               <b-col v-for="m in motors" :key="m.index" sm="6" class="my-2 px-5">
                 <b-row>
                   <b-col sm="4" class="my-2">
-                    <label :for="m.id">{{ m.label }}</label>
+                    <label :for="m.id">
+                      <h6>{{ m.label }}</h6>
+                    </label>
                   </b-col>
                   <b-col sm="6" class="my-2">
                     <b-form-input
@@ -47,15 +49,47 @@
           </div>
         </b-card>
       </b-col>
+      <b-col sm="12" class="my-4">
+        <b-card class="my-2">
+          <h5 slot="header" class="mb-0">Motor Pins</h5>
+          <b-row class="my-2">
+            <b-col v-for="m in motors" :key="'motor-pin-' + m.index" sm="6" class="my-2 px-5">
+              <b-row>
+                <b-col sm="4">
+                  <label :for="'motor-pin-' + m.index">
+                    <h6>
+                      {{ m.label }}
+                      <br />
+                      <span class="text-muted">Motor {{ m.index }}</span>
+                    </h6>
+                  </label>
+                </b-col>
+                <b-col sm="8" v-if="profile_motor.motor_pins">
+                  <b-form-select
+                    :id="'motor-pin-' + m.index"
+                    v-model="profile_motor.motor_pins[m.index]"
+                    :options="motorPins"
+                  ></b-form-select>
+                </b-col>
+              </b-row>
+            </b-col>
+          </b-row>
+        </b-card>
+      </b-col>
       <b-col v-if="motor.settings" sm="12" class="my-4">
         <b-card>
-          <h5 slot="header" class="mb-0">Motor Settings</h5>
+          <h5 slot="header" class="mb-0">ESC Settings</h5>
           <div>
             <b-row>
-              <b-col v-for="m in motors" :key="m.index" sm="6" class="my-2 px-5">
+              <b-col
+                v-for="m in motors"
+                :key="'motor-settings-' + m.index"
+                sm="6"
+                class="my-2 px-5"
+              >
                 <b-row>
                   <b-col sm="4" class="my-2">
-                    <h5>{{ m.label }}</h5>
+                    <h6>{{ m.label }}</h6>
                   </b-col>
                   <b-col sm="8" class="my-2">
                     {{ trim(motor.settings[m.index].LAYOUT) }}
@@ -128,8 +162,20 @@ export default {
   },
   computed: {
     ...mapState(["motor", "blackbox"]),
+    ...mapState({
+      motor_pins: state => state.status.Info.motor_pins,
+      profile_motor: state => state.profile.motor
+    }),
     value() {
       return this.motor.test.value.map(v => v * 100);
+    },
+    motorPins() {
+      return this.motor_pins.map((v, i) => {
+        return {
+          value: i,
+          text: `Pin ${i} (${v})`
+        };
+      });
     }
   },
   methods: {

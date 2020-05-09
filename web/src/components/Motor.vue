@@ -51,6 +51,8 @@
             ></b-form-select>
           </b-col>
         </b-row>
+      </b-col>
+      <b-col sm="6">
         <b-row>
           <b-col sm="4" class="my-2">
             <label for="torque-boost">Torque Boost</label>
@@ -91,23 +93,6 @@
           </b-col>
         </b-row>
       </b-col>
-      <b-col sm="6">
-        <b-card class="my-2">
-          <h6 slot="header" class="mb-0">Motor Pins</h6>
-          <b-row class="my-2" v-for="(name, index) in motorNames" :key="'motor-pin-' + index">
-            <b-col sm="4">
-              <label :for="'motor-pin-' + index">{{name}}</label>
-            </b-col>
-            <b-col sm="8" v-if="motor.motor_pins">
-              <b-form-select
-                :id="'motor-pin-' + index"
-                v-model="motor.motor_pins[index]"
-                :options="motorPins"
-              ></b-form-select>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
     </b-row>
   </b-card>
 </template>
@@ -146,19 +131,12 @@ export default {
           text: "ROTATE_135_CCW"
         },
         { value: GYRO_ROTATE_180, text: "ROTATE_180" }
-      ],
-      motorNames: [
-        "Motor 0 (BL)",
-        "Motor 1 (FL)",
-        "Motor 2 (BR)",
-        "Motor 3 (FR)"
       ]
     };
   },
   computed: {
     ...mapState({
-      motor: state => state.profile.motor,
-      motor_pins: state => state.status.Info.motor_pins
+      motor: state => state.profile.motor
     }),
     gyroOrientation: {
       get() {
@@ -177,14 +155,6 @@ export default {
         this.motor.gyro_orientation =
           this.gyroOrientation | (value ? GYRO_FLIP_180 : 0x0);
       }
-    },
-    motorPins() {
-      return this.motor_pins.map((v, i) => {
-        return {
-          value: i,
-          text: `Pin ${i} (${v})`
-        };
-      });
     }
   }
 };
