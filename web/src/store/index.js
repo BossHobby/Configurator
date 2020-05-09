@@ -21,7 +21,6 @@ const store = new Vuex.Store({
     motor: motorModule,
   },
   state: {
-    return_url: null,
     blackbox_pause: false,
     log: [],
     alerts: [],
@@ -94,14 +93,12 @@ const store = new Vuex.Store({
               commit('clear_log')
               dispatch('fetch_profile')
               dispatch('fetch_pid_rate_presets')
-              router.push(state.return_url || "/profile")
-            } else if (!msg.Payload.IsConnected) {
+            } else if (!msg.Payload.IsConnected && state.status.IsConnected) {
               commit('clear_log')
               commit('set_motor_settings', null);
               if (router.currentRoute.fullPath != "/home") {
-                state.return_url = router.currentRoute.fullPath
+                router.push("/home")
               }
-              router.push("/home")
             }
             commit('set_status', msg.Payload);
             break;
