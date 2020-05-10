@@ -456,12 +456,25 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getFirmwareReleases(w http.ResponseWriter, r *http.Request) {
+	values := make(map[string][]firmware.RemoteFirmware)
+
 	releases, err := s.fl.ListReleases()
 	if err != nil {
 		handleError(w, err)
 		return
 	}
-	renderJSON(w, releases)
+
+	for _, r := range releases {
+		assets, err := s.fl.ListAssets(r)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+
+		values[r] = assets
+	}
+
+	renderJSON(w, values)
 }
 
 func (s *Server) postFlashConnect(w http.ResponseWriter, r *http.Request) {

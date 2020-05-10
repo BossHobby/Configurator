@@ -54,10 +54,25 @@ func NewFirmwareLoader(cacheDir string, githubToken string) (*FirmwareLoader, er
 	}, nil
 }
 
-func (l *FirmwareLoader) ListReleases() ([]RemoteFirmware, error) {
+func (l *FirmwareLoader) ListReleases() ([]string, error) {
 	ctx := context.Background()
 
-	release, _, err := l.github.Repositories.GetReleaseByTag(ctx, repoOwner, repoName, "latest")
+	releases, _, err := l.github.Repositories.ListReleases(ctx, repoOwner, repoName, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]string, 0)
+	for _, r := range releases {
+		results = append(results, r.GetTagName())
+	}
+	return results, nil
+}
+
+func (l *FirmwareLoader) ListAssets(tag string) ([]RemoteFirmware, error) {
+	ctx := context.Background()
+
+	release, _, err := l.github.Repositories.GetReleaseByTag(ctx, repoOwner, repoName, tag)
 	if err != nil {
 		return nil, err
 	}

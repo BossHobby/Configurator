@@ -36,6 +36,15 @@
 
                 <b-form-group
                   v-if="source != 'local'"
+                  label="Release"
+                  label-for="file-release"
+                  label-cols-sm="2"
+                >
+                  <b-form-select id="file-release" v-model="release" :options="releaseOptions"></b-form-select>
+                </b-form-group>
+
+                <b-form-group
+                  v-if="source != 'local'"
                   label="Target"
                   label-for="file-remote"
                   label-cols-sm="2"
@@ -80,6 +89,7 @@ export default {
         { value: "local", text: "Local" }
       ],
       source: "guano",
+      release: "latest",
       target: null,
       file: null,
       progress: {}
@@ -94,8 +104,15 @@ export default {
   },
   computed: {
     ...mapState(["status", "firmware_releases", "flash"]),
+    releaseOptions() {
+      return Object.keys(this.firmware_releases);
+    },
     targetOptions() {
-      return this.firmware_releases.map(r => {
+      const release = this.firmware_releases[this.release];
+      if (!release) {
+        return [];
+      }
+      return release.map(r => {
         return { value: r, text: r.Name.replace("quicksilver.", "") };
       });
     },
