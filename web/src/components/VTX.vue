@@ -1,6 +1,9 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">VTX</h5>
+    <h5 slot="header" class="mb-0">
+      VTX
+      <b-button size="sm" class="ml-4" v-on:click="fetch_vtx_settings()">refresh</b-button>
+    </h5>
     <div v-if="vtx_settings.detected">
       <b-row>
         <b-col sm="4" class="my-2">
