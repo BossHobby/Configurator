@@ -130,7 +130,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		log.Debugf("<quic> recv cmd: %d flag: %d len: %d", p.cmd, p.flag, p.len)
 	}
 
-	if p.cmd == QuicCmdInvalid || p.cmd >= QuicCmdMax {
+	if p.cmd >= QuicCmdMax {
 		<-proto.ticketChan
 		return nil, ErrInvalidCommand
 	}
@@ -211,6 +211,10 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 
 	if p.flag == QuicFlagExit {
 		proto.Close()
+	}
+
+	if p.cmd == QuicCmdInvalid {
+		return p, ErrInvalidCommand
 	}
 
 	return p, nil

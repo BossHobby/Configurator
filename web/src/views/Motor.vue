@@ -76,7 +76,7 @@
           </b-row>
         </b-card>
       </b-col>
-      <b-col v-if="motor.settings" sm="12" class="my-4">
+      <b-col v-if="motor.settings && motor.settings.length" sm="12" class="my-4">
         <b-card>
           <h5 slot="header" class="mb-0">ESC Settings</h5>
           <div>
@@ -195,7 +195,7 @@ export default {
   },
   created() {
     this.fetch_motor_test();
-    if (!this.motor.settings && this.blackbox.vbat_filter > 3.8) {
+    if (!this.motor.settings) {
       this.fetch_motor_settings();
     }
   }
