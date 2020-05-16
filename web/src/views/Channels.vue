@@ -9,7 +9,7 @@
               <label :for="func" :class="classForIndex(index)">{{ func }}</label>
             </b-col>
             <b-col sm="3" class="my-1">
-              <b-form-select :id="func" v-model.number="channel.aux[index]" :options="auxChannels"></b-form-select>
+              <b-form-select :id="func" v-model.number="channel_aux[index]" :options="auxChannels"></b-form-select>
             </b-col>
           </b-row>
         </b-col>
@@ -33,13 +33,14 @@
 
 <script>
 import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "Channels",
   components: {},
   computed: {
+    ...mapFields("profile", ["channel.aux"]),
     ...mapState({
-      channel: state => state.profile.channel,
       aux: state => state.blackbox.rx_aux
     })
   },
@@ -85,13 +86,13 @@ export default {
       return (this.aux >> index) & 0x1;
     },
     classForIndex(index) {
-      if (!this.channel || !this.channel.aux) {
+      if (!this.channel || !this.channel_aux) {
         return "";
       }
 
-      if (this.channel.aux[index] == 14) return "text-danger";
-      if (this.channel.aux[index] == 13) return "text-success";
-      if (this.valueForIndex(this.channel.aux[index])) {
+      if (this.channel_aux[index] == 14) return "text-danger";
+      if (this.channel_aux[index] == 13) return "text-success";
+      if (this.valueForIndex(this.channel_aux[index])) {
         return "text-success";
       }
       return "";

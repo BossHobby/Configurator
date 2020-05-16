@@ -50,12 +50,13 @@
 
 <script>
 import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "Metadata",
   computed: {
+    ...mapFields("profile", ["meta"]),
     ...mapState({
-      meta: state => state.profile.meta,
       status: state => state.status
     }),
     date() {

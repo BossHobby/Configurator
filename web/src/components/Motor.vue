@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 const GYRO_ROTATE_NONE = 0x0;
 const GYRO_ROTATE_45_CCW = 0x1;
@@ -135,9 +135,7 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      motor: state => state.profile.motor
-    }),
+    ...mapFields("profile", ["motor"]),
     gyroOrientation: {
       get() {
         return this.motor.gyro_orientation & 0x1f;

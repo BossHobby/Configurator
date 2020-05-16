@@ -13,7 +13,7 @@
           id="lipo-cell-count"
           type="number"
           step="1"
-          v-model.number="profile.voltage.lipo_cell_count"
+          v-model.number="voltage.lipo_cell_count"
         ></b-form-input>
       </b-col>
 
@@ -22,7 +22,7 @@
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-select
-          v-model.number="profile.voltage.pid_voltage_compensation"
+          v-model.number="voltage.pid_voltage_compensation"
           :options="pidVoltageCompensationOptions"
         ></b-form-select>
       </b-col>
@@ -31,12 +31,7 @@
         <label for="vbattlow">VBattLow</label>
       </b-col>
       <b-col sm="7" class="my-2">
-        <b-form-input
-          id="vbattlow"
-          type="number"
-          step="0.1"
-          v-model.number="profile.voltage.vbattlow"
-        ></b-form-input>
+        <b-form-input id="vbattlow" type="number" step="0.1" v-model.number="voltage.vbattlow"></b-form-input>
       </b-col>
 
       <b-col sm="5" class="my-2">
@@ -47,7 +42,7 @@
           id="actual-battery-voltage"
           type="number"
           step="1"
-          v-model.number="profile.voltage.actual_battery_voltage"
+          v-model.number="voltage.actual_battery_voltage"
         ></b-form-input>
       </b-col>
 
@@ -59,7 +54,7 @@
           id="reported-telemetry-voltage"
           type="number"
           step="1"
-          v-model.number="profile.voltage.reported_telemetry_voltage"
+          v-model.number="voltage.reported_telemetry_voltage"
         ></b-form-input>
       </b-col>
     </b-row>
@@ -68,6 +63,7 @@
 
 <script>
 import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "voltage",
@@ -80,13 +76,14 @@ export default {
     };
   },
   computed: {
-    ...mapState(["profile", "blackbox"]),
+    ...mapFields("profile", ["voltage"]),
+    ...mapState(["blackbox"]),
     pid_voltage_compensation: {
       get() {
-        return this.profile.voltage.pid_voltage_compensation;
+        return this.voltage.pid_voltage_compensation;
       },
       set(val) {
-        this.profile.voltage.pid_voltage_compensation = val ? 1 : 0;
+        this.voltage.pid_voltage_compensation = val ? 1 : 0;
       }
     }
   }

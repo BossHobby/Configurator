@@ -1,4 +1,7 @@
 import { get, post } from "@/store/api.js";
+import { createHelpers } from "@/store/helper.js";
+
+const { get_profile_field, update_profile_field } = createHelpers("profile")
 
 const store = {
   state: {
@@ -40,11 +43,13 @@ const store = {
     }
   },
   getters: {
+    get_profile_field,
     current_pid_rate: state => {
       return state.pid.pid_rates[state.pid.pid_profile];
     }
   },
   mutations: {
+    update_profile_field,
     set_profile(state, profile) {
       for (const key in profile) {
         state[key] = profile[key];
