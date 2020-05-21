@@ -1,8 +1,8 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">Filter</h5>
-    <b-row v-if="profile.filter">
-      <b-col sm="6" v-if="profile.filter.gyro">
+    <b-row v-if="filter">
+      <b-col sm="6" v-if="filter.gyro">
         <b-row>
           <b-col sm="4" class="my-2">
             <label for="gyro-1-type">Gyro Pass 1 Type</label>
@@ -10,7 +10,7 @@
           <b-col sm="8" class="my-2">
             <b-form-select
               id="gyro-1-type"
-              v-model.number="profile.filter.gyro[0].type"
+              v-model.number="filter.gyro[0].type"
               :options="filterTypeOptions"
             ></b-form-select>
           </b-col>
@@ -24,7 +24,7 @@
               id="gyro-1-freq"
               type="number"
               step="5"
-              v-model.number="profile.filter.gyro[0].cutoff_freq"
+              v-model.number="filter.gyro[0].cutoff_freq"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -35,7 +35,7 @@
           <b-col sm="8" class="my-2">
             <b-form-select
               id="gyro-2-type"
-              v-model.number="profile.filter.gyro[1].type"
+              v-model.number="filter.gyro[1].type"
               :options="filterTypeOptions"
             ></b-form-select>
           </b-col>
@@ -49,13 +49,13 @@
               id="gyro-2-freq"
               type="number"
               step="5"
-              v-model.number="profile.filter.gyro[1].cutoff_freq"
+              v-model.number="filter.gyro[1].cutoff_freq"
             ></b-form-input>
           </b-col>
         </b-row>
       </b-col>
 
-      <b-col sm="6" v-if="profile.filter.dterm">
+      <b-col sm="6" v-if="filter.dterm">
         <b-row>
           <b-col sm="4" class="my-2">
             <label for="dterm-1-type">DTerm Pass 1 Type</label>
@@ -63,7 +63,7 @@
           <b-col sm="8" class="my-2">
             <b-form-select
               id="dterm-1-type"
-              v-model.number="profile.filter.dterm[0].type"
+              v-model.number="filter.dterm[0].type"
               :options="filterTypeOptions"
             ></b-form-select>
           </b-col>
@@ -77,7 +77,7 @@
               id="dterm-1-freq"
               type="number"
               step="5"
-              v-model.number="profile.filter.dterm[0].cutoff_freq"
+              v-model.number="filter.dterm[0].cutoff_freq"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -88,7 +88,7 @@
           <b-col sm="8" class="my-2">
             <b-form-select
               id="dterm-2-type"
-              v-model.number="profile.filter.dterm[1].type"
+              v-model.number="filter.dterm[1].type"
               :options="filterTypeOptions"
             ></b-form-select>
           </b-col>
@@ -102,7 +102,7 @@
               id="dterm-2-freq"
               type="number"
               step="5"
-              v-model.number="profile.filter.dterm[1].cutoff_freq"
+              v-model.number="filter.dterm[1].cutoff_freq"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -114,7 +114,7 @@
           <b-col sm="8" class="my-2">
             <b-form-select
               id="dterm-dynamic-enable"
-              v-model.number="profile.filter.dterm_dynamic_enable"
+              v-model.number="filter.dterm_dynamic_enable"
               :options="toggleOptions"
             ></b-form-select>
           </b-col>
@@ -128,7 +128,7 @@
               id="dterm-dynamic-min"
               type="number"
               step="5"
-              v-model.number="profile.filter.dterm_dynamic_min"
+              v-model.number="filter.dterm_dynamic_min"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -141,7 +141,7 @@
               id="dterm-dynamic-max"
               type="number"
               step="5"
-              v-model.number="profile.filter.dterm_dynamic_max"
+              v-model.number="filter.dterm_dynamic_max"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -151,7 +151,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "FilterSettings",
@@ -162,11 +162,14 @@ export default {
         { value: 1, text: "PT1 1st Order" },
         { value: 2, text: "PT1 2nd Order" }
       ],
-      toggleOptions: [{ value: 0, text: "Off" }, { value: 1, text: "On" }]
+      toggleOptions: [
+        { value: 0, text: "Off" },
+        { value: 1, text: "On" }
+      ]
     };
   },
   computed: {
-    ...mapState(["profile"])
+    ...mapFields("profile", ["filter"])
   }
 };
 </script>

@@ -4,20 +4,26 @@ function mapFieldGetter({ getterType, mutationType }, store, path) {
     return val.reduce((prev, val, index) => {
       const fieldPath = `${path}.${index}`;
       return Object.defineProperty(prev, index, {
+        enumerable: true,
+
         get() {
-          return mapFieldGetter({ getterType }, store, fieldPath)
+          return mapFieldGetter({ getterType, mutationType }, store, fieldPath)
         },
         set(value) {
           store.commit(mutationType, { path: fieldPath, value });
         }
+      }, {
+        enumerable: true
       });
     }, []);
   } else if (typeof val === 'object') {
     return Object.keys(val).reduce((prev, val) => {
       const fieldPath = `${path}.${val}`;
       return Object.defineProperty(prev, val, {
+        enumerable: true,
+
         get() {
-          return mapFieldGetter({ getterType }, store, fieldPath)
+          return mapFieldGetter({ getterType, mutationType }, store, fieldPath)
         },
         set(value) {
           store.commit(mutationType, { path: fieldPath, value });
@@ -33,14 +39,30 @@ export function mapFields(module, fields) {
   const getterType = `get_${module}_field`;
   const mutationType = `update_${module}_field`;
 
-  return fields.reduce((prev, path) => {
-    const key = path.split(".").join("_");
-    prev[key] = {
+  let entries = []
+  if (Array.isArray(fields)) {
+    entries = fields.map(path => {
+      return {
+        key: path.split(".").join("_"),
+        path: path,
+      }
+    })
+  } else {
+    for (const key in fields) {
+      entries.push({
+        key: key,
+        path: fields[key],
+      })
+    }
+  }
+
+  return entries.reduce((prev, e) => {
+    prev[e.key] = {
       get() {
-        return mapFieldGetter({ getterType, mutationType }, this.$store, path);
+        return mapFieldGetter({ getterType, mutationType }, this.$store, e.path);
       },
       set(value) {
-        this.$store.commit(mutationType, { path, value });
+        this.$store.commit(mutationType, { path: e.path, value });
       }
     };
     return prev;

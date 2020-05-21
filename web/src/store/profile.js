@@ -46,6 +46,9 @@ const store = {
     get_profile_field,
     current_pid_rate: state => {
       return state.pid.pid_rates[state.pid.pid_profile];
+    },
+    current_stick_rate: state => {
+      return state.pid.stick_rates[state.pid.stick_profile];
     }
   },
   mutations: {
@@ -61,6 +64,14 @@ const store = {
       state.pid = {
         ...state.pid,
         pid_rates: rates
+      };
+    },
+    set_current_stick_rate(state, rate) {
+      const rates = [...state.pid.stick_rates];
+      rates[state.pid.stick_profile] = rate;
+      state.pid = {
+        ...state.pid,
+        stick_rates: rates
       };
     },
     set_osd_elements(state, elements) {

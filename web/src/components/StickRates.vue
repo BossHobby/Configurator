@@ -106,7 +106,7 @@
       <b-col sm="6">
         <LineChart
           v-if="rate.silverware.acro_expo"
-          title="Rates"
+          :title="(plotLowRates ? 'Low ' : '') + 'Rates'"
           :labels="plot.labels"
           :axis="plot.axis"
         ></LineChart>
@@ -118,7 +118,7 @@
 
 <script>
 import LineChart from "@/components/LineChart";
-import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "StickRates",
@@ -126,9 +126,7 @@ export default {
     LineChart
   },
   computed: {
-    ...mapState({
-      rate: state => state.profile.rate
-    }),
+    ...mapFields("profile", ["rate"]),
     currentMode() {
       return this.rateModes[this.rate.mode].text;
     },

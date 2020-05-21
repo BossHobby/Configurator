@@ -1,6 +1,6 @@
 <template>
   <b-container>
-    <b-row v-if="profile.osd && profile.osd.elements">
+    <b-row v-if="osd && osd.elements">
       <b-col sm="6">
         <b-card>
           <h5 slot="header" class="mb-0">Elements</h5>
@@ -94,7 +94,8 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapActions } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "osd",
@@ -129,7 +130,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["profile"]),
+    ...mapFields("profile", ["osd"]),
     svg_width() {
       return this.screen.width * this.screen.char_width;
     },
@@ -140,7 +141,7 @@ export default {
       return `0 0 ${this.svg_width} ${this.svg_height}`;
     },
     elements() {
-      return this.profile.osd.elements
+      return this.osd.elements
         .filter((el, i) => {
           return this.element_options[i];
         })
@@ -164,8 +165,8 @@ export default {
       return this.set_osd_font(name).then(() => (this.imageSource = oldSrc));
     },
     osd_set(i, attr, val) {
-      const copy = [...this.profile.osd.elements];
-      copy[i] = this.osd_encode(this.profile.osd.elements[i], attr, val);
+      const copy = [...this.osd.elements];
+      copy[i] = this.osd_encode(this.osd.elements[i], attr, val);
       this.$store.commit("set_osd_elements", copy);
     },
     osd_decode(element, attr) {

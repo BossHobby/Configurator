@@ -123,6 +123,7 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "motor",
@@ -162,9 +163,9 @@ export default {
   },
   computed: {
     ...mapState(["motor", "blackbox"]),
+    ...mapFields("profile", { profile_motor: "motor" }),
     ...mapState({
-      motor_pins: state => state.status.Info.motor_pins,
-      profile_motor: state => state.profile.motor
+      motor_pins: state => state.status.Info.motor_pins
     }),
     value() {
       return this.motor.test.value.map(v => v * 100);

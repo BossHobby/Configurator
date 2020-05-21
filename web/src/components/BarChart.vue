@@ -13,7 +13,6 @@ export default {
   },
   computed: {
     chartdata() {
-      console.log(this.labels);
       return {
         labels: this.labels,
         datasets: this.axis.map((l, i) => {

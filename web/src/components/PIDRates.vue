@@ -223,6 +223,7 @@
 
 <script>
 import { mapState } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "PIDRates",
@@ -245,13 +246,9 @@ export default {
     };
   },
   computed: {
+    ...mapFields("profile", ["pid"]),
     ...mapState({
-      pid: state => state.profile.pid,
-      pid_rate_presets: state => state.pid_rate_presets,
-      pid_profile: state => state.profile.pid.pid_profile,
-      stick_profile: state => state.profile.pid.stick_profile,
-      stick_rates: state =>
-        state.profile.pid.stick_rates[state.profile.pid.stick_profile]
+      pid_rate_presets: state => state.pid_rate_presets
     }),
     pid_rates: {
       get() {
@@ -259,6 +256,14 @@ export default {
       },
       set(value) {
         this.$store.commit("set_current_pid_rate", value);
+      }
+    },
+    stick_rates: {
+      get() {
+        return this.$store.getters.current_stick_rate;
+      },
+      set(value) {
+        this.$store.commit("set_current_stick_rate", value);
       }
     },
     presets() {

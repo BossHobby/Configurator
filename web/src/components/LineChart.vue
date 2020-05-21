@@ -66,6 +66,11 @@ export default {
       };
     }
   },
+  watch: {
+    title() {
+      this.renderChart(this.chartdata, this.options);
+    }
+  },
   mounted() {
     this.renderChart(this.chartdata, this.options);
   }
