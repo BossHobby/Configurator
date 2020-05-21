@@ -91,8 +91,8 @@ export default {
       ],
       vtxPitModeOptions: [
         { value: 0, text: "Off" },
-        { value: 1, text: "On" },
-        { value: 2, text: "NO SUPPORT" }
+        { value: 1, text: "On" }
+        // { value: 2, text: "NO SUPPORT" }
       ],
       vtxPowerLevelOptions: [
         { value: 0, text: "VTX_POWER_LEVEL_1" },
