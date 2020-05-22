@@ -13,37 +13,42 @@
             <small class="float-right my-3">{{(blackbox.vbat_filter / 10).toPrecision(3)}}V</small>
           </h5>
           <div>
-            <b-row>
+            <b-row v-if="motor.test.active">
               <b-col v-for="m in motors" :key="m.index" sm="6" class="my-2 px-5">
                 <b-row>
-                  <b-col sm="4" class="my-2">
+                  <b-col sm="3" class="my-2">
                     <label :for="m.id">
                       <h6>{{ m.label }}</h6>
                     </label>
                   </b-col>
-                  <b-col sm="6" class="my-2">
+                  <b-col sm="7" class="my-2">
                     <b-form-input
                       :id="m.id"
                       type="range"
                       step="1"
                       min="0"
-                      max="100"
+                      max="50"
                       v-model.number="value[m.index]"
-                      @change="update()"
+                      @update="update()"
                     ></b-form-input>
                   </b-col>
-                  <b-col sm="2">
+                  <b-col sm="2" class="px-1">
                     <b-form-input
                       :id="m.id"
                       type="number"
                       step="1"
                       min="0"
-                      max="100"
+                      max="50"
                       v-model.number="value[m.index]"
                       @change="update()"
                     ></b-form-input>
                   </b-col>
                 </b-row>
+              </b-col>
+            </b-row>
+            <b-row v-else>
+              <b-col sm="12">
+                <h6 class="text-muted">Motor Test disabled</h6>
               </b-col>
             </b-row>
           </div>
@@ -76,11 +81,11 @@
           </b-row>
         </b-card>
       </b-col>
-      <b-col v-if="motor.settings && motor.settings.length" sm="12" class="my-4">
+      <b-col sm="12" class="my-4">
         <b-card>
           <h5 slot="header" class="mb-0">ESC Settings</h5>
           <div>
-            <b-row>
+            <b-row v-if="motor.settings && motor.settings.length">
               <b-col
                 v-for="m in motors"
                 :key="'motor-settings-' + m.index"
@@ -111,7 +116,12 @@
             </b-row>
             <b-row>
               <b-col offset="10" sm="2">
-                <b-button class="ml-4 mt-2" v-on:click="apply_motor_settings(motor.settings)">Apply</b-button>
+                <b-button
+                  class="ml-4 mt-2"
+                  v-if="motor.settings && motor.settings.length"
+                  v-on:click="apply_motor_settings(motor.settings)"
+                >Apply</b-button>
+                <b-button class="ml-4 mt-2" v-else v-on:click="fetch_motor_settings()">Load</b-button>
               </b-col>
             </b-row>
           </div>
@@ -196,9 +206,6 @@ export default {
   },
   created() {
     this.fetch_motor_test();
-    if (!this.motor.settings) {
-      this.fetch_motor_settings();
-    }
   }
 };
 </script>
