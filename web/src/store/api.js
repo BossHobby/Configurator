@@ -22,10 +22,13 @@ export function get_stream(url, cb) {
   console.log(`>> get_stream ${url} `)
 
   const td = new TextDecoder("utf-8");
-
-
   return fetch("http://localhost:8000" + url)
+    .catch(err => console.warn(err))
     .then(async res => {
+      if (res.status != 200) {
+        return;
+      }
+
       const reader = res.body.getReader();
       let buf = "", done = false;
 

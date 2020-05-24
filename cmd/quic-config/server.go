@@ -173,7 +173,7 @@ func (s *Server) watchPorts() {
 		s.status = *cs
 
 		if s.status.IsConnected {
-			var msg quic.BlackboxCompact
+			var msg quic.Blackbox
 			if err := s.qp.GetValue(quic.QuicValStatus, &msg); err != nil {
 				log.Error(err)
 				continue

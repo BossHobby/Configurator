@@ -242,7 +242,7 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet)
+	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, 0)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -259,6 +259,7 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 			handleError(w, err)
 			return
 		}
+		log.Printf("%+v", value)
 		renderJSON(w, value)
 		w.Write([]byte{'\n'})
 	}
@@ -277,7 +278,7 @@ func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	value := new(interface{})
+	value := new(map[string]interface{})
 	if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
 		handleError(w, err)
 		return

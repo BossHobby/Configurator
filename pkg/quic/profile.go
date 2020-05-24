@@ -155,6 +155,8 @@ type TargetInfo struct {
 }
 
 type Blackbox struct {
+	_ struct{} `cbor:",toarray"`
+
 	Time       uint        `cbor:"time" json:"time"`
 	CPULoad    interface{} `cbor:"cpu_load" json:"cpu_load"`
 	VbatFilter interface{} `cbor:"vbat_filter" json:"vbat_filter"`
@@ -175,7 +177,23 @@ type Blackbox struct {
 
 type BlackboxCompact struct {
 	_ struct{} `cbor:",toarray"`
-	Blackbox
+
+	Time       uint32 `cbor:"time" json:"time"`
+	CPULoad    uint16 `cbor:"cpu_load" json:"cpu_load"`
+	VbatFilter uint16 `cbor:"vbat_filter" json:"vbat_filter"`
+
+	RxRaw    [4]float32 `cbor:"rx_raw" json:"rx_raw"`
+	RxFilter [4]float32 `cbor:"rx_filter" json:"rx_filter"`
+	RxAux    uint32     `cbor:"rx_aux" json:"rx_aux"`
+
+	AccelRaw    [3]int `cbor:"accel_raw" json:"accel_raw"`
+	AccelFilter [3]int `cbor:"accel_filter" json:"accel_filter"`
+
+	GyroRaw    [3]int `cbor:"gyro_raw" json:"gyro_raw"`
+	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter"`
+
+	GyroVector [3]float32 `cbor:"gyro_vector" json:"gyro_vector"`
+	PidOutput  [3]float32 `cbor:"pid_output" json:"pid_output"`
 }
 
 type PidRatePreset struct {
