@@ -39,8 +39,7 @@ type QuicProtocol struct {
 	ticketChan chan quicTicket
 	packetChan chan *QuicPacket
 
-	Blackbox chan Blackbox
-	Log      chan string
+	Log chan string
 }
 
 func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
@@ -52,8 +51,7 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 		ticketChan: make(chan quicTicket, 100),
 		packetChan: make(chan *QuicPacket, 100),
 
-		Blackbox: make(chan Blackbox, 100),
-		Log:      make(chan string, 100),
+		Log: make(chan string, 100),
 	}
 
 	go func() {

@@ -1,4 +1,4 @@
-import { post, get_stream } from "@/store/api.js";
+import { post, get_stream, get } from "@/store/api.js";
 
 
 const store = {
@@ -26,8 +26,8 @@ const store = {
     reset_blackbox() {
       return post("/api/blackbox/reset", null)
     },
-    set_blackbox_rate(ctx, rate) {
-      return post("/api/blackbox/rate", rate)
+    list_blackbox() {
+      return get("/api/blackbox/list")
     },
   }
 }

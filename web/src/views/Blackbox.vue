@@ -1,12 +1,17 @@
 <template>
   <b-container>
     <b-row>
-      <!--
       <b-col sm="12">
-        <b-button size="sm" class="my-2 mx-2" @click="fetch()">fetch</b-button>
-        <b-button size="sm" class="my-2 mx-2" @click="reset_blackbox()">reset</b-button>
+        <b-card>
+          <h5 slot="header" class="mb-0">Blackbox</h5>
+          <div>
+            <b-button size="sm" class="my-2 mx-2" @click="list_blackbox()">list</b-button>
+            <b-button size="sm" class="my-2 mx-2" @click="fetch()">fetch</b-button>
+            <b-button size="sm" class="my-2 mx-2" @click="reset_blackbox()">reset</b-button>
+          </div>
+        </b-card>
       </b-col>
-      -->
+
       <b-col sm="12">
         <GyroModel class="my-3"></GyroModel>
       </b-col>
@@ -81,19 +86,13 @@ export default {
     ...mapState(["blackbox"])
   },
   methods: {
-    ...mapActions(["set_blackbox_rate", "fetch_blackbox", "reset_blackbox"]),
+    ...mapActions(["fetch_blackbox", "reset_blackbox", "list_blackbox"]),
     fetch() {
       for (const p of this.$refs.plot) {
         p.reset();
       }
       this.fetch_blackbox();
     }
-  },
-  created() {
-    this.set_blackbox_rate(4);
-  },
-  destroyed() {
-    this.set_blackbox_rate(2);
   }
 };
 </script>

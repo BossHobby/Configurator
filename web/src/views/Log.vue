@@ -14,16 +14,10 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "log",
-  computed: mapState(["log"]),
-  methods: {
-    ...mapActions(["set_blackbox_rate"])
-  },
-  created() {
-    this.set_blackbox_rate(4);
-  }
+  computed: mapState(["log"])
 };
 </script>

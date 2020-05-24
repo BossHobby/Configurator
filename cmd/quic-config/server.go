@@ -68,8 +68,6 @@ func (s *Server) broadcastQuic(qp *quic.QuicProtocol) {
 		select {
 		case msg := <-qp.Log:
 			broadcastWebsocket("log", msg)
-		case msg := <-qp.Blackbox:
-			broadcastWebsocket("blackbox", msg)
 		}
 	}
 }
@@ -151,12 +149,13 @@ func (s *Server) closeController() {
 }
 
 func (s *Server) watchPorts() {
-	interval := 500 * time.Millisecond
+	interval := time.NewTicker(500 * time.Millisecond)
 	for {
+		<-interval.C
+
 		cs, err := s.controllerStatus()
 		if err != nil {
 			log.Error("controllerStatus:", err)
-			time.Sleep(interval)
 			continue
 		}
 
@@ -172,7 +171,15 @@ func (s *Server) watchPorts() {
 			broadcastWebsocket("status", cs)
 		}
 		s.status = *cs
-		time.Sleep(interval)
+
+		if s.status.IsConnected {
+			var msg quic.BlackboxCompact
+			if err := s.qp.GetValue(quic.QuicValStatus, &msg); err != nil {
+				log.Error(err)
+				continue
+			}
+			broadcastWebsocket("blackbox", msg)
+		}
 	}
 }
 
