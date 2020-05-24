@@ -171,17 +171,6 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		default:
 		}
 		return nil, errUpdatePacket
-	case p.cmd == QuicCmdBlackbox && p.flag != QuicFlagStreaming:
-		val := new(Blackbox)
-		if err := cbor.NewDecoder(p.Payload).Decode(val); err != nil {
-			log.Error("error reading blackbox", err)
-			return nil, errUpdatePacket
-		}
-		select {
-		case proto.Blackbox <- *val:
-		default:
-		}
-		return nil, errUpdatePacket
 	default:
 		ticket := <-proto.ticketChan
 		if p.cmd != ticket.cmd {

@@ -300,28 +300,6 @@ func (s *Server) posResetBlackbox(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, "OK")
 }
 
-func (s *Server) getBlackboxRate(w http.ResponseWriter, r *http.Request) {
-	value := 0
-	if err := s.qp.GetValue(quic.QuicValBlackboxRate, &value); err != nil {
-		handleError(w, err)
-		return
-	}
-	renderJSON(w, value)
-}
-
-func (s *Server) postBlackboxRate(w http.ResponseWriter, r *http.Request) {
-	value := 0
-	if err := json.NewDecoder(r.Body).Decode(&value); err != nil {
-		handleError(w, err)
-		return
-	}
-	if err := s.qp.SetValue(quic.QuicValBlackboxRate, &value); err != nil {
-		handleError(w, err)
-		return
-	}
-	renderJSON(w, value)
-}
-
 func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
 	_, err := s.qp.Send(quic.QuicCmdCalImu, new(bytes.Buffer))
 	if err != nil {
@@ -695,9 +673,6 @@ func (s *Server) setupRoutes(r *mux.Router) {
 
 		f.HandleFunc("/api/profile/download", s.getProfileDownload).Methods("GET")
 		f.HandleFunc("/api/profile/upload", s.postProfileUpload).Methods("POST")
-
-		f.HandleFunc("/api/blackbox/rate", s.getBlackboxRate).Methods("GET")
-		f.HandleFunc("/api/blackbox/rate", s.postBlackboxRate).Methods("POST")
 
 		f.HandleFunc("/api/motor/settings", s.getMotorBlheliSettings).Methods("GET")
 		f.HandleFunc("/api/motor/settings", s.postMotorBlheliSettings).Methods("POST")

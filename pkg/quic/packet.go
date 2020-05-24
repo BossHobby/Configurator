@@ -45,7 +45,7 @@ const (
 	QuicValInfo
 	QuicValProfile
 	QuicValDefaultProfile
-	QuicValBlackboxRate
+	QuicValStatus
 	QuicValPidRatePresets
 	QuicValVtxSettings
 	QuicValOSDFont
