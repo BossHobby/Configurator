@@ -153,6 +153,53 @@ type BLHeliResponse struct {
 	PARAMS []byte
 }
 
+type BLHeliSettings struct {
+	MAIN_REVISION            uint8
+	SUB_REVISION             uint8
+	LAYOUT_REVISION          uint8
+	P_GAIN                   uint8
+	I_GAIN                   uint8
+	GOVERNOR_MODE            uint8
+	LOW_VOLTAGE_LIMIT        uint8
+	MOTOR_GAIN               uint8
+	MOTOR_IDLE               uint8
+	STARTUP_POWER            uint8
+	PWM_FREQUENCY            uint8
+	MOTOR_DIRECTION          uint8
+	INPUT_PWM_POLARITY       uint8
+	MODE                     uint16
+	PROGRAMMING_BY_TX        uint8
+	REARM_AT_START           uint8
+	GOVERNOR_SETUP_TARGET    uint8
+	STARTUP_RPM              uint8
+	STARTUP_ACCELERATION     uint8
+	VOLT_COMP                uint8
+	COMMUTATION_TIMING       uint8
+	DAMPING_FORCE            uint8
+	GOVERNOR_RANGE           uint8
+	STARTUP_METHOD           uint8
+	PPM_MIN_THROTTLE         uint8
+	PPM_MAX_THROTTLE         uint8
+	BEEP_STRENGTH            uint8
+	BEACON_STRENGTH          uint8
+	BEACON_DELAY             uint8
+	THROTTLE_RATE            uint8
+	DEMAG_COMPENSATION       uint8
+	BEC_VOLTAGE              uint8
+	PPM_CENTER_THROTTLE      uint8
+	SPOOLUP_TIME             uint8
+	TEMPERATURE_PROTECTION   uint8
+	LOW_RPM_POWER_PROTECTION uint8
+	PWM_INPUT                uint8
+	PWM_DITHER               uint8
+	BRAKE_ON_STOP            uint8
+	LED_CONTROL              uint8
+
+	LAYOUT string
+	MCU    string
+	NAME   string
+}
+
 type BLHeliProtocol struct {
 	rw io.ReadWriter
 }
