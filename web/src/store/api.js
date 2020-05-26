@@ -34,27 +34,33 @@ export function get_stream(url, cb) {
 
       while (!done) {
         const p = await reader.read();
-        if (p.done) {
-          done = true;
-          break;
-        }
-
         buf += td.decode(p.value);
 
         let index = buf.indexOf("\n");
-        while (index > 0) {
+        while (index >= 0) {
+          if (index == 0) {
+            buf = buf.substr(index + 1)
+          }
+
           try {
             const str = buf.substr(0, index);
             const obj = JSON.parse(str);
             console.log(`<< get_stream ${url}`, obj);
             cb(obj);
-            buf = buf.substr(index + 2, buf.length - index - 2)
+            buf = buf.substr(index + 2)
           } catch (e) {
             console.log(e)
           }
+
           index = buf.indexOf("\n")
         }
+
+        if (p.done) {
+          done = true;
+        }
       }
+
+
     })
 }
 

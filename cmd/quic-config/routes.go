@@ -254,7 +254,7 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 	for {
 		if err := dec.Decode(&value); err != nil {
 			if err == io.EOF {
-				break
+				return
 			}
 			handleError(w, err)
 			return
