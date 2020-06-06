@@ -66,6 +66,7 @@ type PID struct {
 type Motor struct {
 	InvertYaw             uint8   `cbor:"invert_yaw" json:"invert_yaw"`
 	DigitalIdle           float32 `cbor:"digital_idle" json:"digital_idle"`
+	DShotTime             uint16  `cbor:"dshot_time" json:"dshot_time"`
 	GyroOrientation       uint8   `cbor:"gyro_orientation" json:"gyro_orientation"`
 	TorqueBoost           float32 `cbor:"torque_boost" json:"torque_boost"`
 	ThrottleBoost         float32 `cbor:"throttle_boost" json:"throttle_boost"`

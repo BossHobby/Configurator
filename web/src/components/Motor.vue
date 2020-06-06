@@ -30,6 +30,14 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
+            <label for="dshot-time">DShot Time</label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-select id="dshot-time" v-model="motor.dshot_time" :options="dshotTimes"></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col sm="4" class="my-2">
             <label for="gyro-flip">Flip Gyro</label>
           </b-col>
           <b-col sm="8" class="my-2">
@@ -131,6 +139,11 @@ export default {
           text: "ROTATE_135_CCW"
         },
         { value: GYRO_ROTATE_180, text: "ROTATE_180" }
+      ],
+      dshotTimes: [
+        { value: 150, text: "150" },
+        { value: 300, text: "300" },
+        { value: 600, text: "600" }
       ]
     };
   },
