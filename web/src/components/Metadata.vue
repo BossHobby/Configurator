@@ -24,6 +24,12 @@
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
+        <label for="datetime">RX Protocol</label>
+      </b-col>
+      <b-col sm="8" class="my-2">{{ rxProtocols[status.Info.rx_protocol] }}</b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
         <label for="datetime">Version</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ status.Info.git_version }}</b-col>
@@ -54,6 +60,26 @@ import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "Metadata",
+  data() {
+    return {
+      rxProtocols: [
+        "INVALID",
+        "UNIFIED_SERIAL",
+        "SBUS",
+        "CRSF",
+        "IBUS",
+        "FPORT",
+        "DSMX_2048",
+        "DSM2_1024",
+        "NRF24_BAYANG_TELEMETRY",
+        "BAYANG_PROTOCOL_BLE_BEACON",
+        "BAYANG_PROTOCOL_TELEMETRY_AUTOBIND",
+        "FRSKY_D8",
+        "FRSKY_D16",
+        "REDPINE"
+      ]
+    };
+  },
   computed: {
     ...mapFields("profile", ["meta"]),
     ...mapState({

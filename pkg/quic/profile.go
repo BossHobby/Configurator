@@ -148,6 +148,7 @@ func (p *Profile) Filename() string {
 type TargetInfo struct {
 	TargetName          string   `cbor:"target_name" json:"target_name"`
 	GITVersion          string   `cbor:"git_version" json:"git_version"`
+	RXProtocol          uint     `cbor:"rx_protocol" json:"rx_protocol"`
 	QuicProtocolVersion uint     `cbor:"quic_protocol_version" json:"quic_protocol_version"`
 	MotorPins           []string `cbor:"motor_pins" json:"motor_pins"`
 	UsartPorts          []string `cbor:"usart_ports" json:"usart_ports"`
