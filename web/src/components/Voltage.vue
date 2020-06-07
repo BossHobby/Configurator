@@ -2,7 +2,7 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       Voltage
-      <small class="float-right">{{blackbox.vbat_filter.toPrecision(3)}}V</small>
+      <small class="float-right">{{blackbox.vbattfilt.toPrecision(3)}}V</small>
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">

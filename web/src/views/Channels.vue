@@ -41,7 +41,7 @@ export default {
   computed: {
     ...mapFields("profile", ["channel.aux"]),
     ...mapState({
-      aux: state => state.blackbox.rx_aux
+      aux: state => state.blackbox.aux
     })
   },
   data() {
@@ -83,7 +83,7 @@ export default {
   },
   methods: {
     valueForIndex(index) {
-      return (this.aux >> index) & 0x1;
+      return this.aux[index];
     },
     classForIndex(index) {
       if (!this.channel || !this.channel_aux) {

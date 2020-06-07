@@ -38,7 +38,7 @@ export default {
     return {
       plots: [
         {
-          name: "rx_filter",
+          name: "rx_filtered",
           size: 12,
           title: "Rx Channels",
           axis: ["Roll", "Pitch", "Yaw", "Throttle"]
@@ -50,13 +50,13 @@ export default {
           axis: ["Roll", "Pitch", "Yaw"]
         },
         {
-          name: "gyro_filter",
+          name: "gyro",
           size: 6,
           title: "Gyro Filter",
           axis: ["Roll", "Pitch", "Yaw"]
         },
         {
-          name: "gyro_vector",
+          name: "GEstG",
           size: 12,
           title: "Gyro Vector",
           axis: ["Roll", "Pitch", "Yaw"]
@@ -68,13 +68,13 @@ export default {
           axis: ["Roll", "Pitch", "Yaw"]
         },
         {
-          name: "accel_filter",
+          name: "accel",
           size: 6,
           title: "AccelFilter",
           axis: ["Roll", "Pitch", "Yaw"]
         },
         {
-          name: "pid_output",
+          name: "pidoutput",
           size: 12,
           title: "Pid Output",
           axis: ["Roll", "Pitch", "Yaw"]

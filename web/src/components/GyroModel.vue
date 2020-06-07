@@ -30,7 +30,7 @@ export default {
   computed: {
     ...mapState({
       rate: state => state.profile.rate,
-      gyro_vector: state => state.blackbox.gyro_vector
+      gyro_vector: state => state.blackbox.GEstG
     }),
     rotation() {
       const rot = this.gyro_vector;

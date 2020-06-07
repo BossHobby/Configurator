@@ -8,18 +8,19 @@ import (
 	"github.com/fxamacker/cbor/v2"
 )
 
-type Vector [3]float32
+type Vec3 [3]float32
+type Vec4 [4]float32
 
 type SilverwareRates struct {
-	MaxRate   Vector `cbor:"max_rate" json:"max_rate"`
-	AngleExpo Vector `cbor:"angle_expo" json:"angle_expo"`
-	AcroExpo  Vector `cbor:"acro_expo" json:"acro_expo"`
+	MaxRate   Vec3 `cbor:"max_rate" json:"max_rate"`
+	AngleExpo Vec3 `cbor:"angle_expo" json:"angle_expo"`
+	AcroExpo  Vec3 `cbor:"acro_expo" json:"acro_expo"`
 }
 
 type BetaflightRates struct {
-	RcRate    Vector `cbor:"rc_rate" json:"rc_rate"`
-	SuperRate Vector `cbor:"super_rate" json:"super_rate"`
-	Expo      Vector `cbor:"expo" json:"expo"`
+	RcRate    Vec3 `cbor:"rc_rate" json:"rc_rate"`
+	SuperRate Vec3 `cbor:"super_rate" json:"super_rate"`
+	Expo      Vec3 `cbor:"expo" json:"expo"`
 }
 
 type Rates struct {
@@ -32,9 +33,9 @@ type Rates struct {
 }
 
 type PIDRates struct {
-	KP Vector `cbor:"kp" json:"kp"`
-	KI Vector `cbor:"ki" json:"ki"`
-	KD Vector `cbor:"kd" json:"kd"`
+	KP Vec3 `cbor:"kp" json:"kp"`
+	KI Vec3 `cbor:"ki" json:"ki"`
+	KD Vec3 `cbor:"kd" json:"kd"`
 }
 
 type AnglePIDRates struct {
@@ -43,8 +44,8 @@ type AnglePIDRates struct {
 }
 
 type StickRates struct {
-	Accelerator Vector `cbor:"accelerator" json:"accelerator"`
-	Transition  Vector `cbor:"transition" json:"transition"`
+	Accelerator Vec3 `cbor:"accelerator" json:"accelerator"`
+	Transition  Vec3 `cbor:"transition" json:"transition"`
 }
 
 type ThrottleDTermAttenuation struct {
@@ -153,28 +154,6 @@ type TargetInfo struct {
 	MotorPins           []string `cbor:"motor_pins" json:"motor_pins"`
 	UsartPorts          []string `cbor:"usart_ports" json:"usart_ports"`
 }
-
-type Blackbox struct {
-	_ struct{} `cbor:",toarray"`
-
-	Time       uint        `cbor:"time" json:"time"`
-	CPULoad    interface{} `cbor:"cpu_load" json:"cpu_load"`
-	VbatFilter interface{} `cbor:"vbat_filter" json:"vbat_filter"`
-
-	GyroRaw    [3]float32 `cbor:"gyro_raw" json:"gyro_raw"`
-	GyroFilter [3]float32 `cbor:"gyro_filter" json:"gyro_filter"`
-	GyroVector [3]float32 `cbor:"gyro_vector" json:"gyro_vector"`
-
-	RxRaw    [4]float32  `cbor:"rx_raw" json:"rx_raw"`
-	RxFilter [4]float32  `cbor:"rx_filter" json:"rx_filter"`
-	RxAux    interface{} `cbor:"rx_aux" json:"rx_aux"`
-
-	AccelRaw    [3]float32 `cbor:"accel_raw" json:"accel_raw"`
-	AccelFilter [3]float32 `cbor:"accel_filter" json:"accel_filter"`
-
-	PidOutput [3]float32 `cbor:"pid_output" json:"pid_output"`
-}
-
 type BlackboxCompact struct {
 	_ struct{} `cbor:",toarray"`
 
@@ -194,6 +173,41 @@ type BlackboxCompact struct {
 
 	GyroVector [3]float32 `cbor:"gyro_vector" json:"gyro_vector"`
 	PidOutput  [3]float32 `cbor:"pid_output" json:"pid_output"`
+}
+
+type State struct {
+	Looptime float32 `cbor:"looptime" json:"looptime"`
+	Uptime   float32 `cbor:"uptime" json:"uptime"`
+	CPULoad  float32 `cbor:"cpu_load" json:"cpu_load"`
+
+	LipoCellCount float32 `cbor:"lipo_cell_count" json:"lipo_cell_count"`
+	Vbattfilt     float32 `cbor:"vbattfilt" json:"vbattfilt"`
+	VbattfiltCorr float32 `cbor:"vbattfilt_corr" json:"vbattfilt_corr"`
+	VbattComp     float32 `cbor:"vbatt_comp" json:"vbatt_comp"`
+	Vreffilt      float32 `cbor:"vreffilt" json:"vreffilt"`
+
+	Rx         Vec4 `cbor:"rx" json:"rx"`
+	RxFiltered Vec4 `cbor:"rx_filtered" json:"rx_filtered"`
+	RxOverride Vec4 `cbor:"rx_override" json:"rx_override"`
+
+	Throttle float32 `cbor:"throttle" json:"throttle"`
+	Thrsum   float32 `cbor:"thrsum" json:"thrsum"`
+
+	Aux []uint `cbor:"aux" json:"aux"`
+
+	AccelRaw Vec3 `cbor:"accel_raw" json:"accel_raw"`
+	Accel    Vec3 `cbor:"accel" json:"accel"`
+
+	GyroRaw Vec3 `cbor:"gyro_raw" json:"gyro_raw"`
+	Gyro    Vec3 `cbor:"gyro" json:"gyro"`
+
+	GEstG    Vec3 `cbor:"GEstG" json:"GEstG"`
+	Attitude Vec3 `cbor:"attitude" json:"attitude"`
+
+	Setpoint  Vec3 `cbor:"setpoint" json:"setpoint"`
+	Error     Vec3 `cbor:"error" json:"error"`
+	Errorvect Vec3 `cbor:"errorvect" json:"errorvect"`
+	Pidoutput Vec3 `cbor:"pidoutput" json:"pidoutput"`
 }
 
 type PidRatePreset struct {

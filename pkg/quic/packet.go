@@ -45,7 +45,7 @@ const (
 	QuicValInfo
 	QuicValProfile
 	QuicValDefaultProfile
-	QuicValStatus
+	QuicValState
 	QuicValPidRatePresets
 	QuicValVtxSettings
 	QuicValOSDFont

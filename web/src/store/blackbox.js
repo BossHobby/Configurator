@@ -4,9 +4,9 @@ import { post, get_stream, get } from "@/store/api.js";
 const store = {
   state: {
     cpu_load: 0.0,
-    vbat_filter: 0.0,
-    rx_filter: [],
-    gyro_vector: null,
+    vbattfilt: 0.0,
+    rx_filtered: [],
+    GEstG: null,
   },
   getters: {},
   mutations: {

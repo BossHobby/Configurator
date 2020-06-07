@@ -10,7 +10,7 @@
               class="my-2 mx-2"
               @click="motor_test_toggle()"
             >{{ motor.test.active ? "Disable" : "Enable"}}</b-button>
-            <small class="float-right my-3">{{(blackbox.vbat_filter / 10).toPrecision(3)}}V</small>
+            <small class="float-right my-3">{{(blackbox.vbattfilt / 10).toPrecision(3)}}V</small>
           </h5>
           <div>
             <b-row v-if="motor.test.active">
