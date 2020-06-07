@@ -157,13 +157,15 @@ type TargetInfo struct {
 type BlackboxCompact struct {
 	_ struct{} `cbor:",toarray"`
 
-	Time       uint32 `cbor:"time" json:"time"`
-	CPULoad    uint16 `cbor:"cpu_load" json:"cpu_load"`
-	VbatFilter uint16 `cbor:"vbat_filter" json:"vbat_filter"`
+	Loop uint32 `cbor:"loop" json:"loop"`
+	Time uint32 `cbor:"time" json:"time"`
 
-	RxRaw    [4]float32 `cbor:"rx_raw" json:"rx_raw"`
-	RxFilter [4]float32 `cbor:"rx_filter" json:"rx_filter"`
-	RxAux    uint32     `cbor:"rx_aux" json:"rx_aux"`
+	PidPTerm [3]int `cbor:"pid_p_term" json:"pid_p_term"`
+	PidITerm [3]int `cbor:"pid_i_term" json:"pid_i_term"`
+	PidDTerm [3]int `cbor:"pid_d_term" json:"pid_d_term"`
+
+	Rx       [4]int `cbor:"rx" json:"rx"`
+	Setpoint [4]int `cbor:"setpoint" json:"setpoint"`
 
 	AccelRaw    [3]int `cbor:"accel_raw" json:"accel_raw"`
 	AccelFilter [3]int `cbor:"accel_filter" json:"accel_filter"`
@@ -171,8 +173,7 @@ type BlackboxCompact struct {
 	GyroRaw    [3]int `cbor:"gyro_raw" json:"gyro_raw"`
 	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter"`
 
-	GyroVector [3]float32 `cbor:"gyro_vector" json:"gyro_vector"`
-	PidOutput  [3]float32 `cbor:"pid_output" json:"pid_output"`
+	Motor [4]int `cbor:"motor" json:"motor"`
 }
 
 type State struct {
