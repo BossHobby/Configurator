@@ -259,9 +259,7 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 			handleError(w, err)
 			return
 		}
-		log.Printf("%+v", value)
 		renderJSON(w, value)
-		w.Write([]byte{'\n'})
 	}
 }
 
