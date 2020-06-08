@@ -189,7 +189,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 				w.Close()
 				break
 			}
-
+			log.Tracef("<quic> stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
 			if _, err := io.CopyN(bw, proto.rw, int64(h.len)); err != nil {
 				return nil, err
 			}

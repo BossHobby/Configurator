@@ -154,26 +154,27 @@ type TargetInfo struct {
 	MotorPins           []string `cbor:"motor_pins" json:"motor_pins"`
 	UsartPorts          []string `cbor:"usart_ports" json:"usart_ports"`
 }
+
 type BlackboxCompact struct {
 	_ struct{} `cbor:",toarray"`
 
-	Loop uint32 `cbor:"loop" json:"loop"`
-	Time uint32 `cbor:"time" json:"time"`
+	Loop uint32 `cbor:"loop" json:"loop" blackbox:"loopIteration"`
+	Time uint32 `cbor:"time" json:"time" blackbox:"time"`
 
-	PidPTerm [3]int `cbor:"pid_p_term" json:"pid_p_term"`
-	PidITerm [3]int `cbor:"pid_i_term" json:"pid_i_term"`
-	PidDTerm [3]int `cbor:"pid_d_term" json:"pid_d_term"`
+	PidPTerm [3]int `cbor:"pid_p_term" json:"pid_p_term" blackbox:"axisP[]"`
+	PidITerm [3]int `cbor:"pid_i_term" json:"pid_i_term" blackbox:"axisI[]"`
+	PidDTerm [3]int `cbor:"pid_d_term" json:"pid_d_term" blackbox:"axisD[]"`
 
-	Rx       [4]int `cbor:"rx" json:"rx"`
-	Setpoint [4]int `cbor:"setpoint" json:"setpoint"`
+	Rx       [4]int `cbor:"rx" json:"rx" blackbox:"rcCommand[]"`
+	Setpoint [4]int `cbor:"setpoint" json:"setpoint" blackbox:"setpoint[]"`
 
 	AccelRaw    [3]int `cbor:"accel_raw" json:"accel_raw"`
-	AccelFilter [3]int `cbor:"accel_filter" json:"accel_filter"`
+	AccelFilter [3]int `cbor:"accel_filter" json:"accel_filter" blackbox:"accSmooth[]"`
 
 	GyroRaw    [3]int `cbor:"gyro_raw" json:"gyro_raw"`
-	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter"`
+	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter" blackbox:"gyroADC[]"`
 
-	Motor [4]int `cbor:"motor" json:"motor"`
+	Motor [4]int `cbor:"motor" json:"motor" blackbox:"motor[]"`
 }
 
 type State struct {

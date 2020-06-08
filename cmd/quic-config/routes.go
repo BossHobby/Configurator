@@ -16,6 +16,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/NotFastEnuf/configurator/pkg/blackbox"
 	"github.com/NotFastEnuf/configurator/pkg/blheli"
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
@@ -260,6 +261,35 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		renderJSON(w, value)
+	}
+}
+
+func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Disposition", "attachment; filename="+s.status.Info.TargetName+".bfl")
+	//w.Header().Set("Content-Type", "application/json")
+
+	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, 0)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	defer p.Payload.Close()
+
+	bw := blackbox.NewDefaultWriter(w)
+	bw.WriteHeaders()
+
+	dec := cbor.NewDecoder(p.Payload)
+	value := quic.BlackboxCompact{}
+	for {
+		if err := dec.Decode(&value); err != nil {
+			if err == io.EOF {
+				return
+			}
+			log.Error(err)
+			handleError(w, err)
+			return
+		}
+		bw.WriteValue(&value)
 	}
 }
 
@@ -661,6 +691,7 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f.Use(s.fcMidleware)
 
 		f.HandleFunc("/api/blackbox", s.getBlackbox).Methods("GET")
+		f.HandleFunc("/api/blackbox/download", s.downloadBlackbox).Methods("GET")
 		f.HandleFunc("/api/blackbox/list", s.getBlackboxList).Methods("GET")
 		f.HandleFunc("/api/blackbox/reset", s.posResetBlackbox).Methods("POST")
 

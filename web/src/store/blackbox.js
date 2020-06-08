@@ -1,4 +1,4 @@
-import { post, get_stream, get } from "@/store/api.js";
+import { get_stream } from "@/store/api.js";
 
 
 const store = {
@@ -22,12 +22,6 @@ const store = {
       return get_stream("/api/blackbox", blackbox => {
         commit('set_blackbox', blackbox);
       })
-    },
-    reset_blackbox() {
-      return post("/api/blackbox/reset", null)
-    },
-    list_blackbox() {
-      return get("/api/blackbox/list")
     },
   }
 }

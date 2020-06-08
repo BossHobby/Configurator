@@ -21,6 +21,7 @@ const store = new Vuex.Store({
     motor: motorModule,
   },
   state: {
+    blackbox_list: {},
     blackbox_pause: false,
     log: [],
     alerts: [],
@@ -52,6 +53,9 @@ const store = new Vuex.Store({
     },
     set_blackbox_pause(state, pause) {
       state.blackbox_pause = pause
+    },
+    set_blackbox_list(state, list) {
+      state.blackbox_list = list
     },
     set_flash(state, flash) {
       state.flash = flash
@@ -135,7 +139,14 @@ const store = new Vuex.Store({
     },
     set_osd_font(ctx, name) {
       return post("/api/osd/font", name)
-    }
+    },
+    reset_blackbox() {
+      return post("/api/blackbox/reset", null)
+    },
+    list_blackbox({ commit }) {
+      return get("/api/blackbox/list")
+        .then(list => commit('set_blackbox_list', list))
+    },
   }
 })
 export default store;
