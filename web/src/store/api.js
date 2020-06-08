@@ -37,19 +37,16 @@ export function get_stream(url, cb) {
         buf += td.decode(p.value);
 
         let index = buf.indexOf("\n");
-        while (index >= 0) {
-          if (index == 0) {
-            buf = buf.substr(index + 1)
-          }
-
+        while (index > 0) {
           try {
             const str = buf.substr(0, index);
             const obj = JSON.parse(str);
             console.log(`<< get_stream ${url}`, obj);
             cb(obj);
-            buf = buf.substr(index + 2)
+            buf = buf.substr(index + 1, buf.length - index - 1)
           } catch (e) {
-            console.log(e)
+            console.err(e)
+            break;
           }
 
           index = buf.indexOf("\n")
