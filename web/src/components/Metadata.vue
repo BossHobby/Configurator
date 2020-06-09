@@ -24,6 +24,12 @@
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
+        <label for="datetime">Features</label>
+      </b-col>
+      <b-col sm="8" class="my-2">{{ features }}</b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
         <label for="datetime">RX Protocol</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ rxProtocols[status.Info.rx_protocol] }}</b-col>
@@ -87,6 +93,14 @@ export default {
     }),
     date() {
       return new Date(this.meta.datetime * 1000);
+    },
+    features() {
+      const feat = ["BRUSHLESS", "OSD", "BLACKBOX"];
+      return feat
+        .filter((f, i) => {
+          return this.status.Info.features & (1 << (i + 1));
+        })
+        .join(", ");
     }
   },
   methods: {
