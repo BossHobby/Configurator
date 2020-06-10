@@ -178,7 +178,7 @@ func (s *Server) watchPorts() {
 				log.Error(err)
 				continue
 			}
-			broadcastWebsocket("blackbox", msg)
+			broadcastWebsocket("state", msg)
 		}
 	}
 }

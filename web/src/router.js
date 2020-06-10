@@ -6,7 +6,7 @@ import Channels from './views/Channels.vue'
 import OSD from './views/OSD.vue'
 import Motor from './views/Motor.vue'
 import Blackbox from './views/Blackbox.vue'
-import Log from './views/Log.vue'
+import State from './views/State.vue'
 import Profile from './views/Profile.vue'
 import Flash from './views/Flash.vue'
 import Home from './views/Home.vue'
@@ -67,9 +67,9 @@ export default new Router({
       component: Blackbox
     },
     {
-      path: '/log',
-      name: 'log',
-      component: Log
+      path: '/state',
+      name: 'state',
+      component: State
     }
   ]
 })

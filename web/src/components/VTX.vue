@@ -4,19 +4,19 @@
       VTX
       <b-button size="sm" class="ml-4" v-on:click="fetch_vtx_settings()">refresh</b-button>
     </h5>
-    <div v-if="vtx_settings.detected">
+    <div v-if="vtx.settings.detected">
       <b-row>
         <b-col sm="4" class="my-2">
           <label for="vtx-band">Frequency</label>
         </b-col>
-        <b-col sm="8" class="my-2">{{ frequencyTable[vtx_settings.band][vtx_settings.channel] }}</b-col>
+        <b-col sm="8" class="my-2">{{ frequencyTable[vtx.settings.band][vtx.settings.channel] }}</b-col>
       </b-row>
       <b-row>
         <b-col sm="4" class="my-2">
           <label for="vtx-band">Band</label>
         </b-col>
         <b-col sm="8" class="my-2">
-          <b-form-select id="vtx-band" v-model.number="vtx_settings.band" :options="vtxBandOptions"></b-form-select>
+          <b-form-select id="vtx-band" v-model.number="vtx.settings.band" :options="vtxBandOptions"></b-form-select>
         </b-col>
       </b-row>
       <b-row>
@@ -26,19 +26,19 @@
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-channel"
-            v-model.number="vtx_settings.channel"
+            v-model.number="vtx.settings.channel"
             :options="vtxChannelOptions"
           ></b-form-select>
         </b-col>
       </b-row>
-      <b-row v-if="vtx_settings.pit_mode != 2">
+      <b-row v-if="vtx.settings.pit_mode != 2">
         <b-col sm="4" class="my-2">
           <label for="vtx-pit-mode">Pit Mode</label>
         </b-col>
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-pit-mode"
-            v-model.number="vtx_settings.pit_mode"
+            v-model.number="vtx.settings.pit_mode"
             :options="vtxPitModeOptions"
           ></b-form-select>
         </b-col>
@@ -50,14 +50,14 @@
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-power-level"
-            v-model.number="vtx_settings.power_level"
+            v-model.number="vtx.settings.power_level"
             :options="vtxPowerLevelOptions"
           ></b-form-select>
         </b-col>
       </b-row>
       <b-row>
         <b-col offset="9" sm="3">
-          <b-button class="ml-4 mt-2" v-on:click="apply_vtx_settings(vtx_settings)">Apply</b-button>
+          <b-button class="ml-4 mt-2" v-on:click="apply_vtx_settings(vtx.settings)">Apply</b-button>
         </b-col>
       </b-row>
     </div>
@@ -110,7 +110,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["vtx_settings"])
+    ...mapState(["vtx"])
   },
   methods: {
     ...mapActions(["apply_vtx_settings", "fetch_vtx_settings"])

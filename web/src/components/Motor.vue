@@ -28,7 +28,7 @@
             ></b-form-input>
           </b-col>
         </b-row>
-        <b-row>
+        <b-row v-if="has_feature(FEATURE_BRUSHLESS)">
           <b-col sm="4" class="my-2">
             <label for="dshot-time">DShot Time</label>
           </b-col>
@@ -107,6 +107,8 @@
 
 <script>
 import { mapFields } from "@/store/helper.js";
+import { mapGetters } from "vuex";
+import { FEATURE_BRUSHLESS } from "@/store/constants.js";
 
 const GYRO_ROTATE_NONE = 0x0;
 const GYRO_ROTATE_45_CCW = 0x1;
@@ -120,6 +122,8 @@ export default {
   name: "Motor",
   data() {
     return {
+      FEATURE_BRUSHLESS,
+
       invertYawModes: [
         { value: 0, text: "Props In" },
         { value: 1, text: "Props Out" }
@@ -149,6 +153,7 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["motor"]),
+    ...mapGetters(["has_feature"]),
     gyroOrientation: {
       get() {
         return this.motor.gyro_orientation & 0x1f;

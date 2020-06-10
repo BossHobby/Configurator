@@ -9,7 +9,9 @@ import router from '../router';
 import profileModule from "./profile";
 import statusModule from "./status";
 import blackboxModule from "./blackbox";
+import stateModule from "./state";
 import motorModule from "./motor";
+import vtxModule from "./vtx";
 
 var ws = null
 
@@ -18,25 +20,23 @@ const store = new Vuex.Store({
     profile: profileModule,
     status: statusModule,
     blackbox: blackboxModule,
+    state: stateModule,
     motor: motorModule,
+    vtx: vtxModule,
   },
   state: {
-    blackbox_list: {},
-    blackbox_pause: false,
     log: [],
     alerts: [],
+
+    firmware_releases: [],
+    flash: {},
+
     pid_rate_presets: [],
-    vtx_settings: {
-      channel: 0,
-      band: 0,
-    },
     default_profile: {
       serial: {
         port_max: 0,
       }
     },
-    firmware_releases: [],
-    flash: {}
   },
   mutations: {
     set_default_profile(state, default_profile) {
@@ -45,24 +45,15 @@ const store = new Vuex.Store({
     set_pid_rate_presets(state, pid_rate_presets) {
       state.pid_rate_presets = pid_rate_presets
     },
-    set_vtx_settings(state, vtx_settings) {
-      state.vtx_settings = vtx_settings
-    },
+
     set_firmware_releases(state, firmware_releases) {
       state.firmware_releases = firmware_releases
-    },
-    set_blackbox_pause(state, pause) {
-      state.blackbox_pause = pause
-    },
-    set_blackbox_list(state, list) {
-      state.blackbox_list = list
     },
     set_flash(state, flash) {
       state.flash = flash
     },
-    clear_log(state) {
-      state.log = []
-    },
+
+
     append_log(state, line) {
       if (state.log.length < 500) {
         state.log = [...state.log, line]
@@ -70,6 +61,10 @@ const store = new Vuex.Store({
         state.log = [line]
       }
     },
+    clear_log(state) {
+      state.log = []
+    },
+
     append_alert(state, line) {
       state.alerts = [...state.alerts, line]
     }
@@ -106,10 +101,8 @@ const store = new Vuex.Store({
             }
             commit('set_status', msg.Payload);
             break;
-          case "blackbox":
-            if (!state.blackbox_pause) {
-              commit('set_blackbox', msg.Payload);
-            }
+          case "state":
+            commit('set_state', msg.Payload);
             break;
           case "flash":
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
@@ -122,31 +115,16 @@ const store = new Vuex.Store({
       return get("/api/pid_rate_presets")
         .then(p => commit('set_pid_rate_presets', p))
     },
-    fetch_vtx_settings({ commit }) {
-      return get("/api/vtx/settings")
-        .then(p => commit('set_vtx_settings', p))
-    },
     fetch_firmware_releases({ commit }) {
       return get("/api/flash/releases")
         .then(p => commit('set_firmware_releases', p))
-    },
-    apply_vtx_settings({ commit }, vtx_settings) {
-      return post("/api/vtx/settings", vtx_settings)
-        .then(p => commit('set_vtx_settings', p))
     },
     cal_imu() {
       return post("/api/cal_imu", null)
     },
     set_osd_font(ctx, name) {
       return post("/api/osd/font", name)
-    },
-    reset_blackbox() {
-      return post("/api/blackbox/reset", null)
-    },
-    list_blackbox({ commit }) {
-      return get("/api/blackbox/list")
-        .then(list => commit('set_blackbox_list', list))
-    },
+    }
   }
 })
 export default store;

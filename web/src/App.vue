@@ -10,10 +10,10 @@
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
         <b-nav-item to="/channels">Channels</b-nav-item>
-        <b-nav-item to="/osd">OSD</b-nav-item>
+        <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
-        <b-nav-item to="/blackbox">Blackbox</b-nav-item>
-        <b-nav-item to="/log">Log</b-nav-item>
+        <b-nav-item v-if="has_feature(FEATURE_BLACKBOX)" to="/blackbox">Blackbox</b-nav-item>
+        <b-nav-item to="/state">State</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav v-else>
         <b-nav-item to="/">Home</b-nav-item>
@@ -69,12 +69,19 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
+import { FEATURE_BLACKBOX, FEATURE_OSD } from "@/store/constants.js";
 
 export default {
   name: "app",
+  data() {
+    return {
+      FEATURE_BLACKBOX,
+      FEATURE_OSD
+    };
+  },
   computed: {
     ...mapState(["status", "profile", "alerts", "blackbox"]),
-    ...mapGetters(["can_connect"]),
+    ...mapGetters(["can_connect", "has_feature"]),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
     }

@@ -12,7 +12,7 @@
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
-        <label for="datetime">Last Modified</label>
+        <label for="datetime">Profile Last Modified</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ date | moment("from") }}</b-col>
     </b-row>

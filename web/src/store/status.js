@@ -1,19 +1,24 @@
 import { post } from "@/store/api.js";
 
-
 const store = {
   state: {
     Info: {
       usart_ports: [],
-      motor_pins: []
+      motor_pins: [],
+      features: 0,
     },
     AvailablePorts: [],
     IsConnected: false,
   },
   getters: {
-    can_connect: (state) => {
+    can_connect(state) {
       return state.Port && state.Port.length > 0;
     },
+    has_feature(state) {
+      return feature => {
+        return state.Info.features & feature
+      };
+    }
   },
   mutations: {
     set_status(state, status) {

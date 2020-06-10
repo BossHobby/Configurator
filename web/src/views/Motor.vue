@@ -10,7 +10,7 @@
               class="my-2 mx-2"
               @click="motor_test_toggle()"
             >{{ motor.test.active ? "Disable" : "Enable"}}</b-button>
-            <small class="float-right my-3">{{(blackbox.vbattfilt / 10).toPrecision(3)}}V</small>
+            <small class="float-right my-3">{{state.vbattfilt.toPrecision(3)}}V</small>
           </h5>
           <div>
             <b-row v-if="motor.test.active">
@@ -81,7 +81,7 @@
           </b-row>
         </b-card>
       </b-col>
-      <b-col sm="12" class="my-4">
+      <b-col sm="12" class="my-4" v-if="has_feature(FEATURE_BRUSHLESS)">
         <b-card>
           <h5 slot="header" class="mb-0">ESC Settings</h5>
           <div>
@@ -132,7 +132,8 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex";
+import { FEATURE_BRUSHLESS } from "@/store/constants.js";
 import { mapFields } from "@/store/helper.js";
 
 export default {
@@ -140,6 +141,8 @@ export default {
   components: {},
   data() {
     return {
+      FEATURE_BRUSHLESS,
+
       motors: [
         {
           index: 1,
@@ -172,11 +175,12 @@ export default {
     };
   },
   computed: {
-    ...mapState(["motor", "blackbox"]),
+    ...mapState(["motor", "state"]),
     ...mapFields("profile", { profile_motor: "motor" }),
     ...mapState({
       motor_pins: state => state.status.Info.motor_pins
     }),
+    ...mapGetters(["has_feature"]),
     value() {
       return this.motor.test.value.map(v => v * 100);
     },

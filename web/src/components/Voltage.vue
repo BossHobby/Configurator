@@ -2,7 +2,7 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       Voltage
-      <small class="float-right">{{blackbox.vbattfilt.toPrecision(3)}}V</small>
+      <small class="float-right">{{state.vbattfilt.toPrecision(3)}}V</small>
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">
@@ -77,7 +77,7 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["voltage"]),
-    ...mapState(["blackbox"]),
+    ...mapState(["state"]),
     pid_voltage_compensation: {
       get() {
         return this.voltage.pid_voltage_compensation;

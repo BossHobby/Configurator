@@ -41,7 +41,7 @@ export default {
   computed: {
     ...mapFields("profile", ["channel.aux"]),
     ...mapState({
-      aux: state => state.blackbox.aux
+      aux: state => state.state.aux
     })
   },
   data() {
