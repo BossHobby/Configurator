@@ -86,21 +86,29 @@ const store = new Vuex.Store({
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
             commit('append_log', msg.Payload);
             break;
-          case "status":
+          case "status": {
             console.log(`<< ws ${msg.Channel}`, msg.Payload);
-            if (msg.Payload.IsConnected && !state.status.IsConnected) {
+
+            const oldStatus = { ...state.status };
+            commit('set_status', msg.Payload);
+
+            if (msg.Payload.IsConnected && !oldStatus.IsConnected) {
               commit('clear_log')
               dispatch('fetch_profile')
               dispatch('fetch_pid_rate_presets')
-            } else if (!msg.Payload.IsConnected && state.status.IsConnected) {
+              if (router.currentRoute.fullPath != "/profile") {
+                router.push("/profile")
+              }
+            } else if (!msg.Payload.IsConnected && oldStatus.IsConnected) {
               commit('clear_log')
               commit('set_motor_settings', null);
               if (router.currentRoute.fullPath != "/home") {
                 router.push("/home")
               }
             }
-            commit('set_status', msg.Payload);
+
             break;
+          }
           case "state":
             commit('set_state', msg.Payload);
             break;

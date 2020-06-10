@@ -27,15 +27,13 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex";
 
 export default {
   name: "home",
   computed: {
     ...mapState(["status"]),
-    can_connect() {
-      return !this.status.Port || this.status.Port.length == 0;
-    }
+    ...mapGetters(["can_connect"])
   },
   methods: {
     ...mapActions(["toggle_connection", "update"])

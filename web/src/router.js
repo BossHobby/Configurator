@@ -1,5 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+
+import store from './store'
+
 import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
@@ -13,13 +16,18 @@ import Home from './views/Home.vue'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
     {
       path: '/',
-      redirect: '/home'
+      redirect: () => {
+        if (store.state.status.IsConnected) {
+          return '/profile';
+        }
+        return '/home'
+      },
     },
     {
       path: '/home',
@@ -73,3 +81,22 @@ export default new Router({
     }
   ]
 })
+
+
+router.beforeEach((to, from, next) => {
+  if (store.state.status.IsConnected) {
+    if (to.name === 'home') {
+      next({ name: "profile" })
+    } else {
+      next();
+    }
+  } else {
+    if (to.name !== 'home' && to.name !== "flash") {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
+  }
+})
+
+export default router;
