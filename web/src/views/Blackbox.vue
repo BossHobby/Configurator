@@ -5,18 +5,22 @@
         <b-card>
           <h5 slot="header" class="mb-0">Blackbox</h5>
           <div>
-            <div
-              v-for="(size, index) in blackbox.list.files"
-              :key="index"
-            >File {{index + 1}}: {{ humanFileSize(size * 128) }}</div>
-            <b-button size="sm" class="my-2 mx-2" @click="list_blackbox()">list</b-button>
-            <b-button size="sm" class="my-2 mx-2" @click="fetch()">fetch</b-button>
-            <b-button
-              size="sm"
-              class="my-2 mx-2"
-              href="http://localhost:8000/api/blackbox/download"
-            >download</b-button>
-            <b-button size="sm" class="my-2 mx-2" @click="reset_blackbox()">reset</b-button>
+            <div v-for="(size, index) in blackbox.list.files" :key="index">
+              File {{index + 1}}: {{ humanFileSize(size * 128) }}
+              <b-button
+                size="sm"
+                class="my-2 mx-2"
+                :href="'http://localhost:8000/api/blackbox/'+index+'/download'"
+              >Download</b-button>
+            </div>
+            <b-row class="my-2">
+              <b-col sm="2">
+                <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
+              </b-col>
+              <b-col offset="8" sm="2">
+                <b-button class="my-2 mx-2" variant="danger" @click="reset_blackbox()">Reset</b-button>
+              </b-col>
+            </b-row>
           </div>
         </b-card>
       </b-col>
@@ -57,6 +61,9 @@ export default {
 
       return bytes.toFixed(dp) + " " + units[u];
     }
+  },
+  created() {
+    this.list_blackbox();
   }
 };
 </script>

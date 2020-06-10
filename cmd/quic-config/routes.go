@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -265,10 +266,18 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
 	w.Header().Set("Content-Disposition", "attachment; filename="+s.status.Info.TargetName+".bfl")
 	//w.Header().Set("Content-Type", "application/json")
 
-	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, 0)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, id)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -698,7 +707,7 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f.Use(s.fcMidleware)
 
 		f.HandleFunc("/api/blackbox", s.getBlackbox).Methods("GET")
-		f.HandleFunc("/api/blackbox/download", s.downloadBlackbox).Methods("GET")
+		f.HandleFunc("/api/blackbox/{id}/download", s.downloadBlackbox).Methods("GET")
 		f.HandleFunc("/api/blackbox/list", s.getBlackboxList).Methods("GET")
 		f.HandleFunc("/api/blackbox/reset", s.posResetBlackbox).Methods("POST")
 
