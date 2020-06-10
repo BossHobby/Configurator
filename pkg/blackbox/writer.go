@@ -14,6 +14,16 @@ type FieldDefinition struct {
 	Convert func(int64) int64
 }
 
+func convertFlip(val int64) int64 {
+	return -val
+}
+
+func convertOffset(offset int64) func(int64) int64 {
+	return func(val int64) int64 {
+		return offset + val
+	}
+}
+
 var DefaultFields = []FieldDefinition{
 	{Name: "loopIteration", Signed: false},
 	{Name: "time", Signed: false},
@@ -52,20 +62,18 @@ var DefaultFields = []FieldDefinition{
 		Name:   "rcCommand[2]",
 		Signed: true,
 		Convert: func(val int64) int64 {
-			return val / 2
+			return -val / 2
 		},
 	},
 	{
-		Name:   "rcCommand[3]",
-		Signed: true,
-		Convert: func(val int64) int64 {
-			return 1000 + val
-		},
+		Name:    "rcCommand[3]",
+		Signed:  true,
+		Convert: convertOffset(1000),
 	},
 
 	{Name: "setpoint[0]", Signed: true},
 	{Name: "setpoint[1]", Signed: true},
-	{Name: "setpoint[2]", Signed: true},
+	{Name: "setpoint[2]", Signed: true, Convert: convertFlip},
 	{Name: "setpoint[3]", Signed: true},
 
 	//"vbatLatest",
@@ -74,11 +82,11 @@ var DefaultFields = []FieldDefinition{
 
 	{Name: "gyroADC[0]", Signed: true},
 	{Name: "gyroADC[1]", Signed: true},
-	{Name: "gyroADC[2]", Signed: true},
+	{Name: "gyroADC[2]", Signed: true, Convert: convertFlip},
 
 	{Name: "accSmooth[0]", Signed: true},
 	{Name: "accSmooth[1]", Signed: true},
-	{Name: "accSmooth[2]", Signed: true},
+	{Name: "accSmooth[2]", Signed: true, Convert: convertOffset(1000)},
 
 	//"debug[0]",
 	//"debug[1]",

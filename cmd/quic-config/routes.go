@@ -289,6 +289,13 @@ func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 			handleError(w, err)
 			return
 		}
+
+		value.AccelFilter = [3]int{
+			-value.AccelFilter[1],
+			value.AccelFilter[0],
+			value.AccelFilter[2],
+		}
+
 		bw.WriteValue(&value)
 	}
 }
