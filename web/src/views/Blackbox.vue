@@ -13,12 +13,12 @@
                 :href="'http://localhost:8000/api/blackbox/'+index+'/download'"
               >Download</b-button>
             </div>
-            <b-row class="my-2">
+            <b-row class="my-2" v-if="blackbox.list.files">
               <b-col sm="2">
                 <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
               </b-col>
               <b-col offset="8" sm="2">
-                <b-button class="my-2 mx-2" variant="danger" @click="reset_blackbox()">Reset</b-button>
+                <b-button class="my-2 mx-2" variant="danger" @click="reset()">Reset</b-button>
               </b-col>
             </b-row>
           </div>
@@ -60,6 +60,9 @@ export default {
       );
 
       return bytes.toFixed(dp) + " " + units[u];
+    },
+    reset() {
+      return this.reset_blackbox().then(() => this.list_blackbox());
     }
   },
   created() {
