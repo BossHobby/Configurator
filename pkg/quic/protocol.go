@@ -179,7 +179,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	default:
 		ticket := <-proto.ticketChan
 		if p.cmd != ticket.cmd {
-			return nil, ErrInvalidCommand
+			return nil, errUpdatePacket
 		}
 		proto.packetChan <- p
 		break
