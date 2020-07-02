@@ -142,6 +142,9 @@ func (fl *FirmwareLoader) Flash(l *dfu.Loader, input []byte, broadcastProgress f
 	if err := l.SetAddress(0x08000000); err != nil {
 		return err
 	}
+	if err := l.EnterState(dfu.DfuIdle); err != nil {
+		return err
+	}
 	eraseProgress(100, 20)
 
 	if err := l.MassErase(); err != nil {

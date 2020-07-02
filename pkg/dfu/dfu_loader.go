@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/gousb"
+	log "github.com/sirupsen/logrus"
 )
 
 const wTransferSize = 2048
@@ -135,16 +136,20 @@ func (l *Loader) MassErase() error {
 	cmd := []byte{
 		0x41,
 	}
+	log.Trace("start mass-erase download")
 	if err := l.dfu.Dnload(0, cmd); err != nil {
 		return err
 	}
+	log.Trace("waiting mass-erase download")
 	time.Sleep(10 * time.Second)
 
 applyLabel:
+	log.Trace("applying status")
 	s, err := l.applyStatus()
 	if err != nil {
-		if err == gousb.ErrorTimeout {
-			time.Sleep(5 * time.Second)
+		if err == gousb.ErrorTimeout || err == gousb.ErrorPipe {
+			log.Trace("retrying apply status mass-erase download")
+			time.Sleep(1 * time.Second)
 			goto applyLabel
 		}
 		return err

@@ -105,7 +105,7 @@ export default {
   computed: {
     ...mapState(["status", "firmware_releases", "flash"]),
     releaseOptions() {
-      return Object.keys(this.firmware_releases);
+      return Object.keys(this.firmware_releases).reverse();
     },
     targetOptions() {
       const release = this.firmware_releases[this.release];
@@ -154,7 +154,9 @@ export default {
     }
   },
   created() {
-    this.fetch_firmware_releases();
+    this.fetch_firmware_releases().then(
+      () => (this.release = this.releaseOptions[0])
+    );
   }
 };
 </script>
