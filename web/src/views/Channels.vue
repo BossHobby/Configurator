@@ -77,7 +77,8 @@ export default {
         "AUX_TURTLE",
         "AUX_MOTORS_TO_THROTTLE_MODE",
         "AUX_RSSI",
-        "AUX_FPV_ON"
+        "AUX_FPV_ON",
+        "AUX_BLACKBOX"
       ]
     };
   },
