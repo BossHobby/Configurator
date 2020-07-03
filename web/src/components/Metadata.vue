@@ -22,13 +22,13 @@
       </b-col>
       <b-col sm="8" class="my-2">{{ status.Info.target_name }}</b-col>
     </b-row>
-    <b-row>
+    <b-row v-if="status.Info.features != null">
       <b-col sm="4" class="my-2">
         <label for="datetime">Features</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ features }}</b-col>
     </b-row>
-    <b-row>
+    <b-row v-if="status.Info.rx_protocol != null">
       <b-col sm="4" class="my-2">
         <label for="datetime">RX Protocol</label>
       </b-col>

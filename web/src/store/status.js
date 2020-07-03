@@ -5,7 +5,7 @@ const store = {
     Info: {
       usart_ports: [],
       motor_pins: [],
-      features: 0,
+      features: null,
     },
     AvailablePorts: [],
     IsConnected: false,
@@ -16,6 +16,9 @@ const store = {
     },
     has_feature(state) {
       return feature => {
+        if (state.Info.features == null) {
+          return true;
+        }
         return state.Info.features & feature
       };
     }
