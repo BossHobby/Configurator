@@ -128,11 +128,6 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		log.Debugf("<quic> recv cmd: %d flag: %d len: %d", p.cmd, p.flag, p.len)
 	}
 
-	if p.cmd >= QuicCmdMax {
-		<-proto.ticketChan
-		return nil, ErrInvalidCommand
-	}
-
 	r, w := io.Pipe()
 	bw := bufio.NewWriter(w)
 	if p.flag == QuicFlagStreaming {
@@ -176,10 +171,13 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 			return nil, errUpdatePacket
 		}
 		return nil, errUpdatePacket
+	case p.cmd >= QuicCmdMax || p.cmd == QuicCmdInvalid:
+		<-proto.ticketChan
+		return nil, ErrInvalidCommand
 	default:
 		ticket := <-proto.ticketChan
 		if p.cmd != ticket.cmd {
-			return nil, errUpdatePacket
+			return nil, ErrInvalidCommand
 		}
 		proto.packetChan <- p
 		break
@@ -205,10 +203,6 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 
 	if p.flag == QuicFlagExit {
 		proto.Close()
-	}
-
-	if p.cmd == QuicCmdInvalid {
-		return p, ErrInvalidCommand
 	}
 
 	return p, nil
@@ -255,9 +249,6 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 	p, err := proto.Read()
 	if err != nil {
 		return nil, err
-	}
-	if p.cmd != cmd {
-		return nil, ErrInvalidCommand
 	}
 	if p.flag == QuicFlagError {
 		var msg string

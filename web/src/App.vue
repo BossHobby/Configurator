@@ -12,7 +12,10 @@
         <b-nav-item to="/channels">Channels</b-nav-item>
         <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
-        <b-nav-item v-if="has_feature(FEATURE_BLACKBOX)" to="/blackbox">Blackbox</b-nav-item>
+        <b-nav-item
+          v-if="has_feature(FEATURE_BLACKBOX) && status.Info.quic_protocol_version > 1"
+          to="/blackbox"
+        >Blackbox</b-nav-item>
         <b-nav-item to="/state">State</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav v-else>
