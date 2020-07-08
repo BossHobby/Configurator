@@ -28,7 +28,7 @@
             ></b-form-input>
           </b-col>
         </b-row>
-        <b-row v-if="has_feature(FEATURE_BRUSHLESS)">
+        <b-row v-if="status.Info.quic_protocol_version > 1 && has_feature(FEATURE_BRUSHLESS)">
           <b-col sm="4" class="my-2">
             <label for="dshot-time">DShot Time</label>
           </b-col>
@@ -107,7 +107,7 @@
 
 <script>
 import { mapFields } from "@/store/helper.js";
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import { FEATURE_BRUSHLESS } from "@/store/constants.js";
 
 const GYRO_ROTATE_NONE = 0x0;
@@ -154,6 +154,7 @@ export default {
   computed: {
     ...mapFields("profile", ["motor"]),
     ...mapGetters(["has_feature"]),
+    ...mapState(["status"]),
     gyroOrientation: {
       get() {
         return this.motor.gyro_orientation & 0x1f;
