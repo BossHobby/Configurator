@@ -68,11 +68,22 @@ export default {
   },
   watch: {
     title() {
+      this.update();
+    },
+    axis() {
+      this.update();
+    },
+    labels() {
+      this.update();
+    }
+  },
+  methods: {
+    update() {
       this.renderChart(this.chartdata, this.options);
     }
   },
   mounted() {
-    this.renderChart(this.chartdata, this.options);
+    this.update();
   }
 };
 </script>

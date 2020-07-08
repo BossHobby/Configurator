@@ -42,6 +42,7 @@
                         type="number"
                         step="0.05"
                         v-model.number="rate[mode.text.toLowerCase()][key][0]"
+                        @update="update()"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
@@ -50,6 +51,7 @@
                         type="number"
                         step="0.05"
                         v-model.number="rate[mode.text.toLowerCase()][key][1]"
+                        @update="update()"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
@@ -58,6 +60,7 @@
                         type="number"
                         step="0.05"
                         v-model.number="rate[mode.text.toLowerCase()][key][2]"
+                        @update="update()"
                       ></b-form-input>
                     </b-col>
                   </b-row>
@@ -129,50 +132,6 @@ export default {
     ...mapFields("profile", ["rate"]),
     currentMode() {
       return this.rateModes[this.rate.mode].text;
-    },
-    plot() {
-      const axis = [
-        {
-          label: "Roll",
-          data: []
-        },
-        {
-          label: "Pitch",
-          data: []
-        },
-        {
-          label: "Yaw",
-          data: []
-        }
-      ];
-
-      const labels = [];
-
-      const rateMulit = this.plotLowRates ? this.rate.low_rate_mulitplier : 1.0;
-      for (let i = -100; i <= 100; i++) {
-        const input = i / 100.0;
-
-        labels.push("" + i);
-
-        for (let j = 0; j < 3; j++) {
-          if (this.currentMode == "Silverware") {
-            axis[j].data.push({
-              x: i,
-              y: this.calcSilverware(j, input) * rateMulit
-            });
-          } else if (this.currentMode == "Betaflight") {
-            axis[j].data.push({
-              x: i,
-              y: this.calcBetatflight(j, input) * rateMulit
-            });
-          }
-        }
-      }
-
-      return {
-        labels,
-        axis
-      };
     }
   },
   data() {
@@ -181,7 +140,11 @@ export default {
       rateModes: [
         { value: 0, text: "Silverware" },
         { value: 1, text: "Betaflight" }
-      ]
+      ],
+      plot: {
+        axis: [],
+        label: []
+      }
     };
   },
   methods: {
@@ -231,7 +194,54 @@ export default {
         -SETPOINT_RATE_LIMIT,
         SETPOINT_RATE_LIMIT
       );
+    },
+    update() {
+      const axis = [
+        {
+          label: "Roll",
+          data: []
+        },
+        {
+          label: "Pitch",
+          data: []
+        },
+        {
+          label: "Yaw",
+          data: []
+        }
+      ];
+
+      const labels = [];
+
+      const rateMulit = this.plotLowRates ? this.rate.low_rate_mulitplier : 1.0;
+      for (let i = -100; i <= 100; i++) {
+        const input = i / 100.0;
+
+        labels.push("" + i);
+
+        for (let j = 0; j < 3; j++) {
+          if (this.currentMode == "Silverware") {
+            axis[j].data.push({
+              x: i,
+              y: this.calcSilverware(j, input) * rateMulit
+            });
+          } else if (this.currentMode == "Betaflight") {
+            axis[j].data.push({
+              x: i,
+              y: this.calcBetatflight(j, input) * rateMulit
+            });
+          }
+        }
+      }
+
+      this.plot = {
+        labels,
+        axis
+      };
     }
+  },
+  mounted() {
+    this.update();
   }
 };
 </script>
