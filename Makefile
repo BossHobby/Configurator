@@ -43,7 +43,7 @@ $(WINDOWS).exe: cmd/quic-config/rsrc.syso pkg/statik
 
 cmd/quic-config/rsrc.syso: web/public/favicon.ico
 	go get github.com/akavel/rsrc
-	rsrc -arch amd64 -ico web/public/favicon.ico -o cmd/quic-config/rsrc.syso
+	rsrc -arch amd64 -ico web/public/favicon.ico -manifest script/quic-config-windows-amd64.exe.manifest -o cmd/quic-config/rsrc.syso
 
 linux: $(LINUX).zip
 $(LINUX).zip: $(LINUX)
