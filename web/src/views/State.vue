@@ -55,6 +55,12 @@ export default {
           axis: ["Roll", "Pitch", "Yaw"]
         },
         {
+          name: "gyro_temp",
+          size: 12,
+          title: "Gyro Temperature",
+          axis: "°C"
+        },
+        {
           name: "GEstG",
           size: 12,
           title: "Gyro Vector",

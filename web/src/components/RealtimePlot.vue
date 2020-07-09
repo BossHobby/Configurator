@@ -13,9 +13,10 @@ export default {
   },
   computed: {
     chartdata() {
-      return {
-        labels: [],
-        datasets: this.axis.map((l, i) => {
+      var datasets = [];
+
+      if (Array.isArray(this.axis)) {
+        datasets = this.axis.map((l, i) => {
           return {
             label: l,
             data: [],
@@ -24,7 +25,23 @@ export default {
             showLine: true,
             interpolate: true
           };
-        })
+        });
+      } else {
+        datasets = [
+          {
+            label: this.axis,
+            data: [],
+            fill: false,
+            borderColor: this.colors[0],
+            showLine: true,
+            interpolate: true
+          }
+        ];
+      }
+
+      return {
+        labels: [],
+        datasets
       };
     },
     options() {
@@ -95,14 +112,25 @@ export default {
 
       const time = this.time || Date.now();
 
-      for (let i = 0; i < this.axis.length; i++) {
-        chart.data.datasets[i].data.push({
+      if (Array.isArray(this.axis)) {
+        for (let i = 0; i < this.axis.length; i++) {
+          chart.data.datasets[i].data.push({
+            x: time,
+            y: val[i]
+          });
+
+          while (chart.data.datasets[i].data.length >= 60) {
+            chart.data.datasets[i].data.shift();
+          }
+        }
+      } else {
+        chart.data.datasets[0].data.push({
           x: time,
-          y: val[i]
+          y: val
         });
 
-        while (chart.data.datasets[i].data.length >= 60) {
-          chart.data.datasets[i].data.shift();
+        while (chart.data.datasets[0].data.length >= 60) {
+          chart.data.datasets[0].data.shift();
         }
       }
 

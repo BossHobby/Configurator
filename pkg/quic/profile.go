@@ -201,8 +201,9 @@ type State struct {
 	AccelRaw Vec3 `cbor:"accel_raw" json:"accel_raw"`
 	Accel    Vec3 `cbor:"accel" json:"accel"`
 
-	GyroRaw Vec3 `cbor:"gyro_raw" json:"gyro_raw"`
-	Gyro    Vec3 `cbor:"gyro" json:"gyro"`
+	GyroTemp float32 `cbor:"gyro_temp" json:"gyro_temp"`
+	GyroRaw  Vec3    `cbor:"gyro_raw" json:"gyro_raw"`
+	Gyro     Vec3    `cbor:"gyro" json:"gyro"`
 
 	GEstG    Vec3 `cbor:"GEstG" json:"GEstG"`
 	Attitude Vec3 `cbor:"attitude" json:"attitude"`
