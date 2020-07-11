@@ -149,7 +149,7 @@ func (s *Server) closeController() {
 }
 
 func (s *Server) watchPorts() {
-	interval := time.NewTicker(500 * time.Millisecond)
+	interval := time.NewTicker(250 * time.Millisecond)
 	for {
 		<-interval.C
 
