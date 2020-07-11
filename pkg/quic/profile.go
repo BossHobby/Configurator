@@ -176,6 +176,8 @@ type BlackboxCompact struct {
 	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter" blackbox:"gyroADC[]"`
 
 	Motor [4]int `cbor:"motor" json:"motor" blackbox:"motor[]"`
+
+	CPULoad uint32 `cbor:"cpu_load" json:"cpu_load" blackbox:"debug[0]"`
 }
 
 type State struct {

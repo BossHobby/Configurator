@@ -97,6 +97,8 @@ var DefaultFields = []FieldDefinition{
 	{Name: "motor[1]", Signed: true},
 	{Name: "motor[2]", Signed: true},
 	{Name: "motor[3]", Signed: true},
+
+	{Name: "debug[0]", Signed: false},
 }
 
 type Writer struct {
