@@ -35,6 +35,10 @@ export default {
           display: true,
           text: this.title
         },
+        animation: {
+          duration: 0
+        },
+        responsiveAnimationDuration: 0,
         scales: {
           xAxes: [
             {
