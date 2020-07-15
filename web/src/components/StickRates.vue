@@ -8,7 +8,12 @@
             <label for="rate-mode">Mode</label>
           </b-col>
           <b-col sm="8">
-            <b-form-select id="rate-mode" v-model.number="rate.mode" :options="rateModes"></b-form-select>
+            <b-form-select
+              id="rate-mode"
+              v-model.number="rate.mode"
+              :options="rateModes"
+              @change="update()"
+            ></b-form-select>
           </b-col>
 
           <b-col sm="12" v-for="mode in rateModes" :key="mode.text">
