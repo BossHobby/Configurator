@@ -43,6 +43,12 @@ export default {
           axis: ["Roll", "Pitch", "Yaw", "Throttle"]
         },
         {
+          name: "cpu_load",
+          size: 12,
+          title: "CPU Load",
+          axis: "us"
+        },
+        {
           name: "gyro_raw",
           size: 6,
           title: "Gyro Raw",
