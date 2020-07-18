@@ -10,7 +10,7 @@ steps:
       - npm --prefix web install
       - npm --prefix web run build
   - name: server
-    image: hanfer/xgo-libusb:latest
+    image: hanfer/xgo-libusb:go-1.14.x
     environment:
       GITHUB_TOKEN:
         from_secret: config_github_token
