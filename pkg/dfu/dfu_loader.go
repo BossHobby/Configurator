@@ -147,6 +147,7 @@ applyLabel:
 	log.Trace("applying status")
 	s, err := l.applyStatus()
 	if err != nil {
+		log.Debug("apply status error ", err)
 		if err == gousb.ErrorTimeout || err == gousb.ErrorPipe {
 			log.Trace("retrying apply status mass-erase download")
 			time.Sleep(1 * time.Second)
