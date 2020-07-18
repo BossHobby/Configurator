@@ -428,16 +428,15 @@ func (s *Server) postFlashLocal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.dfuMu.Lock()
-	defer func() {
-		s.closeController()
-		s.dfuMu.Unlock()
-	}()
+	defer s.dfuMu.Unlock()
 
 	if err := s.fl.Flash(s.dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
 
+	// only close the dfu if flash succeeded
+	s.closeController()
 	renderJSON(w, "OK")
 }
 
@@ -467,15 +466,15 @@ func (s *Server) postFlashRemote(w http.ResponseWriter, r *http.Request) {
 	downloadProgress(100, 100)
 
 	s.dfuMu.Lock()
-	defer func() {
-		s.closeController()
-		s.dfuMu.Unlock()
-	}()
+	defer s.dfuMu.Unlock()
 
 	if err := s.fl.Flash(s.dfuLoader, fw, broadcastProgress); err != nil {
 		handleError(w, err)
 		return
 	}
+
+	// only close the dfu if flash succeeded
+	s.closeController()
 	renderJSON(w, "OK")
 }
 
