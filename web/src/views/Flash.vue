@@ -148,6 +148,7 @@ export default {
         this.loading = true;
         return promise
           .then(() => this.$store.commit("append_alert", "firmware flashed!"))
+          .catch(() => this.$store.commit("append_alert", "flash failed!"))
           .then(() => (this.loading = false))
           .then(() => (this.progress = {}));
       }
