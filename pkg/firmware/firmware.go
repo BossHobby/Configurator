@@ -134,32 +134,39 @@ func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 func (fl *FirmwareLoader) Flash(l *dfu.Loader, input []byte, broadcastProgress func(task string) func(total, current int)) error {
 	eraseProgress := broadcastProgress("erase")
 	eraseProgress(100, 0)
+	log.Debug("dfu: entering idle state")
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
 	eraseProgress(100, 10)
 
+	log.Debug("dfu: setting flash address 0x08000000")
 	if err := l.SetAddress(0x08000000); err != nil {
 		return err
 	}
+	log.Debug("dfu: entering idle state")
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
 	eraseProgress(100, 20)
 
+	log.Debug("dfu: starting mass-erase")
 	if err := l.MassErase(); err != nil {
 		return err
 	}
 	eraseProgress(100, 100)
 
+	log.Debug("dfu: starting firmware write")
 	if err := l.Write(input, broadcastProgress("write")); err != nil {
 		return err
 	}
 
+	log.Debug("dfu: entering idle state")
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
 
+	log.Debug("dfu: starting firmware verify")
 	buf := make([]byte, len(input))
 	if err := l.Read(buf, broadcastProgress("verify")); err != nil {
 		return err
@@ -171,10 +178,12 @@ func (fl *FirmwareLoader) Flash(l *dfu.Loader, input []byte, broadcastProgress f
 		}
 	}
 
+	log.Debug("dfu: entering idle state")
 	if err := l.EnterState(dfu.DfuIdle); err != nil {
 		return err
 	}
 
+	log.Debug("dfu: leaving")
 	if err := l.Leave(); err != nil {
 		return err
 	}
