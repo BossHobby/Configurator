@@ -34,6 +34,12 @@
       </b-col>
       <b-col sm="8" class="my-2">{{ rxProtocols[status.Info.rx_protocol] }}</b-col>
     </b-row>
+    <b-row v-if="status.Info.gyro_id != null">
+      <b-col sm="4" class="my-2">
+        <label for="datetime">Gyro ID</label>
+      </b-col>
+      <b-col sm="8" class="my-2">0x{{ status.Info.gyro_id.toString(16) }}</b-col>
+    </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
         <label for="datetime">Version</label>
