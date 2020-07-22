@@ -231,3 +231,9 @@ type VtxSettings struct {
 	PitMode    uint `cbor:"pit_mode" json:"pit_mode"`
 	PowerLevel uint `cbor:"power_level" json:"power_level"`
 }
+
+type PerfCounter struct {
+	Min     uint64 `cbor:"min" json:"min"`
+	Max     uint64 `cbor:"max" json:"max"`
+	Current uint64 `cbor:"current" json:"current"`
+}

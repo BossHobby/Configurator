@@ -50,6 +50,7 @@ const (
 	QuicValVtxSettings
 	QuicValOSDFont
 	QuicValBLHeliSettings
+	QuicValPerfCounters
 )
 
 type QuicPacket struct {

@@ -172,12 +172,19 @@ func (s *Server) watchPorts() {
 		s.status = *cs
 
 		if s.status.IsConnected && s.status.Info.QuicProtocolVersion > 1 {
-			var msg quic.State
-			if err := s.qp.GetValue(quic.QuicValState, &msg); err != nil {
+			var state quic.State
+			if err := s.qp.GetValue(quic.QuicValState, &state); err != nil {
 				log.Error(err)
 				continue
 			}
-			broadcastWebsocket("state", msg)
+			broadcastWebsocket("state", state)
+
+			perf := make([]quic.PerfCounter, 0)
+			if err := s.qp.GetValue(quic.QuicValPerfCounters, &perf); err != nil {
+				log.Error(err)
+				continue
+			}
+			broadcastWebsocket("perf_counters", perf)
 		}
 	}
 }

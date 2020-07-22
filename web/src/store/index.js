@@ -8,6 +8,7 @@ import router from '../router';
 
 import profileModule from "./profile";
 import statusModule from "./status";
+import perfModule from "./perf";
 import blackboxModule from "./blackbox";
 import stateModule from "./state";
 import motorModule from "./motor";
@@ -23,6 +24,7 @@ const store = new Vuex.Store({
     state: stateModule,
     motor: motorModule,
     vtx: vtxModule,
+    perf: perfModule,
   },
   state: {
     log: [],
@@ -111,6 +113,9 @@ const store = new Vuex.Store({
           }
           case "state":
             commit('set_state', msg.Payload);
+            break;
+          case "perf_counters":
+            commit('set_perf_counters', msg.Payload);
             break;
           case "flash":
             console.log(`<< ws ${msg.Channel}`, msg.Payload);

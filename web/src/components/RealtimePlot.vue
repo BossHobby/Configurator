@@ -4,7 +4,7 @@ import { Scatter } from "vue-chartjs";
 export default {
   name: "RealtimePlot",
   extends: Scatter,
-  props: ["title", "time", "input", "axis"],
+  props: ["title", "time", "input", "axis", "transform"],
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
@@ -104,19 +104,21 @@ export default {
     }
   },
   watch: {
-    input(val) {
+    input(values) {
       const chart = this.$data._chart;
       if (!chart) {
         return this.renderChart(this.chartdata, this.options);
       }
 
+      const transform = this.transform || (v => v);
       const time = this.time || Date.now();
 
       if (Array.isArray(this.axis)) {
         for (let i = 0; i < this.axis.length; i++) {
+          const val = Array.isArray(values) ? values[i] : values[this.axis[i]];
           chart.data.datasets[i].data.push({
             x: time,
-            y: val[i]
+            y: transform(val)
           });
 
           while (chart.data.datasets[i].data.length >= 60) {
@@ -126,7 +128,7 @@ export default {
       } else {
         chart.data.datasets[0].data.push({
           x: time,
-          y: val
+          y: transform(values)
         });
 
         while (chart.data.datasets[0].data.length >= 60) {

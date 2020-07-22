@@ -6,7 +6,16 @@
       </b-col>
 
       <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
-        <RealtimePlot :title="plot.title" ref="plot" :axis="plot.axis" :input="state[plot.name]"></RealtimePlot>
+        <RealtimePlot :title="plot.title" :axis="plot.axis" :input="state[plot.name]"></RealtimePlot>
+      </b-col>
+
+      <b-col v-for="(counter, index) in perf.counters" :key="'counter' + index" sm="6">
+        <RealtimePlot
+          :title="counters[index]"
+          :axis="['min', 'max', 'current']"
+          :input="counter"
+          :transform="(v) => v / 84"
+        ></RealtimePlot>
       </b-col>
 
       <b-col class="my-5" sm="12">
@@ -90,9 +99,17 @@ export default {
           title: "Pid Output",
           axis: ["Roll", "Pitch", "Yaw"]
         }
+      ],
+      counters: [
+        "PERF_COUNTER_TOTAL",
+        "PERF_COUNTER_GYRO",
+        "PERF_COUNTER_CONTROL",
+        "PERF_COUNTER_RX",
+        "PERF_COUNTER_OSD",
+        "PERF_COUNTER_BLACKBOX"
       ]
     };
   },
-  computed: mapState(["log", "state"])
+  computed: mapState(["log", "state", "perf"])
 };
 </script>
