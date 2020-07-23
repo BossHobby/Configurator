@@ -179,12 +179,14 @@ func (s *Server) watchPorts() {
 			}
 			broadcastWebsocket("state", state)
 
-			perf := make([]quic.PerfCounter, 0)
-			if err := s.qp.GetValue(quic.QuicValPerfCounters, &perf); err != nil {
-				log.Error(err)
-				continue
+			if s.status.Info.Features != nil && ((*s.status.Info.Features)&quic.FeatureDebug != 0) {
+				perf := make([]quic.PerfCounter, 0)
+				if err := s.qp.GetValue(quic.QuicValPerfCounters, &perf); err != nil {
+					log.Error(err)
+					continue
+				}
+				broadcastWebsocket("perf_counters", perf)
 			}
-			broadcastWebsocket("perf_counters", perf)
 		}
 	}
 }

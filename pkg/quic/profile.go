@@ -146,6 +146,13 @@ func (p *Profile) Filename() string {
 	)
 }
 
+const (
+	FeatureBrushless = (1 << 1)
+	FeatureOsd       = (1 << 2)
+	FeatureBlackbox  = (1 << 3)
+	FeatureDebug     = (1 << 4)
+)
+
 type TargetInfo struct {
 	TargetName          string   `cbor:"target_name" json:"target_name"`
 	GITVersion          string   `cbor:"git_version" json:"git_version"`

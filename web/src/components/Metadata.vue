@@ -88,26 +88,26 @@ export default {
         "BAYANG_PROTOCOL_TELEMETRY_AUTOBIND",
         "FRSKY_D8",
         "FRSKY_D16",
-        "REDPINE"
-      ]
+        "REDPINE",
+      ],
     };
   },
   computed: {
     ...mapFields("profile", ["meta"]),
     ...mapState({
-      status: state => state.status
+      status: (state) => state.status,
     }),
     date() {
       return new Date(this.meta.datetime * 1000);
     },
     features() {
-      const feat = ["BRUSHLESS", "OSD", "BLACKBOX"];
+      const feat = ["BRUSHLESS", "OSD", "BLACKBOX", "DEBUG"];
       return feat
         .filter((f, i) => {
           return this.status.Info.features & (1 << (i + 1));
         })
         .join(", ");
-    }
+    },
   },
   methods: {
     uploadProfile() {
@@ -122,17 +122,17 @@ export default {
 
         fetch("http://localhost:8000/api/profile/upload", {
           method: "POST",
-          body: formData
+          body: formData,
         })
-          .then(res => res.json())
-          .then(p => this.$store.commit("set_profile", p))
+          .then((res) => res.json())
+          .then((p) => this.$store.commit("set_profile", p))
           .then(() => this.$refs.form.reset())
           .then(() => this.$store.commit("append_alert", "profile uploaded!"));
       };
 
       this.$refs.file.click();
-    }
-  }
+    },
+  },
 };
 </script>
 

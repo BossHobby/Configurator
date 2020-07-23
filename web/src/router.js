@@ -10,6 +10,7 @@ import OSD from './views/OSD.vue'
 import Motor from './views/Motor.vue'
 import Blackbox from './views/Blackbox.vue'
 import State from './views/State.vue'
+import Perf from './views/Perf.vue'
 import Profile from './views/Profile.vue'
 import Flash from './views/Flash.vue'
 import Home from './views/Home.vue'
@@ -78,6 +79,11 @@ const router = new Router({
       path: '/state',
       name: 'state',
       component: State
+    },
+    {
+      path: '/perf',
+      name: 'perf',
+      component: Perf
     }
   ]
 })

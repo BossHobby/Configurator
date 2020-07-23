@@ -2,7 +2,12 @@
   <div id="app">
     <b-navbar fixed="top" class="navbar-top">
       <b-navbar-brand to="/">
-        <img src="./assets/logo.png" class="d-inline-block" alt="Guano" height="40px" />
+        <img
+          src="./assets/logo.png"
+          class="d-inline-block"
+          alt="Guano"
+          height="40px"
+        />
         QUICKSILVER
       </b-navbar-brand>
       <b-navbar-nav v-if="status.IsConnected">
@@ -13,10 +18,21 @@
         <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
         <b-nav-item
-          v-if="has_feature(FEATURE_BLACKBOX) && status.Info.quic_protocol_version > 1"
+          v-if="
+            has_feature(FEATURE_BLACKBOX) &&
+            status.Info.quic_protocol_version > 1
+          "
           to="/blackbox"
-        >Blackbox</b-nav-item>
+          >Blackbox</b-nav-item
+        >
         <b-nav-item to="/state">State</b-nav-item>
+        <b-nav-item
+          v-if="
+            has_feature(FEATURE_DEBUG) && status.Info.quic_protocol_version > 1
+          "
+          to="/perf"
+          >Perf</b-nav-item
+        >
       </b-navbar-nav>
       <b-navbar-nav v-else>
         <b-nav-item to="/">Home</b-nav-item>
@@ -36,7 +52,8 @@
             class="my-2"
             type="submit"
             :disabled="can_connect"
-          >{{ status.IsConnected ? 'Disconnect' : 'Connect' }}</b-button>
+            >{{ status.IsConnected ? "Disconnect" : "Connect" }}</b-button
+          >
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
@@ -50,24 +67,29 @@
           show="2.0"
           dismissible
           fade
-        >{{msg}}</b-alert>
+          >{{ msg }}</b-alert
+        >
       </b-container>
     </div>
 
-    <router-view style="margin-top: 5rem; margin-bottom: 5rem;"></router-view>
+    <router-view style="margin-top: 5rem; margin-bottom: 5rem"></router-view>
 
     <b-navbar v-if="status.IsConnected" fixed="bottom" class="navbar">
       <b-navbar-brand>
         {{ profile.meta.name }}
-        <small class="text-muted ml-2">Modified {{ date | moment("from") }}</small>
-        <small
-          class="text-muted ml-2"
-          style="font-size: 60%"
-        >Looptime {{ state.looptime_autodetect }} CPU Load {{ state.cpu_load }}</small>
+        <small class="text-muted ml-2"
+          >Modified {{ date | moment("from") }}</small
+        >
+        <small class="text-muted ml-2" style="font-size: 60%"
+          >Looptime {{ state.looptime_autodetect }} CPU Load
+          {{ state.cpu_load }}</small
+        >
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
-        <b-button class="my-1 mx-2" v-on:click="apply_profile(profile)">Apply</b-button>
+        <b-button class="my-1 mx-2" v-on:click="apply_profile(profile)"
+          >Apply</b-button
+        >
       </b-navbar-nav>
     </b-navbar>
   </div>
@@ -75,7 +97,11 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
-import { FEATURE_BLACKBOX, FEATURE_OSD } from "@/store/constants.js";
+import {
+  FEATURE_BLACKBOX,
+  FEATURE_OSD,
+  FEATURE_DEBUG,
+} from "@/store/constants.js";
 
 export default {
   name: "app",
@@ -83,6 +109,7 @@ export default {
     return {
       FEATURE_BLACKBOX,
       FEATURE_OSD,
+      FEATURE_DEBUG,
     };
   },
   computed: {
