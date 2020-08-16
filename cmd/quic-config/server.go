@@ -141,6 +141,9 @@ func (s *Server) closeController() {
 
 	if s.fc != nil {
 		log.Debug("closing fc")
+		if err := s.qp.Close(); err != nil {
+			log.Error(err)
+		}
 		if err := s.fc.Close(); err != nil {
 			log.Error(err)
 		}
