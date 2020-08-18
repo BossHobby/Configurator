@@ -105,28 +105,28 @@ export default {
         width: 30 - 2,
         height: 16 - 2,
         char_width: 12,
-        char_height: 18
+        char_height: 18,
       },
       element_options: [
-        { name: "callsign1", enabled: true, text: "QUICKSILVER" },
+        { name: "CALLSIGN", enabled: true, text: "QUICKSILVER" },
         { name: "callsign2", enabled: false, text: "" },
         { name: "callsign3", enabled: false, text: "" },
         { name: "callsign4", enabled: false, text: "" },
         { name: "callsign5", enabled: false, text: "" },
         { name: "callsign6", enabled: false, text: "" },
-        { name: "fuelgauge_volts", enabled: true, text: "1S 4.3V" },
-        { name: "filtered_volts", enabled: true, text: "1S 4.3V" },
-        { name: "exact_volts", enabled: true, text: "1S 4.3V" },
-        { name: "flight_mode", enabled: true, text: "___ACRO___" },
-        { name: "rssi", enabled: true, text: "90" },
-        { name: "stopwatch", enabled: true, text: "120" },
-        { name: "arm_disarm", enabled: true, text: "__**ARMED**____" },
-        { name: "osd_throttle", enabled: true, text: "50" },
-        { name: "osd_vtx", enabled: true, text: "" }
+        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "EXACT VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
+        { name: "RSSI", enabled: true, text: "90" },
+        { name: "STOPWATCH", enabled: true, text: "120" },
+        { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
+        { name: "THROTTLE", enabled: true, text: "50" },
+        { name: "VTX CHANNEL", enabled: true, text: "" },
       ],
       fontFiles: [{ text: "Clarity", value: "clarity" }],
       current_font_file: "clarity",
-      imageSource: "http://localhost:8000/api/osd/font"
+      imageSource: "http://localhost:8000/api/osd/font",
     };
   },
   computed: {
@@ -152,10 +152,10 @@ export default {
             invert: this.osd_decode(el, "invert"),
             pos_x: this.osd_decode(el, "pos_x"),
             pos_y: this.osd_decode(el, "pos_y"),
-            value: el
+            value: el,
           };
         });
-    }
+    },
   },
   methods: {
     ...mapActions(["set_osd_font"]),
@@ -200,8 +200,8 @@ export default {
         case "pos_y":
           return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
