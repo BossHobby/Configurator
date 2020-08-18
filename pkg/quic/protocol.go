@@ -58,7 +58,6 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 		for {
 			select {
 			case <-p.stopChan:
-				p.errChan <- io.EOF
 				return
 			default:
 				_, err := p.readPacket()
@@ -88,6 +87,7 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 
 func (proto *QuicProtocol) Close() error {
 	close(proto.stopChan)
+	close(proto.Log)
 	return nil
 }
 
@@ -212,6 +212,8 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 
 func (proto *QuicProtocol) Read() (*QuicPacket, error) {
 	select {
+	case <-proto.stopChan:
+		return nil, errors.New("closed")
 	case p := <-proto.packetChan:
 		return p, nil
 	case err := <-proto.errChan:

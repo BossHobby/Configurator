@@ -61,8 +61,11 @@ func (c *Controller) Read(p []byte) (int, error) {
 		return n, err
 	}
 	if n == 0 {
-		c.Disconnect <- io.EOF
-		return n, err
+		select {
+		case c.Disconnect <- io.EOF:
+		default:
+		}
+		return n, io.EOF
 	}
 
 	log.Tracef("n %d bytes %q", n, p[:n])
@@ -79,8 +82,11 @@ func (c *Controller) Write(p []byte) (int, error) {
 		return n, err
 	}
 	if n == 0 {
-		c.Disconnect <- io.EOF
-		return n, err
+		select {
+		case c.Disconnect <- io.EOF:
+		default:
+		}
+		return n, io.EOF
 	}
 	log.Tracef("wrote %d bytes %q", n, p[:n])
 	return n, err

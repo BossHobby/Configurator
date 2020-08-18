@@ -64,11 +64,8 @@ func (s *Server) Close() {
 }
 
 func (s *Server) broadcastQuic(qp *quic.QuicProtocol) {
-	for {
-		select {
-		case msg := <-qp.Log:
-			broadcastWebsocket("log", msg)
-		}
+	for msg := range qp.Log {
+		broadcastWebsocket("log", msg)
 	}
 }
 
@@ -165,7 +162,6 @@ func (s *Server) watchPorts() {
 		if s.fc == nil && len(cs.AvailablePorts) != 0 && s.autoConnect {
 			if err = s.connectController(cs.AvailablePorts[0]); err != nil {
 				log.Error(err)
-				continue
 			}
 			s.autoConnect = false
 		}

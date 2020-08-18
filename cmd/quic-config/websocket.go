@@ -60,11 +60,16 @@ func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	clientsMu.Lock()
 	clients[conn] = true
 	defer func() {
+		clientsMu.Lock()
+		defer clientsMu.Unlock()
+
 		conn.Close()
 		delete(clients, conn)
 	}()
+	clientsMu.Unlock()
 
 	sendWebsocket(conn, "status", s.status)
 
