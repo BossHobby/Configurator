@@ -1,6 +1,7 @@
 
 const store = {
   state: {
+    looptime_autodetect: 0,
     cpu_load: 0.0,
     vbattfilt: 0.0,
     rx_filtered: [],

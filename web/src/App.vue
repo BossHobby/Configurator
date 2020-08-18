@@ -60,7 +60,10 @@
       <b-navbar-brand>
         {{ profile.meta.name }}
         <small class="text-muted ml-2">Modified {{ date | moment("from") }}</small>
-        <small class="text-muted ml-2" style="font-size: 60%">CPU Load {{ state.cpu_load }}</small>
+        <small
+          class="text-muted ml-2"
+          style="font-size: 60%"
+        >Looptime {{ state.looptime_autodetect }} CPU Load {{ state.cpu_load }}</small>
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
@@ -79,7 +82,7 @@ export default {
   data() {
     return {
       FEATURE_BLACKBOX,
-      FEATURE_OSD
+      FEATURE_OSD,
     };
   },
   computed: {
@@ -87,7 +90,7 @@ export default {
     ...mapGetters(["can_connect", "has_feature"]),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
-    }
+    },
   },
   methods: {
     ...mapActions([
@@ -95,15 +98,15 @@ export default {
       "fetch_status",
       "toggle_connection",
       "apply_profile",
-      "soft_reboot"
-    ])
+      "soft_reboot",
+    ]),
   },
   created() {
     this.connect_websocket();
   },
   destroyed() {
     clearInterval(this.interval);
-  }
+  },
 };
 </script>
 

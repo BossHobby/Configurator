@@ -182,9 +182,10 @@ type BlackboxCompact struct {
 }
 
 type State struct {
-	Looptime float32 `cbor:"looptime" json:"looptime"`
-	Uptime   float32 `cbor:"uptime" json:"uptime"`
-	CPULoad  float32 `cbor:"cpu_load" json:"cpu_load"`
+	LooptimeAutoDetect uint    `cbor:"looptime_autodetect" json:"looptime_autodetect"`
+	Looptime           float32 `cbor:"looptime" json:"looptime"`
+	Uptime             float32 `cbor:"uptime" json:"uptime"`
+	CPULoad            float32 `cbor:"cpu_load" json:"cpu_load"`
 
 	LipoCellCount float32 `cbor:"lipo_cell_count" json:"lipo_cell_count"`
 	Vbattfilt     float32 `cbor:"vbattfilt" json:"vbattfilt"`
