@@ -18,6 +18,7 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +34,8 @@ var (
 	mode        = "debug"
 
 	verbose = flag.Bool("verbose", false, "verbose logging")
+
+	watch = flag.Bool("watch", false, "watch for new ports")
 )
 
 func openbrowser(url string) {
@@ -195,65 +198,7 @@ func setOSDFont(qp *quic.QuicProtocol, r io.Reader) error {
 	return nil
 }
 
-func main() {
-	flag.Parse()
-
-	if githubToken == "" {
-		githubToken = os.Getenv("GITHUB_TOKEN")
-	}
-
-	log.SetLevel(log.DebugLevel)
-	logFile, err := os.Create("quicksilver.log")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
-
-	if mode == "debug" {
-		f, err := os.Create("quic-config.perf")
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer func() {
-			log.Debugf("closing")
-			pprof.StopCPUProfile()
-			f.Close()
-		}()
-	}
-
-	if flag.NArg() == 0 {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c,
-			syscall.SIGHUP,
-			syscall.SIGINT,
-			syscall.SIGTERM,
-			syscall.SIGQUIT)
-
-		s, err := NewServer()
-		if err != nil {
-			log.Fatal()
-		}
-		defer s.Close()
-		go s.Serve()
-
-		log.Printf("got signal %s", <-c)
-		return
-	}
-
-	fc, err := controller.OpenFirstController()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fc.Close()
-
-	qp, err := quic.NewQuicProtocol(fc)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("connected to %s@%s", qp.Info.TargetName, qp.Info.GITVersion)
-
+func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 	switch flag.Arg(0) {
 	case "get":
 		if flag.NArg() != 2 {
@@ -388,11 +333,100 @@ func main() {
 			}
 		}
 		break
+	case "log":
+		for {
+			select {
+			case err := <-fc.Disconnect:
+				log.Error(err)
+				return
+
+			case <-time.After(5 * time.Second):
+				info := new(quic.TargetInfo)
+				if err := qp.GetValue(quic.QuicValInfo, info); err != nil {
+					log.Error(err)
+				}
+				break
+			}
+		}
+
 	default:
 		fmt.Printf("unknown command %q\n", flag.Arg(0))
 		flag.Usage()
 		os.Exit(1)
 		break
+	}
+}
+
+func main() {
+	flag.Parse()
+
+	if githubToken == "" {
+		githubToken = os.Getenv("GITHUB_TOKEN")
+	}
+
+	log.SetLevel(log.DebugLevel)
+	logFile, err := os.Create("quicksilver.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
+
+	if mode == "debug" {
+		f, err := os.Create("quic-config.perf")
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer func() {
+			log.Debugf("closing")
+			pprof.StopCPUProfile()
+			f.Close()
+		}()
+	}
+
+	if flag.NArg() == 0 {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c,
+			syscall.SIGHUP,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+			syscall.SIGQUIT)
+
+		s, err := NewServer()
+		if err != nil {
+			log.Fatal()
+		}
+		defer s.Close()
+		go s.Serve()
+
+		log.Printf("got signal %s", <-c)
+		return
+	}
+
+	for {
+		fc, err := controller.OpenFirstController()
+		if err != nil {
+			log.Error(err)
+			if *watch {
+				time.Sleep(500 * time.Millisecond)
+				continue
+			} else {
+				break
+			}
+		}
+		defer fc.Close()
+
+		qp, err := quic.NewQuicProtocol(fc)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("connected to %s@%s", qp.Info.TargetName, qp.Info.GITVersion)
+		handleCommand(fc, qp)
+
+		if !*watch {
+			break
+		}
 	}
 
 }
