@@ -244,7 +244,15 @@ func (s *Server) postProfileUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, 0)
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, id)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -705,7 +713,7 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f := r.NewRoute().Subrouter()
 		f.Use(s.fcMidleware)
 
-		f.HandleFunc("/api/blackbox", s.getBlackbox).Methods("GET")
+		f.HandleFunc("/api/blackbox/{id}", s.getBlackbox).Methods("GET")
 		f.HandleFunc("/api/blackbox/{id}/download", s.downloadBlackbox).Methods("GET")
 		f.HandleFunc("/api/blackbox/list", s.getBlackboxList).Methods("GET")
 		f.HandleFunc("/api/blackbox/reset", s.posResetBlackbox).Methods("POST")
