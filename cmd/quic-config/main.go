@@ -198,7 +198,7 @@ func setOSDFont(qp *quic.QuicProtocol, r io.Reader) error {
 	return nil
 }
 
-func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
+func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) error {
 	switch flag.Arg(0) {
 	case "get":
 		if flag.NArg() != 2 {
@@ -207,12 +207,12 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 
 		val, err := strconv.ParseInt(flag.Arg(1), 10, 32)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		r, err := qp.Get(quic.QuicValue(val))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer r.Close()
 
@@ -223,13 +223,12 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 				if err == io.EOF {
 					break
 				}
-				log.Error(err)
-				return
+				return err
 			}
 
 			log.Debugf("%+v", *value)
 			if err := printJSON(util.ConvertForJSON(value)); err != nil {
-				log.Fatal(err)
+				return err
 			}
 		}
 		break
@@ -240,22 +239,22 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 
 		val, err := strconv.ParseInt(flag.Arg(1), 10, 32)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		p, err := qp.SendValue(quic.QuicCmdBlackbox, val)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer p.Payload.Close()
 
 		value := new(interface{})
 		if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if err := printJSON(value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		break
 	case "get_osd_font":
@@ -265,12 +264,12 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 
 		f, err := os.Create(flag.Arg(1))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer f.Close()
 
 		if err := getOSDFont(qp, f); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		break
 	case "set_osd_font":
@@ -280,33 +279,33 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 
 		f, err := os.Open(flag.Arg(1))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer f.Close()
 
 		if err := setOSDFont(qp, f); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		break
 	case "download":
 		value := quic.Profile{}
 		if err := qp.GetValue(quic.QuicValProfile, &value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if *verbose {
 			if err := printJSON(value); err != nil {
-				log.Fatal(err)
+				return err
 			}
 		}
 
 		f, err := os.Create(value.Filename())
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer f.Close()
 
 		if err := cbor.NewEncoder(f).Encode(value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		break
 	case "upload":
@@ -316,20 +315,20 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 
 		f, err := os.Open(flag.Arg(1))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer f.Close()
 
 		value := quic.Profile{}
 		if err := cbor.NewDecoder(f).Decode(&value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if err := qp.SetValue(quic.QuicValProfile, &value); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if *verbose {
 			if err := printJSON(value); err != nil {
-				log.Fatal(err)
+				return err
 			}
 		}
 		break
@@ -337,8 +336,7 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 		for {
 			select {
 			case err := <-fc.Disconnect:
-				log.Error(err)
-				return
+				return err
 
 			case <-time.After(5 * time.Second):
 				info := new(quic.TargetInfo)
@@ -349,12 +347,49 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) {
 			}
 		}
 
+	case "serial":
+		port := uint8(1)
+		baud := uint32(57600)
+
+		p, err := qp.SendValue(quic.QuicCmdSerial, quic.QuicSerialEnable, port, baud)
+		if err != nil {
+			return err
+		}
+		defer p.Payload.Close()
+
+		value := new(uint8)
+		if err := cbor.NewDecoder(p.Payload).Decode(value); err != nil {
+			return err
+		}
+
+		log.Printf("serial port %v opened!\n", *value)
+
+		break
+
 	default:
 		fmt.Printf("unknown command %q\n", flag.Arg(0))
 		flag.Usage()
 		os.Exit(1)
 		break
 	}
+
+	return nil
+}
+
+func connectFirstPort() error {
+	fc, err := controller.OpenFirstController()
+	if err != nil {
+		return err
+	}
+	defer fc.Close()
+
+	qp, err := quic.NewQuicProtocol(fc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("connected to %s@%s", qp.Info.TargetName, qp.Info.GITVersion)
+	return handleCommand(fc, qp)
 }
 
 func main() {
@@ -404,9 +439,9 @@ func main() {
 	}
 
 	for {
-		fc, err := controller.OpenFirstController()
-		if err != nil {
+		if err := connectFirstPort(); err != nil {
 			log.Error(err)
+
 			if *watch {
 				time.Sleep(500 * time.Millisecond)
 				continue
@@ -414,15 +449,6 @@ func main() {
 				break
 			}
 		}
-		defer fc.Close()
-
-		qp, err := quic.NewQuicProtocol(fc)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("connected to %s@%s", qp.Info.TargetName, qp.Info.GITVersion)
-		handleCommand(fc, qp)
 
 		if !*watch {
 			break

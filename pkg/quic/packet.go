@@ -14,6 +14,7 @@ const (
 	QuicCmdCalImu
 	QuicCmdBlackbox
 	QuicCmdMotor
+	QuicCmdSerial
 	QuicCmdMax
 )
 
@@ -29,6 +30,10 @@ const (
 	QuicMotorTestDisable
 	QuicMotorTestSetValue
 	QuicMotorEsc4WayIf
+)
+
+const (
+	QuicSerialEnable = iota
 )
 
 const (

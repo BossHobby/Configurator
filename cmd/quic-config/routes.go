@@ -713,10 +713,10 @@ func (s *Server) setupRoutes(r *mux.Router) {
 		f := r.NewRoute().Subrouter()
 		f.Use(s.fcMidleware)
 
-		f.HandleFunc("/api/blackbox/{id}", s.getBlackbox).Methods("GET")
-		f.HandleFunc("/api/blackbox/{id}/download", s.downloadBlackbox).Methods("GET")
 		f.HandleFunc("/api/blackbox/list", s.getBlackboxList).Methods("GET")
 		f.HandleFunc("/api/blackbox/reset", s.posResetBlackbox).Methods("POST")
+		f.HandleFunc("/api/blackbox/{id}/download", s.downloadBlackbox).Methods("GET")
+		f.HandleFunc("/api/blackbox/{id}", s.getBlackbox).Methods("GET")
 
 		f.HandleFunc("/api/profile", s.getProfile).Methods("GET")
 		f.HandleFunc("/api/profile", s.postProfile).Methods("POST")
