@@ -6,10 +6,16 @@
         <b-col sm="8">
           <b-row v-for="(func, index) in auxFunctions" :key="func">
             <b-col sm="6" class="my-1">
-              <label :for="func" :class="classForIndex(index)">{{ func }}</label>
+              <label :for="func" :class="classForIndex(index)">{{
+                func
+              }}</label>
             </b-col>
             <b-col sm="3" class="my-1">
-              <b-form-select :id="func" v-model.number="channel_aux[index]" :options="auxChannels"></b-form-select>
+              <b-form-select
+                :id="func"
+                v-model.number="channel_aux[index]"
+                :options="auxChannels"
+              ></b-form-select>
             </b-col>
           </b-row>
         </b-col>
@@ -22,7 +28,8 @@
                 sm="6"
                 class="my-1"
                 :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
-              >{{ valueForIndex(index) ? "ON" : "OFF"}}</b-col>
+                >{{ valueForIndex(index) ? "ON" : "OFF" }}</b-col
+              >
             </b-row>
           </b-card>
         </b-col>
@@ -41,8 +48,8 @@ export default {
   computed: {
     ...mapFields("profile", ["channel.aux"]),
     ...mapState({
-      aux: state => state.state.aux
-    })
+      aux: (state) => state.state.aux,
+    }),
   },
   data() {
     return {
@@ -61,7 +68,7 @@ export default {
         { value: 11, text: "AUX_12" },
         { value: 12, text: "OFF" },
         { value: 13, text: "ON" },
-        { value: 14, text: "AUX_GESTURE" }
+        { value: 14, text: "AUX_GESTURE" },
       ],
       auxFunctions: [
         "AUX_ARMING",
@@ -78,8 +85,9 @@ export default {
         "AUX_MOTORS_TO_THROTTLE_MODE",
         "AUX_RSSI",
         "AUX_FPV_ON",
-        "AUX_BLACKBOX"
-      ]
+        "AUX_BLACKBOX",
+        "AUX_FN_INVERTED",
+      ],
     };
   },
   methods: {
@@ -87,18 +95,18 @@ export default {
       return this.aux[index];
     },
     classForIndex(index) {
-      if (!this.channel || !this.channel_aux) {
+      if (!this.channel_aux) {
         return "";
       }
 
-      if (this.channel_aux[index] == 14) return "text-danger";
+      if (this.channel_aux[index] == 12) return "text-danger";
       if (this.channel_aux[index] == 13) return "text-success";
       if (this.valueForIndex(this.channel_aux[index])) {
         return "text-success";
       }
       return "";
-    }
-  }
+    },
+  },
 };
 </script>
 
