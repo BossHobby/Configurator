@@ -399,6 +399,10 @@ func main() {
 		githubToken = os.Getenv("GITHUB_TOKEN")
 	}
 
+	if runtime.GOOS == "darwin" {
+		os.Chdir("../")
+	}
+
 	log.SetLevel(log.DebugLevel)
 	logFile, err := os.Create("quicksilver.log")
 	if err != nil {
