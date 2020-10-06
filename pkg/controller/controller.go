@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"io"
+	"runtime"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -34,10 +35,14 @@ func OpenFirstController() (*Controller, error) {
 }
 
 func OpenController(serialPort string) (*Controller, error) {
-	mode := &serial.Mode{
-		//BaudRate: 115200,
-		BaudRate: 921600,
+	mode := &serial.Mode{}
+
+	if runtime.GOOS == "darwin" {
+		mode.BaudRate = 230400
+	} else {
+		mode.BaudRate = 921600
 	}
+
 	port, err := serial.Open(serialPort, mode)
 	if err != nil {
 		return nil, err
