@@ -58,7 +58,6 @@ $(DARWIN).zip: $(DARWIN).app
 
 $(DARWIN).app: $(DARWIN)
 	go get github.com/machinebox/appify
-	chmod u+x $(DARWIN)
 	appify -name "$(DARWIN)" -icon ./web/src/assets/logo.png $(DARWIN)
 
 $(DARWIN): pkg/statik
