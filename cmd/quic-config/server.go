@@ -33,8 +33,10 @@ type Server struct {
 	status      Status
 
 	fl *firmware.FirmwareLoader
-	fc *controller.Controller
-	qp *quic.QuicProtocol
+
+	fcMu sync.Mutex
+	fc   *controller.Controller
+	qp   *quic.QuicProtocol
 
 	fs http.FileSystem
 
@@ -90,6 +92,9 @@ func (s *Server) connectController(port string) error {
 
 	go s.broadcastQuic(p)
 
+	s.fcMu.Lock()
+	defer s.fcMu.Unlock()
+
 	s.fc = c
 	s.qp = p
 
@@ -105,6 +110,9 @@ func (s *Server) controllerStatus() (*Status, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	s.fcMu.Lock()
+	defer s.fcMu.Unlock()
 
 	status := &Status{
 		Version:        version,
@@ -135,6 +143,9 @@ func (s *Server) closeController() {
 		}
 	}
 	s.dfuLoader = nil
+
+	s.fcMu.Lock()
+	defer s.fcMu.Unlock()
 
 	if s.fc != nil {
 		log.Debug("closing fc")
