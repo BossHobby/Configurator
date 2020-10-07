@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"reflect"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -121,6 +123,17 @@ func (s *Server) controllerStatus() (*Status, error) {
 		HasDFU:         s.dfuLoader != nil,
 		HasUpdate:      s.updater.found,
 	}
+	if runtime.GOOS == "darwin" {
+		status.AvailablePorts = make([]string, 0)
+		for _, p := range ports {
+			if !strings.HasPrefix("/dev/cu", p) {
+				status.AvailablePorts = append(status.AvailablePorts, p)
+			}
+		}
+	} else {
+		status.AvailablePorts = ports
+	}
+
 	if s.fc != nil {
 		status.Port = s.fc.PortName
 		status.Info = s.qp.Info
