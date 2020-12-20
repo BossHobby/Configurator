@@ -41,7 +41,7 @@
         <b-form-input
           id="actual-battery-voltage"
           type="number"
-          step="1"
+          step="0.1"
           v-model.number="voltage.actual_battery_voltage"
         ></b-form-input>
       </b-col>
@@ -53,7 +53,7 @@
         <b-form-input
           id="reported-telemetry-voltage"
           type="number"
-          step="1"
+          step="0.1"
           v-model.number="voltage.reported_telemetry_voltage"
         ></b-form-input>
       </b-col>
