@@ -116,7 +116,7 @@ export default {
         { name: "callsign6", enabled: false, text: "" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
         { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "EXACT VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "GYRO TEMP", enabled: true, text: "40C" },
         { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
         { name: "RSSI", enabled: true, text: "90" },
         { name: "STOPWATCH", enabled: true, text: "120" },
