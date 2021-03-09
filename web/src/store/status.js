@@ -9,9 +9,14 @@ const store = {
     },
     AvailablePorts: [],
     IsConnected: false,
+    IsConnecting: false,
+    Port: null
   },
   getters: {
     can_connect(state) {
+      if (state.IsConnecting) {
+        return false;
+      }
       return state.Port && state.Port.length > 0;
     },
     has_feature(state) {
@@ -24,6 +29,9 @@ const store = {
     }
   },
   mutations: {
+    set_connecting(state, connecting) {
+      state.IsConnecting = connecting;
+    },
     set_status(state, status) {
       if (!status.Port || status.Port == "") {
         status.Port = status.AvailablePorts[0]
@@ -34,12 +42,24 @@ const store = {
     },
   },
   actions: {
-    toggle_connection({ state }, port) {
+    toggle_connection({ state, commit }, port) {
+      const connecting = !state.IsConnected;
       var path = "/api/connect"
       if (state.IsConnected) {
         path = "/api/disconnect";
+      } else {
+        commit('set_connecting', true);
       }
       return post(path, port)
+        .catch(err => {
+          if (connecting) {
+            commit('append_alert', { type: "danger", msg: 'Connection to the board failed' });
+          }
+          throw err
+        })
+        .finally(() => {
+          commit('set_connecting', false);
+        })
     },
     soft_reboot() {
       return post("/api/soft_reboot", {})
@@ -56,10 +76,10 @@ const store = {
     update({ commit }) {
       return post("/api/update", {})
         .then(() => {
-          commit('append_alert', "update succeeded, restart to apply");
+          commit('append_alert', { type: "success", msg: "update succeeded, restart to apply" });
         })
         .catch(err => {
-          commit('append_alert', err);
+          commit('append_alert', { type: "danger", msg: err });
         })
     },
   }

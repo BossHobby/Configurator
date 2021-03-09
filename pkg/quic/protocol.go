@@ -22,6 +22,7 @@ var (
 	ErrTimeout        = errors.New("timeout")
 
 	errUpdatePacket = errors.New("update packet")
+	defaultTimeout  = 60 * time.Second
 )
 
 type quicTicket struct {
@@ -105,7 +106,7 @@ func (proto *QuicProtocol) readHeader() (*QuicPacket, error) {
 			break
 		}
 		log.Warnf("invalid magic %q", magic)
-		continue
+		return nil, ErrInvalidMagic
 	}
 
 	header, err := util.ReadAtLeast(proto.rw, int(quicHeaderLen-1))
@@ -210,7 +211,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	return p, nil
 }
 
-func (proto *QuicProtocol) Read() (*QuicPacket, error) {
+func (proto *QuicProtocol) Read(timeout time.Duration) (*QuicPacket, error) {
 	select {
 	case <-proto.stopChan:
 		return nil, errors.New("closed")
@@ -218,7 +219,7 @@ func (proto *QuicProtocol) Read() (*QuicPacket, error) {
 		return p, nil
 	case err := <-proto.errChan:
 		return nil, err
-	case <-time.After(60 * time.Second):
+	case <-time.After(timeout):
 		<-proto.ticketChan
 		return nil, ErrTimeout
 	}
@@ -250,7 +251,7 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 	log.Debugf("<quic> sent cmd: %d len: %d", cmd, len(data))
 
 	proto.ticketChan <- quicTicket{cmd}
-	p, err := proto.Read()
+	p, err := proto.Read(defaultTimeout)
 	if err != nil {
 		return nil, err
 	}

@@ -67,8 +67,8 @@ const store = new Vuex.Store({
       state.log = []
     },
 
-    append_alert(state, line) {
-      state.alerts = [...state.alerts, line]
+    append_alert(state, alert) {
+      state.alerts = [...state.alerts, alert]
     }
   },
   actions: {

@@ -95,7 +95,6 @@ func (s *Server) spaHandler() http.HandlerFunc {
 		}
 
 		w.Header().Set("Cache-Control", "max-age=30")
-		w.Header().Set("Cache-Control", "max-age=30")
 		http.ServeContent(w, r, stat.Name(), time.Now(), f)
 	}
 }

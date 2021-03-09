@@ -91,7 +91,7 @@ const store = {
       profile.meta.datetime = Math.floor(Date.now() / 1000);
       return post("/api/profile", profile)
         .then(p => commit('set_profile', p))
-        .then(() => commit('append_alert', "profile applied!"));
+        .then(() => commit('append_alert', { type: "success", msg: "profile applied!" }));
     },
   }
 }

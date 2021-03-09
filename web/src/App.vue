@@ -51,9 +51,10 @@
             size="sm"
             class="my-2"
             type="submit"
-            :disabled="can_connect"
-            >{{ status.IsConnected ? "Disconnect" : "Connect" }}</b-button
+            :disabled="!can_connect"
           >
+            {{ connectButtonText }}
+          </b-button>
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
@@ -61,13 +62,13 @@
     <div class="alert-portal">
       <b-container>
         <b-alert
-          v-for="(msg, index) in alerts"
+          v-for="(alert, index) in alerts"
           :key="index"
-          variant="success"
+          :variant="alert.type"
           show="2.0"
           dismissible
           fade
-          >{{ msg }}</b-alert
+          >{{ alert.msg }}</b-alert
         >
       </b-container>
     </div>
@@ -117,6 +118,12 @@ export default {
     ...mapGetters(["can_connect", "has_feature"]),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
+    },
+    connectButtonText() {
+      if (this.status.IsConnecting) {
+        return "Connecting...";
+      }
+      return status.IsConnected ? "Disconnect" : "Connect";
     },
   },
   methods: {
