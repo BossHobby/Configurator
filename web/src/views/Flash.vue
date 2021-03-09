@@ -12,13 +12,7 @@
               :disabled="status.AvailablePorts.length == 0 || status.HasDFU"
             >Reset to Bootloader</b-button>
           </h5>
-          <b-row v-if="!status.HasDFU">
-            <b-col sm="6">
-              <h4>No DFU detected</h4>
-              <b-button class="my-2" type="button" @click="connect_flash()">Scan</b-button>
-            </b-col>
-          </b-row>
-          <b-row v-else>
+          <b-row>
             <b-col sm="8">
               <b-form @submit="onSubmit">
                 <b-form-group label="Source" label-for="source" label-cols-sm="2">
@@ -64,8 +58,14 @@
                     ></b-progress>
                   </b-col>
                 </b-row>
-
-                <b-button class="my-2" :disabled="!canFlash" type="submit">Flash</b-button>
+                
+                <b-row class="my-2" v-if="!status.HasDFU">
+                  <b-col sm="6">
+                    <h4>No DFU detected</h4>
+                    <b-button class="my-2" type="button" @click="connect_flash()">Scan</b-button>
+                  </b-col>
+                </b-row>
+                <b-button v-else class="my-2" :disabled="!canFlash" type="submit">Flash</b-button>
               </b-form>
             </b-col>
           </b-row>
