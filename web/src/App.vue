@@ -123,7 +123,10 @@ export default {
       if (this.status.IsConnecting) {
         return "Connecting...";
       }
-      return status.IsConnected ? "Disconnect" : "Connect";
+      if (this.status.IsConnected) {
+        return "Disconnect";
+      }
+      return "Connect";
     },
   },
   methods: {
