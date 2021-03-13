@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -12,6 +13,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
 	"github.com/NotFastEnuf/configurator/pkg/protocol"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/msp"
 	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 
@@ -77,11 +79,11 @@ func (s *Server) broadcastQuic(qp *quic.QuicProtocol) {
 	}
 }
 
-func (s *Server) connectController(port string) error {
+func (s *Server) connectController(port string) (*controller.ControllerInfo, error) {
 	log.Printf("opening controller %s", port)
 	c, err := controller.OpenController(port)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	go func(fc *controller.Controller) {
@@ -97,12 +99,12 @@ func (s *Server) connectController(port string) error {
 		p, err := quic.NewQuicProtocol(c)
 		if err != nil {
 			c.Close()
-			return err
+			return nil, err
 		}
-		info, err := p.Info()
+		info, err := p.TargetInfo()
 		if err != nil {
 			c.Close()
-			return err
+			return nil, err
 		}
 
 		go s.broadcastQuic(p)
@@ -113,16 +115,24 @@ func (s *Server) connectController(port string) error {
 		s.fc = c
 		s.qp = p
 		s.info = info
-		break
+		return p.Info()
+	case protocol.ProtocolMSP:
+		defer c.Close()
+
+		p, err := msp.NewMSPProtocol(c)
+		if err != nil {
+			return nil, err
+		}
+		defer p.Close()
+
+		return p.Info()
 	default:
 		c.Close()
-		break
+		return nil, errors.New("invalid protocol")
 	}
-
-	return nil
 }
 
-func (s *Server) connectFirstController() error {
+func (s *Server) connectFirstController() (*controller.ControllerInfo, error) {
 	return s.connectController(s.status.AvailablePorts[0])
 }
 
@@ -203,7 +213,7 @@ func (s *Server) watchPorts() {
 		}
 
 		if s.fc == nil && len(cs.AvailablePorts) != 0 && s.autoConnect {
-			if err = s.connectController(cs.AvailablePorts[0]); err != nil {
+			if _, err = s.connectController(cs.AvailablePorts[0]); err != nil {
 				log.Error(err)
 			}
 			s.autoConnect = false

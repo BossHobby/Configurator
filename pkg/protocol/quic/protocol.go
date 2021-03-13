@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/util"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/sirupsen/logrus"
@@ -43,7 +44,7 @@ func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 	return p, nil
 }
 
-func (p *QuicProtocol) Info() (*TargetInfo, error) {
+func (p *QuicProtocol) TargetInfo() (*TargetInfo, error) {
 	info := new(TargetInfo)
 	if err := p.GetValue(QuicValInfo, info); err != nil {
 		return nil, err
@@ -52,8 +53,21 @@ func (p *QuicProtocol) Info() (*TargetInfo, error) {
 	return info, nil
 }
 
+func (p *QuicProtocol) Info() (*controller.ControllerInfo, error) {
+	if p.info == nil {
+		if _, err := p.TargetInfo(); err != nil {
+			return nil, err
+		}
+	}
+
+	return &controller.ControllerInfo{
+		Type:   "Quicksilver",
+		Target: p.info.TargetName,
+	}, nil
+}
+
 func (p *QuicProtocol) Detect() bool {
-	if _, err := p.Info(); err != nil {
+	if _, err := p.TargetInfo(); err != nil {
 		return false
 	}
 	return true

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/util"
 	"github.com/sirupsen/logrus"
 )
@@ -117,4 +118,19 @@ func (p *MSPProtocol) Detect() bool {
 		return false
 	}
 	return string(buf) != "QUIC"
+}
+
+func (p *MSPProtocol) Info() (*controller.ControllerInfo, error) {
+	buf, err := p.Send(MSPBoardInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	nameOffset := 9 + buf[8]
+	nameLength := buf[nameOffset]
+
+	return &controller.ControllerInfo{
+		Type:   "Betaflight",
+		Target: string(buf[nameOffset+1 : nameOffset+1+nameLength]),
+	}, nil
 }

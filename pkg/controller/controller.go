@@ -16,6 +16,11 @@ var (
 	ErrTimeout     = errors.New("timeout")
 )
 
+type ControllerInfo struct {
+	Type   string
+	Target string
+}
+
 type Controller struct {
 	io.ReadWriteCloser
 

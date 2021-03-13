@@ -330,7 +330,7 @@ func connectFirstPort() error {
 	}
 	defer qp.Close()
 
-	info, err := qp.Info()
+	info, err := qp.TargetInfo()
 	if err != nil {
 		return err
 	}

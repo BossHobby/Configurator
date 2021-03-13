@@ -10,7 +10,8 @@ const store = {
     AvailablePorts: [],
     IsConnected: false,
     IsConnecting: false,
-    Port: null
+    Port: null,
+    BetaflightTarget: null
   },
   getters: {
     can_connect(state) {
@@ -29,6 +30,9 @@ const store = {
     }
   },
   mutations: {
+    set_betaflight_target(state, target) {
+      state.BetaflightTarget = target;
+    },
     set_connecting(state, connecting) {
       state.IsConnecting = connecting;
     },
@@ -51,6 +55,17 @@ const store = {
         commit('set_connecting', true);
       }
       return post(path, port)
+        .then((res) => {
+          if (res == "OK") {
+            commit('set_betaflight_target', null);
+            return;
+          }
+          if (res.Type == "Betaflight") {
+            commit('set_betaflight_target', res.Target);
+          } else {
+            commit('set_betaflight_target', null);
+          }
+        })
         .catch(err => {
           if (connecting) {
             commit('append_alert', { type: "danger", msg: 'Connection to the board failed' });
@@ -64,8 +79,9 @@ const store = {
     soft_reboot() {
       return post("/api/soft_reboot", {})
     },
-    connect_flash() {
+    connect_flash({ commit }) {
       return post("/api/flash/connect", {})
+        .then(() => commit('set_betaflight_target', null))
     },
     hard_reboot_first_port() {
       return post("/api/hard_reboot", {})

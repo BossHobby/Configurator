@@ -1,6 +1,11 @@
 <template>
   <b-container>
-    <div class="jumbotron my-5">
+    <div v-if="status.BetaflightTarget" class="jumbotron my-5">
+      <h1 class="display-4">Betaflight detected!</h1>
+      <h2>{{ status.BetaflightTarget }}</h2>
+      <p class="lead">Please flash Quicksilver to continue</p>
+    </div>
+    <div v-else class="jumbotron my-5">
       <h1 class="display-4">USB Configurator {{ status.Version }}</h1>
       <div v-if="!status.IsConnected">
         <p class="lead">

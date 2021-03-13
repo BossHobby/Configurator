@@ -106,12 +106,13 @@ func (s *Server) postConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.connectController(serialPort); err != nil {
+	info, err := s.connectController(serialPort)
+	if err != nil {
 		handleError(w, err)
 		return
 	}
 
-	renderJSON(w, "OK")
+	renderJSON(w, info)
 }
 
 func (s *Server) postDisconnect(w http.ResponseWriter, r *http.Request) {
