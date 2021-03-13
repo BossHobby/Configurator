@@ -11,8 +11,9 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
+
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"

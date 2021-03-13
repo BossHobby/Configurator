@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/NotFastEnuf/configurator/pkg/blackbox"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	log "github.com/sirupsen/logrus"
 )
 

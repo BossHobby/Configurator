@@ -18,11 +18,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/NotFastEnuf/configurator/pkg/blackbox"
-	"github.com/NotFastEnuf/configurator/pkg/blheli"
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/blheli"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	"github.com/NotFastEnuf/configurator/pkg/util"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/gorilla/mux"

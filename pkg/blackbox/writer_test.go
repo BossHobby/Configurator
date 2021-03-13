@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/NotFastEnuf/configurator/pkg/blackbox"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 )
 
 func TestStructTags(t *testing.T) {

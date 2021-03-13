@@ -8,9 +8,9 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/NotFastEnuf/configurator/pkg/blheli"
 	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/blheli"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 )
 
 func init() {
