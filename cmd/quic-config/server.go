@@ -11,6 +11,7 @@ import (
 	"github.com/NotFastEnuf/configurator/pkg/controller"
 	"github.com/NotFastEnuf/configurator/pkg/dfu"
 	"github.com/NotFastEnuf/configurator/pkg/firmware"
+	"github.com/NotFastEnuf/configurator/pkg/protocol"
 	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	_ "github.com/NotFastEnuf/configurator/pkg/statik"
 
@@ -40,6 +41,8 @@ type Server struct {
 	fcMu sync.Mutex
 	fc   *controller.Controller
 	qp   *quic.QuicProtocol
+
+	info *quic.TargetInfo
 
 	fs http.FileSystem
 
@@ -87,19 +90,34 @@ func (s *Server) connectController(port string) error {
 		s.closeController()
 	}(c)
 
-	p, err := quic.NewQuicProtocol(c)
-	if err != nil {
+	proto := protocol.Detect(c)
+
+	switch proto {
+	case protocol.ProtocolQuic:
+		p, err := quic.NewQuicProtocol(c)
+		if err != nil {
+			c.Close()
+			return err
+		}
+		info, err := p.Info()
+		if err != nil {
+			c.Close()
+			return err
+		}
+
+		go s.broadcastQuic(p)
+
+		s.fcMu.Lock()
+		defer s.fcMu.Unlock()
+
+		s.fc = c
+		s.qp = p
+		s.info = info
+		break
+	default:
 		c.Close()
-		return err
+		break
 	}
-
-	go s.broadcastQuic(p)
-
-	s.fcMu.Lock()
-	defer s.fcMu.Unlock()
-
-	s.fc = c
-	s.qp = p
 
 	return nil
 }
@@ -137,7 +155,7 @@ func (s *Server) controllerStatus() (*Status, error) {
 
 	if s.fc != nil {
 		status.Port = s.fc.PortName
-		status.Info = s.qp.Info
+		status.Info = s.info
 	}
 	return status, nil
 }

@@ -5,13 +5,11 @@ import (
 	"reflect"
 )
 
-func AppendCRC8(buf []byte) []byte {
-	chksum := byte(0)
-	for i := 0; i < len(buf); i++ {
-		chksum ^= buf[i]
+func UpdateCRC8(crc uint8, buf []byte) uint8 {
+	for _, b := range buf {
+		crc ^= b
 	}
-	buf = append(buf, chksum)
-	return buf
+	return crc
 }
 
 func UpdateCRC16(crc uint16, data uint16) uint16 {

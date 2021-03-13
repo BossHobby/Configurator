@@ -5,9 +5,15 @@ import (
 	"io"
 	"runtime"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	serial "go.bug.st/serial"
+)
+
+var (
+	defaultTimeout = 5 * time.Second
+	ErrTimeout     = errors.New("timeout")
 )
 
 type Controller struct {
@@ -16,8 +22,11 @@ type Controller struct {
 	PortName   string
 	Disconnect chan error
 
-	port    serial.Port
-	muRead  sync.Mutex
+	port serial.Port
+
+	readErrorChan chan error
+	readChan      chan byte
+
 	muWrite sync.Mutex
 }
 
@@ -50,31 +59,56 @@ func OpenController(serialPort string) (*Controller, error) {
 
 	c := &Controller{
 		PortName:   serialPort,
-		port:       port,
-		Disconnect: make(chan error, 1),
+		Disconnect: make(chan error, 10),
+
+		port:          port,
+		readErrorChan: make(chan error, 0),
+		readChan:      make(chan byte, 64),
 	}
+
+	go c.readLoop()
+
 	return c, nil
 }
 
-func (c *Controller) Read(p []byte) (int, error) {
-	c.muRead.Lock()
-	defer c.muRead.Unlock()
+func (c *Controller) readLoop() {
+	p := make([]byte, 512)
 
-	n, err := c.port.Read(p)
-	if err != nil {
-		c.Disconnect <- err
-		return n, err
-	}
-	if n == 0 {
-		select {
-		case c.Disconnect <- io.EOF:
-		default:
+	for {
+		n, err := c.port.Read(p)
+		if err != nil {
+			c.readErrorChan <- err
+			c.Disconnect <- err
+			return
 		}
-		return n, io.EOF
+		if n == 0 {
+			c.readErrorChan <- io.EOF
+			c.Disconnect <- io.EOF
+			return
+		}
+		log.Tracef("read %d bytes %q", n, p[:n])
+		for _, b := range p[:n] {
+			c.readChan <- b
+		}
 	}
+}
 
-	log.Tracef("n %d bytes %q", n, p[:n])
-	return n, nil
+func (c *Controller) Read(p []byte) (int, error) {
+	n := 0
+	for {
+		select {
+		case b := <-c.readChan:
+			p[n] = b
+			n++
+			if n == len(p) {
+				return n, nil
+			}
+		case <-time.After(defaultTimeout):
+			return n, ErrTimeout
+		case err := <-c.readErrorChan:
+			return n, err
+		}
+	}
 }
 
 func (c *Controller) Write(p []byte) (int, error) {
@@ -87,14 +121,28 @@ func (c *Controller) Write(p []byte) (int, error) {
 		return n, err
 	}
 	if n == 0 {
-		select {
-		case c.Disconnect <- io.EOF:
-		default:
-		}
+		c.Disconnect <- io.EOF
 		return n, io.EOF
 	}
 	log.Tracef("wrote %d bytes %q", n, p[:n])
 	return n, err
+}
+
+func (c *Controller) Flush() error {
+	flush := make([]byte, 1)
+	for {
+		n, err := c.Read(flush)
+		if err != nil {
+			if err == ErrTimeout {
+				break
+			}
+			return err
+		}
+		if n == 0 {
+			break
+		}
+	}
+	return nil
 }
 
 func (c *Controller) Close() error {

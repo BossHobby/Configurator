@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"time"
+	"sync"
 
 	"github.com/NotFastEnuf/configurator/pkg/util"
 	"github.com/fxamacker/cbor/v2"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -19,75 +19,47 @@ var (
 	ErrShortRead      = errors.New("short read")
 	ErrInvalidMagic   = errors.New("invalid magic")
 	ErrInvalidCommand = errors.New("invalid cmd")
-	ErrTimeout        = errors.New("timeout")
 
 	errUpdatePacket = errors.New("update packet")
-	defaultTimeout  = 60 * time.Second
+
+	log = logrus.WithField("protocol", "quic")
 )
 
-type quicTicket struct {
-	cmd QuicCommand
-}
-
 type QuicProtocol struct {
-	Info *TargetInfo
-
-	rw io.ReadWriter
-
-	stopChan chan interface{}
-	errChan  chan error
-
-	ticketChan chan quicTicket
-	packetChan chan *QuicPacket
-
 	Log chan string
+
+	info *TargetInfo
+	rw   io.ReadWriter
+
+	packetMu sync.Mutex
 }
 
 func NewQuicProtocol(rw io.ReadWriter) (*QuicProtocol, error) {
 	p := &QuicProtocol{
-		rw: rw,
-
-		stopChan:   make(chan interface{}),
-		errChan:    make(chan error),
-		ticketChan: make(chan quicTicket, 100),
-		packetChan: make(chan *QuicPacket, 100),
-
 		Log: make(chan string, 100),
+
+		rw: rw,
 	}
-
-	go func() {
-		for {
-			select {
-			case <-p.stopChan:
-				return
-			default:
-				_, err := p.readPacket()
-				if err != nil {
-					if err == errUpdatePacket || err == ErrInvalidMagic || err == io.EOF {
-						continue
-					}
-					select {
-					case p.errChan <- err:
-					default:
-					}
-					continue
-				}
-			}
-
-		}
-	}()
-
-	info, err := p.sync()
-	if err != nil {
-		return nil, err
-	}
-	p.Info = info
-
 	return p, nil
 }
 
+func (p *QuicProtocol) Info() (*TargetInfo, error) {
+	info := new(TargetInfo)
+	if err := p.GetValue(QuicValInfo, info); err != nil {
+		return nil, err
+	}
+	p.info = info
+	return info, nil
+}
+
+func (p *QuicProtocol) Detect() bool {
+	if _, err := p.Info(); err != nil {
+		return false
+	}
+	return true
+}
+
 func (proto *QuicProtocol) Close() error {
-	close(proto.stopChan)
 	close(proto.Log)
 	return nil
 }
@@ -127,8 +99,12 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		return nil, err
 	}
 
+	if p.cmd >= QuicCmdMax || p.cmd == QuicCmdInvalid {
+		return nil, ErrInvalidCommand
+	}
+
 	if p.cmd != QuicCmdBlackbox {
-		log.Debugf("<quic> recv cmd: %d flag: %d len: %d", p.cmd, p.flag, p.len)
+		log.Debugf("recv cmd: %d flag: %d len: %d", p.cmd, p.flag, p.len)
 	}
 
 	r, w := io.Pipe()
@@ -161,28 +137,20 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 		if err := cbor.NewDecoder(p.Payload).Decode(val); err != nil {
 			return nil, err
 		}
-		log.Debugf("<quic> log %s", *val)
+		log.Debugf("log %s", *val)
 		select {
 		case proto.Log <- *val:
 		default:
 		}
 		return nil, errUpdatePacket
-	case (proto.Info == nil || proto.Info.QuicProtocolVersion == 1) && p.cmd == QuicCmdBlackbox:
+	case (proto.info == nil || proto.info.QuicProtocolVersion == 1) && p.cmd == QuicCmdBlackbox:
 		val := new(interface{})
 		if err := cbor.NewDecoder(p.Payload).Decode(val); err != nil {
 			log.Error("error reading blackbox", err)
 			return nil, errUpdatePacket
 		}
 		return nil, errUpdatePacket
-	case p.cmd >= QuicCmdMax || p.cmd == QuicCmdInvalid:
-		<-proto.ticketChan
-		return nil, ErrInvalidCommand
 	default:
-		ticket := <-proto.ticketChan
-		if p.cmd != ticket.cmd {
-			return nil, ErrInvalidCommand
-		}
-		proto.packetChan <- p
 		break
 	}
 
@@ -197,7 +165,7 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 				w.Close()
 				break
 			}
-			log.Tracef("<quic> stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
+			log.Tracef("stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
 			if _, err := io.CopyN(bw, proto.rw, int64(h.len)); err != nil {
 				return nil, err
 			}
@@ -211,17 +179,19 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	return p, nil
 }
 
-func (proto *QuicProtocol) Read(timeout time.Duration) (*QuicPacket, error) {
-	select {
-	case <-proto.stopChan:
-		return nil, errors.New("closed")
-	case p := <-proto.packetChan:
+func (proto *QuicProtocol) read() (*QuicPacket, error) {
+	proto.packetMu.Lock()
+	defer proto.packetMu.Unlock()
+
+	for {
+		p, err := proto.readPacket()
+		if err != nil {
+			if err == errUpdatePacket {
+				continue
+			}
+			return nil, err
+		}
 		return p, nil
-	case err := <-proto.errChan:
-		return nil, err
-	case <-time.After(timeout):
-		<-proto.ticketChan
-		return nil, ErrTimeout
 	}
 }
 
@@ -248,10 +218,9 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 		return nil, ErrShortWrite
 	}
 
-	log.Debugf("<quic> sent cmd: %d len: %d", cmd, len(data))
+	log.Debugf("sent cmd: %d len: %d", cmd, len(data))
 
-	proto.ticketChan <- quicTicket{cmd}
-	p, err := proto.Read(defaultTimeout)
+	p, err := proto.read()
 	if err != nil {
 		return nil, err
 	}
@@ -356,12 +325,4 @@ func (proto *QuicProtocol) SetValue(typ QuicValue, v interface{}) error {
 	}
 
 	return nil
-}
-
-func (proto *QuicProtocol) sync() (info *TargetInfo, err error) {
-	info = new(TargetInfo)
-	if err = proto.GetValue(QuicValInfo, info); err != nil {
-		return nil, err
-	}
-	return info, nil
 }

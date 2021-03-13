@@ -50,7 +50,7 @@ func loggingMidleware(next http.Handler) http.Handler {
 
 func (s *Server) fcMidleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if s.fc == nil {
+		if s.fc == nil || s.qp == nil {
 			http.NotFound(w, r)
 			return
 		}

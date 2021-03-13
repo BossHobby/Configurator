@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/quic"
+	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
 	log "github.com/sirupsen/logrus"
 )
 
