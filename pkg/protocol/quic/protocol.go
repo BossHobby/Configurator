@@ -175,8 +175,10 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 				return nil, err
 			}
 			if h.len == 0 {
-				bw.Flush()
-				w.Close()
+				go func() {
+					bw.Flush()
+					w.Close()
+				}()
 				break
 			}
 			log.Tracef("stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
