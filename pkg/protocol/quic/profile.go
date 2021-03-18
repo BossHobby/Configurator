@@ -204,6 +204,9 @@ type State struct {
 	RxFiltered Vec4 `cbor:"rx_filtered" json:"rx_filtered"`
 	RxOverride Vec4 `cbor:"rx_override" json:"rx_override"`
 
+	RXRssi   float32 `cbor:"rx_rssi" json:"rx_rssi"`
+	RXStatus uint    `cbor:"rx_status" json:"rx_status"`
+
 	Throttle float32 `cbor:"throttle" json:"throttle"`
 	Thrsum   float32 `cbor:"thrsum" json:"thrsum"`
 

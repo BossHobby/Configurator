@@ -6,6 +6,7 @@ import store from './store'
 import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
 import Channels from './views/Channels.vue'
+import Receiver from './views/Receiver.vue'
 import OSD from './views/OSD.vue'
 import Motor from './views/Motor.vue'
 import Blackbox from './views/Blackbox.vue'
@@ -59,6 +60,11 @@ const router = new Router({
       path: '/channels',
       name: 'channels',
       component: Channels
+    },
+    {
+      path: '/receiver',
+      name: 'receiver',
+      component: Receiver
     },
     {
       path: '/osd',
