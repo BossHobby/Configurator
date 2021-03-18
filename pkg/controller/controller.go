@@ -78,7 +78,6 @@ func OpenController(serialPort string) (*Controller, error) {
 
 func (c *Controller) readLoop() {
 	p := make([]byte, 512)
-
 	for {
 		n, err := c.port.Read(p)
 		if err != nil {
@@ -98,7 +97,7 @@ func (c *Controller) readLoop() {
 	}
 }
 
-func (c *Controller) Read(p []byte) (int, error) {
+func (c *Controller) readTimeout(p []byte, timeout time.Duration) (int, error) {
 	n := 0
 	for {
 		select {
@@ -108,12 +107,16 @@ func (c *Controller) Read(p []byte) (int, error) {
 			if n == len(p) {
 				return n, nil
 			}
-		case <-time.After(defaultTimeout):
+		case <-time.After(timeout):
 			return n, ErrTimeout
 		case err := <-c.readErrorChan:
 			return n, err
 		}
 	}
+}
+
+func (c *Controller) Read(p []byte) (int, error) {
+	return c.readTimeout(p, defaultTimeout)
 }
 
 func (c *Controller) Write(p []byte) (int, error) {
@@ -134,9 +137,9 @@ func (c *Controller) Write(p []byte) (int, error) {
 }
 
 func (c *Controller) Flush() error {
-	flush := make([]byte, 1)
+	flush := make([]byte, 1024)
 	for {
-		n, err := c.Read(flush)
+		n, err := c.readTimeout(flush, 500*time.Millisecond)
 		if err != nil {
 			if err == ErrTimeout {
 				break
