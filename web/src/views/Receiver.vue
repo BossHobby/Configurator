@@ -10,13 +10,13 @@
           protoNames[status.Info.rx_protocol]
         }}</b-col>
       </b-row>
-      <b-row>
+      <b-row v-if="status.Info.quic_protocol_version > 2">
         <b-col sm="4" class="my-2">
           <label>RSSI</label>
         </b-col>
         <b-col sm="8" class="my-2">{{ state.rx_rssi }}</b-col>
       </b-row>
-      <b-row>
+      <b-row v-if="status.Info.quic_protocol_version > 2">
         <b-col sm="4" class="my-2">
           <label>Status</label>
         </b-col>

@@ -5,6 +5,7 @@ const store = {
     Info: {
       usart_ports: [],
       motor_pins: [],
+      quic_protocol_version: null,
       features: null,
     },
     AvailablePorts: [],
