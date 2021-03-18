@@ -13,6 +13,7 @@ import blackboxModule from "./blackbox";
 import stateModule from "./state";
 import motorModule from "./motor";
 import vtxModule from "./vtx";
+import bindModule from "./bind";
 
 var ws = null
 
@@ -25,6 +26,7 @@ const store = new Vuex.Store({
     motor: motorModule,
     vtx: vtxModule,
     perf: perfModule,
+    bind: bindModule,
   },
   state: {
     log: [],

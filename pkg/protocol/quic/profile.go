@@ -164,6 +164,11 @@ type TargetInfo struct {
 	GyroID              *uint    `cbor:"gyro_id" json:"gyro_id"`
 }
 
+type BindInfo struct {
+	BindEnable uint   `cbor:"bind_enable" json:"bind_enable"`
+	Raw        []byte `cbor:"raw" json:"raw"`
+}
+
 type BlackboxCompact struct {
 	_ struct{} `cbor:",toarray"`
 

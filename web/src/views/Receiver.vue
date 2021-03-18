@@ -12,6 +12,14 @@
       </b-row>
       <b-row v-if="status.Info.quic_protocol_version > 2">
         <b-col sm="4" class="my-2">
+          <label>Bind Enabled</label>
+        </b-col>
+        <b-col sm="8" class="my-2">{{
+          bind.info.bind_enable ? "yes" : "no"
+        }}</b-col>
+      </b-row>
+      <b-row v-if="status.Info.quic_protocol_version > 2">
+        <b-col sm="4" class="my-2">
           <label>RSSI</label>
         </b-col>
         <b-col sm="8" class="my-2">{{ state.rx_rssi }}</b-col>
@@ -38,12 +46,13 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "Receiver",
   data() {
     return {
+      intervalEnabled: true,
       protoNames: [
         "INVALID",
         "UNIFIED_SERIAL",
@@ -75,7 +84,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["status", "state"]),
+    ...mapState(["status", "state", "bind"]),
     proto() {
       return this.protoNames.reduce((m, v, i) => {
         m[v] = i;
@@ -127,7 +136,25 @@ export default {
       return this.serialProtoNames[index];
     },
   },
-  methods: {},
+  methods: {
+    ...mapActions(["fetch_bind_info"]),
+    startInterval() {
+      return this.fetch_bind_info().then(() => {
+        if (!this.intervalEnabled) {
+          return;
+        }
+        setTimeout(() => this.startInterval(), 5000);
+      });
+    },
+  },
+  created() {
+    if (this.status.Info.quic_protocol_version > 2) {
+      this.startInterval();
+    }
+  },
+  beforeDestroy() {
+    this.intervalEnabled = false;
+  },
 };
 </script>
 

@@ -393,6 +393,15 @@ func (s *Server) postVtxSettings(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, value)
 }
 
+func (s *Server) getBindInfo(w http.ResponseWriter, r *http.Request) {
+	value := quic.BindInfo{}
+	if err := s.qp.GetValue(quic.QuicValBindInfo, &value); err != nil {
+		handleError(w, err)
+		return
+	}
+	renderJSON(w, value)
+}
+
 func broadcastProgress(task string) func(total, current int) {
 	last := 0
 	return func(total, current int) {
@@ -737,6 +746,8 @@ func (s *Server) setupRoutes(r *mux.Router) {
 
 		f.HandleFunc("/api/vtx/settings", s.getVtxSettings).Methods("GET")
 		f.HandleFunc("/api/vtx/settings", s.postVtxSettings).Methods("POST")
+
+		f.HandleFunc("/api/bind/info", s.getBindInfo).Methods("GET")
 
 		f.HandleFunc("/api/osd/font", s.getOSDFont).Methods("GET")
 		f.HandleFunc("/api/osd/font", s.postOSDFont).Methods("POST")
