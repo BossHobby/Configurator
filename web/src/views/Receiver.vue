@@ -22,6 +22,17 @@
         </b-col>
         <b-col sm="8" class="my-2">{{ protoStatus }}</b-col>
       </b-row>
+      <b-row
+        v-if="
+          status.Info.quic_protocol_version > 2 &&
+          status.Info.rx_protocol == proto.UNIFIED_SERIAL
+        "
+      >
+        <b-col sm="4" class="my-2">
+          <label>Protocol</label>
+        </b-col>
+        <b-col sm="8" class="my-2">{{ serialProtoStatus }}</b-col>
+      </b-row>
     </b-card>
   </b-container>
 </template>
@@ -96,21 +107,24 @@ export default {
           return "RX_STATUS_NONE";
         }
         if (this.state.rx_status >= 100 && this.state.rx_status < 200) {
-          const p = this.state.rx_status - 100;
-          if (p > 0) {
-            return "RX_STATUS_DETECTING " + this.serialProtoNames[p];
-          }
           return "RX_STATUS_DETECTING";
         }
         if (this.state.rx_status >= 200 && this.state.rx_status < 300) {
-          const p = this.state.rx_status - 200;
-          if (p > 0) {
-            return "RX_STATUS_DETECTED " + this.serialProtoNames[p];
-          }
           return "RX_STATUS_DETECTED";
         }
       }
       return "";
+    },
+    serialProtoStatus() {
+      var index = 0;
+
+      if (this.state.rx_status >= 100 && this.state.rx_status < 200) {
+        index = this.state.rx_status - 100;
+      } else if (this.state.rx_status >= 200 && this.state.rx_status < 300) {
+        index = this.state.rx_status - 200;
+      }
+
+      return this.serialProtoNames[index];
     },
   },
   methods: {},
