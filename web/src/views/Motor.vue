@@ -9,12 +9,20 @@
               size="sm"
               class="my-2 mx-2"
               @click="motor_test_toggle()"
-            >{{ motor.test.active ? "Disable" : "Enable"}}</b-button>
-            <small class="float-right my-3">{{state.vbattfilt.toPrecision(3)}}V</small>
+              >{{ motor.test.active ? "Disable" : "Enable" }}</b-button
+            >
+            <small class="float-right my-3"
+              >{{ state.vbattfilt.toPrecision(3) }}V</small
+            >
           </h5>
           <div>
             <b-row v-if="motor.test.active">
-              <b-col v-for="m in motors" :key="m.index" sm="6" class="my-2 px-5">
+              <b-col
+                v-for="m in motors"
+                :key="m.index"
+                sm="6"
+                class="my-2 px-5"
+              >
                 <b-row>
                   <b-col sm="3" class="my-2">
                     <label :for="m.id">
@@ -58,7 +66,12 @@
         <b-card class="my-2">
           <h5 slot="header" class="mb-0">Motor Pins</h5>
           <b-row class="my-2">
-            <b-col v-for="m in motors" :key="'motor-pin-' + m.index" sm="6" class="my-2 px-5">
+            <b-col
+              v-for="m in motors"
+              :key="'motor-pin-' + m.index"
+              sm="6"
+              class="my-2 px-5"
+            >
               <b-row>
                 <b-col sm="4">
                   <label :for="'motor-pin-' + m.index">
@@ -98,7 +111,9 @@
                   </b-col>
                   <b-col sm="8" class="my-2">
                     {{ trim(motor.settings[m.index].LAYOUT) }}
-                    ({{ motor.settings[m.index].MAIN_REVISION }}.{{ motor.settings[m.index].SUB_REVISION }})
+                    ({{ motor.settings[m.index].MAIN_REVISION }}.{{
+                      motor.settings[m.index].SUB_REVISION
+                    }})
                   </b-col>
 
                   <b-col sm="4" class="my-2">
@@ -119,9 +134,17 @@
                 <b-button
                   class="ml-4 mt-2"
                   v-if="motor.settings && motor.settings.length"
+                  :disabled="motor.loading"
                   v-on:click="apply_motor_settings(motor.settings)"
-                >Apply</b-button>
-                <b-button class="ml-4 mt-2" v-else v-on:click="fetch_motor_settings()">Load</b-button>
+                  >Apply</b-button
+                >
+                <b-button
+                  class="ml-4 mt-2"
+                  v-else
+                  :disabled="motor.loading"
+                  v-on:click="fetch_motor_settings()"
+                  >Load</b-button
+                >
               </b-col>
             </b-row>
           </div>
@@ -147,51 +170,51 @@ export default {
         {
           index: 1,
           id: "MOTOR_FL",
-          label: "Front Left"
+          label: "Front Left",
         },
         {
           index: 3,
           id: "MOTOR_FR",
-          label: "Front Right"
+          label: "Front Right",
         },
         {
           index: 0,
           id: "MOTOR_BL",
-          label: "Back Left"
+          label: "Back Left",
         },
         {
           index: 2,
           id: "MOTOR_BR",
-          label: "Back Right"
-        }
+          label: "Back Right",
+        },
       ],
 
       motor_direction_options: [
         { value: 1, text: "Normal" },
         { value: 2, text: "Reversed" },
         { value: 3, text: "Bidirectional" },
-        { value: 4, text: "Bidirectional Reversed" }
-      ]
+        { value: 4, text: "Bidirectional Reversed" },
+      ],
     };
   },
   computed: {
     ...mapState(["motor", "state"]),
     ...mapFields("profile", { profile_motor: "motor" }),
     ...mapState({
-      motor_pins: state => state.status.Info.motor_pins
+      motor_pins: (state) => state.status.Info.motor_pins,
     }),
     ...mapGetters(["has_feature"]),
     value() {
-      return this.motor.test.value.map(v => v * 100);
+      return this.motor.test.value.map((v) => v * 100);
     },
     motorPins() {
       return this.motor_pins.map((v, i) => {
         return {
           value: i,
-          text: `Pin ${i} (${v})`
+          text: `Pin ${i} (${v})`,
         };
       });
-    }
+    },
   },
   methods: {
     ...mapActions([
@@ -199,17 +222,17 @@ export default {
       "fetch_motor_settings",
       "motor_test_toggle",
       "motor_test_set_value",
-      "apply_motor_settings"
+      "apply_motor_settings",
     ]),
     update() {
-      return this.motor_test_set_value(this.value.map(v => v / 100));
+      return this.motor_test_set_value(this.value.map((v) => v / 100));
     },
     trim(str) {
       return str.replace(/#/g, "").replace(/\$/g, " ");
-    }
+    },
   },
   created() {
     this.fetch_motor_test();
-  }
+  },
 };
 </script>
