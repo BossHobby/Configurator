@@ -86,7 +86,6 @@ export default {
         "AUX_RSSI",
         "AUX_FPV_ON",
         "AUX_BLACKBOX",
-        "AUX_FN_INVERTED",
       ],
     };
   },
