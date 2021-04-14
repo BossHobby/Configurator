@@ -1,9 +1,9 @@
 package protocol
 
 import (
-	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/protocol/msp"
-	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
+	"github.com/BossHobby/configurator/pkg/controller"
+	"github.com/BossHobby/configurator/pkg/protocol/msp"
+	"github.com/BossHobby/configurator/pkg/protocol/quic"
 )
 
 type ProtocolType string

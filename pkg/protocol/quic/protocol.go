@@ -9,8 +9,8 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/util"
+	"github.com/BossHobby/configurator/pkg/controller"
+	"github.com/BossHobby/configurator/pkg/util"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/sirupsen/logrus"
 )

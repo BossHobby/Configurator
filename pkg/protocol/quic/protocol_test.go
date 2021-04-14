@@ -3,8 +3,8 @@ package quic_test
 import (
 	"testing"
 
-	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/protocol/quic"
+	"github.com/BossHobby/configurator/pkg/controller"
+	"github.com/BossHobby/configurator/pkg/protocol/quic"
 	log "github.com/sirupsen/logrus"
 )
 

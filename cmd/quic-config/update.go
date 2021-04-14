@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	repoOwner = "bkleiner"
-	repoName  = "quicksilver-usb-configurator"
+	repoOwner = "BossHobby"
+	repoName  = "Configurator"
 )
 
 type Updater struct {

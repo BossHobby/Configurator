@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/NotFastEnuf/configurator/pkg/util"
+	"github.com/BossHobby/configurator/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 

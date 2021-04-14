@@ -4,8 +4,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/NotFastEnuf/configurator/pkg/controller"
-	"github.com/NotFastEnuf/configurator/pkg/util"
+	"github.com/BossHobby/configurator/pkg/controller"
+	"github.com/BossHobby/configurator/pkg/util"
 	"github.com/sirupsen/logrus"
 )
 

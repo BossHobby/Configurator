@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/NotFastEnuf/configurator/pkg/dfu"
+	"github.com/BossHobby/configurator/pkg/dfu"
 	"github.com/google/go-github/v31/github"
 	"github.com/marcinbor85/gohex"
 	log "github.com/sirupsen/logrus"
@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	repoOwner = "NotFastEnuf"
-	repoName  = "Guano"
+	repoOwner = "BossHobby"
+	repoName  = "QUICKSILVER"
 )
 
 type RemoteFirmware struct {
