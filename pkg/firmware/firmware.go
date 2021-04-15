@@ -107,17 +107,22 @@ func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 		ctx := context.Background()
 		rc, url, err := l.github.Repositories.DownloadReleaseAsset(ctx, repoOwner, repoName, fw.ID, http.DefaultClient)
 		if err != nil {
+			l.cache.Remove(file)
 			return nil, err
 		}
 		if rc == nil {
 			res, err := http.Get(url)
 			if err != nil {
+				l.cache.Remove(file)
 				return nil, err
 			}
 			rc = res.Body
 		}
 
-		io.Copy(w, rc)
+		if _, err := io.Copy(w, rc); err != nil {
+			l.cache.Remove(file)
+			return nil, err
+		}
 
 		w.Close()
 		rc.Close()
@@ -125,6 +130,7 @@ func (l *FirmwareLoader) FetchRelease(fw RemoteFirmware) ([]byte, error) {
 
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
+		l.cache.Remove(file)
 		return nil, err
 	}
 	log.Debugf("firmware %s downloaded", file)
