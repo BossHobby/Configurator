@@ -201,23 +201,27 @@ func (proto *QuicProtocol) readPacket(o opts) (*QuicPacket, error) {
 	}
 
 	if p.flag == QuicFlagStreaming {
-		for {
-			h, err := proto.readHeader()
-			if err != nil {
-				return nil, err
-			}
-			if h.len == 0 {
-				go func() {
+		go func() {
+			defer proto.packetMu.Unlock()
+
+			for {
+				h, err := proto.readHeader()
+				if err != nil {
+					log.Panic(err)
+				}
+				if h.len == 0 {
 					bw.Flush()
 					w.Close()
-				}()
-				break
+					break
+				}
+				log.Tracef("stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
+				if _, err := io.CopyN(bw, proto.rw, int64(h.len)); err != nil {
+					log.Panic(err)
+				}
 			}
-			log.Tracef("stream cmd: %d flag: %d len: %d", h.cmd, h.flag, h.len)
-			if _, err := io.CopyN(bw, proto.rw, int64(h.len)); err != nil {
-				return nil, err
-			}
-		}
+		}()
+	} else {
+		defer proto.packetMu.Unlock()
 	}
 
 	if p.flag == QuicFlagExit {
@@ -228,9 +232,6 @@ func (proto *QuicProtocol) readPacket(o opts) (*QuicPacket, error) {
 }
 
 func (proto *QuicProtocol) read(o opts) (*QuicPacket, error) {
-	proto.packetMu.Lock()
-	defer proto.packetMu.Unlock()
-
 	for {
 		p, err := proto.readPacket(o)
 		if err != nil {
@@ -272,10 +273,14 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, o opts) (*QuicPacket, error) {
 		return nil, err
 	}
 
+	proto.packetMu.Lock()
+
 	if _, err := io.Copy(proto.rw, buf); err != nil {
+		proto.packetMu.Unlock()
 		return nil, err
 	}
 	if buf.Len() != 0 {
+		proto.packetMu.Unlock()
 		return nil, ErrShortWrite
 	}
 
@@ -283,8 +288,10 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, o opts) (*QuicPacket, error) {
 
 	p, err := proto.read(o)
 	if err != nil {
+		proto.packetMu.Unlock()
 		return nil, err
 	}
+
 	if p.flag == QuicFlagError {
 		var msg string
 		if err := cbor.NewDecoder(p.Payload).Decode(&msg); err != nil {
