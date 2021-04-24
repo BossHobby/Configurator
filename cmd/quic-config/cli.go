@@ -183,7 +183,7 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) error {
 			return err
 		}
 
-		p, err := qp.SendValue(quic.QuicCmdBlackbox, val)
+		p, err := qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(val))
 		if err != nil {
 			return err
 		}
@@ -292,7 +292,7 @@ func handleCommand(fc *controller.Controller, qp *quic.QuicProtocol) error {
 		port := uint8(1)
 		baud := uint32(57600)
 
-		p, err := qp.SendValue(quic.QuicCmdSerial, quic.QuicSerialEnable, port, baud)
+		p, err := qp.Send(quic.QuicCmdSerial, quic.Opts().WithValue(quic.QuicSerialEnable, port, baud))
 		if err != nil {
 			return err
 		}

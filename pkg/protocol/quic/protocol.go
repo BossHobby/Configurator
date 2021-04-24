@@ -26,6 +26,35 @@ var (
 	log = logrus.WithField("protocol", "quic")
 )
 
+type opts struct {
+	timeout bool
+	reader  io.Reader
+	value   []interface{}
+}
+
+func Opts() opts {
+	return opts{
+		timeout: true,
+		reader:  nil,
+		value:   make([]interface{}, 0),
+	}
+}
+
+func (o opts) WithTimeout(t bool) opts {
+	o.timeout = t
+	return o
+}
+
+func (o opts) WithReader(r io.Reader) opts {
+	o.reader = r
+	return o
+}
+
+func (o opts) WithValue(v ...interface{}) opts {
+	o.value = v
+	return o
+}
+
 type QuicProtocol struct {
 	Log chan string
 
@@ -107,9 +136,12 @@ func (proto *QuicProtocol) readHeader() (*QuicPacket, error) {
 	}, nil
 }
 
-func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
+func (proto *QuicProtocol) readPacket(o opts) (*QuicPacket, error) {
 	p, err := proto.readHeader()
 	if err != nil {
+		if err == controller.ErrTimeout && !o.timeout {
+			return nil, errUpdatePacket
+		}
 		return nil, err
 	}
 
@@ -195,12 +227,12 @@ func (proto *QuicProtocol) readPacket() (*QuicPacket, error) {
 	return p, nil
 }
 
-func (proto *QuicProtocol) read() (*QuicPacket, error) {
+func (proto *QuicProtocol) read(o opts) (*QuicPacket, error) {
 	proto.packetMu.Lock()
 	defer proto.packetMu.Unlock()
 
 	for {
-		p, err := proto.readPacket()
+		p, err := proto.readPacket(o)
 		if err != nil {
 			if err == errUpdatePacket {
 				continue
@@ -211,8 +243,21 @@ func (proto *QuicProtocol) read() (*QuicPacket, error) {
 	}
 }
 
-func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, error) {
-	data, err := ioutil.ReadAll(r)
+func (proto *QuicProtocol) Send(cmd QuicCommand, o opts) (*QuicPacket, error) {
+	if len(o.value) > 0 {
+		buf := new(bytes.Buffer)
+
+		enc := cbor.NewEncoder(buf)
+		for _, v := range o.value {
+			if err := enc.Encode(v); err != nil {
+				return nil, err
+			}
+		}
+
+		o = o.WithReader(buf)
+	}
+
+	data, err := ioutil.ReadAll(o.reader)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +281,7 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 
 	log.Debugf("sent cmd: %d len: %d", cmd, len(data))
 
-	p, err := proto.read()
+	p, err := proto.read(o)
 	if err != nil {
 		return nil, err
 	}
@@ -250,21 +295,8 @@ func (proto *QuicProtocol) Send(cmd QuicCommand, r io.Reader) (*QuicPacket, erro
 	return p, nil
 }
 
-func (proto *QuicProtocol) SendValue(cmd QuicCommand, val ...interface{}) (*QuicPacket, error) {
-	buf := new(bytes.Buffer)
-
-	enc := cbor.NewEncoder(buf)
-	for _, v := range val {
-		if err := enc.Encode(v); err != nil {
-			return nil, err
-		}
-	}
-
-	return proto.Send(cmd, buf)
-}
-
 func (proto *QuicProtocol) Get(typ QuicValue) (io.ReadCloser, error) {
-	p, err := proto.SendValue(QuicCmdGet, typ)
+	p, err := proto.Send(QuicCmdGet, Opts().WithValue(typ))
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +339,7 @@ func (proto *QuicProtocol) Set(typ QuicValue, r io.Reader) (io.ReadCloser, error
 		return nil, err
 	}
 
-	p, err := proto.Send(QuicCmdSet, buf)
+	p, err := proto.Send(QuicCmdSet, Opts().WithReader(buf))
 	if err != nil {
 		return nil, err
 	}

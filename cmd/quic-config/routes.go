@@ -252,7 +252,7 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, id)
+	p, err := s.qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(quic.QuicBlackboxGet, id))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -285,7 +285,7 @@ func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := s.qp.SendValue(quic.QuicCmdBlackbox, quic.QuicBlackboxGet, id)
+	p, err := s.qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(quic.QuicBlackboxGet, id))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -318,13 +318,7 @@ func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
-	req := new(bytes.Buffer)
-	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxList); err != nil {
-		handleError(w, err)
-		return
-	}
-
-	p, err := s.qp.Send(quic.QuicCmdBlackbox, req)
+	p, err := s.qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(quic.QuicBlackboxList))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -340,12 +334,7 @@ func (s *Server) getBlackboxList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) posResetBlackbox(w http.ResponseWriter, r *http.Request) {
-	req := new(bytes.Buffer)
-	if err := cbor.NewEncoder(req).Encode(quic.QuicBlackboxReset); err != nil {
-		handleError(w, err)
-		return
-	}
-	if _, err := s.qp.Send(quic.QuicCmdBlackbox, req); err != nil {
+	if _, err := s.qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(quic.QuicBlackboxReset).WithTimeout(false)); err != nil {
 		handleError(w, err)
 		return
 	}
@@ -354,7 +343,7 @@ func (s *Server) posResetBlackbox(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postCalImu(w http.ResponseWriter, r *http.Request) {
-	_, err := s.qp.Send(quic.QuicCmdCalImu, new(bytes.Buffer))
+	_, err := s.qp.Send(quic.QuicCmdCalImu, quic.Opts().WithReader(new(bytes.Buffer)))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -548,7 +537,7 @@ func (s *Server) postUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getMotorTest(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestStatus)
+	p, err := s.qp.Send(quic.QuicCmdMotor, quic.Opts().WithValue(quic.QuicMotorTestStatus))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -564,7 +553,7 @@ func (s *Server) getMotorTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postMotorTestEnable(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestEnable)
+	p, err := s.qp.Send(quic.QuicCmdMotor, quic.Opts().WithValue(quic.QuicMotorTestEnable))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -579,7 +568,7 @@ func (s *Server) postMotorTestEnable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postMotorTestDisable(w http.ResponseWriter, r *http.Request) {
-	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestDisable)
+	p, err := s.qp.Send(quic.QuicCmdMotor, quic.Opts().WithValue(quic.QuicMotorTestDisable))
 	if err != nil {
 		handleError(w, err)
 		return
@@ -600,7 +589,7 @@ func (s *Server) postMotorTestValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := s.qp.SendValue(quic.QuicCmdMotor, quic.QuicMotorTestSetValue, input)
+	p, err := s.qp.Send(quic.QuicCmdMotor, quic.Opts().WithValue(quic.QuicMotorTestSetValue, input))
 	if err != nil {
 		handleError(w, err)
 		return
