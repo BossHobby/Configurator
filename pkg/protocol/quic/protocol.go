@@ -207,6 +207,9 @@ func (proto *QuicProtocol) readPacket(o opts) (*QuicPacket, error) {
 			for {
 				h, err := proto.readHeader()
 				if err != nil {
+					if err == controller.ErrTimeout {
+						continue
+					}
 					log.Panic(err)
 				}
 				if h.len == 0 {
