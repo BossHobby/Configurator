@@ -80,9 +80,17 @@ var DefaultFields = []FieldDefinition{
 	//"amperageLatest",
 	//"rssi",
 
+	{Name: "gyroRaw[0]", Signed: true},
+	{Name: "gyroRaw[1]", Signed: true},
+	{Name: "gyroRaw[2]", Signed: true, Convert: convertFlip},
+
 	{Name: "gyroADC[0]", Signed: true},
 	{Name: "gyroADC[1]", Signed: true},
 	{Name: "gyroADC[2]", Signed: true, Convert: convertFlip},
+
+	{Name: "accRaw[0]", Signed: true},
+	{Name: "accRaw[1]", Signed: true},
+	{Name: "accRaw[2]", Signed: true, Convert: convertOffset(1000)},
 
 	{Name: "accSmooth[0]", Signed: true},
 	{Name: "accSmooth[1]", Signed: true},
@@ -174,6 +182,10 @@ func (w *Writer) WriteHeaders() {
 	w.writeHeaderRaw("gyro_scale", "0x3089705f")
 	w.writeHeaderRaw("acc_1G", "1000")
 	w.writeHeaderRaw("motorOutput", "0,1000")
+
+	// todo: fetch real value
+	w.writeHeaderRaw("looptime", "250")        // for FFT Hz scaling
+	w.writeHeaderRaw("pid_process_denom", "2") // for FFT Hz scaling
 }
 
 func (w *Writer) writeUnsigned(val uint) (int, error) {

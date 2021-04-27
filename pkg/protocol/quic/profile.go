@@ -182,10 +182,10 @@ type BlackboxCompact struct {
 	Rx       [4]int `cbor:"rx" json:"rx" blackbox:"rcCommand[]"`
 	Setpoint [4]int `cbor:"setpoint" json:"setpoint" blackbox:"setpoint[]"`
 
-	AccelRaw    [3]int `cbor:"accel_raw" json:"accel_raw"`
+	AccelRaw    [3]int `cbor:"accel_raw" json:"accel_raw"  blackbox:"accRaw[]"`
 	AccelFilter [3]int `cbor:"accel_filter" json:"accel_filter" blackbox:"accSmooth[]"`
 
-	GyroRaw    [3]int `cbor:"gyro_raw" json:"gyro_raw"`
+	GyroRaw    [3]int `cbor:"gyro_raw" json:"gyro_raw" blackbox:"gyroRaw[]"`
 	GyroFilter [3]int `cbor:"gyro_filter" json:"gyro_filter" blackbox:"gyroADC[]"`
 
 	Motor [4]int `cbor:"motor" json:"motor" blackbox:"motor[]"`
