@@ -276,14 +276,13 @@ func (s *Server) getBlackbox(w http.ResponseWriter, r *http.Request) {
 func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+s.status.Info.TargetName+".bfl")
-	//w.Header().Set("Content-Type", "application/json")
-
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		handleError(w, err)
 		return
 	}
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+s.status.Info.TargetName+"_file_"+vars["id"]+".bfl")
 
 	p, err := s.qp.Send(quic.QuicCmdBlackbox, quic.Opts().WithValue(quic.QuicBlackboxGet, id))
 	if err != nil {
@@ -297,6 +296,9 @@ func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 
 	dec := cbor.NewDecoder(p.Payload)
 	value := quic.BlackboxCompact{}
+	firstLoop := -1
+	lastLoop := 0
+
 	for {
 		if err := dec.Decode(&value); err != nil {
 			if err == io.EOF {
@@ -306,6 +308,22 @@ func (s *Server) downloadBlackbox(w http.ResponseWriter, r *http.Request) {
 			handleError(w, err)
 			return
 		}
+
+		if value.CPULoad > 1000 {
+			continue
+		}
+
+		if firstLoop == -1 {
+			firstLoop = int(value.Loop)
+			lastLoop = int(value.Loop)
+		}
+
+		if lastLoop != int(value.Loop) {
+			log.Debugf("Missing blackbox iteration %d", lastLoop)
+		}
+		lastLoop = int(value.Loop) + 1
+
+		value.Loop = value.Loop - uint32(firstLoop)
 
 		value.AccelFilter = [3]int{
 			-value.AccelFilter[1],
