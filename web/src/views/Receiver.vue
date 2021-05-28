@@ -10,6 +10,17 @@
           protoNames[status.Info.rx_protocol]
         }}</b-col>
       </b-row>
+      <b-row v-if="status.Info.quic_protocol_version > 3">
+        <b-col sm="4" class="my-2">
+          <label>LQI Source</label>
+        </b-col>
+        <b-col sm="4" class="my-2">
+          <b-form-select
+            v-model.number="channel_lqi_source"
+            :options="lqiSourceNames"
+          ></b-form-select>
+        </b-col>
+      </b-row>
       <b-row v-if="status.Info.quic_protocol_version > 2">
         <b-col sm="4" class="my-2">
           <label>Bind Enabled</label>
@@ -47,12 +58,18 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "Receiver",
   data() {
     return {
       intervalEnabled: true,
+      lqiSourceNames: [
+        { value: 0, text: "PACKET_RATE" },
+        { value: 1, text: "CHANNEL" },
+        { value: 2, text: "DIRECT" },
+      ],
       protoNames: [
         "INVALID",
         "UNIFIED_SERIAL",
@@ -84,6 +101,7 @@ export default {
     };
   },
   computed: {
+    ...mapFields("profile", ["channel.lqi_source"]),
     ...mapState(["status", "state", "bind"]),
     proto() {
       return this.protoNames.reduce((m, v, i) => {

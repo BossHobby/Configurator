@@ -84,7 +84,8 @@ type Voltage struct {
 }
 
 type Channel struct {
-	Aux []uint `cbor:"aux" json:"aux"`
+	LqiSource uint   `cbor:"lqi_source" json:"lqi_source"`
+	Aux       []uint `cbor:"aux" json:"aux"`
 }
 
 type OSD struct {
