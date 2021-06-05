@@ -13,7 +13,7 @@
             <b-col sm="3" class="my-1">
               <b-form-select
                 :id="func"
-                v-model.number="channel_aux[index]"
+                v-model.number="receiver_aux[index]"
                 :options="auxChannels"
               ></b-form-select>
             </b-col>
@@ -46,7 +46,7 @@ export default {
   name: "Channels",
   components: {},
   computed: {
-    ...mapFields("profile", ["channel.aux"]),
+    ...mapFields("profile", ["receiver.aux"]),
     ...mapState({
       aux: (state) => state.state.aux,
     }),
@@ -54,18 +54,18 @@ export default {
   data() {
     return {
       auxChannels: [
-        { value: 0, text: "AUX_1" },
-        { value: 1, text: "AUX_2" },
-        { value: 2, text: "AUX_3" },
-        { value: 3, text: "AUX_4" },
-        { value: 4, text: "AUX_5" },
-        { value: 5, text: "AUX_6" },
-        { value: 6, text: "AUX_7" },
-        { value: 7, text: "AUX_8" },
-        { value: 8, text: "AUX_9" },
-        { value: 9, text: "AUX_10" },
-        { value: 10, text: "AUX_11" },
-        { value: 11, text: "AUX_12" },
+        { value: 0, text: "CHANNEL_5" },
+        { value: 1, text: "CHANNEL_6" },
+        { value: 2, text: "CHANNEL_7" },
+        { value: 3, text: "CHANNEL_8" },
+        { value: 4, text: "CHANNEL_9" },
+        { value: 5, text: "CHANNEL_10" },
+        { value: 6, text: "CHANNEL_11" },
+        { value: 7, text: "CHANNEL_12" },
+        { value: 8, text: "CHANNEL_13" },
+        { value: 9, text: "CHANNEL_14" },
+        { value: 10, text: "CHANNEL_15" },
+        { value: 11, text: "CHANNEL_16" },
         { value: 12, text: "OFF" },
         { value: 13, text: "ON" },
         { value: 14, text: "AUX_GESTURE" },

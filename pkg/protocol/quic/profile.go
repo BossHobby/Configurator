@@ -83,9 +83,9 @@ type Voltage struct {
 	ReportedTelemetryVoltage float32 `cbor:"reported_telemetry_voltage" json:"reported_telemetry_voltage"`
 }
 
-type Channel struct {
-	LqiSource uint   `cbor:"lqi_source" json:"lqi_source"`
+type Receiver struct {
 	Aux       []uint `cbor:"aux" json:"aux"`
+	LqiSource uint   `cbor:"lqi_source" json:"lqi_source"`
 }
 
 type OSD struct {
@@ -129,15 +129,15 @@ func (m *Metadata) UnmarshalCBOR(data []byte) error {
 }
 
 type Profile struct {
-	Meta    Metadata `cbor:"meta,omitempty" json:"meta"`
-	Channel Channel  `cbor:"channel,omitempty" json:"channel"`
-	Motor   Motor    `cbor:"motor,omitempty" json:"motor"`
-	Serial  Serial   `cbor:"serial,omitempty" json:"serial"`
-	Filter  Filter   `cbor:"filter,omitempty" json:"filter"`
-	OSD     OSD      `cbor:"osd,omitempty" json:"osd"`
-	Voltage Voltage  `cbor:"voltage,omitempty" json:"voltage"`
-	Rate    Rates    `cbor:"rate,omitempty" json:"rate"`
-	PID     PID      `cbor:"pid,omitempty" json:"pid"`
+	Meta     Metadata `cbor:"meta,omitempty" json:"meta"`
+	Receiver Receiver `cbor:"receiver,omitempty" json:"receiver"`
+	Motor    Motor    `cbor:"motor,omitempty" json:"motor"`
+	Serial   Serial   `cbor:"serial,omitempty" json:"serial"`
+	Filter   Filter   `cbor:"filter,omitempty" json:"filter"`
+	OSD      OSD      `cbor:"osd,omitempty" json:"osd"`
+	Voltage  Voltage  `cbor:"voltage,omitempty" json:"voltage"`
+	Rate     Rates    `cbor:"rate,omitempty" json:"rate"`
+	PID      PID      `cbor:"pid,omitempty" json:"pid"`
 }
 
 func (p *Profile) Filename() string {

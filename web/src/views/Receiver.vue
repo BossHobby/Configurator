@@ -16,7 +16,7 @@
         </b-col>
         <b-col sm="4" class="my-2">
           <b-form-select
-            v-model.number="channel_lqi_source"
+            v-model.number="receiver_lqi_source"
             :options="lqiSourceNames"
           ></b-form-select>
         </b-col>
@@ -101,7 +101,7 @@ export default {
     };
   },
   computed: {
-    ...mapFields("profile", ["channel.lqi_source"]),
+    ...mapFields("profile", ["receiver.lqi_source"]),
     ...mapState(["status", "state", "bind"]),
     proto() {
       return this.protoNames.reduce((m, v, i) => {

@@ -29,7 +29,8 @@ const store = {
       betaflight: {},
     },
     voltage: {},
-    channel: {
+    receiver: {
+      lqi_source: -1,
       aux: [],
     },
     pid: {
