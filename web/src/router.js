@@ -5,7 +5,6 @@ import store from './store'
 
 import Setup from './views/Setup.vue'
 import Rates from './views/Rates.vue'
-import Channels from './views/Channels.vue'
 import Receiver from './views/Receiver.vue'
 import OSD from './views/OSD.vue'
 import Motor from './views/Motor.vue'
@@ -55,11 +54,6 @@ const router = new Router({
       path: '/rates',
       name: 'rates',
       component: Rates
-    },
-    {
-      path: '/channels',
-      name: 'channels',
-      component: Channels
     },
     {
       path: '/receiver',

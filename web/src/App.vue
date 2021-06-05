@@ -13,9 +13,8 @@
       <b-navbar-nav v-if="status.IsConnected">
         <b-nav-item to="/profile">Profile</b-nav-item>
         <b-nav-item to="/setup">Setup</b-nav-item>
-        <b-nav-item to="/receiver">Receiver</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
-        <b-nav-item to="/channels">Channels</b-nav-item>
+        <b-nav-item to="/receiver">Receiver</b-nav-item>
         <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
         <b-nav-item

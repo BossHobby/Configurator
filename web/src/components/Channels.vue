@@ -1,41 +1,37 @@
 <template>
-  <b-container>
-    <b-card>
-      <h5 slot="header" class="mb-0">Channels</h5>
-      <b-row>
-        <b-col sm="8">
-          <b-row v-for="(func, index) in auxFunctions" :key="func">
-            <b-col sm="6" class="my-1">
-              <label :for="func" :class="classForIndex(index)">{{
-                func
-              }}</label>
-            </b-col>
-            <b-col sm="3" class="my-1">
-              <b-form-select
-                :id="func"
-                v-model.number="receiver_aux[index]"
-                :options="auxChannels"
-              ></b-form-select>
-            </b-col>
+  <b-card>
+    <h5 slot="header" class="mb-0">Channels</h5>
+    <b-row>
+      <b-col sm="8">
+        <b-row v-for="(func, index) in auxFunctions" :key="func">
+          <b-col sm="6" class="my-1">
+            <label :for="func" :class="classForIndex(index)">{{ func }}</label>
+          </b-col>
+          <b-col sm="3" class="my-1">
+            <b-form-select
+              :id="func"
+              v-model.number="receiver_aux[index]"
+              :options="auxChannels"
+            ></b-form-select>
+          </b-col>
+        </b-row>
+      </b-col>
+      <b-col offset="0" sm="4">
+        <b-card>
+          <h6 slot="header" class="mb-0">Current AUX State</h6>
+          <b-row v-for="(v, index) in auxChannels" :key="v.text">
+            <b-col sm="6" class="my-1">{{ v.text }}</b-col>
+            <b-col
+              sm="6"
+              class="my-1"
+              :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
+              >{{ valueForIndex(index) ? "ON" : "OFF" }}</b-col
+            >
           </b-row>
-        </b-col>
-        <b-col offset="0" sm="4">
-          <b-card>
-            <h6 slot="header" class="mb-0">Current AUX State</h6>
-            <b-row v-for="(v, index) in auxChannels" :key="v.text">
-              <b-col sm="6" class="my-1">{{ v.text }}</b-col>
-              <b-col
-                sm="6"
-                class="my-1"
-                :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
-                >{{ valueForIndex(index) ? "ON" : "OFF" }}</b-col
-              >
-            </b-row>
-          </b-card>
-        </b-col>
-      </b-row>
-    </b-card>
-  </b-container>
+        </b-card>
+      </b-col>
+    </b-row>
+  </b-card>
 </template>
 
 <script>
@@ -108,6 +104,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-</style>
