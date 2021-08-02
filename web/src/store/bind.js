@@ -4,7 +4,7 @@ import { get } from "@/store/api.js";
 const store = {
   state: {
     info: {
-      bind_enable: 0,
+      ready_to_bind: 0,
     }
   },
   getters: {},

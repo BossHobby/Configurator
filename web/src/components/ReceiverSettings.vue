@@ -22,10 +22,10 @@
     </b-row>
     <b-row v-if="status.Info.quic_protocol_version > 2">
       <b-col sm="4" class="my-2">
-        <label>Bind Enabled</label>
+        <label>Ready To Bind</label>
       </b-col>
       <b-col sm="8" class="my-2">{{
-        bind.info.bind_enable ? "yes" : "no"
+        bind.info.ready_to_bind ? "yes" : "no"
       }}</b-col>
     </b-row>
     <b-row v-if="status.Info.quic_protocol_version > 2">
