@@ -166,7 +166,7 @@ type TargetInfo struct {
 }
 
 type BindInfo struct {
-	BindEnable uint   `cbor:"ready_to_bind" json:"ready_to_bind"`
+	BindEnable uint   `cbor:"bind_saved" json:"bind_saved"`
 	Raw        []byte `cbor:"raw" json:"raw"`
 }
 
