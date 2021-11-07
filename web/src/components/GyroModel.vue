@@ -61,7 +61,7 @@ export default {
       }
       const x = Math.atan2(rot[1], rot[2]);
       const y = Math.atan2(rot[0], rot[2]);
-      return { x: x, y: 0, z: y };
+      return { x: -x, y: 0, z: -y };
     },
   },
   methods: {
