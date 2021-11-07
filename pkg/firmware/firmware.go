@@ -64,6 +64,9 @@ func (l *FirmwareLoader) ListReleases() ([]string, error) {
 
 	results := make([]string, 0)
 	for _, r := range releases {
+		if len(r.Assets) == 0 {
+			continue
+		}
 		results = append(results, r.GetTagName())
 	}
 	return results, nil
