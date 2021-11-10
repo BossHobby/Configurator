@@ -21,9 +21,7 @@
       </b-col>
     </b-row>
     <b-row v-if="status.Info.quic_protocol_version > 2">
-      <b-col sm="4" class="my-2">
-        <label>Bind Saved</label>
-      </b-col>
+      <b-col sm="4" class="my-2"> <label>Bind Saved</label><br /> </b-col>
       <b-col sm="8" class="my-2">{{
         bind.info.bind_saved ? "yes" : "no"
       }}</b-col>
@@ -50,6 +48,14 @@
         <label>Protocol</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ serialProtoStatus }}</b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="12" class="my-2">
+        <small>
+          Save Bind by moving your right transmitter stick UP-UP-UP followed by
+          DOWN-DOWN-DOWN
+        </small>
+      </b-col>
     </b-row>
   </b-card>
 </template>
