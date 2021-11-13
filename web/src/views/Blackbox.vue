@@ -9,18 +9,17 @@
             <b-progress
               class="w-25 mt-2"
               :value="usedSize * 128"
-              :max="blackbox.list.flash_size"
+              :max="blackbox.list.flash_size * 1024"
               show-progress
             >
             </b-progress>
             <h6>
               Used:
               {{ humanFileSize(usedSize * 128) }} /
-              {{ humanFileSize(blackbox.list.flash_size) }}
+              {{ humanFileSize(blackbox.list.flash_size * 1024) }}
             </h6>
           </h5>
           <div>
-            <div></div>
             <div v-for="(size, index) in blackbox.list.files" :key="index">
               File {{ index + 1 }}: {{ humanFileSize(size * 128) }}
               <b-button
@@ -57,7 +56,7 @@ export default {
   computed: {
     ...mapState(["blackbox"]),
     usedSize() {
-      return this.blackbox.list.files.reduce((p, c) => p + c, 0);
+      return (this.blackbox?.list?.files || []).reduce((p, c) => p + c, 0);
     },
   },
   methods: {
