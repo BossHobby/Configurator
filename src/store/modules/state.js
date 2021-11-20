@@ -1,3 +1,5 @@
+import { QuicVal } from '../serial/quic';
+import { serial } from '../serial/serial';
 
 const store = {
   state: {
@@ -18,7 +20,13 @@ const store = {
       }
     },
   },
-  actions: {}
+  actions: {
+    fetch_state({ commit }) {
+      return serial
+        .get(QuicVal.State)
+        .then(s => commit('set_state', s));
+    }
+  }
 }
 
 export default store;

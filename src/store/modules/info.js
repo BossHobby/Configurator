@@ -25,9 +25,6 @@ const store = {
     },
   },
   actions: {
-    soft_reboot() {
-      return post("/api/soft_reboot", {})
-    },
     connect_flash({ commit }) {
       return post("/api/flash/connect", {})
         .then(() => commit('set_betaflight_target', null))

@@ -45,7 +45,7 @@
       <b-col sm="6">
         <b-button
           class="my-2"
-          href="http://localhost:8000/api/profile/download"
+          @click="downloadProfile"
           :hidden="!serial.is_connected"
           >Save Profile</b-button
         >
@@ -64,12 +64,15 @@
         </form>
       </b-col>
     </b-row>
+    <a ref="downloadAnchor" target="_blank"></a>
   </b-card>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
+import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
+import { QuicVal } from "@/store/serial/quic";
 
 export default {
   name: "Metadata",
@@ -92,32 +95,36 @@ export default {
     },
   },
   methods: {
+    ...mapActions(["apply_profile"]),
     uploadProfile() {
+      const reader = new FileReader();
+      reader.addEventListener("load", (event) => {
+        const profile = JSON.parse(event.target.result);
+        this.apply_profile(profile);
+      });
+
       this.$refs.file.oninput = () => {
         if (!this.$refs.file.files.length) {
           return;
         }
-
-        const file = this.$refs.file.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        fetch("http://localhost:8000/api/profile/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then((res) => res.json())
-          .then((p) => this.$store.commit("set_profile", p))
-          .then(() => this.$refs.form.reset())
-          .then(() =>
-            this.$store.commit("append_alert", {
-              type: "success",
-              msg: "profile uploaded!",
-            })
-          );
+        reader.readAsText(this.$refs.file.files[0]);
       };
 
       this.$refs.file.click();
+    },
+    downloadProfile() {
+      return serial.get(QuicVal.Profile).then((profile) => {
+        const encoded = encodeURIComponent(JSON.stringify(profile));
+        const json = "data:text/json;charset=utf-8," + encoded;
+
+        const date = this.date.toISOString().substring(0, 10);
+        const name = profile.meta.name.replace(/\0/g, "");
+        const filename = `Profile_${name}_${date}.json`;
+
+        this.$refs.downloadAnchor.setAttribute("href", json);
+        this.$refs.downloadAnchor.setAttribute("download", filename);
+        this.$refs.downloadAnchor.click();
+      });
     },
   },
 };
