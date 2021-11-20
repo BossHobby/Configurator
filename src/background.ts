@@ -26,6 +26,7 @@ async function createWindow() {
   })
 
   win.webContents.session.on('select-serial-port', (event, portList, webContents, callback) => {
+    console.log('select-serial-port', portList)
     event.preventDefault()
     if (portList && portList.length > 0) {
       callback(portList[0].portId)
@@ -43,13 +44,15 @@ async function createWindow() {
   })
 
   win.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
-    if (permission === 'serial' && (details.securityOrigin === 'app://.' || process.env.WEBPACK_DEV_SERVER_URL)) {
+    console.log('setPermissionCheckHandler', details)
+    if (permission === 'serial' && (details.securityOrigin === 'app://./' || process.env.WEBPACK_DEV_SERVER_URL)) {
       return true
     }
     return false;
   })
 
   win.webContents.session.setDevicePermissionHandler((details) => {
+    console.log('setDevicePermissionHandler', details)
     if (details.deviceType === 'serial' && (details.origin === 'app://.' || process.env.WEBPACK_DEV_SERVER_URL)) {
       return true
     }

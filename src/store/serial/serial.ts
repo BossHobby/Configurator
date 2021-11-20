@@ -6,6 +6,11 @@ const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
 
 class SerialQueue {
   private buffer: number[] = [];
+  private canRead = false;
+
+  constructor() {
+    this.canRead = true;
+  }
 
   push(array: Uint8Array) {
     for (const v of array) {
@@ -18,6 +23,9 @@ class SerialQueue {
       let tries = 100;
 
       const tryRead = () => {
+        if (!this.canRead) {
+          return reject("cant read");
+        }
         if (this.buffer.length) {
           return resolve(this.buffer.shift()!);
         }
@@ -37,6 +45,10 @@ class SerialQueue {
       buffer.push(await this.pop());
     }
     return buffer;
+  }
+
+  close() {
+    this.canRead = false;
   }
 }
 
@@ -62,6 +74,8 @@ export class Serial {
   constructor() { }
 
   async connect(port: any): Promise<any> {
+    console.log("Serial.connect")
+
     try {
       this.port = await navigator.serial.requestPort({
         filters: [
@@ -75,17 +89,18 @@ export class Serial {
       this.writer = await this.port.writable.getWriter();
       this.reader = await this.port.readable.getReader();
 
+      this.shouldRun = true;
       this.startReading();
 
-      return this.get(QuicVal.Info);
+      return await this.get(QuicVal.Info);
     } catch (err) {
-      this.close();
+      await this.close();
       throw err;
     }
   }
 
   async softReboot() {
-    await this.writer!.write(new Uint8Array([SOFT_REBOOT_MAGIC]));
+    await this.write(new Uint8Array([SOFT_REBOOT_MAGIC]));
   }
 
   onError(fn: any) {
@@ -130,6 +145,9 @@ export class Serial {
   }
 
   async close() {
+    console.log("Serial.close")
+
+    this.queue.close();
     this.shouldRun = false;
 
     if (this.reader) {
@@ -163,9 +181,18 @@ export class Serial {
 
   private async send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
     if (!this.inFlight) {
-      return this.inFlight = this._send(cmd, ...values);
+      return this.inFlight = this._send(cmd, ...values).catch(err => {
+        this.inFlight = undefined;
+        throw err
+      });
     }
-    return this.inFlight = this.inFlight.then(() => this._send(cmd, ...values));
+    return this.inFlight = this
+      .inFlight
+      .then(() => this._send(cmd, ...values))
+      .catch(err => {
+        this.inFlight = undefined;
+        throw err
+      });
   }
 
   private async _send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
@@ -179,9 +206,15 @@ export class Serial {
     ]);
 
     // console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
-    await this.writer!.write(new Uint8Array([...request, ...payload]));
+    await this.write(new Uint8Array([...request, ...payload]));
 
-    return this.readPacket();
+    return await this.readPacket();
+  }
+
+  private async write(array: Uint8Array) {
+    if (this.writer) {
+      await this.writer.write(array);
+    }
   }
 
   private encodeValues(values: any[]): Uint8Array {
@@ -225,7 +258,7 @@ export class Serial {
   }
 
   private async startReading() {
-    this.shouldRun = true;
+    console.log("Serial.startReading")
 
     while (this.shouldRun) {
       try {
