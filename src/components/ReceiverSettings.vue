@@ -1,15 +1,13 @@
 <template>
   <b-card>
     <h5 slot="header" class="mb-0">Receiver</h5>
-    <b-row v-if="status.Info.rx_protocol != null">
+    <b-row v-if="info.rx_protocol != null">
       <b-col sm="4" class="my-2">
         <label>Protocol</label>
       </b-col>
-      <b-col sm="8" class="my-2">{{
-        protoNames[status.Info.rx_protocol]
-      }}</b-col>
+      <b-col sm="8" class="my-2">{{ protoNames[info.rx_protocol] }}</b-col>
     </b-row>
-    <b-row v-if="status.Info.quic_protocol_version > 3">
+    <b-row v-if="info.quic_protocol_version > 3">
       <b-col sm="4" class="my-2">
         <label>LQI Source</label>
       </b-col>
@@ -20,19 +18,19 @@
         ></b-form-select>
       </b-col>
     </b-row>
-    <b-row v-if="status.Info.quic_protocol_version > 2">
+    <b-row v-if="info.quic_protocol_version > 2">
       <b-col sm="4" class="my-2"> <label>Bind Saved</label><br /> </b-col>
       <b-col sm="8" class="my-2">{{
         bind.info.bind_saved ? "yes" : "no"
       }}</b-col>
     </b-row>
-    <b-row v-if="status.Info.quic_protocol_version > 2">
+    <b-row v-if="info.quic_protocol_version > 2">
       <b-col sm="4" class="my-2">
         <label>RSSI</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ state.rx_rssi }}</b-col>
     </b-row>
-    <b-row v-if="status.Info.quic_protocol_version > 2">
+    <b-row v-if="info.quic_protocol_version > 2">
       <b-col sm="4" class="my-2">
         <label>Status</label>
       </b-col>
@@ -40,8 +38,8 @@
     </b-row>
     <b-row
       v-if="
-        status.Info.quic_protocol_version > 2 &&
-        status.Info.rx_protocol == proto.UNIFIED_SERIAL
+        info.quic_protocol_version > 2 &&
+        info.rx_protocol == proto.UNIFIED_SERIAL
       "
     >
       <b-col sm="4" class="my-2">
@@ -106,7 +104,7 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["receiver.lqi_source"]),
-    ...mapState(["status", "state", "bind"]),
+    ...mapState(["info", "state", "bind"]),
     proto() {
       return this.protoNames.reduce((m, v, i) => {
         m[v] = i;
@@ -125,7 +123,7 @@ export default {
         this.proto.FRSKY_D16,
         this.proto.REDPINE,
       ];
-      if (spi.includes(this.status.Info.rx_protocol)) {
+      if (spi.includes(this.info.rx_protocol)) {
         const status = [
           "RX_STATUS_NONE",
           "RX_STATUS_BINDING",
@@ -133,7 +131,7 @@ export default {
         ];
         return status[this.state.rx_status];
       }
-      if (this.status.Info.rx_protocol == this.proto.UNIFIED_SERIAL) {
+      if (this.info.rx_protocol == this.proto.UNIFIED_SERIAL) {
         if (this.state.rx_status < 100) {
           return "RX_STATUS_NONE";
         }
@@ -170,7 +168,7 @@ export default {
     },
   },
   created() {
-    if (this.status.Info.quic_protocol_version > 2) {
+    if (this.info.quic_protocol_version > 2) {
       this.startInterval();
     }
   },

@@ -6,7 +6,11 @@
         <label for="invert-yaw">RX</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-select id="invert-yaw" v-model.number="serial.rx" :options="serialPorts"></b-form-select>
+        <b-form-select
+          id="invert-yaw"
+          v-model.number="serial.rx"
+          :options="serialPorts"
+        ></b-form-select>
       </b-col>
     </b-row>
     <b-row>
@@ -14,7 +18,11 @@
         <label for="invert-yaw">Smart Audio</label>
       </b-col>
       <b-col sm="8" class="my-2">
-        <b-form-select id="invert-yaw" v-model.number="serial.smart_audio" :options="serialPorts"></b-form-select>
+        <b-form-select
+          id="invert-yaw"
+          v-model.number="serial.smart_audio"
+          :options="serialPorts"
+        ></b-form-select>
       </b-col>
     </b-row>
   </b-card>
@@ -28,14 +36,14 @@ export default {
   name: "serial",
   computed: {
     ...mapFields("profile", ["serial"]),
-    ...mapState(["status"]),
+    ...mapState(["info"]),
     serialPorts() {
       const ports = [{ value: 0, text: "None" }];
-      for (let i = 1; i < this.status.Info.usart_ports.length; i++) {
-        ports.push({ value: i, text: this.status.Info.usart_ports[i] });
+      for (let i = 1; i < this.info.usart_ports.length; i++) {
+        ports.push({ value: i, text: this.info.usart_ports[i] });
       }
       return ports;
-    }
-  }
+    },
+  },
 };
 </script>

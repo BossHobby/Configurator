@@ -1,4 +1,5 @@
-import { get } from "@/store/api.js";
+import { serial } from '../serial/serial';
+import { QuicVal } from '../serial/quic';
 
 
 const store = {
@@ -15,8 +16,9 @@ const store = {
   },
   actions: {
     fetch_bind_info({ commit }) {
-      return get("/api/bind/info")
-        .then(p => commit('set_bind_info', p))
+      return serial
+        .get(QuicVal.BindInfo)
+        .then(b => commit('set_bind_info', b))
     }
   }
 }

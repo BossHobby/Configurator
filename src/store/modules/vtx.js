@@ -1,4 +1,5 @@
-import { get, post } from "@/store/api.js";
+import { QuicVal } from '../serial/quic';
+import { serial } from '../serial/serial';
 
 
 const store = {
@@ -16,12 +17,14 @@ const store = {
   },
   actions: {
     fetch_vtx_settings({ commit }) {
-      return get("/api/vtx/settings")
-        .then(p => commit('set_vtx_settings', p))
+      return serial
+        .get(QuicVal.VtxSettings)
+        .then(v => commit('set_vtx_settings', v))
     },
     apply_vtx_settings({ commit }, vtx_settings) {
-      return post("/api/vtx/settings", vtx_settings)
-        .then(p => commit('set_vtx_settings', p))
+      return serial
+        .set(QuicVal.VtxSettings, vtx_settings)
+        .then(v => commit('set_vtx_settings', v))
     },
   }
 }

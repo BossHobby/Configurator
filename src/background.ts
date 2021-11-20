@@ -15,13 +15,45 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    autoHideMenuBar: true,
     webPreferences: {
-      
+
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: !!process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
     }
+  })
+
+  win.webContents.session.on('select-serial-port', (event, portList, webContents, callback) => {
+    event.preventDefault()
+    if (portList && portList.length > 0) {
+      callback(portList[0].portId)
+    } else {
+      callback('')
+    }
+  })
+
+  win.webContents.session.on('serial-port-added', (event, port) => {
+    console.log('serial-port-added FIRED WITH', port)
+  })
+
+  win.webContents.session.on('serial-port-removed', (event, port) => {
+    console.log('serial-port-removed FIRED WITH', port)
+  })
+
+  win.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
+    if (permission === 'serial' && (details.securityOrigin === 'app://.' || process.env.WEBPACK_DEV_SERVER_URL)) {
+      return true
+    }
+    return false;
+  })
+
+  win.webContents.session.setDevicePermissionHandler((details) => {
+    if (details.deviceType === 'serial' && (details.origin === 'app://.' || process.env.WEBPACK_DEV_SERVER_URL)) {
+      return true
+    }
+    return false;
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -58,7 +90,7 @@ app.on('ready', async () => {
     // Install Vue Devtools
     try {
       await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
+    } catch (e: any) {
       console.error('Vue Devtools failed to install:', e.toString())
     }
   }

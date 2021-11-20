@@ -1,4 +1,5 @@
-import { post, get } from '@/store/api.js';
+import { QuicCmd, QuicMotor, QuicVal } from '../serial/quic';
+import { serial } from '../serial/serial';
 
 
 const store = {
@@ -27,14 +28,16 @@ const store = {
   },
   actions: {
     fetch_motor_test({ commit }) {
-      return get('/api/motor/test')
-        .then(motor_test => {
-          commit('set_motor_test', motor_test);
+      return serial
+        .command(QuicCmd.Motor, QuicMotor.TestStatus)
+        .then(p => {
+          commit('set_motor_test', p.payload[0]);
         })
     },
     fetch_motor_settings({ commit }) {
       commit('set_loading', true);
-      return get('/api/motor/settings')
+      return serial
+        .get(QuicVal.BLHeliSettings)
         .then(settings => {
           commit('set_motor_settings', settings);
         })
@@ -48,7 +51,8 @@ const store = {
     },
     apply_motor_settings({ commit }, settings) {
       commit('set_loading', true);
-      return post('/api/motor/settings', settings)
+      return serial
+        .set(QuicVal.BLHeliSettings, settings)
         .then(() => {
           commit('set_motor_settings', settings);
         })
@@ -62,18 +66,18 @@ const store = {
         })
     },
     motor_test_toggle({ commit, state }) {
-      var url = '/api/motor/test/enable'
-      if (state.test.active) {
-        url = '/api/motor/test/disable'
-      }
-      return post(url, {}).then(() => {
-        commit('set_motor_test_active', state.test.active ? 0 : 1);
-      })
+      return serial
+        .command(QuicCmd.Motor, state.test.active ? QuicMotor.TestDisable : QuicMotor.TestEnable)
+        .then(() => {
+          commit('set_motor_test_active', state.test.active ? 0 : 1);
+        })
     },
     motor_test_set_value({ commit }, value) {
-      return post('/api/motor/test/value', value).then(() => {
-        commit('set_motor_test_value', value);
-      })
+      return serial
+        .command(QuicCmd.Motor, QuicMotor.TestSetValue, value)
+        .then(() => {
+          commit('set_motor_test_value', value);
+        });
     },
   }
 }

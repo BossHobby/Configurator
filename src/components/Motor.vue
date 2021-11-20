@@ -28,12 +28,20 @@
             ></b-form-input>
           </b-col>
         </b-row>
-        <b-row v-if="status.Info.quic_protocol_version > 1 && has_feature(FEATURE_BRUSHLESS)">
+        <b-row
+          v-if="
+            info.quic_protocol_version > 1 && has_feature(FEATURE_BRUSHLESS)
+          "
+        >
           <b-col sm="4" class="my-2">
             <label for="dshot-time">DShot Time</label>
           </b-col>
           <b-col sm="8" class="my-2">
-            <b-form-select id="dshot-time" v-model="motor.dshot_time" :options="dshotTimes"></b-form-select>
+            <b-form-select
+              id="dshot-time"
+              v-model="motor.dshot_time"
+              :options="dshotTimes"
+            ></b-form-select>
           </b-col>
         </b-row>
         <b-row>
@@ -42,7 +50,12 @@
           </b-col>
           <b-col sm="8" class="my-2">
             <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="gyro-flip" v-model="gyroFlip" />
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="gyro-flip"
+                v-model="gyroFlip"
+              />
               <label class="custom-control-label" for="gyro-flip">Enable</label>
             </div>
           </b-col>
@@ -126,7 +139,7 @@ export default {
 
       invertYawModes: [
         { value: 0, text: "Props In" },
-        { value: 1, text: "Props Out" }
+        { value: 1, text: "Props Out" },
       ],
       gyroOrientations: [
         { value: GYRO_ROTATE_NONE, text: "ROTATE_NONE" },
@@ -136,25 +149,25 @@ export default {
         { value: GYRO_ROTATE_90_CCW, text: "ROTATE_90_CCW" },
         {
           value: GYRO_ROTATE_90_CCW | GYRO_ROTATE_45_CCW,
-          text: "ROTATE_135_CW"
+          text: "ROTATE_135_CW",
         },
         {
           value: GYRO_ROTATE_90_CW | GYRO_ROTATE_45_CW,
-          text: "ROTATE_135_CCW"
+          text: "ROTATE_135_CCW",
         },
-        { value: GYRO_ROTATE_180, text: "ROTATE_180" }
+        { value: GYRO_ROTATE_180, text: "ROTATE_180" },
       ],
       dshotTimes: [
         { value: 150, text: "150" },
         { value: 300, text: "300" },
-        { value: 600, text: "600" }
-      ]
+        { value: 600, text: "600" },
+      ],
     };
   },
   computed: {
     ...mapFields("profile", ["motor"]),
     ...mapGetters(["has_feature"]),
-    ...mapState(["status"]),
+    ...mapState(["info"]),
     gyroOrientation: {
       get() {
         return this.motor.gyro_orientation & 0x1f;
@@ -162,7 +175,7 @@ export default {
       set(value) {
         this.motor.gyro_orientation =
           value | (this.gyroFlip ? GYRO_FLIP_180 : 0x0);
-      }
+      },
     },
     gyroFlip: {
       get() {
@@ -171,9 +184,9 @@ export default {
       set(value) {
         this.motor.gyro_orientation =
           this.gyroOrientation | (value ? GYRO_FLIP_180 : 0x0);
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 

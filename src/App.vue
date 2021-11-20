@@ -10,7 +10,7 @@
         />
         QUICKSILVER
       </b-navbar-brand>
-      <b-navbar-nav v-if="status.IsConnected">
+      <b-navbar-nav v-if="serial.is_connected">
         <b-nav-item to="/profile">Profile</b-nav-item>
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
@@ -18,18 +18,13 @@
         <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
         <b-nav-item
-          v-if="
-            has_feature(FEATURE_BLACKBOX) &&
-            status.Info.quic_protocol_version > 1
-          "
+          v-if="has_feature(FEATURE_BLACKBOX) && info.quic_protocol_version > 1"
           to="/blackbox"
           >Blackbox</b-nav-item
         >
         <b-nav-item to="/state">State</b-nav-item>
         <b-nav-item
-          v-if="
-            has_feature(FEATURE_DEBUG) && status.Info.quic_protocol_version > 1
-          "
+          v-if="has_feature(FEATURE_DEBUG) && info.quic_protocol_version > 1"
           to="/perf"
           >Perf</b-nav-item
         >
@@ -39,19 +34,20 @@
         <b-nav-item to="/flash">Flash</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form v-on:submit.prevent="toggle_connection(status.Port)" right>
+        <b-nav-form v-on:submit.prevent="toggle_connection(serial_port)" right>
           <b-form-select
             class="mx-3 my-2"
             id="serial-port"
-            v-model="status.Port"
-            :options="status.AvailablePorts"
-            :disabled="status.IsConnected"
-          ></b-form-select>
+            v-model="serial_port"
+            :options="availablePortOptions"
+            :disabled="serial.is_connected"
+          >
+          </b-form-select>
           <b-button
             size="sm"
             class="my-2"
             type="submit"
-            :disabled="!can_connect"
+            :disabled="!canConnect"
           >
             {{ connectButtonText }}
           </b-button>
@@ -75,7 +71,7 @@
 
     <router-view style="margin-top: 5rem; margin-bottom: 5rem"></router-view>
 
-    <b-navbar v-if="status.IsConnected" fixed="bottom" class="navbar">
+    <b-navbar v-if="serial.is_connected" fixed="bottom" class="navbar">
       <b-navbar-brand>
         {{ profile.meta.name }}
         <small class="text-muted ml-2"
@@ -108,38 +104,53 @@ export default {
   name: "app",
   data() {
     return {
+      serial_port: null,
+
       FEATURE_BLACKBOX,
       FEATURE_OSD,
       FEATURE_DEBUG,
     };
   },
   computed: {
-    ...mapState(["status", "profile", "alerts", "state"]),
-    ...mapGetters(["can_connect", "has_feature"]),
+    ...mapState(["info", "profile", "alerts", "state", "serial"]),
+    ...mapGetters(["has_feature"]),
+    availablePortOptions() {
+      return this.serial.available.map((p) => {
+        return {
+          value: p,
+          text: p.name,
+        };
+      });
+    },
     date() {
       return new Date(this.profile.meta.datetime * 1000);
     },
     connectButtonText() {
-      if (this.status.IsConnecting) {
+      if (this.serial.is_connecting) {
         return "Connecting...";
       }
-      if (this.status.IsConnected) {
+      if (this.serial.is_connected) {
         return "Disconnect";
       }
       return "Connect";
     },
+    canConnect() {
+      if (this.serial.is_connecting) {
+        return false;
+      }
+      return this.serial_port;
+    },
   },
   methods: {
     ...mapActions([
-      "connect_websocket",
-      "fetch_status",
+      "scan_serial_ports",
       "toggle_connection",
       "apply_profile",
       "soft_reboot",
     ]),
   },
   created() {
-    this.connect_websocket();
+    this.scan_serial_ports();
   },
   destroyed() {
     clearInterval(this.interval);

@@ -1,5 +1,6 @@
-import { get, post } from "@/store/api.js";
 import { createHelpers } from "@/store/helper.js";
+import { serial } from '../serial/serial';
+import { QuicVal } from '../serial/quic';
 
 const { get_profile_field, update_profile_field } = createHelpers("profile")
 
@@ -83,14 +84,14 @@ const store = {
   },
   actions: {
     fetch_profile({ commit }) {
-      return get("/api/default_profile")
-        .then(p => commit('set_default_profile', p))
-        .then(() => get("/api/profile"))
+      return serial
+        .get(QuicVal.Profile)
         .then(p => commit('set_profile', p));
     },
     apply_profile({ commit }, profile) {
       profile.meta.datetime = Math.floor(Date.now() / 1000);
-      return post("/api/profile", profile)
+      return serial
+        .set(QuicVal.Profile, profile)
         .then(p => commit('set_profile', p))
         .then(() => commit('append_alert', { type: "success", msg: "profile applied!" }));
     },

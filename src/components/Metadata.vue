@@ -20,42 +20,40 @@
       <b-col sm="4" class="my-2">
         <label>Target Name</label>
       </b-col>
-      <b-col sm="8" class="my-2">{{ status.Info.target_name }}</b-col>
+      <b-col sm="8" class="my-2">{{ info.target_name }}</b-col>
     </b-row>
-    <b-row v-if="status.Info.features != null">
+    <b-row v-if="info.features != null">
       <b-col sm="4" class="my-2">
         <label>Features</label>
       </b-col>
       <b-col sm="8" class="my-2">{{ features }}</b-col>
     </b-row>
 
-    <b-row v-if="status.Info.gyro_id != null">
+    <b-row v-if="info.gyro_id != null">
       <b-col sm="4" class="my-2">
         <label>Gyro ID</label>
       </b-col>
-      <b-col sm="8" class="my-2"
-        >0x{{ status.Info.gyro_id.toString(16) }}</b-col
-      >
+      <b-col sm="8" class="my-2">0x{{ info.gyro_id.toString(16) }}</b-col>
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
         <label>Version</label>
       </b-col>
-      <b-col sm="8" class="my-2">{{ status.Info.git_version }}</b-col>
+      <b-col sm="8" class="my-2">{{ info.git_version }}</b-col>
     </b-row>
     <b-row>
       <b-col sm="6">
         <b-button
           class="my-2"
           href="http://localhost:8000/api/profile/download"
-          :hidden="!status.IsConnected"
+          :hidden="!serial.is_connected"
           >Save Profile</b-button
         >
       </b-col>
     </b-row>
     <b-row>
       <b-col sm="6">
-        <form :hidden="!status.IsConnected" ref="form">
+        <form :hidden="!serial.is_connected" ref="form">
           <input
             accept=".json, .cbor"
             type="file"
@@ -80,7 +78,7 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["meta"]),
-    ...mapState(["status", "state"]),
+    ...mapState(["info", "state", "serial"]),
     date() {
       return new Date(this.meta.datetime * 1000);
     },
@@ -88,7 +86,7 @@ export default {
       const feat = ["BRUSHLESS", "OSD", "BLACKBOX", "DEBUG"];
       return feat
         .filter((f, i) => {
-          return this.status.Info.features & (1 << (i + 1));
+          return this.info.features & (1 << (i + 1));
         })
         .join(", ");
     },

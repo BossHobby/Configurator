@@ -1,4 +1,5 @@
-import { get, post } from "@/store/api.js";
+import { QuicBlackbox, QuicCmd } from '../serial/quic';
+import { serial } from '../serial/serial';
 
 
 const store = {
@@ -14,7 +15,8 @@ const store = {
   },
   actions: {
     reset_blackbox({ commit }) {
-      return post("/api/blackbox/reset", null)
+      return serial
+        .command(QuicCmd.Blackbox, QuicBlackbox.Reset)
         .then(() => {
           commit('append_alert', { type: "success", msg: "blackbox successfully reset" });
         })
@@ -23,8 +25,9 @@ const store = {
         })
     },
     list_blackbox({ commit }) {
-      return get("/api/blackbox/list")
-        .then(list => commit('set_blackbox_list', list))
+      return serial
+        .command(QuicCmd.Blackbox, QuicBlackbox.List)
+        .then(list => commit('set_blackbox_list', list));
     },
   }
 }

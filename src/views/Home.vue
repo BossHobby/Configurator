@@ -1,28 +1,16 @@
 <template>
   <b-container>
-    <div v-if="status.BetaflightTarget" class="jumbotron my-5">
-      <h1 class="display-4">Betaflight detected!</h1>
-      <h2>{{ status.BetaflightTarget }}</h2>
-      <p class="lead">Please flash Quicksilver to continue</p>
-    </div>
-    <div v-else class="jumbotron my-5">
-      <h1 class="display-4">USB Configurator {{ status.Version }}</h1>
-      <div v-if="!status.IsConnected">
+    <div class="jumbotron my-5">
+      <h1 class="display-4">USB Configurator</h1>
+      <div v-if="!serial.is_connected">
         <p class="lead">
           Currently you are disconnected, connect to get started!
         </p>
-        <b-button
-          size="lg"
-          variant="primary"
-          :disabled="!can_connect"
-          v-on:click="toggle_connection(status.Port)"
-          >Connect</b-button
-        >
       </div>
-      <div v-if="status.IsConnected">
+      <div v-if="serial.is_connected">
         <p class="lead">Connected! Select one of the tabs above</p>
       </div>
-
+      <!--
       <b-button
         v-if="status.HasUpdate"
         size="lg"
@@ -31,21 +19,19 @@
         class="mx-2"
         >Update</b-button
       >
+-->
     </div>
   </b-container>
 </template>
 
 <script>
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "home",
   computed: {
-    ...mapState(["status"]),
-    ...mapGetters(["can_connect"]),
+    ...mapState(["serial"]),
   },
-  methods: {
-    ...mapActions(["toggle_connection", "update"]),
-  },
+  methods: {},
 };
 </script>

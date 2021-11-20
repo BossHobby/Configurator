@@ -24,7 +24,7 @@ const router = new Router({
     {
       path: '/',
       redirect: () => {
-        if (store.state.status.IsConnected) {
+        if (store.state.serial.is_connected) {
           return '/profile';
         }
         return '/home'
@@ -90,7 +90,7 @@ const router = new Router({
 
 
 router.beforeEach((to, from, next) => {
-  if (store.state.status.IsConnected) {
+  if (store.state.serial.is_connected) {
     if (to.name === 'home') {
       next({ name: "profile" })
     } else {

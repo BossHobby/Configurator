@@ -201,7 +201,7 @@ export default {
     ...mapState(["motor", "state"]),
     ...mapFields("profile", { profile_motor: "motor" }),
     ...mapState({
-      motor_pins: (state) => state.status.Info.motor_pins,
+      motor_pins: (state) => state.info.motor_pins,
     }),
     ...mapGetters(["has_feature"]),
     value() {
