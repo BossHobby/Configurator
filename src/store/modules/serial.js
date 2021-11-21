@@ -79,7 +79,7 @@ const store = {
       }
 
       dispatch('fetch_state');
-      if (intervalCounter % 4) {
+      if (intervalCounter % 4 && router.currentRoute.fullPath == "/receiver") {
         dispatch('fetch_bind_info');
       }
     },
