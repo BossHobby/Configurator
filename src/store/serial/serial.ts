@@ -18,7 +18,7 @@ class SerialQueue {
     }
   }
 
-  pop(): Promise<number> {
+  pop(timeout = 10): Promise<number> {
     return new Promise((resolve, reject) => {
       let tries = 100;
 
@@ -32,17 +32,17 @@ class SerialQueue {
         if (--tries == 0) {
           return reject("read timeout");
         }
-        setTimeout(() => tryRead(), 10);
+        setTimeout(() => tryRead(), timeout);
       }
 
       tryRead();
     });
   }
 
-  async read(size: number): Promise<number[]> {
+  async read(size: number, timeout = 10): Promise<number[]> {
     const buffer: number[] = [];
     for (let i = 0; i < size; i++) {
-      buffer.push(await this.pop());
+      buffer.push(await this.pop(timeout));
     }
     return buffer;
   }
@@ -118,6 +118,16 @@ export class Serial {
     return packet.payload[1];
   }
 
+  async get_osd_font() {
+    const packet = await this.command(QuicCmd.Get, QuicVal.OSDFont);
+    if (packet.payload[0] != QuicVal.OSDFont) {
+      throw new Error("invalid value");
+    }
+    if (packet.payload.length < 2) {
+      throw new Error("no payload");
+    }
+    return packet.payload.slice(1)
+  }
 
   async set(id: QuicVal, val: any): Promise<any> {
     const packet = await this.command(QuicCmd.Set, id, val);
@@ -226,13 +236,13 @@ export class Serial {
     return result;
   }
 
-  private async readHeader(): Promise<QuicHeader> {
-    const magic = await this.queue.pop();
+  private async readHeader(timeout = 10): Promise<QuicHeader> {
+    const magic = await this.queue.pop(timeout);
     if (!magic || magic != QUIC_MAGIC) {
       throw new Error("invalid magic");
     }
 
-    const header = await this.queue.read(QUIC_HEADER_LEN - 1);
+    const header = await this.queue.read(QUIC_HEADER_LEN - 1, timeout);
     return {
       cmd: header[0] & (0xff >> 3),
       flag: (header[0] >> 5),
@@ -246,11 +256,28 @@ export class Serial {
       throw new Error("invalid command");
     }
 
-    if (hdr.flag == QuicFlag.Streaming) {
-      throw new Error("not implemented")
+    if ((hdr.flag & QuicFlag.Streaming) == 0) {
+      const buffer = Uint8Array.from(await this.queue.read(hdr.len));
+      return {
+        ...hdr,
+        payload: this.encoder.decodeMultiple(buffer),
+      }
     }
 
-    const buffer = Uint8Array.from(await this.queue.read(hdr.len));
+    let buffer = Uint8Array.from(await this.queue.read(hdr.len));
+    while (buffer) {
+      const nexthdr = await this.readHeader(100);
+      if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
+        throw new Error("invalid command");
+      }
+      if (nexthdr.len == 0) {
+        break;
+      }
+
+      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len, 100));
+      buffer = new Uint8Array([...buffer, ...nextbuffer]);
+    }
+
     return {
       ...hdr,
       payload: this.encoder.decodeMultiple(buffer),

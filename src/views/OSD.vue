@@ -16,7 +16,8 @@
                   name="check-button"
                   size="sm"
                   switch
-                >Active</b-form-checkbox>
+                  >Active</b-form-checkbox
+                >
               </b-col>
               <b-col sm="2">
                 <b-form-checkbox
@@ -25,7 +26,8 @@
                   name="check-button"
                   size="sm"
                   switch
-                >Invert</b-form-checkbox>
+                  >Invert</b-form-checkbox
+                >
               </b-col>
               <b-col sm="2">
                 <b-form-input
@@ -61,10 +63,12 @@
             <g v-for="(el, i) of elements" :key="i">
               <text
                 v-if="el.enabled && el.active"
-                :x="el.pos_x * (screen.char_width)"
+                :x="el.pos_x * screen.char_width"
                 :y="el.pos_y * (screen.char_height - 1)"
-                :class="{'text-invert': el.invert}"
-              >{{el.text}}</text>
+                :class="{ 'text-invert': el.invert }"
+              >
+                {{ el.text }}
+              </text>
             </g>
           </svg>
         </b-card>
@@ -75,14 +79,26 @@
               <label for="font-file">File</label>
             </b-col>
             <b-col sm="6" class="my-2">
-              <b-form-select id="font-file" v-model="current_font_file" :options="fontFiles"></b-form-select>
+              <b-form-select
+                id="font-file"
+                v-model="current_font_file"
+                :options="fontFiles"
+              ></b-form-select>
             </b-col>
             <b-col sm="2" class="my-2">
-              <b-button v-on:click="apply_osd_font(current_font_file)">Upload</b-button>
+              <b-button v-on:click="apply_osd_font(current_font_file)"
+                >Upload</b-button
+              >
             </b-col>
           </b-row>
           <b-row>
             <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
+            <canvas
+              ref="canvas"
+              class="mx-5 mt-3 d-none"
+              width="209"
+              height="305"
+            ></canvas>
           </b-row>
         </b-card>
       </b-col>
@@ -96,6 +112,7 @@
 <script>
 import { mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
+import { serial } from "@/store/serial/serial";
 
 export default {
   name: "osd",
@@ -126,7 +143,7 @@ export default {
       ],
       fontFiles: [{ text: "Clarity", value: "clarity" }],
       current_font_file: "clarity",
-      imageSource: "http://localhost:8000/api/osd/font",
+      imageSource: null,
     };
   },
   computed: {
@@ -160,9 +177,76 @@ export default {
   methods: {
     ...mapActions(["set_osd_font"]),
     apply_osd_font(name) {
-      const oldSrc = this.imageSource;
-      this.imageSource = "";
-      return this.set_osd_font(name).then(() => (this.imageSource = oldSrc));
+      return this.set_osd_font(name);
+    },
+    get_osd_font() {
+      return serial.get_osd_font().then((font) => {
+        const width = 12;
+        const height = 18;
+        const border = 1;
+
+        const full_width = 16 * (width + border) + border;
+        const full_height = 16 * (height + border) + border;
+
+        const arr = new Uint8ClampedArray(width * height * 4);
+        const setPixel = (x, y, v) => {
+          switch (v) {
+            case 0:
+              arr[(y * width + x) * 4 + 0] = 0;
+              arr[(y * width + x) * 4 + 1] = 0;
+              arr[(y * width + x) * 4 + 2] = 0;
+              arr[(y * width + x) * 4 + 3] = 255;
+              break;
+            case 2:
+              arr[(y * width + x) * 4 + 0] = 255;
+              arr[(y * width + x) * 4 + 1] = 255;
+              arr[(y * width + x) * 4 + 2] = 255;
+              arr[(y * width + x) * 4 + 3] = 255;
+              break;
+            default:
+              arr[(y * width + x) * 4 + 0] = 0;
+              arr[(y * width + x) * 4 + 1] = 0;
+              arr[(y * width + x) * 4 + 2] = 0;
+              arr[(y * width + x) * 4 + 3] = 0;
+              break;
+          }
+        };
+
+        const canvas = this.$refs.canvas;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "red";
+        ctx.fillRect(0, 0, full_width, full_height);
+
+        for (let cy = 0; cy < 16; cy++) {
+          for (let cx = 0; cx < 16; cx++) {
+            const buf = font[cy * 16 + cx];
+
+            let x = 0;
+            let y = 0;
+            for (const b of buf) {
+              setPixel(x + 0, y, (b >> 6) & 0x3);
+              setPixel(x + 1, y, (b >> 4) & 0x3);
+              setPixel(x + 2, y, (b >> 2) & 0x3);
+              setPixel(x + 3, y, (b >> 0) & 0x3);
+
+              x += 4;
+              if (x == width) {
+                x = 0;
+                y++;
+              }
+            }
+
+            const img = new ImageData(arr, width, height);
+            ctx.putImageData(
+              img,
+              cx * (width + border) + border,
+              cy * (height + border) + border
+            );
+          }
+        }
+
+        this.imageSource = canvas.toDataURL();
+      });
     },
     osd_set(i, attr, val) {
       const copy = [...this.osd.elements];
@@ -201,6 +285,9 @@ export default {
           return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
       }
     },
+  },
+  created() {
+    this.get_osd_font();
   },
 };
 </script>
