@@ -8,26 +8,11 @@ const store = {
   state: {
     is_connected: false,
     is_connecting: false,
-
-    available: [],
   },
   getters: {
 
   },
   mutations: {
-    add_available_serial_port(state, port) {
-      const info = port.getInfo()
-      const p = {
-        ...info,
-        name: `${info.usbVendorId}:${info.usbProductId}`,
-      }
-      state.available = [...state.available, p];
-    },
-    remove_available_serial_port(state, port) {
-      const info = port.getInfo()
-      const name = `${info.usbVendorId}:${info.usbProductId}`;
-      state.available = [...state.available].filter(o => name != o.name);
-    },
     set_connecting(state, connecting) {
       state.is_connecting = connecting;
     },
@@ -52,25 +37,6 @@ const store = {
           router.push("/home")
         }
       })
-
-      navigator.serial.addEventListener('connect', (e) => {
-        console.log('serial connect', e)
-        commit('add_available_serial_port', e.target);
-      });
-
-      navigator.serial.addEventListener('disconnect', (e) => {
-        console.log('serial disconnect', e)
-        commit('remove_available_serial_port', e.target);
-      });
-
-      return navigator
-        .serial
-        .getPorts()
-        .then((ports) => {
-          for (const p of ports) {
-            commit('add_available_serial_port', p);
-          }
-        })
     },
     poll_serial({ dispatch, state }) {
       intervalCounter++;
@@ -87,7 +53,7 @@ const store = {
       return serial
         .softReboot();
     },
-    toggle_connection({ state, commit, dispatch }, port) {
+    toggle_connection({ state, commit, dispatch }) {
       if (state.is_connected) {
         if (interval) {
           clearInterval(interval);
@@ -107,7 +73,7 @@ const store = {
       commit('set_connecting', true)
 
       return serial
-        .connect(port)
+        .connect()
         .then((info) => {
           commit('set_connected', true);
           commit('set_info', info);

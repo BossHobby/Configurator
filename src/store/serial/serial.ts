@@ -3,6 +3,9 @@ import { Encoder, FLOAT32_OPTIONS } from 'cbor-x/encode';
 
 const BAUD_RATE = 921600;
 const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
+const SERIAL_FILTERS = [
+  { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
+];
 
 class SerialQueue {
   private buffer: number[] = [];
@@ -78,9 +81,7 @@ export class Serial {
 
     try {
       this.port = await navigator.serial.requestPort({
-        filters: [
-          { usbVendorId: port.usbVendorId, usbProductId: port.usbProductId }
-        ]
+        filters: SERIAL_FILTERS
       });
       this.queue = new SerialQueue();
 

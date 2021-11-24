@@ -34,15 +34,8 @@
         <b-nav-item to="/flash">Flash</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-form v-on:submit.prevent="toggle_connection(serial_port)" right>
-          <b-form-select
-            class="mx-3 my-2"
-            id="serial-port"
-            v-model="serial_port"
-            :options="availablePortOptions"
-            :disabled="serial.is_connected"
-          >
-          </b-form-select>
+        <b-nav-form v-on:submit.prevent="toggle_connection()" right>
+          {{ serial.port }}
           <b-button
             size="sm"
             class="my-2"
@@ -104,8 +97,6 @@ export default {
   name: "app",
   data() {
     return {
-      serial_port: null,
-
       FEATURE_BLACKBOX,
       FEATURE_OSD,
       FEATURE_DEBUG,
@@ -135,10 +126,7 @@ export default {
       return "Connect";
     },
     canConnect() {
-      if (this.serial.is_connecting) {
-        return false;
-      }
-      return this.serial_port;
+      return !this.serial.is_connecting;
     },
   },
   methods: {
