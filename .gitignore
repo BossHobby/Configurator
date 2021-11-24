@@ -29,5 +29,6 @@ __debug*
 /pkg/statik
 /cmd/quic-config/rsrc.syso
 quicksilver.log
-#Electron-builder output
-/dist_electron
+
+/dist
+/build

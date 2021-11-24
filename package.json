@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build",
-    "electron:serve": "vue-cli-service electron:serve",
-    "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\"",
+    "build": "npm run build:clean && npm run build:vue && npm run build:nw",
+    "build:clean": "rimraf ./dist ./build",
+    "build:vue": "vue-cli-service build",
+    "build:nw": "build --concurrent --tasks win-x86,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
+    "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
+    "build:linux": "npm run build:linux:clean && npm run build:vue && build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
+    "build:windows:clean": "rimraf ./dist ./build/nw-vue-1.8.0-win-x86 ./build/nw-vue-1.8.0-win-x86.zip ./build/nw-vue-1.8.0-win-x86.7z ./build/nw-vue-1.8.0-win-x86-Setup.exe",
+    "build:linux:clean": "rimraf ./dist ./build/nw-vue-1.8.0-linux-x64 ./build/nw-vue-1.8.0-linux-x64.zip"
   },
-  "main": "background.js",
+  "main": "http://localhost:8080",
   "dependencies": {
     "@types/dom-serial": "^1.0.2",
     "bootstrap-vue": "^2.21.2",
@@ -38,14 +42,17 @@
     "@vue/cli-service": "^4.5.15",
     "@vue/eslint-config-typescript": "^7.0.0",
     "babel-eslint": "^10.1.0",
-    "electron": "^16.0.1",
-    "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "nw": "0.54.0-sdk",
+    "nwjs-builder-phoenix": "^1.15.0",
+    "nwjs-types": "^1.0.0",
+    "wait-on": "^6.0.0",
+    "concurrently": "^6.2.0",
+    "rimraf": "^3.0.2",
     "sass": "^1.43.4",
     "sass-loader": "^8.0.2",
     "typescript": "~4.1.5",
-    "vue-cli-plugin-electron-builder": "~2.1.1",
     "vue-template-compiler": "^2.6.14"
   },
   "eslintConfig": {
@@ -73,5 +80,56 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "window": {
+    "width": 960,
+    "height": 600,
+    "min_width": 700,
+    "min_height": 500,
+    "icon": "public/logo.png"
+  },
+  "build": {
+    "nwVersion": "v0.54.0",
+    "nwFlavor": "normal",
+    "output": "./build",
+    "targets": [
+      "zip",
+      "nsis7z"
+    ],
+    "files": [
+      "dist/**/*",
+      "public/**/*"
+    ],
+    "strippedProperties": [
+      "ManifestComments",
+      "scripts",
+      "devDependencies",
+      "build"
+    ],
+    "overriddenProperties": {
+      "main": "dist/index.html",
+      "window": {
+        "width": 960,
+        "height": 600,
+        "min_width": 700,
+        "min_height": 500,
+        "icon": "public/logo.png"
+      }
+    },
+    "win": {
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "icon": "public/logo.icns"
+    },
+    "nsis": {
+      "icon": "public/favicon.ico",
+      "unIcon": "public/favicon.ico",
+      "languages": [
+        "English"
+      ],
+      "diffUpdaters": false,
+      "hashCalculation": true
+    }
+  }
 }
