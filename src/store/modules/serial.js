@@ -53,6 +53,13 @@ const store = {
       return serial
         .softReboot();
     },
+    hard_reboot({ state }) {
+      let promise = Promise.resolve()
+      if (!state.is_connected) {
+        promise = serial.connect();
+      }
+      return promise.then(() => serial.hardReboot());
+    },
     toggle_connection({ state, commit, dispatch }) {
       if (state.is_connected) {
         if (interval) {

@@ -1,8 +1,12 @@
 import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QUIC_MAGIC } from './quic';
 import { Encoder, FLOAT32_OPTIONS } from 'cbor-x/encode';
+import { concatUint8Array } from '../util';
 
 const BAUD_RATE = 921600;
+
 const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
+const HARD_REBOOT_MAGIC = 'R'.charCodeAt(0);
+
 const SERIAL_FILTERS = [
   { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
 ];
@@ -102,6 +106,10 @@ export class Serial {
 
   async softReboot() {
     await this.write(new Uint8Array([SOFT_REBOOT_MAGIC]));
+  }
+
+  async hardReboot() {
+    await this.write(new Uint8Array([HARD_REBOOT_MAGIC]));
   }
 
   onError(fn: any) {
@@ -217,7 +225,7 @@ export class Serial {
     ]);
 
     // console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
-    await this.write(new Uint8Array([...request, ...payload]));
+    await this.write(concatUint8Array(request, payload));
 
     return await this.readPacket();
   }
@@ -232,7 +240,7 @@ export class Serial {
     let result = new Uint8Array();
     for (const v of JSON.parse(JSON.stringify(values))) {
       const encoded = this.encoder.encode(v);
-      result = new Uint8Array([...result, ...encoded]);
+      result = concatUint8Array(result, encoded);
     }
     return result;
   }
@@ -276,7 +284,7 @@ export class Serial {
       }
 
       const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len, 100));
-      buffer = new Uint8Array([...buffer, ...nextbuffer]);
+      buffer = concatUint8Array(buffer, nextbuffer);
     }
 
     return {

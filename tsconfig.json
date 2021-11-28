@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "dom-serial"
+      "dom-serial",
+      "w3c-web-usb"
     ],
     "paths": {
       "@/*": [

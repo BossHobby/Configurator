@@ -3,6 +3,9 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+import { serial } from './serial/serial';
+import { QuicCmd, QuicVal } from './serial/quic';
+
 import profileModule from "./modules/profile";
 import defaultProfileModule from "./modules/default_profile";
 import infoModule from "./modules/info";
@@ -13,8 +16,7 @@ import motorModule from "./modules/motor";
 import vtxModule from "./modules/vtx";
 import bindModule from "./modules/bind";
 import serialModule from "./modules/serial";
-import { serial } from './serial/serial';
-import { QuicCmd, QuicVal } from './serial/quic';
+import flashModule from "./modules/flash";
 
 const store = new Vuex.Store({
   modules: {
@@ -28,13 +30,11 @@ const store = new Vuex.Store({
     perf: perfModule,
     bind: bindModule,
     serial: serialModule,
+    flash: flashModule,
   },
   state: {
     log: [],
     alerts: [],
-
-    firmware_releases: [],
-    flash: {},
 
     pid_rate_presets: [],
   },
@@ -44,12 +44,6 @@ const store = new Vuex.Store({
     },
     set_pid_rate_presets(state, pid_rate_presets) {
       state.pid_rate_presets = pid_rate_presets
-    },
-    set_firmware_releases(state, firmware_releases) {
-      state.firmware_releases = firmware_releases
-    },
-    set_flash(state, flash) {
-      state.flash = flash
     },
 
     append_log(state, line) {
@@ -72,10 +66,6 @@ const store = new Vuex.Store({
       return serial
         .get(QuicVal.PidRatePresets)
         .then(p => commit('set_pid_rate_presets', p))
-    },
-    fetch_firmware_releases() {
-      //return get("/api/flash/releases")
-      //  .then(p => commit('set_firmware_releases', p))
     },
     cal_imu() {
       return serial.command(QuicCmd.CalImu);

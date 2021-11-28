@@ -1,4 +1,3 @@
-import { post } from "@/store/api.js";
 
 const store = {
   state: {
@@ -25,16 +24,6 @@ const store = {
     },
   },
   actions: {
-    connect_flash({ commit }) {
-      return post("/api/flash/connect", {})
-        .then(() => commit('set_betaflight_target', null))
-    },
-    hard_reboot_first_port() {
-      return post("/api/hard_reboot", {})
-        .then(() => {
-          setTimeout(() => post("/api/flash/connect", {}), 1000)
-        })
-    },
   }
 }
 

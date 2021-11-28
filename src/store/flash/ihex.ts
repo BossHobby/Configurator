@@ -1,0 +1,141 @@
+import { concatUint8Array } from '../util';
+
+enum Record {
+  DATA = 0,
+  END_OF_FILE = 1,
+  EXT_SEGMENT_ADDR = 2,
+  START_SEGMENT_ADDR = 3,
+  EXT_LINEAR_ADDR = 4,
+  START_LINEAR_ADDR = 5,
+}
+
+export class IntelHEX {
+
+  public start_linear_address: number;
+  public start_segment_address: number;
+  public segments: { address: number, data: Uint8Array }[] = []
+
+  public get linear_bytes_total() {
+    return this.end_address - this.start_address;
+  }
+
+  public get segment_bytes_total() {
+    return this.segments.reduce((p, c) => p += c.data.length, 0);
+  }
+
+  public get start_address() {
+    return this.segments[0].address;
+  }
+
+  public get end_address() {
+    return this.segments[this.segments.length - 1].address + this.segments[this.segments.length - 1].data.length;
+  }
+
+  constructor(start_linear_address: number, start_segment_address: number) {
+    this.start_linear_address = start_linear_address;
+    this.start_segment_address = start_segment_address;
+  }
+
+  public static parse(data: string): IntelHEX {
+    let eofReached = false;
+    let highAddr = 0;
+    let lastAddr = 0;
+
+    const result = new IntelHEX(0, 0);
+
+    const lines = data.split(/\r?\n/);
+    for (const line of lines) {
+      if (line.length == 0 || line == "") {
+        continue;
+      }
+
+      const byteCount = parseInt(line.substr(1, 2), 16);
+      const address = parseInt(line.substr(3, 4), 16);
+      const recordType = parseInt(line.substr(7, 2), 16);
+      const dataStr = line.substr(9, byteCount * 2);
+      const dataBuffer = IntelHEX.fromHex(dataStr);
+      const checksum = parseInt(line.substr(9 + byteCount * 2, 2), 16);
+
+      let calcChecksum = (byteCount + (address >> 8) + address + recordType) & 0xFF;
+      for (let i = 0; i < byteCount; i++)
+        calcChecksum = (calcChecksum + dataBuffer[i]) & 0xFF;
+      calcChecksum = (0x100 - calcChecksum) & 0xFF;
+
+      if (checksum != calcChecksum) {
+        throw new Error('invalid checksum');
+      }
+
+      switch (recordType) {
+        // data record
+        case Record.DATA: {
+          const absoluteAddress = highAddr + address;
+
+          if (lastAddr == 0 || absoluteAddress != lastAddr) {
+            result.segments.push({
+              'address': absoluteAddress,
+              'data': new Uint8Array(),
+            });
+          }
+
+          lastAddr = absoluteAddress + byteCount;
+          result.segments[result.segments.length - 1].data = concatUint8Array(
+            result.segments[result.segments.length - 1].data,
+            dataBuffer
+          );
+
+          break;
+        }
+
+        case Record.END_OF_FILE:
+          if (byteCount != 0) {
+            throw new Error("invalid END_OF_FILE");
+          }
+          eofReached = true;
+          break;
+
+        case Record.EXT_SEGMENT_ADDR:
+          if (byteCount != 2 || address != 0) {
+            throw new Error("invalid EXT_SEGMENT_ADDR");
+          }
+          highAddr = parseInt(dataStr, 16) << 4;
+          break;
+
+        case Record.START_SEGMENT_ADDR:
+          if (byteCount != 4 || address != 0) {
+            throw new Error("invalid START_SEGMENT_ADDR");
+          }
+          result.start_segment_address = parseInt(dataStr, 16);
+          break;
+
+        case Record.EXT_LINEAR_ADDR:
+          if (byteCount != 2 || address != 0) {
+            throw new Error("invalid EXT_SEGMENT_ADDR");
+          }
+          highAddr = parseInt(dataStr, 16) << 16;
+          break;
+
+        case Record.START_LINEAR_ADDR:
+          if (byteCount != 4 || address != 0) {
+            throw new Error("invalid START_LINEAR_ADDR");
+          }
+          result.start_linear_address = parseInt(dataStr, 16);
+          break;
+      }
+    }
+
+    if (!eofReached) {
+      throw new Error("no END_OF_FILE record");
+    }
+
+    return result;
+  }
+
+  private static fromHex(str: string) {
+    const buffer = new Uint8Array(Math.ceil(str.length / 2));
+    for (let i = 0; i < buffer.length; i++) {
+      buffer[i] = parseInt(str.substr(i * 2, 2), 16);
+    }
+    return buffer;
+  }
+
+}
