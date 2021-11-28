@@ -9,10 +9,10 @@
     "build": "npm run build:clean && npm run build:vue && npm run build:nw",
     "build:clean": "rimraf ./dist ./build",
     "build:vue": "vue-cli-service build",
-    "build:nw": "build --concurrent --tasks win-x86,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
-    "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
+    "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
+    "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
     "build:linux": "npm run build:linux:clean && npm run build:vue && build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "build:windows:clean": "rimraf ./dist ./build/nw-vue-1.8.0-win-x86 ./build/nw-vue-1.8.0-win-x86.zip ./build/nw-vue-1.8.0-win-x86.7z ./build/nw-vue-1.8.0-win-x86-Setup.exe",
+    "build:windows:clean": "rimraf ./dist ./build/nw-vue-1.8.0-win-x64 ./build/nw-vue-1.8.0-win-x64.zip ./build/nw-vue-1.8.0-win-x64.7z ./build/nw-vue-1.8.0-win-x64-Setup.exe",
     "build:linux:clean": "rimraf ./dist ./build/nw-vue-1.8.0-linux-x64 ./build/nw-vue-1.8.0-linux-x64.zip"
   },
   "main": "http://localhost:8080",
@@ -96,7 +96,7 @@
     "output": "./build",
     "targets": [
       "zip",
-      "nsis7z"
+      "nsis"
     ],
     "files": [
       "dist/**/*",

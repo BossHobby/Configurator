@@ -5,25 +5,16 @@ name: default
 
 steps:
   - name: web
-    image: node:current
+    image: hanfer/node-wine:14
     commands:
-      - npm --prefix web install
-      - npm --prefix web run build
-  - name: server
-    image: hanfer/xgo-libusb:go-1.14.x
-    environment:
-      GITHUB_TOKEN:
-        from_secret: config_github_token
-    commands:
-      - /run-env.sh linux make linux
-      - /run-env.sh windows make windows
-      - /run-env.sh darwin make darwin
+      - npm install
+      - npm run build
   - name: publish-github
     image: plugins/github-release
     settings:
       api_key:
         from_secret: github_token
-      files: quic-config*.zip
+      files: build/quic-config*.{zip,exe}
     when:
       event:
         - tag
