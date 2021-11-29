@@ -56,6 +56,7 @@ const store = {
   mutations: {
     update_profile_field,
     set_profile(state, profile) {
+      profile.meta.name = profile.meta.name.replace(/\0/g, "");
       for (const key in profile) {
         state[key] = profile[key];
       }
