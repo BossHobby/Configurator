@@ -33,7 +33,7 @@ const store = {
         commit('set_connected', false);
         commit('set_connecting', false);
 
-        if (router.currentRoute.fullPath != "/home") {
+        if (router.currentRoute.fullPath != "/home" && router.currentRoute.fullPath != "/flash") {
           router.push("/home")
         }
       })
@@ -53,12 +53,20 @@ const store = {
       return serial
         .softReboot();
     },
-    hard_reboot({ state }) {
+    hard_reboot({ state, commit }) {
       let promise = Promise.resolve()
       if (!state.is_connected) {
         promise = serial.connect();
       }
-      return promise.then(() => serial.hardReboot());
+      return promise
+        .then(() => serial.hardReboot())
+        .then(() => {
+          commit('append_alert', { type: "success", msg: "Reset to bootloader successful!" });
+        })
+        .catch((err) => {
+          console.error(err);
+          commit('append_alert', { type: "danger", msg: "Reset to bootloader failed" });
+        });
     },
     toggle_connection({ state, commit, dispatch }) {
       if (state.is_connected) {

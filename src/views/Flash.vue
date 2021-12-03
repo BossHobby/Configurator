@@ -164,7 +164,7 @@ export default {
         .then(() =>
           this.$store.commit("append_alert", {
             type: "success",
-            msg: "firmware flashed!",
+            msg: "Firmware flashed!",
           })
         )
         .catch((err) => {
@@ -172,7 +172,7 @@ export default {
 
           this.$store.commit("append_alert", {
             type: "danger",
-            msg: "flash failed!",
+            msg: "Flash failed!",
           });
         })
         .then(() => (this.loading = false))

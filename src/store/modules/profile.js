@@ -94,7 +94,7 @@ const store = {
       return serial
         .set(QuicVal.Profile, profile)
         .then(p => commit('set_profile', p))
-        .then(() => commit('append_alert', { type: "success", msg: "profile applied!" }));
+        .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }));
     },
   }
 }

@@ -18,7 +18,7 @@ const store = {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.Reset)
         .then(() => {
-          commit('append_alert', { type: "success", msg: "blackbox successfully reset" });
+          commit('append_alert', { type: "success", msg: "Blackbox successfully reset" });
         })
         .catch(err => {
           commit('append_alert', { type: "danger", msg: err });
