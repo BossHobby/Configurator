@@ -60,7 +60,13 @@
             ref="file"
             style="display: none"
           />
-          <b-button class="my-2" @click="uploadProfile">Load Profile</b-button>
+          <b-button
+            class="my-2"
+            @click="uploadProfile"
+            :disabled="is_read_only"
+          >
+            Load Profile
+          </b-button>
         </form>
       </b-col>
     </b-row>
@@ -69,7 +75,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
 import { QuicVal } from "@/store/serial/quic";
@@ -82,6 +88,7 @@ export default {
   computed: {
     ...mapFields("profile", ["meta"]),
     ...mapState(["info", "state", "serial"]),
+    ...mapGetters(["is_read_only"]),
     date() {
       return new Date(this.meta.datetime * 1000);
     },

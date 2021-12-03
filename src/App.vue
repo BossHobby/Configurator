@@ -77,9 +77,13 @@
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
-        <b-button class="my-1 mx-2" v-on:click="apply_profile(profile)"
-          >Apply</b-button
+        <b-button
+          class="my-1 mx-2"
+          v-on:click="apply_profile(profile)"
+          :disabled="is_read_only"
         >
+          Apply
+        </b-button>
       </b-navbar-nav>
     </b-navbar>
   </div>
@@ -104,7 +108,7 @@ export default {
   },
   computed: {
     ...mapState(["info", "profile", "alerts", "state", "serial"]),
-    ...mapGetters(["has_feature"]),
+    ...mapGetters(["has_feature", "is_read_only"]),
     availablePortOptions() {
       return this.serial.available.map((p) => {
         return {

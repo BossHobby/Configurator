@@ -14,6 +14,9 @@ const store = {
         }
         return state.features & feature
       };
+    },
+    is_read_only(state) {
+      return state.quic_protocol_version < 5;
     }
   },
   mutations: {
