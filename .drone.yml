@@ -14,7 +14,9 @@ steps:
     settings:
       api_key:
         from_secret: github_token
-      files: build/quic-config*.{zip,exe}
+      files:
+        - build/quic-config*.zip
+        - build/quic-config*.exe
     when:
       event:
         - tag
