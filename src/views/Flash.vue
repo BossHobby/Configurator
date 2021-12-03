@@ -99,10 +99,10 @@ export default {
     return {
       loading: false,
       sourceOptions: [
-        { value: "guano", text: "Guano" },
+        { value: "bosshobby", text: "BossHobby/QUICKSILVER" },
         { value: "local", text: "Local" },
       ],
-      source: "guano",
+      source: "bosshobby",
       release: "0.5.1",
       target: null,
       file: null,

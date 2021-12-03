@@ -80,14 +80,13 @@ export class Serial {
 
   constructor() { }
 
-  async connect(port: any): Promise<any> {
-    console.log("Serial.connect")
-
+  async connect(errorCallback: any = undefined): Promise<any> {
     try {
       this.port = await navigator.serial.requestPort({
         filters: SERIAL_FILTERS
       });
       this.queue = new SerialQueue();
+      this.onErrorCallback = errorCallback;
 
       await this.port.open({ baudRate: BAUD_RATE });
 
@@ -109,11 +108,13 @@ export class Serial {
   }
 
   async hardReboot() {
-    await this.write(new Uint8Array([HARD_REBOOT_MAGIC]));
-  }
+    if (this.port) {
+      throw new Error("port already connected");
+    }
 
-  onError(fn: any) {
-    this.onErrorCallback = fn;
+    await this.connect();
+    await this.write(new Uint8Array([HARD_REBOOT_MAGIC]));
+    await this.close();
   }
 
   async get(id: QuicVal): Promise<any> {
@@ -164,8 +165,6 @@ export class Serial {
   }
 
   async close() {
-    console.log("Serial.close")
-
     this.queue.close();
     this.shouldRun = false;
 
@@ -196,6 +195,7 @@ export class Serial {
     this.writer = undefined;
 
     this.port = undefined;
+    this.onErrorCallback = undefined;
   }
 
   private async send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
@@ -294,8 +294,6 @@ export class Serial {
   }
 
   private async startReading() {
-    console.log("Serial.startReading")
-
     while (this.shouldRun) {
       try {
         const { value, done } = await this.reader!.read();

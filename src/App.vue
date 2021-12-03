@@ -134,16 +134,9 @@ export default {
     },
   },
   methods: {
-    ...mapActions([
-      "scan_serial_ports",
-      "toggle_connection",
-      "apply_profile",
-      "soft_reboot",
-    ]),
+    ...mapActions(["toggle_connection", "apply_profile", "soft_reboot"]),
   },
-  created() {
-    this.scan_serial_ports();
-  },
+  created() {},
   destroyed() {
     clearInterval(this.interval);
   },

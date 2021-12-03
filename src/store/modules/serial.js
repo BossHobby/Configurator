@@ -21,23 +21,6 @@ const store = {
     },
   },
   actions: {
-    scan_serial_ports({ commit }) {
-      serial.onError((err) => {
-        console.error(err)
-
-        if (interval) {
-          clearInterval(interval);
-          interval = null;
-        }
-
-        commit('set_connected', false);
-        commit('set_connecting', false);
-
-        if (router.currentRoute.fullPath != "/home" && router.currentRoute.fullPath != "/flash") {
-          router.push("/home")
-        }
-      })
-    },
     poll_serial({ dispatch, state }) {
       intervalCounter++;
       if (!state.is_connected) {
@@ -53,13 +36,9 @@ const store = {
       return serial
         .softReboot();
     },
-    hard_reboot({ state, commit }) {
-      let promise = Promise.resolve()
-      if (!state.is_connected) {
-        promise = serial.connect();
-      }
-      return promise
-        .then(() => serial.hardReboot())
+    hard_reboot({ commit }) {
+      return serial
+        .hardReboot()
         .then(() => {
           commit('append_alert', { type: "success", msg: "Reset to bootloader successful!" });
         })
@@ -88,7 +67,21 @@ const store = {
       commit('set_connecting', true)
 
       return serial
-        .connect()
+        .connect((err) => {
+          console.error(err)
+  
+          if (interval) {
+            clearInterval(interval);
+            interval = null;
+          }
+  
+          commit('set_connected', false);
+          commit('set_connecting', false);
+  
+          if (router.currentRoute.fullPath != "/home") {
+            router.push("/home")
+          }
+        })
         .then((info) => {
           commit('set_connected', true);
           commit('set_info', info);
