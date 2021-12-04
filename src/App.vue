@@ -28,10 +28,12 @@
           to="/perf"
           >Perf</b-nav-item
         >
+        <b-nav-item to="/log">Log</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav v-else>
         <b-nav-item to="/">Home</b-nav-item>
         <b-nav-item to="/flash">Flash</b-nav-item>
+        <b-nav-item to="/log">Log</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-form v-on:submit.prevent="toggle_connection()" right>

@@ -6,16 +6,12 @@
       </b-col>
 
       <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
-        <RealtimePlot :title="plot.title" :axis="plot.axis" :input="state[plot.name]"></RealtimePlot>
-      </b-col>
-
-      <b-col class="my-5" sm="12">
-        <b-card>
-          <h5 slot="header" class="mb-0">Log</h5>
-          <div v-for="(line, index) in log" :key="line+'-'+index">
-            <samp>>> {{line}}</samp>
-          </div>
-        </b-card>
+        <RealtimePlot
+          :title="plot.title"
+          :axis="plot.axis"
+          :input="state[plot.name]"
+        >
+        </RealtimePlot>
       </b-col>
     </b-row>
   </b-container>
@@ -93,6 +89,6 @@ export default {
       ],
     };
   },
-  computed: mapState(["log", "state"]),
+  computed: mapState(["state"]),
 };
 </script>

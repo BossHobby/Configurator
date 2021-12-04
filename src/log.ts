@@ -1,3 +1,6 @@
+import store from './store'
+import { sprintf } from "printj";
+
 export enum LogLevel {
   Debug = "debug",
   Info = "info",
@@ -34,18 +37,31 @@ export class Log {
     if (prefix && prefix.length) {
       str += "[" + prefix + "]";
     }
+    if (typeof data[0] == "string") {
+      str += data.shift();
+    }
+    str += " ";
     switch (level) {
       case LogLevel.Debug:
       case LogLevel.Info:
       default:
         console.log(str, ...data);
+        store.commit('append_log', sprintf(str, ...data));
         break;
       case LogLevel.Warning:
         console.warn(str, ...data);
+        store.commit('append_log', sprintf(str, ...data));
         break;
       case LogLevel.Error:
         console.error(str, ...data);
+        store.commit('append_log', sprintf(str, ...data));
         break;
     }
   }
+
+  /*
+  private static format(str: string, ...data: any[]) {
+    return str.format()
+  }
+  */
 }

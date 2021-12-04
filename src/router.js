@@ -14,6 +14,7 @@ import Perf from './views/Perf.vue'
 import Profile from './views/Profile.vue'
 import Flash from './views/Flash.vue'
 import Home from './views/Home.vue'
+import Log from './views/Log.vue'
 
 Vue.use(Router)
 
@@ -84,7 +85,12 @@ const router = new Router({
       path: '/perf',
       name: 'perf',
       component: Perf
-    }
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: Log
+    },
   ]
 })
 
@@ -97,7 +103,7 @@ router.beforeEach((to, from, next) => {
       next();
     }
   } else {
-    if (to.name !== 'home' && to.name !== "flash") {
+    if (to.name !== 'home' && to.name !== "flash" && to.name !== "log") {
       next({ name: 'home' })
     } else {
       next()
