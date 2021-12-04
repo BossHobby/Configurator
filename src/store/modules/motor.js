@@ -1,6 +1,6 @@
 import { QuicCmd, QuicMotor, QuicVal } from '../serial/quic';
 import { serial } from '../serial/serial';
-
+import { Log } from '@/log';
 
 const store = {
   state: {
@@ -43,7 +43,7 @@ const store = {
         })
         .catch(err => {
           commit('append_alert', { type: 'danger', msg: 'Loading motor settings failed!' });
-          console.error(err);
+          Log.error("motor", err);
         })
         .finally(() => {
           commit('set_loading', false);
@@ -58,7 +58,7 @@ const store = {
         })
         .catch(err => {
           commit('append_alert', { type: 'danger', msg: 'Failed to apply motor settings!' });
-          console.error(err);
+          Log.error("motor", err);
         })
         .finally(() => {
           commit('append_alert', { type: 'success', msg: 'Motor settings applied!' });

@@ -1,5 +1,6 @@
 import { QuicVal } from '../serial/quic';
 import { serial } from '../serial/serial';
+import { Log } from '@/log';
 
 const store = {
   state: {
@@ -24,7 +25,8 @@ const store = {
     fetch_state({ commit }) {
       return serial
         .get(QuicVal.State)
-        .then(s => commit('set_state', s));
+        .then(s => commit('set_state', s))
+        .catch(err => Log.warn("state", err))
     }
   }
 }

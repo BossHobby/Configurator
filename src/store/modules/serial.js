@@ -1,5 +1,6 @@
 import { serial } from '../serial/serial';
 import router from '../../router';
+import { Log } from '@/log';
 
 var interval = null;
 var intervalCounter = 0;
@@ -43,7 +44,7 @@ const store = {
           commit('append_alert', { type: "success", msg: "Reset to bootloader successful!" });
         })
         .catch((err) => {
-          console.error(err);
+          Log.error("serial", err);
           commit('append_alert', { type: "danger", msg: "Reset to bootloader failed" });
         });
     },
@@ -68,7 +69,7 @@ const store = {
 
       return serial
         .connect((err) => {
-          console.error(err)
+          Log.error("serial", err)
   
           if (interval) {
             clearInterval(interval);
@@ -99,7 +100,7 @@ const store = {
           }
         })
         .catch((err) => {
-          console.error(err);
+          Log.error("serial", err);
           commit('set_connected', false);
           commit('append_alert', { type: "danger", msg: 'Connection to the board failed' });
         })

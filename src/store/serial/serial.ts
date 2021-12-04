@@ -2,6 +2,7 @@ import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QU
 import { Encoder, FLOAT32_OPTIONS } from 'cbor-x/encode';
 import { concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
+import { Log } from '@/log';
 
 const BAUD_RATE = 921600;
 
@@ -125,7 +126,7 @@ export class Serial {
         this.reader.cancel();
         await this.reader.releaseLock();
       } catch (err) {
-        console.warn(err)
+        Log.warn('serial', err)
       }
     }
 
@@ -133,14 +134,14 @@ export class Serial {
       try {
         await this.writer.releaseLock();
       } catch (err) {
-        console.warn(err)
+        Log.warn('serial', err)
       }
     }
 
     try {
       await this.port?.close();
     } catch (err) {
-      console.warn(err)
+      Log.warn('serial', err)
     }
 
     this.reader = undefined;
@@ -169,15 +170,15 @@ export class Serial {
       (payload.length & 0xFF),
     ]);
 
-    console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
+    Log.info("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
     await this.write(concatUint8Array(request, payload));
 
     let packet = await this.readPacket();
     while (packet.cmd == QuicCmd.Log) {
-      console.log("[quic] " + packet.payload[0]);
+      Log.info("serial", "[quic] " + packet.payload[0]);
       packet = await this.readPacket();
     }
-    console.log("[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
+    Log.info("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
     return packet;
   }
 
@@ -231,7 +232,7 @@ export class Serial {
     let buffer = Uint8Array.from(await this.queue.read(hdr.len));
     while (buffer) {
       const nexthdr = await this.readHeader(1000);
-      console.log("[quic] stream header", nexthdr);
+      Log.info("serial", "[quic] stream header", nexthdr);
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
       }
@@ -258,7 +259,7 @@ export class Serial {
         }
         await this.queue.write(value);
       } catch (e) {
-        console.log(e)
+        Log.warning("serial", e)
         this.close();
         if (this.onErrorCallback) {
           this.onErrorCallback(e);

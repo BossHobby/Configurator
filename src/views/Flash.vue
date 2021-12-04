@@ -92,6 +92,7 @@
 import { mapActions, mapState } from "vuex";
 import { Flasher } from "@/store/flash/flash";
 import { github } from "@/store/flash/github";
+import { Log } from "@/log";
 
 export default {
   name: "flash",
@@ -168,7 +169,7 @@ export default {
           })
         )
         .catch((err) => {
-          console.error(err);
+          Log.error("Flash", err);
 
           this.$store.commit("append_alert", {
             type: "danger",

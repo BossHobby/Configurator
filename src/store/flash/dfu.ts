@@ -1,3 +1,4 @@
+import { Log } from '@/log';
 import { FlashProgressCallback } from './flash';
 import { IntelHEX } from './ihex';
 
@@ -261,7 +262,7 @@ export class DFU {
       // support option bytes.
 
       if (tmp1.length > 3) {
-        console.log('parseDescriptor: shrinking long descriptor "' + str + '"');
+        Log.info('flash', 'parseDescriptor: shrinking long descriptor "' + str + '"');
         tmp1.length = 3;
       }
       if (!tmp1[0].startsWith("@")) {
@@ -347,7 +348,7 @@ export class DFU {
 
   private async unlockOptionBytes(start_address: number, total_size: number) {
     const unprotect = async () => {
-      console.log('Initiate read unprotect');
+      Log.info('flash', 'Initiate read unprotect');
 
       // 0x92 initiates read unprotect
       await this.controlTransferOut(DFURequest.DNLOAD, 0, 0, [0x92]);
@@ -367,12 +368,12 @@ export class DFU {
         const data = await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
 
         // unprotecting the flight controller did not work. It did not reboot.
-        console.log('Failed to execute unprotect memory command');
-        console.log(data);
+        Log.info('flash', 'Failed to execute unprotect memory command');
+        Log.info('flash', data);
         throw new Error('Failed to execute unprotect memory command');
       } catch (e) {
         // we encounter an error, but this is expected. should be a stall.
-        console.log('Unprotect memory command ran successfully. Unplug flight controller. Connect again in DFU mode and try flashing again.');
+        Log.info('flash', 'Unprotect memory command ran successfully. Unplug flight controller. Connect again in DFU mode and try flashing again.');
       }
     };
 
@@ -381,11 +382,11 @@ export class DFU {
       const ob_data = await this.controlTransferIn(DFURequest.UPLOAD, 2, 0, total_size);
       const data = await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
       if (data[4] == DFUState.dfuUPLOAD_IDLE && ob_data.length == total_size) {
-        console.log('Option bytes read successfully');
-        console.log('Chip does not appear read protected');
+        Log.info('flash', 'Option bytes read successfully');
+        Log.info('flash', 'Chip does not appear read protected');
         return this.clearStatus();
       } else {
-        console.log('Option bytes could not be read. Quite possibly read protected.');
+        Log.info('flash', 'Option bytes could not be read. Quite possibly read protected.');
         await this.clearStatus();
         return unprotect();
       }
@@ -401,7 +402,7 @@ export class DFU {
       await this.clearStatus();
       return unprotect();
     } else if (loadAddressResponse[4] == DFUState.dfuDNLOAD_IDLE) {
-      console.log('Address load for option bytes sector succeeded.');
+      Log.info('flash', 'Address load for option bytes sector succeeded.');
       await this.clearStatus();
       return tryReadOB();
     } else {
@@ -418,12 +419,12 @@ export class DFU {
     }
 
     if (erase_pages.length === 0) {
-      console.log('Aborting, No flash pages to erase');
+      Log.info('flash', 'Aborting, No flash pages to erase');
       throw new Error('No flash pages to erase')
     }
 
 
-    console.log('Executing local chip erase', erase_pages);
+    Log.info('flash', 'Executing local chip erase', erase_pages);
 
     let erase_progress = 0;
 
@@ -433,7 +434,7 @@ export class DFU {
 
       const page_addr = erase_page.page * flash_layout.sectors[erase_page.sector].page_size + flash_layout.sectors[erase_page.sector].start_address;
       const cmd = [0x41, page_addr & 0xff, (page_addr >> 8) & 0xff, (page_addr >> 16) & 0xff, (page_addr >> 24) & 0xff];
-      console.log('Erasing. sector ' + erase_page.sector + ', page ' + erase_page.page + ' @ 0x' + page_addr.toString(16));
+      Log.info('flash', 'Erasing. sector ' + erase_page.sector + ', page ' + erase_page.page + ' @ 0x' + page_addr.toString(16));
 
       await this.controlTransferOut(DFURequest.DNLOAD, 0, 0, cmd);
 
@@ -458,7 +459,7 @@ export class DFU {
         // Here, we call clarStatus to get to the dfuIDLE state.
         //
 
-        console.log('erase_page: dfuDNBUSY after timeout, clearing');
+        Log.info('flash', 'erase_page: dfuDNBUSY after timeout, clearing');
         await this.clearStatus();
 
         const clearStatus = await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
@@ -472,7 +473,7 @@ export class DFU {
   }
 
   private async upload(hex: IntelHEX, transferSize: number) {
-    console.log('Writing data ...');
+    Log.info('flash', 'Writing data ...');
 
     const bytes_total = hex.segment_bytes_total;
     let bytes_flashed_total = 0;
@@ -517,7 +518,7 @@ export class DFU {
   }
 
   private async verify(hex: IntelHEX, transferSize: number) {
-    console.log('Verifying data ...');
+    Log.info('flash', 'Verifying data ...');
 
     const bytes_total = hex.segment_bytes_total;
     let bytes_verified_total = 0;
