@@ -22,8 +22,12 @@ class Github {
   }
 
   public fetchAsset(asset: any) {
+    const headers = [
+      ["Origin", "http://localhost"],
+      ["X-Requested-With", "XMLHttpRequest"],
+    ];
     const proxy = `${CORS_PROXY}${asset.browser_download_url}`;
-    return fetch(proxy);
+    return fetch(proxy, { headers });
   }
 }
 
