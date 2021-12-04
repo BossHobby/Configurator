@@ -1,6 +1,6 @@
 import { QuicBlackbox, QuicCmd } from '../serial/quic';
 import { serial } from '../serial/serial';
-
+import { Log } from '@/log';
 
 const store = {
   state: {
@@ -27,8 +27,13 @@ const store = {
     list_blackbox({ commit }) {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.List)
-        .then(list => commit('set_blackbox_list', list));
+        .then(p => commit('set_blackbox_list', p.payload[0]));
     },
+    download_blackbox(_, index) {
+      return serial
+        .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
+        .then(p => Log.info("blackbox", p));
+    }
   }
 }
 

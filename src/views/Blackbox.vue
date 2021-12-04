@@ -25,20 +25,19 @@
               <b-button
                 size="sm"
                 class="my-2 mx-2"
-                :href="
-                  'http://localhost:8000/api/blackbox/' + index + '/download'
-                "
-                >Download</b-button
+                @click="download_blackbox(index)"
               >
+                Download
+              </b-button>
             </div>
             <b-row class="my-2" v-if="blackbox.list.files">
               <b-col sm="2">
                 <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
               </b-col>
               <b-col offset="8" sm="2">
-                <b-button class="my-2 mx-2" variant="danger" @click="reset()"
-                  >Reset</b-button
-                >
+                <b-button class="my-2 mx-2" variant="danger" @click="reset()">
+                  Reset
+                </b-button>
               </b-col>
             </b-row>
           </div>
@@ -60,7 +59,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["reset_blackbox", "list_blackbox"]),
+    ...mapActions(["reset_blackbox", "list_blackbox", "download_blackbox"]),
     humanFileSize(bytes, si = false, dp = 1) {
       const thresh = si ? 1000 : 1024;
 
@@ -84,7 +83,6 @@ export default {
 
       return bytes.toFixed(dp) + " " + units[u];
     },
-
     reset() {
       return this.reset_blackbox().then(() => this.list_blackbox());
     },
