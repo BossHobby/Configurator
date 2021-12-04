@@ -170,7 +170,7 @@ export class Serial {
       (payload.length & 0xFF),
     ]);
 
-    Log.info("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
+    Log.debug("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
     await this.write(concatUint8Array(request, payload));
 
     let packet = await this.readPacket();
@@ -178,7 +178,7 @@ export class Serial {
       Log.info("serial", "[quic] " + packet.payload[0]);
       packet = await this.readPacket();
     }
-    Log.info("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
+    Log.debug("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
     return packet;
   }
 
@@ -232,7 +232,6 @@ export class Serial {
     let buffer = Uint8Array.from(await this.queue.read(hdr.len));
     while (buffer) {
       const nexthdr = await this.readHeader();
-      Log.info("serial", "[quic] stream header", nexthdr);
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
       }
