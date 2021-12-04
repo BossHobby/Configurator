@@ -227,7 +227,12 @@ export class Serial {
     // console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
     await this.write(concatUint8Array(request, payload));
 
-    return await this.readPacket();
+    let packet = await this.readPacket();
+    while (packet.cmd == QuicCmd.Log) {
+      console.log("[quic] " + packet.payload[0]);
+      packet = await this.readPacket();
+    }
+    return packet;
   }
 
   private async write(array: Uint8Array) {
