@@ -58,10 +58,4 @@ export class Log {
         break;
     }
   }
-
-  /*
-  private static format(str: string, ...data: any[]) {
-    return str.format()
-  }
-  */
 }
