@@ -1,6 +1,7 @@
 import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QUIC_MAGIC } from './quic';
 import { Encoder, FLOAT32_OPTIONS } from 'cbor-x/encode';
 import { concatUint8Array } from '../util';
+import { AsyncQueue, AsyncSemaphore } from './async';
 
 const BAUD_RATE = 921600;
 
@@ -11,54 +12,6 @@ const SERIAL_FILTERS = [
   { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
 ];
 
-class SerialQueue {
-  private buffer: number[] = [];
-  private canRead = false;
-
-  constructor() {
-    this.canRead = true;
-  }
-
-  push(array: Uint8Array) {
-    for (const v of array) {
-      this.buffer.push(v);
-    }
-  }
-
-  pop(timeout = 10): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let tries = 100;
-
-      const tryRead = () => {
-        if (!this.canRead) {
-          return reject("cant read");
-        }
-        if (this.buffer.length) {
-          return resolve(this.buffer.shift()!);
-        }
-        if (--tries == 0) {
-          return reject("read timeout");
-        }
-        setTimeout(() => tryRead(), timeout);
-      }
-
-      tryRead();
-    });
-  }
-
-  async read(size: number, timeout = 10): Promise<number[]> {
-    const buffer: number[] = [];
-    for (let i = 0; i < size; i++) {
-      buffer.push(await this.pop(timeout));
-    }
-    return buffer;
-  }
-
-  close() {
-    this.canRead = false;
-  }
-}
-
 export class Serial {
 
   private encoder = new Encoder({
@@ -67,14 +20,15 @@ export class Serial {
   });
 
   private shouldRun = true;
-  private queue = new SerialQueue();
+
+  private queue = new AsyncQueue();
+  private waitingCommands = new AsyncSemaphore(1);
 
   private port?: SerialPort
 
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<any>;
 
-  private inFlight?: Promise<QuicPacket>;
 
   private onErrorCallback?: (err: any) => void;
 
@@ -85,7 +39,7 @@ export class Serial {
       this.port = await navigator.serial.requestPort({
         filters: SERIAL_FILTERS
       });
-      this.queue = new SerialQueue();
+      this.queue = new AsyncQueue();
       this.onErrorCallback = errorCallback;
 
       await this.port.open({ baudRate: BAUD_RATE });
@@ -159,8 +113,6 @@ export class Serial {
       throw new Error(packet.payload[0]);
     }
 
-    // console.log("[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
-
     return packet;
   }
 
@@ -199,19 +151,12 @@ export class Serial {
   }
 
   private async send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
-    if (!this.inFlight) {
-      return this.inFlight = this._send(cmd, ...values).catch(err => {
-        this.inFlight = undefined;
-        throw err
-      });
+    await this.waitingCommands.wait();
+    try {
+      return await this._send(cmd, ...values);
+    } finally {
+      this.waitingCommands.signal();
     }
-    return this.inFlight = this
-      .inFlight
-      .then(() => this._send(cmd, ...values))
-      .catch(err => {
-        this.inFlight = undefined;
-        throw err
-      });
   }
 
   private async _send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
@@ -224,7 +169,7 @@ export class Serial {
       (payload.length & 0xFF),
     ]);
 
-    // console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
+    console.log("[quic] sent cmd: %d len: %d", cmd, payload.length, values)
     await this.write(concatUint8Array(request, payload));
 
     let packet = await this.readPacket();
@@ -232,6 +177,7 @@ export class Serial {
       console.log("[quic] " + packet.payload[0]);
       packet = await this.readPacket();
     }
+    console.log("[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
     return packet;
   }
 
@@ -250,10 +196,10 @@ export class Serial {
     return result;
   }
 
-  private async readHeader(timeout = 10): Promise<QuicHeader> {
+  private async readHeader(timeout = 100): Promise<QuicHeader> {
     const magic = await this.queue.pop(timeout);
     if (!magic || magic != QUIC_MAGIC) {
-      throw new Error("invalid magic");
+      throw new Error("invalid magic " + magic);
     }
 
     const header = await this.queue.read(QUIC_HEADER_LEN - 1, timeout);
@@ -272,15 +218,20 @@ export class Serial {
 
     if ((hdr.flag & QuicFlag.Streaming) == 0) {
       const buffer = Uint8Array.from(await this.queue.read(hdr.len));
+      let payload: any = [];
+      if (hdr.len) {
+        payload = this.encoder.decodeMultiple(buffer);
+      }
       return {
         ...hdr,
-        payload: this.encoder.decodeMultiple(buffer),
+        payload,
       }
     }
 
     let buffer = Uint8Array.from(await this.queue.read(hdr.len));
     while (buffer) {
-      const nexthdr = await this.readHeader(100);
+      const nexthdr = await this.readHeader(1000);
+      console.log("[quic] stream header", nexthdr);
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
       }
@@ -288,7 +239,7 @@ export class Serial {
         break;
       }
 
-      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len, 100));
+      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len, 1000));
       buffer = concatUint8Array(buffer, nextbuffer);
     }
 
@@ -305,8 +256,9 @@ export class Serial {
         if (done) {
           break;
         }
-        this.queue.push(value);
+        await this.queue.write(value);
       } catch (e) {
+        console.log(e)
         this.close();
         if (this.onErrorCallback) {
           this.onErrorCallback(e);
