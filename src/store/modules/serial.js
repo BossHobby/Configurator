@@ -88,6 +88,7 @@ const store = {
           commit('set_info', info);
 
           dispatch('fetch_default_profile');
+          dispatch('fetch_pid_rate_presets');
           dispatch('fetch_profile');
 
           if (interval) {
