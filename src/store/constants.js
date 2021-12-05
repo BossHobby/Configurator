@@ -1,3 +1,4 @@
+export const PROFILE_VERSION = 1;
 
 export const FEATURE_BRUSHLESS = (1 << 1);
 export const FEATURE_OSD = (1 << 2);
