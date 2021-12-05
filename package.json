@@ -12,9 +12,11 @@
     "build:gh-pages": "env DEPLOYMENT=gh-pages vue-cli-service build --dest docs",
     "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
+    "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
     "build:linux": "npm run build:linux:clean && npm run build:vue && build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "build:windows:clean": "rimraf ./dist ./build/nw-vue-1.8.0-win-x64 ./build/nw-vue-1.8.0-win-x64.zip ./build/nw-vue-1.8.0-win-x64.7z ./build/nw-vue-1.8.0-win-x64-Setup.exe",
-    "build:linux:clean": "rimraf ./dist ./build/nw-vue-1.8.0-linux-x64 ./build/nw-vue-1.8.0-linux-x64.zip"
+    "build:linux:clean": "rimraf ./dist ./build/quic-config*linux*",
+    "build:mac": "npm run build:mac:clean && npm run build:vue && build --tasks mac-x64 --mirror https://dl.nwjs.io/ .",
+    "build:mac:clean": "rimraf ./dist ./build/quic-config*mac*"
   },
   "main": "http://localhost:8080",
   "dependencies": {
