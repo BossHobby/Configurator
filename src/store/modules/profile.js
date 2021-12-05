@@ -1,6 +1,7 @@
 import { createHelpers } from "@/store/helper.js";
 import { serial } from '../serial/serial';
 import { QuicVal } from '../serial/quic';
+import { Log } from '@/log';
 
 const { get_profile_field, update_profile_field } = createHelpers("profile")
 
@@ -94,7 +95,11 @@ const store = {
       return serial
         .set(QuicVal.Profile, profile)
         .then(p => commit('set_profile', p))
-        .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }));
+        .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }))
+        .catch(err => {
+          Log.error(err);
+          commit('append_alert', { type: "danger", msg: "Apply failed! " + err });
+        })
     },
   }
 }
