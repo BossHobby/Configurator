@@ -170,7 +170,7 @@ export class Serial {
       (payload.length & 0xFF),
     ]);
 
-    Log.debug("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
+    Log.trace("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
     await this.write(concatUint8Array(request, payload));
 
     let packet = await this.readPacket();
@@ -178,7 +178,7 @@ export class Serial {
       Log.info("serial", "[quic] " + packet.payload[0]);
       packet = await this.readPacket();
     }
-    Log.debug("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
+    Log.trace("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
     return packet;
   }
 

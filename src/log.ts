@@ -2,6 +2,7 @@ import store from './store'
 import { sprintf } from "printj";
 
 export enum LogLevel {
+  Trace = "trace",
   Debug = "debug",
   Info = "info",
   Warning = "warning",
@@ -11,6 +12,10 @@ export enum LogLevel {
 export class Log {
 
   public static level = LogLevel.Debug;
+
+  public static trace(prefix: string, ...data: any[]) {
+    Log.log(LogLevel.Trace, prefix, ...data);
+  }
 
   public static debug(prefix: string, ...data: any[]) {
     Log.log(LogLevel.Debug, prefix, ...data);
@@ -44,7 +49,6 @@ export class Log {
     switch (level) {
       case LogLevel.Debug:
       case LogLevel.Info:
-      default:
         console.log(str, ...data);
         store.commit('append_log', sprintf(str, ...data));
         break;
@@ -55,6 +59,8 @@ export class Log {
       case LogLevel.Error:
         console.error(str, ...data);
         store.commit('append_log', sprintf(str, ...data));
+        break;
+      default:
         break;
     }
   }
