@@ -4,7 +4,7 @@ import { concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
 
-const BAUD_RATE = 230400;
+const BAUD_RATE = 921600;
 
 const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
 const HARD_REBOOT_MAGIC = 'R'.charCodeAt(0);
@@ -41,9 +41,14 @@ export class Serial {
         filters: SERIAL_FILTERS
       });
       this.queue = new AsyncQueue();
+      this.waitingCommands = new AsyncSemaphore(1);
       this.onErrorCallback = errorCallback;
 
-      await this.port.open({ baudRate: BAUD_RATE });
+      await this.port.open({
+        baudRate: BAUD_RATE,
+        bufferSize: 1024,
+        flowControl: 'none',
+      });
 
       this.writer = await this.port.writable.getWriter();
       this.reader = await this.port.readable.getReader();
@@ -256,7 +261,7 @@ export class Serial {
         if (done) {
           break;
         }
-        await this.queue.write(value);
+        this.queue.write(value);
       } catch (e) {
         Log.warning("serial", e)
         this.close();

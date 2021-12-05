@@ -52,11 +52,10 @@ export class AsyncQueue {
     resolve(v);
   }
 
-  async pop(): Promise<number> {
+  pop(): Promise<number> {
     if (!this._promises.length)
       this._add();
-
-    return await this._promises.shift()!;
+    return this._promises.shift()!;
   }
 
   async write(array: Uint8Array) {
