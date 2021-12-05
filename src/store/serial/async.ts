@@ -52,11 +52,11 @@ export class AsyncQueue {
     resolve(v);
   }
 
-  async pop(ms = 100): Promise<number> {
+  async pop(): Promise<number> {
     if (!this._promises.length)
       this._add();
 
-    return await promiseTimeout(this._promises.shift()!, ms);
+    return await this._promises.shift()!;
   }
 
   async write(array: Uint8Array) {
@@ -65,10 +65,10 @@ export class AsyncQueue {
     }
   }
 
-  async read(size: number, timeout = 100): Promise<number[]> {
+  async read(size: number): Promise<number[]> {
     const buffer: number[] = [];
     for (let i = 0; i < size; i++) {
-      buffer.push(await this.pop(timeout));
+      buffer.push(await this.pop());
     }
     return buffer;
   }

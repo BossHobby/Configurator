@@ -4,7 +4,7 @@ import { concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
 
-const BAUD_RATE = 921600;
+const BAUD_RATE = 230400;
 
 const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
 const HARD_REBOOT_MAGIC = 'R'.charCodeAt(0);
@@ -197,13 +197,13 @@ export class Serial {
     return result;
   }
 
-  private async readHeader(timeout = 100): Promise<QuicHeader> {
-    const magic = await this.queue.pop(timeout);
+  private async readHeader(): Promise<QuicHeader> {
+    const magic = await this.queue.pop();
     if (!magic || magic != QUIC_MAGIC) {
       throw new Error("invalid magic " + magic);
     }
 
-    const header = await this.queue.read(QUIC_HEADER_LEN - 1, timeout);
+    const header = await this.queue.read(QUIC_HEADER_LEN - 1);
     return {
       cmd: header[0] & (0xff >> 3),
       flag: (header[0] >> 5),
@@ -231,7 +231,7 @@ export class Serial {
 
     let buffer = Uint8Array.from(await this.queue.read(hdr.len));
     while (buffer) {
-      const nexthdr = await this.readHeader(1000);
+      const nexthdr = await this.readHeader();
       Log.info("serial", "[quic] stream header", nexthdr);
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
@@ -240,7 +240,7 @@ export class Serial {
         break;
       }
 
-      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len, 1000));
+      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len));
       buffer = concatUint8Array(buffer, nextbuffer);
     }
 
