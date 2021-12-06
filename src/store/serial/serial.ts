@@ -46,7 +46,7 @@ export class Serial {
 
       await this.port.open({
         baudRate: BAUD_RATE,
-        bufferSize: 1024,
+        bufferSize: 8192,
         flowControl: 'none',
       });
 
