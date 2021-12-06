@@ -21,7 +21,7 @@
   "main": "http://localhost:8080",
   "node-remote": [
     "http://localhost:8080/*",
-    "dist/*"
+    "file:///dist/*"
   ],
   "dependencies": {
     "@octokit/rest": "^18.12.0",
