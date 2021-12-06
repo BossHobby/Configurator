@@ -82,21 +82,21 @@ export const DefaultFields: FieldDefinition[] = [
   //"amperageLatest",
   //"rssi",
 
-  { name: "gyroRaw", array_index: 0, index: 7, signed: true },
-  { name: "gyroRaw", array_index: 1, index: 7, signed: true },
-  { name: "gyroRaw", array_index: 2, index: 7, signed: true, convert: convertFlip },
+  { name: "accRaw", array_index: 0, index: 7, signed: true },
+  { name: "accRaw", array_index: 1, index: 7, signed: true },
+  { name: "accRaw", array_index: 2, index: 7, signed: true, convert: convertOffset(1000) },
 
-  { name: "gyroADC", array_index: 0, index: 8, signed: true },
-  { name: "gyroADC", array_index: 1, index: 8, signed: true },
-  { name: "gyroADC", array_index: 2, index: 8, signed: true, convert: convertFlip },
+  { name: "accSmooth", array_index: 0, index: 8, signed: true },
+  { name: "accSmooth", array_index: 1, index: 8, signed: true },
+  { name: "accSmooth", array_index: 2, index: 8, signed: true, convert: convertOffset(1000) },
 
-  { name: "accRaw", array_index: 0, index: 9, signed: true },
-  { name: "accRaw", array_index: 1, index: 9, signed: true },
-  { name: "accRaw", array_index: 2, index: 9, signed: true, convert: convertOffset(1000) },
+  { name: "gyroRaw", array_index: 0, index: 9, signed: true },
+  { name: "gyroRaw", array_index: 1, index: 9, signed: true },
+  { name: "gyroRaw", array_index: 2, index: 9, signed: true, convert: convertFlip },
 
-  { name: "accSmooth", array_index: 0, index: 10, signed: true },
-  { name: "accSmooth", array_index: 1, index: 10, signed: true },
-  { name: "accSmooth", array_index: 2, index: 10, signed: true, convert: convertOffset(1000) },
+  { name: "gyroADC", array_index: 0, index: 10, signed: true },
+  { name: "gyroADC", array_index: 1, index: 10, signed: true },
+  { name: "gyroADC", array_index: 2, index: 10, signed: true, convert: convertFlip },
 
   //"debug[0]"
   //"debug[1]"
