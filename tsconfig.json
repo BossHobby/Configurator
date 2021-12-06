@@ -17,7 +17,8 @@
       "webpack-env",
       "dom-serial",
       "w3c-web-usb",
-      "node"
+      "node",
+      "nw.js"
     ],
     "paths": {
       "@/*": [

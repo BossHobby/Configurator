@@ -19,6 +19,10 @@
     "build:mac:clean": "rimraf ./dist ./build/quic-config*mac*"
   },
   "main": "http://localhost:8080",
+  "node-remote": [
+    "http://localhost:8080/*",
+    "dist/*"
+  ],
   "dependencies": {
     "@octokit/rest": "^18.12.0",
     "@types/dom-serial": "^1.0.2",
@@ -39,6 +43,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.11",
+    "@types/nw.js": "^0.13.14",
     "@types/w3c-web-usb": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
