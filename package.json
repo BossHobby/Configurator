@@ -27,7 +27,6 @@
     "chart.js": "^2.9.4",
     "chartjs-plugin-crosshair": "^1.2.0",
     "core-js": "^3.19.1",
-    "printj": "^1.3.0",
     "three": "0.133.0",
     "vue": "^2.6.14",
     "vue-chartjs": "^3.5.1",
@@ -39,6 +38,7 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
+    "@types/node": "^16.11.11",
     "@types/w3c-web-usb": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",

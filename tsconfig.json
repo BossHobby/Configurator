@@ -16,7 +16,8 @@
     "types": [
       "webpack-env",
       "dom-serial",
-      "w3c-web-usb"
+      "w3c-web-usb",
+      "node"
     ],
     "paths": {
       "@/*": [

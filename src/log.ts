@@ -1,17 +1,23 @@
 import store from './store'
-import { sprintf } from "printj";
+import util from 'util';
 
 export enum LogLevel {
-  Trace = "trace",
-  Debug = "debug",
-  Info = "info",
-  Warning = "warning",
-  Error = "error",
+  Trace,
+  Debug,
+  Info,
+  Warning,
+  Error,
+}
+
+export const LevelNames = {
+  [LogLevel.Trace]: "trace",
+  [LogLevel.Debug]: "debug",
+  [LogLevel.Info]: "info",
+  [LogLevel.Warning]: "warning",
+  [LogLevel.Error]: "error",
 }
 
 export class Log {
-
-  public static level = LogLevel.Debug;
 
   public static trace(prefix: string, ...data: any[]) {
     Log.log(LogLevel.Trace, prefix, ...data);
@@ -38,7 +44,7 @@ export class Log {
   }
 
   public static log(level: LogLevel, prefix?: string, ...data: any[]) {
-    let str = "[" + level + "]";
+    let str = "[" + LevelNames[level] + "]";
     if (prefix && prefix.length) {
       str += "[" + prefix + "]";
     }
@@ -50,15 +56,15 @@ export class Log {
       case LogLevel.Debug:
       case LogLevel.Info:
         console.log(str, ...data);
-        store.commit('append_log', sprintf(str, ...data));
+        store.commit('append_log', util.format(str, ...data));
         break;
       case LogLevel.Warning:
         console.warn(str, ...data);
-        store.commit('append_log', sprintf(str, ...data));
+        store.commit('append_log', util.format(str, ...data));
         break;
       case LogLevel.Error:
         console.error(str, ...data);
-        store.commit('append_log', sprintf(str, ...data));
+        store.commit('append_log', util.format(str, ...data));
         break;
       default:
         break;
