@@ -22,11 +22,7 @@
           <div>
             <div v-for="(size, index) in blackbox.list.files" :key="index">
               File {{ index + 1 }}: {{ humanFileSize(size * 128) }}
-              <b-button
-                size="sm"
-                class="my-2 mx-2"
-                @click="download_blackbox(index)"
-              >
+              <b-button size="sm" class="my-2 mx-2" @click="download(index)">
                 Download
               </b-button>
             </div>
@@ -40,6 +36,7 @@
                 </b-button>
               </b-col>
             </b-row>
+            <a ref="downloadAnchor" target="_blank"></a>
           </div>
         </b-card>
       </b-col>
@@ -53,7 +50,7 @@ import { mapState, mapActions } from "vuex";
 export default {
   name: "blackbox",
   computed: {
-    ...mapState(["blackbox"]),
+    ...mapState(["blackbox", "profile"]),
     usedSize() {
       return (this.blackbox?.list?.files || []).reduce((p, c) => p + c, 0);
     },
@@ -85,6 +82,17 @@ export default {
     },
     reset() {
       return this.reset_blackbox().then(() => this.list_blackbox());
+    },
+    download(index) {
+      return this.download_blackbox(index).then((url) => {
+        const date = new Date().toISOString().substring(0, 10);
+        const name = this.profile.meta.name.replace(/\0/g, "");
+        const filename = `${name}_${date}_file_${index}.bfl`;
+
+        this.$refs.downloadAnchor.setAttribute("href", url);
+        this.$refs.downloadAnchor.setAttribute("download", filename);
+        this.$refs.downloadAnchor.click();
+      });
     },
   },
   created() {

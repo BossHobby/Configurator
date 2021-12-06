@@ -1,6 +1,6 @@
 import { QuicBlackbox, QuicCmd } from '../serial/quic';
 import { serial } from '../serial/serial';
-import { Log } from '@/log';
+import { Blackbox } from '@/store/blackbox';
 
 const store = {
   state: {
@@ -32,7 +32,14 @@ const store = {
     download_blackbox(_, index) {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
-        .then(p => Log.info("blackbox", p));
+        .then(p => {
+          const writer = new Blackbox();
+          writer.writeHeaders();
+          for (const v of p.payload) {
+            writer.writeValue(v);
+          }
+          return writer.toUrl();
+        });
     }
   }
 }
