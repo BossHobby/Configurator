@@ -104,7 +104,7 @@ export default {
         { value: "local", text: "Local" },
       ],
       source: "bosshobby",
-      release: "0.5.1",
+      release: null,
       target: null,
       file: null,
       progress: {},
@@ -113,7 +113,7 @@ export default {
   computed: {
     ...mapState(["flash"]),
     releaseOptions() {
-      return Object.keys(this.flash.firmware_releases).reverse();
+      return Object.keys(this.flash.firmware_releases);
     },
     targetOptions() {
       const release = this.flash.firmware_releases[this.release];
@@ -181,9 +181,9 @@ export default {
     },
   },
   created() {
-    this.fetch_firmware_releases().then(
-      () => (this.release = this.releaseOptions[0])
-    );
+    this.fetch_firmware_releases().then(() => {
+      this.release = this.releaseOptions[0];
+    });
   },
 };
 </script>
