@@ -87,6 +87,7 @@ export default {
         "FRSKY_D8",
         "FRSKY_D16",
         "REDPINE",
+        "EXPRESS_LRS",
       ],
       serialProtoNames: [
         "SERIAL_INVALID",
@@ -122,6 +123,7 @@ export default {
         this.proto.FRSKY_D8,
         this.proto.FRSKY_D16,
         this.proto.REDPINE,
+        this.proto.EXPRESS_LRS,
       ];
       if (spi.includes(this.info.rx_protocol)) {
         const status = [
