@@ -1,4 +1,4 @@
-import { concatUint8Array } from './util';
+import { concatUint8Array, ArrayWriter } from './util';
 
 export interface FieldDefinition {
   name: string
@@ -112,8 +112,7 @@ export const DefaultFields: FieldDefinition[] = [
 ];
 
 export class Blackbox {
-  private offset = 0;
-  private buffer = new Uint8Array(1024);
+  private buffer = new ArrayWriter();
 
   private defs = DefaultFields;
 
@@ -168,7 +167,7 @@ export class Blackbox {
   }
 
   public writeValue(val: any[]) {
-    this.writeUint8('I'.charCodeAt(0));
+    this.buffer.writeUint8('I'.charCodeAt(0));
     for (const d of this.defs) {
       let v = val[d.index];
       if (d.array_index != undefined) {
@@ -187,7 +186,7 @@ export class Blackbox {
   }
 
   public toUrl() {
-    const buf = this.buffer.subarray(0, this.offset);
+    const buf = this.buffer.array();
     const blob = new Blob([buf], { type: "octet/stream" });
     return window.URL.createObjectURL(blob);
   }
@@ -209,30 +208,21 @@ export class Blackbox {
   private writeHeaderRaw(key: string, value: string) {
     const str = `H ${key}:${value}\n`;
     for (let i = 0; i < str.length; i++) {
-      this.writeUint8(str.charCodeAt(i));
+      this.buffer.writeUint8(str.charCodeAt(i));
     }
   }
 
   private writeUnsigned(val: number) {
     while (val > 127) {
-      this.writeUint8(((val & 0xFF) | 0x80) & 0xFF)
+      this.buffer.writeUint8(((val & 0xFF) | 0x80) & 0xFF)
       val >>= 7
     }
-    this.writeUint8(val);
+    this.buffer.writeUint8(val);
   }
 
   private writeSigned(val: number) {
     const unsigned = ((val << 1) ^ (val >> 31));
     return this.writeUnsigned(unsigned)
-  }
-
-  private writeUint8(v: number) {
-    if (this.offset + 1 >= this.buffer.byteLength) {
-      this.buffer = concatUint8Array(this.buffer, new Uint8Array(1024));
-    }
-
-    this.buffer[this.offset] = v;
-    this.offset++;
   }
 
 }

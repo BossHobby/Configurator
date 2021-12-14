@@ -27,7 +27,6 @@
     "@octokit/rest": "^18.12.0",
     "@types/dom-serial": "^1.0.2",
     "bootstrap-vue": "^2.21.2",
-    "cbor-x": "^0.9.4",
     "chart.js": "^2.9.4",
     "chartjs-plugin-crosshair": "^1.2.0",
     "core-js": "^3.19.1",

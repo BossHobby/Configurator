@@ -1,8 +1,8 @@
 import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QUIC_MAGIC } from './quic';
-import { Encoder, FLOAT32_OPTIONS } from 'cbor-x/encode';
 import { concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
+import { CBOR } from './cbor';
 
 const BAUD_RATE = 921600;
 
@@ -15,10 +15,7 @@ const SERIAL_FILTERS = [
 
 export class Serial {
 
-  private encoder = new Encoder({
-    useRecords: false,
-    useFloat32: FLOAT32_OPTIONS.DECIMAL_ROUND,
-  });
+  private cbor = new CBOR();
 
   private shouldRun = true;
 
@@ -195,8 +192,8 @@ export class Serial {
 
   private encodeValues(values: any[]): Uint8Array {
     let result = new Uint8Array();
-    for (const v of JSON.parse(JSON.stringify(values))) {
-      const encoded = this.encoder.encode(v);
+    for (const v of values) {
+      const encoded = this.cbor.encode(v);
       result = concatUint8Array(result, encoded);
     }
     return result;
@@ -226,7 +223,7 @@ export class Serial {
       const buffer = Uint8Array.from(await this.queue.read(hdr.len));
       let payload: any = [];
       if (hdr.len) {
-        payload = this.encoder.decodeMultiple(buffer);
+        payload = this.cbor.decodeMultiple(buffer);
       }
       return {
         ...hdr,
@@ -248,9 +245,10 @@ export class Serial {
       buffer = concatUint8Array(buffer, nextbuffer);
     }
 
+    const payload: any[] = this.cbor.decodeMultiple(buffer)!;
     return {
       ...hdr,
-      payload: this.encoder.decodeMultiple(buffer),
+      payload,
     }
   }
 
