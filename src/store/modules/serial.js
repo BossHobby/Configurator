@@ -32,6 +32,9 @@ const store = {
       if (intervalCounter % 4 && router.currentRoute.fullPath == "/receiver") {
         dispatch('fetch_bind_info');
       }
+      if (intervalCounter % 4 && router.currentRoute.fullPath == "/perf") {
+        dispatch('fetch_perf_counters');
+      }
     },
     soft_reboot() {
       return serial

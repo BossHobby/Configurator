@@ -1,3 +1,5 @@
+import { serial } from '../serial/serial';
+import { QuicVal } from '../serial/quic';
 
 const store = {
   state: {
@@ -9,7 +11,13 @@ const store = {
       state.counters = update;
     },
   },
-  actions: {}
+  actions: {
+    fetch_perf_counters({commit}){
+      return serial
+      .get(QuicVal.PerfCounters)
+      .then(p => commit('set_perf_counters', p))
+    }
+  }
 }
 
 export default store;

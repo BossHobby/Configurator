@@ -31,6 +31,7 @@ export default {
         "PERF_COUNTER_CONTROL",
         "PERF_COUNTER_RX",
         "PERF_COUNTER_OSD",
+        "PERF_COUNTER_MISC",
         "PERF_COUNTER_BLACKBOX",
       ],
     };
