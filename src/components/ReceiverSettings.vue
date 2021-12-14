@@ -55,18 +55,57 @@
         </small>
       </b-col>
     </b-row>
+
+    <b-card class="mt-4" v-if="info.rx_protocol == proto.EXPRESS_LRS">
+      <h5 slot="header" class="mb-0">EXPRESS_LRS</h5>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label>Switch Mode</label>
+        </b-col>
+        <b-col sm="8" class="my-2">{{ elrsSwitchMode }}</b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label>Current Bind Phrase</label>
+        </b-col>
+        <b-col sm="8" class="my-2">{{ elrsBindPhrase }}</b-col>
+      </b-row>
+      <b-row>
+        <b-col sm="4" class="my-2">
+          <label>New Bind Phrase</label>
+        </b-col>
+        <b-col sm="4" class="my-2">
+          <b-form-input
+            id="name"
+            type="text"
+            v-model="elrsBindPhraseInput"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col offset="10" sm="2">
+          <b-button
+            class="ml-auto mr-1 mt-2"
+            v-on:click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
+            :disabled="elrsBindPhraseInput.length < 4"
+          >
+            Apply
+          </b-button>
+        </b-col>
+      </b-row>
+    </b-card>
   </b-card>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
+import * as md5 from "md5";
 
 export default {
   name: "ReceiverSettings",
   data() {
     return {
-      intervalEnabled: true,
       lqiSourceNames: [
         { value: 0, text: "PACKET_RATE" },
         { value: 1, text: "CHANNEL" },
@@ -101,6 +140,7 @@ export default {
         "SERIAL_FPORT_INVERTED",
         "SERIAL_REDPINE_INVERTED",
       ],
+      elrsBindPhraseInput: "",
     };
   },
   computed: {
@@ -157,25 +197,39 @@ export default {
 
       return this.serialProtoNames[index];
     },
-  },
-  methods: {
-    ...mapActions(["fetch_bind_info"]),
-    startInterval() {
-      return this.fetch_bind_info().then(() => {
-        if (!this.intervalEnabled) {
-          return;
-        }
-        setTimeout(() => this.startInterval(), 5000);
-      });
+    elrsBindPhrase() {
+      return this.bind?.info?.raw?.slice(1, 7).join(", ");
+    },
+    elrsSwitchMode() {
+      return this.bind?.info?.raw[8] ? "Hybrid Switches" : "1Bit Switches";
     },
   },
-  created() {
-    if (this.info.quic_protocol_version > 2) {
-      this.startInterval();
-    }
+  methods: {
+    ...mapActions(["apply_bind_info"]),
+    parseHexString(str) {
+      const result = [];
+      while (str.length >= 2) {
+        result.push(parseInt(str.substring(0, 2), 16));
+        str = str.substring(2, str.length);
+      }
+      return result;
+    },
+    apply_elrs_bind_phrase(input) {
+      const hex = md5(`-DMY_BINDING_PHRASE="${input}"`);
+      const bytes = this.parseHexString(hex).slice(0, 6);
+
+      const info = { ...this.bind?.info };
+      info.bind_saved = 1;
+
+      info.raw[0] = 1;
+      for (let i = 0; i < 6; i++) {
+        info.raw[i + 1] = bytes[i];
+      }
+      info.raw[7] = 0x37;
+
+      return this.apply_bind_info(info);
+    },
   },
-  beforeDestroy() {
-    this.intervalEnabled = false;
-  },
+  created() {},
 };
 </script>

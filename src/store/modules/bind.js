@@ -1,6 +1,6 @@
 import { serial } from '../serial/serial';
 import { QuicVal } from '../serial/quic';
-
+import { Log } from '@/log';
 
 const store = {
   state: {
@@ -19,6 +19,16 @@ const store = {
       return serial
         .get(QuicVal.BindInfo)
         .then(b => commit('set_bind_info', b))
+    },
+    apply_bind_info({ commit }, info) {
+      return serial
+        .set(QuicVal.BindInfo, info)
+        .then(b => commit('set_bind_info', b))
+        .then(() => commit('append_alert', { type: "success", msg: "Bind info applied!" }))
+        .catch(err => {
+          Log.error(err);
+          commit('append_alert', { type: "danger", msg: "Apply failed! " + err });
+        })
     }
   }
 }
