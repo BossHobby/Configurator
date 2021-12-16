@@ -9,7 +9,11 @@
             <label for="pid-preset">PID Preset</label>
           </b-col>
           <b-col sm="6" class="my-2">
-            <b-form-select id="pid-preset" v-model.number="current_preset" :options="presets"></b-form-select>
+            <b-form-select
+              id="pid-preset"
+              v-model.number="current_preset"
+              :options="presets"
+            ></b-form-select>
           </b-col>
           <b-col sm="2" class="my-2">
             <b-button v-on:click="load_preset(current_preset)">Load</b-button>
@@ -20,7 +24,11 @@
             <label for="pid-profile">PIDProfile</label>
           </b-col>
           <b-col sm="8" class="my-2">
-            <b-form-select id="pid-profile" v-model.number="pid.pid_profile" :options="pidProfiles"></b-form-select>
+            <b-form-select
+              id="pid-profile"
+              v-model.number="pid.pid_profile"
+              :options="pidProfiles"
+            ></b-form-select>
           </b-col>
         </b-row>
         <b-row class="mt-3">
@@ -75,7 +83,9 @@
 
         <b-row class="mt-4">
           <b-col sm="4" class="my-2">
-            <label for="throttle_dterm_attenuation-enable">Throttle DTerm Attenuation</label>
+            <label for="throttle_dterm_attenuation-enable"
+              >Throttle DTerm Attenuation</label
+            >
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -87,7 +97,9 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="throttle_dterm_attenuation-breakpoint">TDA Breakpoint</label>
+            <label for="throttle_dterm_attenuation-breakpoint"
+              >TDA Breakpoint</label
+            >
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -176,7 +188,7 @@
         </b-row>
 
         <b-row class="mt-4">
-          <b-col sm="4" class="my-2">Angle PID</b-col>
+          <b-col sm="4" class="my-2">Angle Strength</b-col>
         </b-row>
         <b-row class="mt-3">
           <b-col offset="4" sm="8">
@@ -231,24 +243,24 @@ export default {
     return {
       pidProfiles: [
         { value: 0, text: "PID Profile 1" },
-        { value: 1, text: "PID Profile 2" }
+        { value: 1, text: "PID Profile 2" },
       ],
       stickProfiles: [
         { value: 0, text: "Stick Boost Profile AUX Off" },
-        { value: 1, text: "Stick Boost Profile AUX On" }
+        { value: 1, text: "Stick Boost Profile AUX On" },
       ],
       tdaOptions: [
         { value: 0, text: "None" },
         { value: 1, text: "Active" },
-        { value: 2, text: "Max" }
+        { value: 2, text: "Max" },
       ],
-      current_preset: 0
+      current_preset: 0,
     };
   },
   computed: {
     ...mapFields("profile", ["pid"]),
     ...mapState({
-      pid_rate_presets: state => state.pid_rate_presets
+      pid_rate_presets: (state) => state.pid_rate_presets,
     }),
     pid_rates: {
       get() {
@@ -256,7 +268,7 @@ export default {
       },
       set(value) {
         this.$store.commit("set_current_pid_rate", value);
-      }
+      },
     },
     stick_rates: {
       get() {
@@ -264,22 +276,22 @@ export default {
       },
       set(value) {
         this.$store.commit("set_current_stick_rate", value);
-      }
+      },
     },
     presets() {
-      return this.pid_rate_presets.map(p => {
+      return this.pid_rate_presets.map((p) => {
         return {
           value: p.index,
-          text: p.name
+          text: p.name,
         };
       });
-    }
+    },
   },
   methods: {
     load_preset(index) {
       this.pid_rates = this.pid_rate_presets[index].rate;
-    }
-  }
+    },
+  },
 };
 </script>
 
