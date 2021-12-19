@@ -78,14 +78,16 @@
         >
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
-        <b-button class="my-1 mx-2" v-on:click="soft_reboot()">Reboot</b-button>
-        <b-button
+        <spinner-btn class="my-1 mx-2" v-on:click="soft_reboot()">
+          Reboot
+        </spinner-btn>
+        <spinner-btn
           class="my-1 mx-2"
           v-on:click="apply_profile(profile)"
           :disabled="is_read_only"
         >
           Apply
-        </b-button>
+        </spinner-btn>
       </b-navbar-nav>
     </b-navbar>
   </div>

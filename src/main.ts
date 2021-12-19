@@ -9,12 +9,16 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
+import SpinnerBtn from './components/SpinnerBtn.vue';
+Vue.component("spinner-btn", SpinnerBtn);
+
 Object.keys(VueGL).forEach(name => {
   Vue.component(name, VueGL[name]);
 });
 
 Vue.use(BootstrapVue);
 Vue.use(require('vue-moment'));
+
 Vue.config.productionTip = false
 
 new Vue({

@@ -76,9 +76,9 @@
                   </b-col>
                 </b-row>
 
-                <b-button class="my-2" :disabled="!canFlash" type="submit"
-                  >Flash</b-button
-                >
+                <spinner-btn class="my-2" :disabled="!canFlash" type="submit">
+                  Flash
+                </spinner-btn>
               </b-form>
             </b-col>
           </b-row>
@@ -93,8 +93,10 @@ import { mapActions, mapState } from "vuex";
 import { Flasher } from "@/store/flash/flash";
 import { github } from "@/store/flash/github";
 import { Log } from "@/log";
+import SpinnerBtn from "@/components/SpinnerBtn.vue";
 
 export default {
+  components: { SpinnerBtn },
   name: "flash",
   data() {
     return {

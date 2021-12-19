@@ -138,13 +138,14 @@
                   v-on:click="apply_motor_settings(motor.settings)"
                   >Apply</b-button
                 >
-                <b-button
+                <spinner-btn
                   class="ml-4 mt-2"
                   v-else
                   :disabled="motor.loading"
                   v-on:click="fetch_motor_settings()"
-                  >Load</b-button
                 >
+                  Load
+                </spinner-btn>
               </b-col>
             </b-row>
           </div>

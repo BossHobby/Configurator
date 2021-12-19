@@ -22,18 +22,22 @@
           <div>
             <div v-for="(size, index) in blackbox.list.files" :key="index">
               File {{ index + 1 }}: {{ humanFileSize(size * 128) }}
-              <b-button size="sm" class="my-2 mx-2" @click="download(index)">
+              <spinner-btn size="sm" class="my-2 mx-2" @click="download(index)">
                 Download
-              </b-button>
+              </spinner-btn>
             </div>
             <b-row class="my-2" v-if="blackbox.list.files">
               <b-col sm="2">
                 <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
               </b-col>
               <b-col offset="8" sm="2">
-                <b-button class="my-2 mx-2" variant="danger" @click="reset()">
+                <spinner-btn
+                  class="my-2 mx-2"
+                  variant="danger"
+                  @click="reset()"
+                >
                   Reset
-                </b-button>
+                </spinner-btn>
               </b-col>
             </b-row>
             <a ref="downloadAnchor" target="_blank"></a>
