@@ -250,6 +250,10 @@ class Decoder {
         return count;
       }
 
+      if (this.buf.remaining() <= 0) {
+        return 0;
+      }
+
       const { type, max } = this.decodeType();
       if (type == MajorType.FLOAT && max == SizeType.INDEFINITE) {
         this.buf.advance(1);
