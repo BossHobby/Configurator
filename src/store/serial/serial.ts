@@ -96,6 +96,17 @@ export class Serial {
     return packet.payload.slice(1)
   }
 
+  async set_osd_font(val: any[]) {
+    const packet = await this.command(QuicCmd.Set, QuicVal.OSDFont, ...val);
+    if (packet.payload[0] != QuicVal.OSDFont) {
+      throw new Error("invalid value");
+    }
+    if (packet.payload.length < 2) {
+      throw new Error("no payload");
+    }
+    return packet.payload.slice(1)
+  }
+
   async set(id: QuicVal, val: any): Promise<any> {
     const packet = await this.command(QuicCmd.Set, id, val);
     if (packet.payload[0] != id) {

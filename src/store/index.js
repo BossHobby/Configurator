@@ -70,9 +70,6 @@ const store = new Vuex.Store({
     cal_imu() {
       return serial.command(QuicCmd.CalImu);
     },
-    set_osd_font() {
-      // return post("/api/osd/font", name)
-    },
     update() {
 
     },

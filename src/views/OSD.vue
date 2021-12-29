@@ -86,9 +86,9 @@
               ></b-form-select>
             </b-col>
             <b-col sm="2" class="my-2">
-              <b-button v-on:click="apply_osd_font(current_font_file)"
-                >Upload</b-button
-              >
+              <spinner-btn v-on:click="apply_osd_font(current_font_file)">
+                Upload
+              </spinner-btn>
             </b-col>
           </b-row>
           <b-row>
@@ -110,7 +110,6 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
 import { serial } from "@/store/serial/serial";
 
@@ -175,9 +174,89 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["set_osd_font"]),
     apply_osd_font(name) {
-      return this.set_osd_font(name);
+      const loadImage = (url) => {
+        return new Promise((r, e) => {
+          let i = new Image();
+          i.onload = () => r(i);
+          i.onerror = (err) => e(err);
+          i.src = url;
+        });
+      };
+      return loadImage(name + ".png")
+        .then((src) => {
+          const canvas = this.$refs.canvas;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(src, 0, 0);
+
+          const width = 12;
+          const height = 18;
+          const border = 1;
+
+          const full_width = 16 * (width + border) + border;
+          //const full_height = 16 * (height + border) + border;
+
+          const img = ctx.getImageData(0, 0, src.width, src.height);
+          const font = [];
+          for (let cy = 0; cy < 16; cy++) {
+            for (let cx = 0; cx < 16; cx++) {
+              const char = new Uint8Array((width * height) / 4);
+
+              const getPixel = (x, y) => {
+                const vx = x + cx * (width + border) + border;
+                const vy = y + cy * (height + border) + border;
+
+                let value = 0;
+
+                const white = img.data[(vy * full_width + vx) * 4 + 0];
+                if (white > 0) {
+                  value |= 0x2;
+                }
+
+                const alpha = img.data[(vy * full_width + vx) * 4 + 3];
+                if (alpha < 255) {
+                  value |= 0x1;
+                }
+
+                return value;
+              };
+
+              let x = 0;
+              let y = 0;
+              for (let j = 0; j < 54; j++) {
+                char[j] =
+                  ((getPixel(x + 0, y) & 0x3) << 6) |
+                  ((getPixel(x + 1, y) & 0x3) << 4) |
+                  ((getPixel(x + 2, y) & 0x3) << 2) |
+                  ((getPixel(x + 3, y) & 0x3) << 0);
+
+                x += 4;
+                if (x == width) {
+                  x = 0;
+                  y++;
+                }
+              }
+
+              font.push(char);
+            }
+          }
+
+          return serial.set_osd_font(font);
+        })
+        .then(() => this.get_osd_font())
+        .then(() =>
+          this.$store.commit("append_alert", {
+            type: "success",
+            msg: "Font updated!",
+          })
+        )
+        .catch(() => {
+          this.$store.commit("append_alert", {
+            type: "danger",
+            msg: "Font update failed!",
+          });
+        });
     },
     get_osd_font() {
       return serial.get_osd_font().then((font) => {
@@ -214,6 +293,7 @@ export default {
 
         const canvas = this.$refs.canvas;
         const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "red";
         ctx.fillRect(0, 0, full_width, full_height);
 
