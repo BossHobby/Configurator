@@ -66,7 +66,7 @@ class Encoder {
       case "object":
         if (val instanceof Uint8Array) {
           this.encodeByteString(val);
-        } if (Array.isArray(val)) {
+        } else if (Array.isArray(val)) {
           this.encodeArray(val);
         } else {
           this.encodeObject(val);
