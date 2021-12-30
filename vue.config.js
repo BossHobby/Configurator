@@ -10,4 +10,8 @@ if (process.env.NODE_ENV === 'production') {
 
 module.exports = {
   publicPath: publicPath,
+  pwa: {
+    name: 'QUICKSILVER',
+    themeColor: '#3c7317',
+  }
 }

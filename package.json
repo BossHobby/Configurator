@@ -4,25 +4,21 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "lint": "vue-cli-service lint",
-    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\"",
     "build": "npm run build:clean && npm run build:vue && npm run build:nw",
+    "lint": "vue-cli-service lint",
     "build:clean": "rimraf ./dist ./build",
-    "build:vue": "vue-cli-service build",
     "build:gh-pages": "env DEPLOYMENT=gh-pages vue-cli-service build --dest docs",
-    "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
-    "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
-    "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
     "build:linux": "npm run build:linux:clean && npm run build:vue && build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
     "build:linux:clean": "rimraf ./dist ./build/quic-config*linux*",
     "build:mac": "npm run build:mac:clean && npm run build:vue && build --tasks mac-x64 --mirror https://dl.nwjs.io/ .",
-    "build:mac:clean": "rimraf ./dist ./build/quic-config*mac*"
+    "build:mac:clean": "rimraf ./dist ./build/quic-config*mac*",
+    "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
+    "build:vue": "vue-cli-service build",
+    "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
+    "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
+    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\""
   },
   "main": "http://localhost:8080",
-  "node-remote": [
-    "http://localhost:8080/*",
-    "file:///dist/*"
-  ],
   "dependencies": {
     "@octokit/rest": "^18.12.0",
     "@types/dom-serial": "^1.0.2",
@@ -31,6 +27,7 @@
     "chartjs-plugin-crosshair": "^1.2.0",
     "core-js": "^3.19.1",
     "md5": "^2.3.0",
+    "register-service-worker": "^1.7.1",
     "three": "0.133.0",
     "vue": "^2.6.14",
     "vue-chartjs": "^3.5.1",
@@ -50,6 +47,7 @@
     "@typescript-eslint/parser": "^4.18.0",
     "@vue/cli-plugin-babel": "^4.5.15",
     "@vue/cli-plugin-eslint": "^4.5.15",
+    "@vue/cli-plugin-pwa": "^4.5.15",
     "@vue/cli-plugin-typescript": "^4.5.15",
     "@vue/cli-service": "^4.5.15",
     "@vue/eslint-config-typescript": "^7.0.0",
@@ -93,13 +91,6 @@
     "> 1%",
     "last 2 versions"
   ],
-  "window": {
-    "width": 960,
-    "height": 600,
-    "min_width": 700,
-    "min_height": 500,
-    "icon": "public/logo.png"
-  },
   "build": {
     "nwVersion": "v0.54.0",
     "nwFlavor": "normal",
@@ -143,5 +134,16 @@
       "diffUpdaters": false,
       "hashCalculation": true
     }
+  },
+  "node-remote": [
+    "http://localhost:8080/*",
+    "file:///dist/*"
+  ],
+  "window": {
+    "width": 960,
+    "height": 600,
+    "min_width": 700,
+    "min_height": 500,
+    "icon": "public/logo.png"
   }
 }
