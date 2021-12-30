@@ -4,10 +4,9 @@ import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
 import { CBOR } from './cbor';
 import { getWebSerial } from './webserial';
+import { settings } from '../settings';
 
 const WebSerial = getWebSerial();
-
-const BAUD_RATE = 921600;
 
 const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
 const HARD_REBOOT_MAGIC = 'R'.charCodeAt(0);
@@ -45,8 +44,8 @@ export class Serial {
       this.onErrorCallback = errorCallback;
 
       await this.port.open({
-        baudRate: BAUD_RATE,
-        bufferSize: 8192,
+        baudRate: settings.serial.baudRate,
+        bufferSize: settings.serial.bufferSize,
         flowControl: 'none',
       });
 

@@ -1,6 +1,7 @@
 import { serial } from '../serial/serial';
 import router from '../../router';
 import { Log } from '@/log';
+import { settings } from '../settings';
 
 var interval = null;
 var intervalCounter = 0;
@@ -97,7 +98,7 @@ const store = {
           if (interval) {
             clearInterval(interval);
           }
-          interval = setInterval(() => dispatch('poll_serial'), 250);
+          interval = setInterval(() => dispatch('poll_serial'), settings.serial.updateInterval);
 
           if (router.currentRoute.fullPath != "/profile") {
             router.push("/profile")
