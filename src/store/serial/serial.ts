@@ -3,6 +3,9 @@ import { concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
 import { CBOR } from './cbor';
+import { getWebSerial } from './webserial';
+
+const WebSerial = getWebSerial();
 
 const BAUD_RATE = 921600;
 
@@ -22,7 +25,7 @@ export class Serial {
   private queue = new AsyncQueue();
   private waitingCommands = new AsyncSemaphore(1);
 
-  private port?: SerialPort
+  private port?: any
 
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<any>;
@@ -34,7 +37,7 @@ export class Serial {
 
   async connect(errorCallback: any = undefined): Promise<any> {
     try {
-      this.port = await navigator.serial.requestPort({
+      this.port = await WebSerial.requestPort({
         filters: SERIAL_FILTERS
       });
       this.queue = new AsyncQueue();
