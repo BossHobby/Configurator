@@ -4,6 +4,7 @@ import * as VueGL from "vue-gl";
 
 import './style.scss'
 // import 'chartjs-plugin-crosshair'
+import 'web-serial-polyfill';
 
 import App from './App.vue'
 import router from './router'
