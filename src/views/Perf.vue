@@ -1,12 +1,15 @@
 <template>
   <b-container>
     <b-row>
-      <b-col v-for="(counter, index) in perf.counters" :key="'counter' + index" sm="6">
+      <b-col
+        v-for="(counter, index) in perf.counters"
+        :key="'counter' + index"
+        sm="6"
+      >
         <RealtimePlot
           :title="counters[index]"
           :axis="['min', 'max', 'current']"
           :input="counter"
-          :transform="(v) => v / 84"
         ></RealtimePlot>
       </b-col>
     </b-row>
