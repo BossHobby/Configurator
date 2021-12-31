@@ -36,30 +36,33 @@ export class Serial {
 
   async connect(errorCallback: any = undefined): Promise<any> {
     try {
-      this.port = await WebSerial.requestPort({
-        filters: SERIAL_FILTERS
-      });
-      this.queue = new AsyncQueue();
-      this.waitingCommands = new AsyncSemaphore(1);
-      this.onErrorCallback = errorCallback;
-
-      await this.port.open({
-        baudRate: settings.serial.baudRate,
-        bufferSize: settings.serial.bufferSize,
-        flowControl: 'none',
-      });
-
-      this.writer = await this.port.writable.getWriter();
-      this.reader = await this.port.readable.getReader();
-
-      this.shouldRun = true;
-      this.startReading();
-
+      await this._connectPort(errorCallback);
       return await this.get(QuicVal.Info);
     } catch (err) {
       await this.close();
       throw err;
     }
+  }
+
+  private async _connectPort(errorCallback: any = undefined) {
+    this.port = await WebSerial.requestPort({
+      filters: SERIAL_FILTERS
+    });
+    this.queue = new AsyncQueue();
+    this.waitingCommands = new AsyncSemaphore(1);
+    this.onErrorCallback = errorCallback;
+
+    await this.port.open({
+      baudRate: settings.serial.baudRate,
+      bufferSize: settings.serial.bufferSize,
+      flowControl: 'none',
+    });
+
+    this.writer = await this.port.writable.getWriter();
+    this.reader = await this.port.readable.getReader();
+
+    this.shouldRun = true;
+    this.startReading();
   }
 
   async softReboot() {
@@ -71,7 +74,7 @@ export class Serial {
       throw new Error("port already connected");
     }
 
-    await this.connect();
+    await this._connectPort();
     await this.write(new Uint8Array([HARD_REBOOT_MAGIC]));
     await this.close();
   }
