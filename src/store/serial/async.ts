@@ -30,9 +30,16 @@ export class AsyncSemaphore {
   }
 }
 
+
+const QUEUE_BUFFER_SIZE = 8192;
+
 export class AsyncQueue {
-  private _promises: Promise<number>[] = [];
-  private _resolvers: ((t: number) => void)[] = [];
+  private _promises: Promise<void>[] = [];
+  private _resolvers: (() => void)[] = [];
+
+  private _buffer = new Uint8Array(QUEUE_BUFFER_SIZE);
+  private _head = 0;
+  private _tail = 0;
 
   constructor() { }
 
@@ -46,19 +53,34 @@ export class AsyncQueue {
   }
 
   push(v: number) {
-    if (!this._resolvers.length)
-      this._add();
-    const resolve = this._resolvers.shift()!;
-    resolve(v);
+    const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
+    if (next == this._tail) {
+      return;
+    }
+
+    this._buffer[next] = v;
+    this._head = next;
+
+    if (this._resolvers.length) {
+      this._resolvers.shift()!();
+    }
   }
 
   pop(): Promise<number> {
-    if (!this._promises.length)
-      this._add();
-    return this._promises.shift()!;
+    if (this._head == this._tail) {
+      if (!this._promises.length)
+        this._add();
+
+      return this
+        ._promises
+        .shift()!
+        .then(() => this.pop());
+    }
+    this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
+    return Promise.resolve(this._buffer[this._tail]);
   }
 
-  async write(array: Uint8Array) {
+  write(array: Uint8Array) {
     for (const v of array) {
       this.push(v);
     }

@@ -272,7 +272,9 @@ export class Serial {
         if (done) {
           break;
         }
-        this.queue.write(value);
+        if (value.length) {
+          this.queue.write(value);
+        }
       } catch (e) {
         Log.warning("serial", e)
         this.close();
