@@ -1,4 +1,4 @@
-export function promiseTimeout<T>(promise: PromiseLike<T>, ms: number): PromiseLike<T> {
+export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<T>((resolve, reject) => {
     const id = setTimeout(() => {
       clearTimeout(id);
@@ -71,9 +71,9 @@ export class AsyncQueue {
       if (!this._promises.length)
         this._add();
 
-      return this
+      return promiseTimeout(this
         ._promises
-        .shift()!
+        .shift()!, 5000)
         .then(() => this.pop());
     }
     this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
