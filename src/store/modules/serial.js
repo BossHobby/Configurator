@@ -2,6 +2,7 @@ import { serial } from '../serial/serial';
 import router from '../../router';
 import { Log } from '@/log';
 import { settings } from '../settings';
+import { QuicCmd } from '../serial/quic';
 
 var interval = null;
 var intervalCounter = 0;
@@ -40,6 +41,19 @@ const store = {
     soft_reboot() {
       return serial
         .softReboot();
+    },
+    serial_passthrough({ commit, dispatch }, { port, baudrate }) {
+      return serial
+        .command(QuicCmd.Serial, 0, port, baudrate)
+        .then(() => serial.close())
+        .then(() => dispatch('toggle_connection'))
+        .then(() => {
+          commit('append_alert', { type: "success", msg: "Serial passthrough successful!" });
+        })
+        .catch((err) => {
+          Log.error("serial", err);
+          commit('append_alert', { type: "danger", msg: "Serial passthrough failed" });
+        });
     },
     hard_reboot({ commit }) {
       return serial

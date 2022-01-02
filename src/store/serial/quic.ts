@@ -9,6 +9,7 @@ export enum QuicCmd {
   CalImu,
   Blackbox,
   Motor,
+  CalSticks,
   Serial,
   Max,
 }
