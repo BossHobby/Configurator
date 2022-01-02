@@ -1,6 +1,9 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">Receiver</h5>
+    <h5 slot="header" class="mb-0">
+      Receiver
+      <b-button size="sm" class="my-2 mx-2" @click="reset">Reset</b-button>
+    </h5>
     <b-row v-if="info.rx_protocol != null">
       <b-col sm="4" class="my-2">
         <label>Protocol</label>
@@ -226,6 +229,15 @@ export default {
         info.raw[i + 1] = bytes[i];
       }
       info.raw[7] = 0x37;
+
+      return this.apply_bind_info(info);
+    },
+    reset() {
+      const info = { ...this.bind?.info };
+      info.bind_saved = 0;
+      for (let i = 0; i < info.raw.length; i++) {
+        info.raw[i] = 0;
+      }
 
       return this.apply_bind_info(info);
     },
