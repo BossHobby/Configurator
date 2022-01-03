@@ -21,14 +21,21 @@
       >
 -->
     </div>
+    <b-row>
+      <b-col sm="12"><Info></Info></b-col>
+    </b-row>
   </b-container>
 </template>
 
 <script>
 import { mapState } from "vuex";
+import Info from "@/components/Info";
 
 export default {
   name: "home",
+  components: {
+    Info,
+  },
   computed: {
     ...mapState(["serial"]),
   },

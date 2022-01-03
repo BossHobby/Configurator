@@ -1,6 +1,7 @@
 <template>
   <b-container>
     <b-row>
+      <b-col class="my-4" sm="12"><Info></Info></b-col>
       <b-col sm="12">
         <b-alert variant="warning" :show="info.quic_protocol_version < 5">
           Incompatible Firmware! <br />
@@ -11,8 +12,8 @@
       <b-col sm="12">
         <Metadata class="control-card"></Metadata>
       </b-col>
-      <b-col sm="12">
-        <b-card class="my-4 control-card">
+      <b-col class="my-4" sm="12">
+        <b-card class="control-card">
           <h5 slot="header" class="mb-0">Serial Passthrough</h5>
           <b-row>
             <b-col sm="4" class="my-2">
@@ -48,6 +49,7 @@
 <script>
 import { mapState, mapActions } from "vuex";
 import Metadata from "@/components/Metadata";
+import Info from "@/components/Info";
 
 export default {
   name: "home",
@@ -60,6 +62,7 @@ export default {
   },
   components: {
     Metadata,
+    Info,
   },
   computed: {
     ...mapState(["info"]),
