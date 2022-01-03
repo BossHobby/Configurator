@@ -4,6 +4,18 @@
       <b-col sm="6">
         <b-card>
           <h5 slot="header" class="mb-0">Elements</h5>
+          <b-row>
+            <b-col sm="4">
+              <label>Callsign Text</label>
+            </b-col>
+            <b-col sm="8">
+              <b-form-input
+                size="sm"
+                type="text"
+                v-model="callsign"
+              ></b-form-input>
+            </b-col>
+          </b-row>
           <div v-for="(el, i) of elements" :key="i">
             <b-row v-if="el.enabled" class="my-3" align-v="center">
               <b-col sm="4">
@@ -123,23 +135,6 @@ export default {
         char_width: 12,
         char_height: 18,
       },
-      element_options: [
-        { name: "CALLSIGN", enabled: true, text: "QUICKSILVER" },
-        { name: "callsign2", enabled: false, text: "" },
-        { name: "callsign3", enabled: false, text: "" },
-        { name: "callsign4", enabled: false, text: "" },
-        { name: "callsign5", enabled: false, text: "" },
-        { name: "callsign6", enabled: false, text: "" },
-        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "GYRO TEMP", enabled: true, text: "40C" },
-        { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
-        { name: "RSSI", enabled: true, text: "90" },
-        { name: "STOPWATCH", enabled: true, text: "120" },
-        { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
-        { name: "THROTTLE", enabled: true, text: "50" },
-        { name: "VTX CHANNEL", enabled: true, text: "" },
-      ],
       fontFiles: [{ text: "Clarity", value: "clarity" }],
       current_font_file: "clarity",
       imageSource: null,
@@ -155,6 +150,63 @@ export default {
     },
     viewBox() {
       return `0 0 ${this.svg_width} ${this.svg_height}`;
+    },
+    callsign: {
+      get() {
+        return this.osd.elements
+          .slice(1, 5)
+          .flatMap((e) => {
+            return [0, 8, 16, 24].map((shift) => {
+              const val = (e >> shift) & 0xff;
+              if (val == 0x3f) {
+                return "";
+              }
+              return String.fromCharCode(val);
+            });
+          })
+          .join("");
+      },
+      set(val) {
+        const elements = Array(20)
+          .fill(0x3f)
+          .map((v, i) => {
+            if (i < val.length) {
+              return val.charCodeAt(i);
+            }
+            return v;
+          })
+          .reduce((prev, curr, i) => {
+            const byte = Math.floor(i / 4);
+            const shift = [0, 8, 16, 24][i % 4];
+            prev[byte] = prev[byte] | ((curr & 0xff) << shift);
+            return prev;
+          }, []);
+
+        const copy = [...this.osd.elements];
+        for (let i = 0; i < elements.length; i++) {
+          copy[i + 1] = elements[i];
+        }
+        this.osd.elements = copy;
+      },
+    },
+    element_options() {
+      return [
+        { name: "CALLSIGN", enabled: true, text: this.callsign },
+        { name: "callsign2", enabled: false, text: "" },
+        { name: "callsign3", enabled: false, text: "" },
+        { name: "callsign4", enabled: false, text: "" },
+        { name: "callsign5", enabled: false, text: "" },
+        { name: "callsign6", enabled: false, text: "" },
+        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "GYRO TEMP", enabled: true, text: "40C" },
+        { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
+        { name: "RSSI", enabled: true, text: "90" },
+        { name: "STOPWATCH", enabled: true, text: "120" },
+        { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
+        { name: "THROTTLE", enabled: true, text: "50" },
+        { name: "VTX CHANNEL", enabled: true, text: "" },
+      ];
     },
     elements() {
       return this.osd.elements
