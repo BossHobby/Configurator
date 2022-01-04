@@ -20,6 +20,7 @@ export class Serial {
   private cbor = new CBOR();
 
   private shouldRun = true;
+  private reSync = true;
 
   private queue = new AsyncQueue();
   private waitingCommands = new AsyncSemaphore(1);
@@ -216,9 +217,16 @@ export class Serial {
   }
 
   private async readHeader(): Promise<QuicHeader> {
-    const magic = await this.queue.pop();
-    if (!magic || magic != QUIC_MAGIC) {
-      throw new Error("invalid magic " + magic);
+    while (this.shouldRun) {
+      const magic = await this.queue.pop();
+      if (magic === QUIC_MAGIC) {
+        this.reSync = false;
+        break;
+      }
+      if (!this.reSync) {
+        this.reSync = true;
+        throw new Error("invalid magic " + magic);
+      }
     }
 
     const header = await this.queue.read(QUIC_HEADER_LEN - 1);
