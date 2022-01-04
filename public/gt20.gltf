@@ -1,0 +1,105 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "TKS-GT2-Base-Plate-Full"
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Carbon",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.009680514223873615,
+                    0.009680514223873615,
+                    0.009680514223873615,
+                    1
+                ],
+                "metallicFactor" : 0.2881944179534912,
+                "roughnessFactor" : 0.5972222089767456
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "TKS-GT2-Base-Plate-Full",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1
+                    },
+                    "indices" : 2,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 10157,
+            "max" : [
+                47.7679443359375,
+                28.499998092651367,
+                41.51654815673828
+            ],
+            "min" : [
+                -47.73405075073242,
+                -0.03831625357270241,
+                -51.925052642822266
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 10157,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5123,
+            "count" : 18903,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 121884,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 121884,
+            "byteOffset" : 121884
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 37806,
+            "byteOffset" : 243768
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 281576,
+            "uri" : "gt20.bin"
+        }
+    ]
+}

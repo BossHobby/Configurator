@@ -11,6 +11,7 @@ const store = {
     rx_status: 0,
     rx_rssi: 0,
     GEstG: null,
+    accel: null,
     aux: [],
   },
   getters: {},

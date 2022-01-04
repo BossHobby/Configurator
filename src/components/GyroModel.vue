@@ -6,66 +6,105 @@
         calibrate
       </b-button>
     </h5>
-    <vgl-renderer style="width: 100%; height: 25vh" antialias>
-      <template #scene>
-        <vgl-scene background="#fff">
-          <vgl-mesh
-            :rotationX="rotation.x"
-            :rotationY="rotation.y"
-            :rotationZ="rotation.z"
-          >
-            <template #geometry>
-              <vgl-box-geometry :width="7.5" :height="1.5" :depth="7.5" />
-            </template>
-            <template #material>
-              <vgl-mesh-standard-material color="#777" />
-            </template>
-          </vgl-mesh>
-
-          <vgl-axes-helper :size="5"></vgl-axes-helper>
-          <vgl-ambient-light color="#ffeecc"></vgl-ambient-light>
-          <vgl-directional-light
-            :positionX="0"
-            :positionY="1"
-            :positionZ="1"
-          ></vgl-directional-light>
-        </vgl-scene>
-      </template>
-      <template #camera>
-        <vgl-perspective-camera
-          position="spherical"
-          rotation="lookAt"
-          :position-radius="15"
-          :position-phi="1"
-          :position-theta="0"
-        />
-      </template>
-    </vgl-renderer>
+    <div id="container" style="height: 30vh; width: 100%"></div>
+    <small class="float-right">Model: TKS GT20 by Tarkusx</small>
   </b-card>
 </template>
 
 <script>
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
 import { mapState, mapActions } from "vuex";
 
 export default {
   name: "GyroModel",
+  data() {
+    return {
+      frameRequest: null,
+      camera: null,
+      scene: null,
+      renderer: null,
+      model: null,
+    };
+  },
   computed: {
     ...mapState({
       rate: (state) => state.profile.rate,
       gyro_vector: (state) => state.state.GEstG,
+      accel: (state) => state.state.accel,
     }),
-    rotation() {
-      const rot = this.gyro_vector;
-      if (!rot) {
-        return { x: 0, y: 0, z: 0 };
-      }
-      const x = Math.atan2(rot[1], rot[2]);
-      const y = Math.atan2(rot[0], rot[2]);
-      return { x: -x, y: 0, z: -y };
-    },
   },
   methods: {
     ...mapActions(["cal_imu"]),
+    initThree() {
+      const container = document.getElementById("container");
+
+      this.camera = new THREE.PerspectiveCamera(
+        45,
+        container.clientWidth / container.clientHeight,
+        0.01,
+        1000
+      );
+      this.camera.position.z = 140;
+      this.camera.position.y = 40;
+      this.camera.lookAt(0, 0, 0);
+      this.scene = new THREE.Scene();
+
+      const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 10);
+      const mainLight = new THREE.DirectionalLight(0xffffff, 10);
+      mainLight.position.set(0, 500, 0);
+      this.scene.add(ambientLight, mainLight);
+
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        wireframe: true,
+      });
+
+      const cube = new THREE.Mesh(geometry, material);
+      this.scene.add(cube);
+
+      const loader = new GLTFLoader();
+      loader.load("gt20.gltf", (gltf) => {
+        this.model = gltf.scene.children[0];
+        this.scene.add(this.model);
+      });
+
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      this.renderer.setClearColor(0x000000, 0);
+      this.renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(this.renderer.domElement);
+    },
+    animate() {
+      if (this.model) {
+        const UP = new THREE.Vector3(0, 1, 0);
+        const GYRO = new THREE.Vector3(
+          this.gyro_vector[0],
+          this.gyro_vector[2],
+          -this.gyro_vector[1]
+        );
+        GYRO.normalize();
+
+        const q = new THREE.Quaternion(); // create one and reuse it
+        q.setFromUnitVectors(UP, GYRO);
+
+        this.model.rotation.setFromQuaternion(q);
+      }
+      this.renderer.render(this.scene, this.camera);
+
+      this.frameRequest = requestAnimationFrame(this.animate);
+    },
+  },
+  mounted() {
+    this.initThree();
+    this.animate();
+  },
+  beforeDestroy() {
+    cancelAnimationFrame(this.frameRequest);
   },
 };
 </script>
