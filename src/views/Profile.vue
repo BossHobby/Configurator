@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <b-row>
-      <b-col class="my-4" sm="12"><Info></Info></b-col>
+      <b-col class="my-2" sm="12"><Info></Info></b-col>
       <b-col sm="12">
         <b-alert variant="warning" :show="info.quic_protocol_version < 5">
           Incompatible Firmware! <br />
