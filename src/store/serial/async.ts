@@ -31,7 +31,7 @@ export class AsyncSemaphore {
 }
 
 
-const QUEUE_BUFFER_SIZE = 8192;
+const QUEUE_BUFFER_SIZE = 32 * 1024;
 
 export class AsyncQueue {
   private _promises: Promise<void>[] = [];
@@ -55,7 +55,7 @@ export class AsyncQueue {
   push(v: number) {
     const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
     if (next == this._tail) {
-      return;
+      throw new Error("queue full");
     }
 
     this._buffer[next] = v;
@@ -67,17 +67,19 @@ export class AsyncQueue {
   }
 
   pop(): Promise<number> {
-    if (this._head == this._tail) {
+    return Promise.resolve().then(() => {
+      if (this._head != this._tail) {
+        this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
+        return this._buffer[this._tail];
+      }
       if (!this._promises.length)
         this._add();
 
-      return promiseTimeout(this
+      return this
         ._promises
-        .shift()!, 5000)
+        .shift()!
         .then(() => this.pop());
-    }
-    this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
-    return Promise.resolve(this._buffer[this._tail]);
+    });
   }
 
   write(array: Uint8Array) {
