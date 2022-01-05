@@ -2,9 +2,9 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       VTX
-      <b-button size="sm" class="ml-4" v-on:click="fetch_vtx_settings()"
-        >refresh</b-button
-      >
+      <spinner-btn size="sm" class="ml-4" v-on:click="fetch_vtx_settings()">
+        Refresh
+      </spinner-btn>
     </h5>
     <div v-if="vtx.settings.detected">
       <b-row>
@@ -73,11 +73,12 @@
       </b-row>
       <b-row>
         <b-col offset="9" sm="3">
-          <b-button
+          <spinner-btn
             class="ml-4 mt-2"
             v-on:click="apply_vtx_settings(vtx.settings)"
-            >Apply</b-button
           >
+            Apply
+          </spinner-btn>
         </b-col>
       </b-row>
     </div>

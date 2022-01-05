@@ -25,6 +25,12 @@ const store = {
       return serial
         .set(QuicVal.VtxSettings, vtx_settings)
         .then(v => commit('set_vtx_settings', v))
+        .then(() => {
+          commit('append_alert', { type: "success", msg: "Apply successful!" });
+        })
+        .catch(() => {
+          commit('append_alert', { type: "danger", msg: "Apply failed" });
+        });
     },
   }
 }
