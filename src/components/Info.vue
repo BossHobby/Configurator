@@ -3,12 +3,16 @@
     <h1 class="display-4 mb-4">QUICKSILVER</h1>
     <p class="lead">
       Checkout our
-      <a href="https://github.com/BossHobby/QUICKSILVER/wiki">wiki</a> for help
-      on getting started.
+      <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki">
+        wiki
+      </a>
+      for help on getting started.
     </p>
     <p class="lead">
-      <a href="https://github.com/BossHobby/Templates">Template Profiles</a> for
-      common configurations are available.
+      <a target="_blank" href="https://github.com/BossHobby/Templates">
+        Template Profiles
+      </a>
+      for common configurations are available.
     </p>
   </div>
 </template>
