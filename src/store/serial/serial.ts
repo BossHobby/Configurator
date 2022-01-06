@@ -85,43 +85,27 @@ export class Serial {
     if (packet.payload[0] != id) {
       throw new Error("invalid value");
     }
-    if (packet.payload.length != 2) {
-      throw new Error("no payload");
-    }
-    return packet.payload[1];
-  }
-
-  async get_osd_font() {
-    const packet = await this.command(QuicCmd.Get, QuicVal.OSDFont);
-    if (packet.payload[0] != QuicVal.OSDFont) {
-      throw new Error("invalid value");
-    }
     if (packet.payload.length < 2) {
       throw new Error("no payload");
+    }
+    if (packet.payload.length == 2) {
+      return packet.payload[1];
     }
     return packet.payload.slice(1)
   }
 
-  async set_osd_font(val: any[]) {
-    const packet = await this.command(QuicCmd.Set, QuicVal.OSDFont, ...val);
-    if (packet.payload[0] != QuicVal.OSDFont) {
-      throw new Error("invalid value");
-    }
-    if (packet.payload.length < 2) {
-      throw new Error("no payload");
-    }
-    return packet.payload.slice(1)
-  }
-
-  async set(id: QuicVal, val: any): Promise<any> {
-    const packet = await this.command(QuicCmd.Set, id, val);
+  async set(id: QuicVal, ...val: any[]): Promise<any> {
+    const packet = await this.command(QuicCmd.Set, id, ...val);
     if (packet.payload[0] != id) {
       throw new Error("invalid value");
     }
-    if (packet.payload.length != 2) {
+    if (packet.payload.length < 2) {
       throw new Error("no payload");
     }
-    return packet.payload[1];
+    if (packet.payload.length == 2) {
+      return packet.payload[1];
+    }
+    return packet.payload.slice(1)
   }
 
   async command(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {

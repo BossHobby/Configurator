@@ -52,16 +52,16 @@ const store = {
     apply_motor_settings({ commit }, settings) {
       commit('set_loading', true);
       return serial
-        .set(QuicVal.BLHeliSettings, settings)
+        .set(QuicVal.BLHeliSettings, ...settings)
         .then(() => {
           commit('set_motor_settings', settings);
+          commit('append_alert', { type: 'success', msg: 'Motor settings applied!' });
         })
         .catch(err => {
-          commit('append_alert', { type: 'danger', msg: 'Failed to apply motor settings!' });
           Log.error("motor", err);
+          commit('append_alert', { type: 'danger', msg: 'Failed to apply motor settings!' });
         })
         .finally(() => {
-          commit('append_alert', { type: 'success', msg: 'Motor settings applied!' });
           commit('set_loading', false);
         })
     },

@@ -111,9 +111,11 @@
                   </b-col>
                   <b-col sm="8" class="my-2">
                     {{ trim(motor.settings[m.index].LAYOUT) }}
-                    ({{ motor.settings[m.index].MAIN_REVISION }}.{{
+                    -
+                    {{ trim(motor.settings[m.index].NAME) }},
+                    {{ motor.settings[m.index].MAIN_REVISION }}.{{
                       motor.settings[m.index].SUB_REVISION
-                    }})
+                    }}
                   </b-col>
 
                   <b-col sm="4" class="my-2">

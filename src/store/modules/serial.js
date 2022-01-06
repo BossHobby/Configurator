@@ -96,12 +96,14 @@ const store = {
   
           commit('set_connected', false);
           commit('set_connecting', false);
-  
+
           if (router.currentRoute.fullPath != "/home") {
             router.push("/home")
           }
         })
         .then((info) => {
+          commit('set_motor_settings', null);
+
           commit('set_connected', true);
           commit('set_info', info);
 

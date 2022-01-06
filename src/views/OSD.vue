@@ -124,6 +124,7 @@
 <script>
 import { mapFields } from "@/store/helper.js";
 import { serial } from "@/store/serial/serial";
+import { QuicVal } from "@/store/serial/quic";
 
 export default {
   name: "osd",
@@ -294,7 +295,7 @@ export default {
             }
           }
 
-          return serial.set_osd_font(font);
+          return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())
         .then(() =>
@@ -311,7 +312,7 @@ export default {
         });
     },
     get_osd_font() {
-      return serial.get_osd_font().then((font) => {
+      return serial.get(QuicVal.OSDFont).then((font) => {
         const width = 12;
         const height = 18;
         const border = 1;
