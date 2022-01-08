@@ -1,5 +1,14 @@
 <template>
   <div id="app">
+    <b-overlay :show="updateProcessing" no-wrap z-index="9999">
+      <template #overlay>
+        <div class="text-center">
+          <b-spinner class="float-center" label="Spinning"></b-spinner>
+          <h1>Updating...</h1>
+        </div>
+      </template>
+    </b-overlay>
+
     <b-navbar fixed="top" class="navbar-top">
       <b-navbar-brand to="/">
         <img
@@ -94,6 +103,7 @@
 </template>
 
 <script>
+import { updater } from "@/store/util/updater";
 import { mapActions, mapState, mapGetters } from "vuex";
 import {
   FEATURE_BLACKBOX,
@@ -136,11 +146,18 @@ export default {
     canConnect() {
       return !this.serial.is_connecting;
     },
+    updateProcessing() {
+      return updater.updatePreparing() || updater.updatePending();
+    },
   },
   methods: {
     ...mapActions(["toggle_connection", "apply_profile", "soft_reboot"]),
   },
-  created() {},
+  created() {
+    if (updater.updatePending()) {
+      updater.finishUpdate();
+    }
+  },
   destroyed() {
     clearInterval(this.interval);
   },
