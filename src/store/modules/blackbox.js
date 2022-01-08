@@ -1,6 +1,6 @@
 import { QuicBlackbox, QuicCmd } from '../serial/quic';
 import { serial } from '../serial/serial';
-import { Blackbox } from '@/store/blackbox';
+import { Blackbox } from '../util/blackbox';
 
 const store = {
   state: {

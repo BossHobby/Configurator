@@ -91,7 +91,7 @@
 <script>
 import { mapActions, mapState } from "vuex";
 import { Flasher } from "@/store/flash/flash";
-import { github } from "@/store/flash/github";
+import { github } from "@/store/util/github";
 import { Log } from "@/log";
 import SpinnerBtn from "@/components/SpinnerBtn.vue";
 

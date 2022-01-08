@@ -1,4 +1,4 @@
-import { github } from '../flash/github';
+import { github } from '../util/github';
 
 const store = {
   state: {

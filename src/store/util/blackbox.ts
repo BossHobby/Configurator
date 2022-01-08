@@ -1,4 +1,4 @@
-import { concatUint8Array, ArrayWriter } from './util';
+import { concatUint8Array, ArrayWriter } from '.';
 
 export interface FieldDefinition {
   name: string
