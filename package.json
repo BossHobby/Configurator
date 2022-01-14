@@ -113,14 +113,7 @@
       "build"
     ],
     "overriddenProperties": {
-      "main": "dist/index.html",
-      "window": {
-        "width": 960,
-        "height": 600,
-        "min_width": 700,
-        "min_height": 500,
-        "icon": "public/logo.png"
-      }
+      "main": "dist/index.html"
     },
     "win": {
       "icon": "public/favicon.ico"
@@ -143,10 +136,10 @@
     "file:///dist/*"
   ],
   "window": {
-    "width": 960,
-    "height": 600,
-    "min_width": 700,
-    "min_height": 500,
+    "width": 1280,
+    "height": 720,
+    "min_width": 960,
+    "min_height": 600,
     "icon": "public/logo.png"
   }
 }
