@@ -1,27 +1,28 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">
-      VTX
-      <spinner-btn size="sm" class="ml-4" v-on:click="fetch_vtx_settings()">
-        Refresh
-      </spinner-btn>
-    </h5>
-    <div v-if="vtx.settings.detected">
+    <h5 slot="header" class="mb-0">VTX</h5>
+    <div>
       <b-row>
         <b-col sm="4" class="my-2">
-          <label for="vtx-band">Protocol</label>
+          <label for="vtx-protocol">Protocol</label>
         </b-col>
-        <b-col sm="8" class="my-2">{{
-          protocolNames[vtx.settings.detected]
-        }}</b-col>
+        <b-col sm="8" class="my-2">
+          <b-form-select
+            id="vtx-protocol"
+            v-model.number="settings.protocol"
+            :options="vtxProtocolOptions"
+          ></b-form-select>
+        </b-col>
       </b-row>
+    </div>
+    <div v-if="settings.detected">
       <b-row>
         <b-col sm="4" class="my-2">
           <label for="vtx-band">Frequency</label>
         </b-col>
-        <b-col sm="8" class="my-2">{{
-          frequencyTable[vtx.settings.band][vtx.settings.channel]
-        }}</b-col>
+        <b-col sm="8" class="my-2">
+          {{ frequencyTable[settings.band][settings.channel] }}
+        </b-col>
       </b-row>
       <b-row>
         <b-col sm="4" class="my-2">
@@ -30,7 +31,7 @@
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-band"
-            v-model.number="vtx.settings.band"
+            v-model.number="settings.band"
             :options="vtxBandOptions"
           ></b-form-select>
         </b-col>
@@ -42,19 +43,19 @@
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-channel"
-            v-model.number="vtx.settings.channel"
+            v-model.number="settings.channel"
             :options="vtxChannelOptions"
           ></b-form-select>
         </b-col>
       </b-row>
-      <b-row v-if="vtx.settings.pit_mode != 2">
+      <b-row v-if="settings.pit_mode != 2">
         <b-col sm="4" class="my-2">
           <label for="vtx-pit-mode">Pit Mode</label>
         </b-col>
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-pit-mode"
-            v-model.number="vtx.settings.pit_mode"
+            v-model.number="settings.pit_mode"
             :options="vtxPitModeOptions"
           ></b-form-select>
         </b-col>
@@ -66,34 +67,42 @@
         <b-col sm="8" class="my-2">
           <b-form-select
             id="vtx-power-level"
-            v-model.number="vtx.settings.power_level"
+            v-model.number="settings.power_level"
             :options="vtxPowerLevelOptions"
           ></b-form-select>
         </b-col>
       </b-row>
+    </div>
+    <div v-else>Not detected</div>
+    <div>
       <b-row>
         <b-col offset="9" sm="3">
           <spinner-btn
             class="ml-4 mt-2"
-            v-on:click="apply_vtx_settings(vtx.settings)"
+            v-on:click="apply_vtx_settings(settings)"
           >
             Apply
           </spinner-btn>
         </b-col>
       </b-row>
     </div>
-    <div v-else>Not detected</div>
   </b-card>
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapActions } from "vuex";
+import { mapFields } from "@/store/helper.js";
 
 export default {
   name: "vtx",
   data() {
     return {
       protocolNames: ["INVALID", "TRAMP", "SMARTAUDIO"],
+      vtxProtocolOptions: [
+        { value: 0, text: "AUTO" },
+        { value: 1, text: "TRAMP" },
+        { value: 2, text: "SMARTAUDIO" },
+      ],
       vtxBandOptions: [
         { value: 0, text: "VTX_BAND_A" },
         { value: 1, text: "VTX_BAND_B" },
@@ -132,13 +141,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["vtx"]),
+    ...mapFields("vtx", ["settings"]),
   },
   methods: {
-    ...mapActions(["apply_vtx_settings", "fetch_vtx_settings"]),
-  },
-  created() {
-    this.fetch_vtx_settings();
+    ...mapActions(["apply_vtx_settings"]),
   },
 };
 </script>

@@ -37,6 +37,9 @@ const store = {
       if (intervalCounter % 4 && router.currentRoute.fullPath == "/perf") {
         dispatch('fetch_perf_counters');
       }
+      if (intervalCounter % 4 && router.currentRoute.fullPath == "/setup") {
+        dispatch('update_vtx_settings');
+      }
     },
     soft_reboot() {
       return serial
@@ -110,6 +113,7 @@ const store = {
           dispatch('fetch_default_profile');
           dispatch('fetch_pid_rate_presets');
           dispatch('fetch_profile');
+          dispatch('fetch_vtx_settings');
 
           if (interval) {
             clearInterval(interval);
