@@ -103,6 +103,21 @@
               </spinner-btn>
             </b-col>
           </b-row>
+          <b-row class="my-2">
+            <b-col sm="12" class="my-2">
+              <form ref="form">
+                <input
+                  accept=".png"
+                  type="file"
+                  ref="file"
+                  style="display: none"
+                />
+                <b-button class="my-2" @click="uploadLogo">
+                  Upload Logo
+                </b-button>
+              </form>
+            </b-col>
+          </b-row>
           <b-row>
             <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
             <canvas
@@ -110,6 +125,12 @@
               class="mx-5 mt-3 d-none"
               width="209"
               height="305"
+            ></canvas>
+            <canvas
+              ref="logoCanvas"
+              class="mx-5 mt-3 d-none"
+              width="288"
+              height="72"
             ></canvas>
           </b-row>
         </b-card>
@@ -125,6 +146,16 @@
 import { mapFields } from "@/store/helper.js";
 import { serial } from "@/store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
+import { OSD } from "@/store/util/osd";
+
+const loadImage = (url) => {
+  return new Promise((r, e) => {
+    let i = new Image();
+    i.onload = () => r(i);
+    i.onerror = (err) => e(err);
+    i.src = url;
+  });
+};
 
 export default {
   name: "osd",
@@ -228,73 +259,9 @@ export default {
   },
   methods: {
     apply_osd_font(name) {
-      const loadImage = (url) => {
-        return new Promise((r, e) => {
-          let i = new Image();
-          i.onload = () => r(i);
-          i.onerror = (err) => e(err);
-          i.src = url;
-        });
-      };
       return loadImage(name + ".png")
         .then((src) => {
-          const canvas = this.$refs.canvas;
-          const ctx = canvas.getContext("2d");
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(src, 0, 0);
-
-          const width = 12;
-          const height = 18;
-          const border = 1;
-
-          const full_width = 16 * (width + border) + border;
-          //const full_height = 16 * (height + border) + border;
-
-          const img = ctx.getImageData(0, 0, src.width, src.height);
-          const font = [];
-          for (let cy = 0; cy < 16; cy++) {
-            for (let cx = 0; cx < 16; cx++) {
-              const char = new Uint8Array((width * height) / 4);
-
-              const getPixel = (x, y) => {
-                const vx = x + cx * (width + border) + border;
-                const vy = y + cy * (height + border) + border;
-
-                let value = 0;
-
-                const white = img.data[(vy * full_width + vx) * 4 + 0];
-                if (white > 0) {
-                  value |= 0x2;
-                }
-
-                const alpha = img.data[(vy * full_width + vx) * 4 + 3];
-                if (alpha < 255) {
-                  value |= 0x1;
-                }
-
-                return value;
-              };
-
-              let x = 0;
-              let y = 0;
-              for (let j = 0; j < 54; j++) {
-                char[j] =
-                  ((getPixel(x + 0, y) & 0x3) << 6) |
-                  ((getPixel(x + 1, y) & 0x3) << 4) |
-                  ((getPixel(x + 2, y) & 0x3) << 2) |
-                  ((getPixel(x + 3, y) & 0x3) << 0);
-
-                x += 4;
-                if (x == width) {
-                  x = 0;
-                  y++;
-                }
-              }
-
-              font.push(char);
-            }
-          }
-
+          const font = OSD.packFont(this.$refs.canvas, src);
           return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())
@@ -313,72 +280,7 @@ export default {
     },
     get_osd_font() {
       return serial.get(QuicVal.OSDFont).then((font) => {
-        const width = 12;
-        const height = 18;
-        const border = 1;
-
-        const full_width = 16 * (width + border) + border;
-        const full_height = 16 * (height + border) + border;
-
-        const arr = new Uint8ClampedArray(width * height * 4);
-        const setPixel = (x, y, v) => {
-          switch (v) {
-            case 0:
-              arr[(y * width + x) * 4 + 0] = 0;
-              arr[(y * width + x) * 4 + 1] = 0;
-              arr[(y * width + x) * 4 + 2] = 0;
-              arr[(y * width + x) * 4 + 3] = 255;
-              break;
-            case 2:
-              arr[(y * width + x) * 4 + 0] = 255;
-              arr[(y * width + x) * 4 + 1] = 255;
-              arr[(y * width + x) * 4 + 2] = 255;
-              arr[(y * width + x) * 4 + 3] = 255;
-              break;
-            default:
-              arr[(y * width + x) * 4 + 0] = 0;
-              arr[(y * width + x) * 4 + 1] = 0;
-              arr[(y * width + x) * 4 + 2] = 0;
-              arr[(y * width + x) * 4 + 3] = 0;
-              break;
-          }
-        };
-
-        const canvas = this.$refs.canvas;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "red";
-        ctx.fillRect(0, 0, full_width, full_height);
-
-        for (let cy = 0; cy < 16; cy++) {
-          for (let cx = 0; cx < 16; cx++) {
-            const buf = font[cy * 16 + cx];
-
-            let x = 0;
-            let y = 0;
-            for (const b of buf) {
-              setPixel(x + 0, y, (b >> 6) & 0x3);
-              setPixel(x + 1, y, (b >> 4) & 0x3);
-              setPixel(x + 2, y, (b >> 2) & 0x3);
-              setPixel(x + 3, y, (b >> 0) & 0x3);
-
-              x += 4;
-              if (x == width) {
-                x = 0;
-                y++;
-              }
-            }
-
-            const img = new ImageData(arr, width, height);
-            ctx.putImageData(
-              img,
-              cx * (width + border) + border,
-              cy * (height + border) + border
-            );
-          }
-        }
-
-        this.imageSource = canvas.toDataURL();
+        this.imageSource = OSD.unpackFont(this.$refs.canvas, font);
       });
     },
     osd_set(i, attr, val) {
@@ -417,6 +319,56 @@ export default {
         case "pos_y":
           return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
       }
+    },
+    uploadLogo() {
+      const readImage = (file) => {
+        return new Promise((resovle, reject) => {
+          const reader = new FileReader();
+          reader.onerror = reject;
+          reader.onabort = reject;
+          reader.onload = (event) => {
+            var img = new Image();
+            img.onerror = reject;
+            img.onabort = reject;
+            img.onload = function () {
+              resovle(img);
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      this.$refs.file.oninput = () => {
+        if (!this.$refs.file.files.length) {
+          return;
+        }
+        readImage(this.$refs.file.files[0])
+          .then((img) => {
+            const font = OSD.packLogo(
+              this.$refs.canvas,
+              this.$refs.logoCanvas,
+              img
+            );
+            return serial.set(QuicVal.OSDFont, ...font);
+          })
+          .then(() => this.get_osd_font())
+          .then(() =>
+            this.$store.commit("append_alert", {
+              type: "success",
+              msg: "Font updated!",
+            })
+          )
+          .catch(() => {
+            this.$store.commit("append_alert", {
+              type: "danger",
+              msg: "Font update failed!",
+            });
+          })
+          .finally(() => this.$refs.form.reset());
+      };
+
+      this.$refs.file.click();
     },
   },
   created() {
