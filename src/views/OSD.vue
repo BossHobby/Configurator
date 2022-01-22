@@ -97,14 +97,17 @@
                 :options="fontFiles"
               ></b-form-select>
             </b-col>
-            <b-col sm="2" class="my-2">
+            <b-col sm="4" class="my-2">
               <spinner-btn v-on:click="apply_osd_font(current_font_file)">
-                Upload
+                Upload Font
               </spinner-btn>
             </b-col>
           </b-row>
           <b-row class="my-2">
-            <b-col sm="12" class="my-2">
+            <b-col sm="8" class="my-2">
+              Custom Logo 288x72 Black/White/Transparent PNG
+            </b-col>
+            <b-col sm="4" class="my-2">
               <form ref="form">
                 <input
                   accept=".png"
@@ -112,9 +115,9 @@
                   ref="file"
                   style="display: none"
                 />
-                <b-button class="my-2" @click="uploadLogo">
+                <spinner-btn class="my-2" @click="uploadLogo()">
                   Upload Logo
-                </b-button>
+                </spinner-btn>
               </form>
             </b-col>
           </b-row>
@@ -339,36 +342,57 @@ export default {
         });
       };
 
-      this.$refs.file.oninput = () => {
-        if (!this.$refs.file.files.length) {
-          return;
-        }
-        readImage(this.$refs.file.files[0])
-          .then((img) => {
-            const font = OSD.packLogo(
-              this.$refs.canvas,
-              this.$refs.logoCanvas,
-              img
-            );
-            return serial.set(QuicVal.OSDFont, ...font);
-          })
-          .then(() => this.get_osd_font())
-          .then(() =>
-            this.$store.commit("append_alert", {
-              type: "success",
-              msg: "Font updated!",
-            })
-          )
-          .catch(() => {
-            this.$store.commit("append_alert", {
-              type: "danger",
-              msg: "Font update failed!",
-            });
-          })
-          .finally(() => this.$refs.form.reset());
+      const selectFile = () => {
+        return new Promise((resovle, reject) => {
+          const checkForFile = () => {
+            document.body.onfocus = null;
+
+            if (!this.$refs.file.files.length) {
+              reject(new Error("no file selected"));
+              return;
+            }
+            resovle(this.$refs.file.files[0]);
+          };
+
+          this.$refs.file.oninvalid = reject;
+          this.$refs.file.onchange = checkForFile;
+          setTimeout(
+            () => (document.body.onfocus = () => checkForFile()),
+            1000
+          );
+
+          this.$refs.file.click();
+        });
       };
 
-      this.$refs.file.click();
+      return selectFile()
+        .then((file) => readImage(file))
+        .then((img) => {
+          if (img.width != 288 && img.height != 72) {
+            throw new Error("Invalid logo dimensions");
+          }
+
+          const font = OSD.packLogo(
+            this.$refs.canvas,
+            this.$refs.logoCanvas,
+            img
+          );
+          return serial.set(QuicVal.OSDFont, ...font);
+        })
+        .then(() => this.get_osd_font())
+        .then(() =>
+          this.$store.commit("append_alert", {
+            type: "success",
+            msg: "Logo updated!",
+          })
+        )
+        .catch((err) => {
+          this.$store.commit("append_alert", {
+            type: "danger",
+            msg: "Logo update failed! " + err.message,
+          });
+        })
+        .finally(() => this.$refs.form.reset());
     },
   },
   created() {
