@@ -121,6 +121,26 @@ function newNWUpdater() {
 
 function newPWAUpdater() {
   class Updater {
+    private hasUpdate = false;
+    private refreshing = false;
+    private registration?: ServiceWorkerRegistration;
+
+    constructor() {
+      document.addEventListener('swUpdated', (event: any) => {
+        this.registration = event.detail;
+        this.hasUpdate = true;
+      }, { once: true });
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (this.refreshing) {
+          return;
+        }
+
+        this.refreshing = true
+        window.location.reload()
+      })
+    }
+
     public updatePreparing() {
       return false;
     }
@@ -130,10 +150,17 @@ function newPWAUpdater() {
     }
 
     public async checkForUpdate(currentVersion: string): Promise<any> {
-      return Promise.resolve(null);
+      return Promise.resolve(this.hasUpdate);
     }
 
     public async update(release: any) {
+      this.hasUpdate = false;
+
+      if (!this.registration || !this.registration.waiting) {
+        return;
+      }
+
+      this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
     public async finishUpdate() {
