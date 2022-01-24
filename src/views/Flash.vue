@@ -184,7 +184,7 @@ export default {
   },
   created() {
     this.fetch_firmware_releases().then(() => {
-      this.release = this.releaseOptions[0];
+      this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
     });
   },
 };
