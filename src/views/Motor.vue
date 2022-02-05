@@ -133,13 +133,14 @@
             </b-row>
             <b-row>
               <b-col offset="10" sm="2">
-                <b-button
+                <spinner-btn
                   class="ml-4 mt-2"
                   v-if="motor.settings && motor.settings.length"
                   :disabled="motor.loading"
                   v-on:click="apply_motor_settings(motor.settings)"
-                  >Apply</b-button
                 >
+                  Apply
+                </spinner-btn>
                 <spinner-btn
                   class="ml-4 mt-2"
                   v-else
