@@ -2,7 +2,10 @@
   <b-card>
     <h5 slot="header" class="mb-0">
       Voltage
-      <small class="float-right">{{state.vbattfilt.toPrecision(3)}}V</small>
+      <small class="float-right">
+        {{ state.vbattfilt.toPrecision(3) }}V <br />
+        {{ state.ibat_filtered }}mAh
+      </small>
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">
@@ -31,7 +34,12 @@
         <label for="vbattlow">VBattLow</label>
       </b-col>
       <b-col sm="7" class="my-2">
-        <b-form-input id="vbattlow" type="number" step="0.1" v-model.number="voltage.vbattlow"></b-form-input>
+        <b-form-input
+          id="vbattlow"
+          type="number"
+          step="0.1"
+          v-model.number="voltage.vbattlow"
+        ></b-form-input>
       </b-col>
 
       <b-col sm="5" class="my-2">
@@ -57,6 +65,18 @@
           v-model.number="voltage.reported_telemetry_voltage"
         ></b-form-input>
       </b-col>
+
+      <b-col sm="5" class="my-2">
+        <label for="ibat_scale">Current Meter Scale</label>
+      </b-col>
+      <b-col sm="7" class="my-2">
+        <b-form-input
+          id="ibat_scale"
+          type="number"
+          step="1"
+          v-model.number="voltage.ibat_scale"
+        ></b-form-input>
+      </b-col>
     </b-row>
   </b-card>
 </template>
@@ -71,8 +91,8 @@ export default {
     return {
       pidVoltageCompensationOptions: [
         { value: 0, text: "Off" },
-        { value: 1, text: "On" }
-      ]
+        { value: 1, text: "On" },
+      ],
     };
   },
   computed: {
@@ -84,8 +104,8 @@ export default {
       },
       set(val) {
         this.voltage.pid_voltage_compensation = val ? 1 : 0;
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>

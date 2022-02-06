@@ -7,6 +7,7 @@ const store = {
     looptime_autodetect: 0,
     cpu_load: 0.0,
     vbattfilt: 0.0,
+    ibat_filtered: 0.0,
     rx_filtered: [],
     rx_status: 0,
     rx_rssi: 0,

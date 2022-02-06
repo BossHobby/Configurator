@@ -240,7 +240,8 @@ export default {
         { name: "STOPWATCH", enabled: true, text: "120" },
         { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
         { name: "THROTTLE", enabled: true, text: "50" },
-        { name: "VTX CHANNEL", enabled: true, text: "" },
+        { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
+        { name: "CURRENT", enabled: true, text: "2000A" },
       ];
     },
     elements() {

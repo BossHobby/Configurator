@@ -11,9 +11,10 @@
               @click="motor_test_toggle()"
               >{{ motor.test.active ? "Disable" : "Enable" }}</b-button
             >
-            <small class="float-right my-3"
-              >{{ state.vbattfilt.toPrecision(3) }}V</small
-            >
+            <small class="float-right my-3">
+              {{ state.vbattfilt.toPrecision(3) }}V <br />
+              {{ state.ibat_filtered }}mAh
+            </small>
           </h5>
           <div>
             <b-row v-if="motor.test.active">
