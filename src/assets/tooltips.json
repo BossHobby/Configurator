@@ -1,0 +1,52 @@
+{
+  "filter.gyro_1_type": {},
+  "filter.gyro_1_freq": {},
+  "filter.gyro_2_type": {},
+  "filter.gyro_2_freq": {},
+  "filter.dterm_1_type": {},
+  "filter.dterm_1_freq": {},
+  "filter.dterm_2_type": {},
+  "filter.dterm_2_freq": {},
+  "filter.dterm_dynamic_enable": {},
+  "filter.dterm_dynamic_min": {},
+  "filter.dterm_dynamic_max": {},
+  "motor.invert_yaw": {
+    "text": "test"
+  },
+  "motor.digital_idle": {
+    "disabled": true
+  },
+  "motor.dshot_time": {},
+  "motor.flip_gyro": {},
+  "motor.gyro_orientation": {},
+  "motor.torque_boost": {},
+  "motor.throttle_boost": {},
+  "motor.turtle_throttle_percent": {},
+  "pid.preset": {},
+  "pid.profile": {},
+  "pid.tda_active": {},
+  "pid.tda_breakpoint": {},
+  "pid.tda_percent": {},
+  "pid.stick_profile": {},
+  "pid.angle_strength": {},
+  "receiver.protocol": {},
+  "receiver.lqi_source": {},
+  "receiver.bind_saved": {},
+  "serial.rx": {},
+  "serial.smart_audio": {},
+  "rate.mode": {},
+  "rate.level_max_angle": {},
+  "rate.low_rate_mulitplier": {},
+  "rate.sticks_deadband": {},
+  "voltage.lipo_cell_count": {},
+  "voltage.pid_voltage_compensation": {},
+  "voltage.vbattlow": {},
+  "voltage.actual_battery_voltage": {},
+  "voltage.reported_telemetry_voltage": {},
+  "voltage.ibat_scale": {},
+  "motor_pins": {},
+  "motor_settings": {},
+  "serial_passthrough": {
+    "text": "test"
+  }
+}

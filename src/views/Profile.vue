@@ -14,7 +14,10 @@
       </b-col>
       <b-col class="my-4" sm="12">
         <b-card class="control-card">
-          <h5 slot="header" class="mb-0">Serial Passthrough</h5>
+          <h5 slot="header" class="mb-0">
+            Serial Passthrough
+            <tooltip entry="serial_passthrough" />
+          </h5>
           <b-row>
             <b-col sm="4" class="my-2">
               <b-form-select

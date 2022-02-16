@@ -65,7 +65,10 @@
       </b-col>
       <b-col sm="12" class="my-4">
         <b-card class="my-2">
-          <h5 slot="header" class="mb-0">Motor Pins</h5>
+          <h5 slot="header" class="mb-0">
+            Motor Pins
+            <tooltip entry="motor_pins" />
+          </h5>
           <b-row class="my-2">
             <b-col
               v-for="m in motors"
@@ -97,7 +100,10 @@
       </b-col>
       <b-col sm="12" class="my-4" v-if="has_feature(FEATURE_BRUSHLESS)">
         <b-card>
-          <h5 slot="header" class="mb-0">ESC Settings</h5>
+          <h5 slot="header" class="mb-0">
+            ESC Settings
+            <tooltip entry="motor_settings" />
+          </h5>
           <div>
             <b-row v-if="motor.settings && motor.settings.length">
               <b-col

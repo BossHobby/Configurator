@@ -5,7 +5,10 @@
       <b-col sm="6">
         <b-row>
           <b-col sm="4">
-            <label for="rate-mode">Mode</label>
+            <label for="rate-mode">
+              Mode
+              <tooltip entry="rate.mode" />
+            </label>
           </b-col>
           <b-col sm="8">
             <b-form-select
@@ -18,7 +21,7 @@
 
           <b-col sm="12" v-for="mode in rateModes" :key="mode.text">
             <b-card class="my-3" v-if="mode.value == rate.mode">
-              <h6 slot="header" class="mb-0">{{mode.text}}</h6>
+              <h6 slot="header" class="mb-0">{{ mode.text }}</h6>
               <b-row>
                 <b-col offset="4" sm="8">
                   <b-row>
@@ -35,7 +38,10 @@
                 </b-col>
               </b-row>
 
-              <b-row v-for="(val, key) in rate[mode.text.toLowerCase()]" :key="key">
+              <b-row
+                v-for="(val, key) in rate[mode.text.toLowerCase()]"
+                :key="key"
+              >
                 <b-col sm="4">
                   <label :for="`${mode.text}-${key}`">{{ key }}</label>
                 </b-col>
@@ -75,7 +81,10 @@
           </b-col>
 
           <b-col sm="4" class="my-2">
-            <label for="level-max-angle">LevelMaxAngle</label>
+            <label for="level-max-angle">
+              LevelMaxAngle
+              <tooltip entry="rate.level_max_angle" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -87,7 +96,10 @@
           </b-col>
 
           <b-col sm="4" class="my-2">
-            <label for="low-rate-mulitplier">LowRateMulitplier</label>
+            <label for="low-rate-mulitplier">
+              LowRateMulitplier
+              <tooltip entry="rate.low_rate_mulitplier" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -99,7 +111,10 @@
           </b-col>
 
           <b-col sm="4" class="my-2">
-            <label for="sticks-deadband">SticksDeadband</label>
+            <label for="sticks-deadband">
+              SticksDeadband
+              <tooltip entry="rate.sticks_deadband" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -131,25 +146,25 @@ import { mapFields } from "@/store/helper.js";
 export default {
   name: "StickRates",
   components: {
-    LineChart
+    LineChart,
   },
   computed: {
     ...mapFields("profile", ["rate"]),
     currentMode() {
       return this.rateModes[this.rate.mode].text;
-    }
+    },
   },
   data() {
     return {
       plotLowRates: false,
       rateModes: [
         { value: 0, text: "Silverware" },
-        { value: 1, text: "Betaflight" }
+        { value: 1, text: "Betaflight" },
       ],
       plot: {
         axis: [],
-        label: []
-      }
+        label: [],
+      },
     };
   },
   methods: {
@@ -204,16 +219,16 @@ export default {
       const axis = [
         {
           label: "Roll",
-          data: []
+          data: [],
         },
         {
           label: "Pitch",
-          data: []
+          data: [],
         },
         {
           label: "Yaw",
-          data: []
-        }
+          data: [],
+        },
       ];
 
       const labels = [];
@@ -228,12 +243,12 @@ export default {
           if (this.currentMode == "Silverware") {
             axis[j].data.push({
               x: i,
-              y: this.calcSilverware(j, input) * rateMulit
+              y: this.calcSilverware(j, input) * rateMulit,
             });
           } else if (this.currentMode == "Betaflight") {
             axis[j].data.push({
               x: i,
-              y: this.calcBetatflight(j, input) * rateMulit
+              y: this.calcBetatflight(j, input) * rateMulit,
             });
           }
         }
@@ -241,13 +256,13 @@ export default {
 
       this.plot = {
         labels,
-        axis
+        axis,
       };
-    }
+    },
   },
   mounted() {
     this.update();
-  }
+  },
 };
 </script>
 

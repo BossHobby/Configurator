@@ -3,11 +3,14 @@
     <h5 slot="header" class="mb-0">Serial</h5>
     <b-row>
       <b-col sm="4" class="my-2">
-        <label for="invert-yaw">RX</label>
+        <label for="rx">
+          RX
+          <tooltip entry="serial.rx" />
+        </label>
       </b-col>
       <b-col sm="8" class="my-2">
         <b-form-select
-          id="invert-yaw"
+          id="rx"
           v-model.number="serial.rx"
           :options="serialPorts"
         ></b-form-select>
@@ -15,11 +18,14 @@
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
-        <label for="invert-yaw">Smart Audio</label>
+        <label for="smart-audio">
+          Smart Audio
+          <tooltip entry="serial.smart_audio" />
+        </label>
       </b-col>
       <b-col sm="8" class="my-2">
         <b-form-select
-          id="invert-yaw"
+          id="smart-audio"
           v-model.number="serial.smart_audio"
           :options="serialPorts"
         ></b-form-select>

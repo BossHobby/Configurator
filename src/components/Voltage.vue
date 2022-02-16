@@ -9,7 +9,10 @@
     </h5>
     <b-row>
       <b-col sm="5" class="my-2">
-        <label for="lipo-cell-count">LipoCellCount</label>
+        <label for="lipo-cell-count">
+          LipoCellCount
+          <tooltip entry="voltage.lipo_cell_count" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-input
@@ -21,7 +24,10 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="pid-voltage-compensation">PidVoltageCompensation</label>
+        <label for="pid-voltage-compensation">
+          PidVoltageCompensation
+          <tooltip entry="voltage.pid_voltage_compensation" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-select
@@ -31,7 +37,10 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="vbattlow">VBattLow</label>
+        <label for="vbattlow">
+          VBattLow
+          <tooltip entry="voltage.vbattlow" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-input
@@ -43,7 +52,10 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="actual-battery-voltage">ActualBatteryVoltage</label>
+        <label for="actual-battery-voltage">
+          ActualBatteryVoltage
+          <tooltip entry="voltage.actual_battery_voltage" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-input
@@ -55,7 +67,10 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="reported-telemetry-voltage">ReportedTelemetryVoltage</label>
+        <label for="reported-telemetry-voltage">
+          ReportedTelemetryVoltage
+          <tooltip entry="voltage.reported_telemetry_voltage" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-input
@@ -67,7 +82,10 @@
       </b-col>
 
       <b-col sm="5" class="my-2">
-        <label for="ibat_scale">Current Meter Scale</label>
+        <label for="ibat_scale">
+          Current Meter Scale
+          <tooltip entry="voltage.ibat_scale" />
+        </label>
       </b-col>
       <b-col sm="7" class="my-2">
         <b-form-input

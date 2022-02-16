@@ -6,13 +6,19 @@
     </h5>
     <b-row v-if="info.rx_protocol != null">
       <b-col sm="4" class="my-2">
-        <label>Protocol</label>
+        <label>
+          Protocol
+          <tooltip entry="receiver.protocol" />
+        </label>
       </b-col>
       <b-col sm="8" class="my-2">{{ protoNames[info.rx_protocol] }}</b-col>
     </b-row>
     <b-row v-if="info.quic_protocol_version > 3">
       <b-col sm="4" class="my-2">
-        <label>LQI Source</label>
+        <label>
+          LQI Source
+          <tooltip entry="receiver.lqi_source" />
+        </label>
       </b-col>
       <b-col sm="4" class="my-2">
         <b-form-select
@@ -22,7 +28,12 @@
       </b-col>
     </b-row>
     <b-row v-if="info.quic_protocol_version > 2">
-      <b-col sm="4" class="my-2"> <label>Bind Saved</label><br /> </b-col>
+      <b-col sm="4" class="my-2">
+        <label>
+          Bind Saved
+          <tooltip entry="receiver.bind_saved" />
+        </label>
+      </b-col>
       <b-col sm="8" class="my-2">{{
         bind.info.bind_saved ? "yes" : "no"
       }}</b-col>

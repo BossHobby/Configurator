@@ -5,7 +5,10 @@
       <b-col sm="6" v-if="filter.gyro">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-1-type">Gyro Pass 1 Type</label>
+            <label for="gyro-1-type">
+              Gyro Pass 1 Type
+              <tooltip entry="filter.gyro_1_type" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -17,7 +20,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-1-freq">Gyro Pass 1 Freq</label>
+            <label for="gyro-1-freq">
+              Gyro Pass 1 Freq
+              <tooltip entry="filter.gyro_1_freq" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -30,7 +36,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-2-type">Gyro Pass 2 Type</label>
+            <label for="gyro-2-type">
+              Gyro Pass 2 Type
+              <tooltip entry="filter.gyro_2_type" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -42,7 +51,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-2-freq">Gyro Pass 2 Freq</label>
+            <label for="gyro-2-freq">
+              Gyro Pass 2 Freq
+              <tooltip entry="filter.gyro_2_freq" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -58,7 +70,10 @@
       <b-col sm="6" v-if="filter.dterm">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-1-type">DTerm Pass 1 Type</label>
+            <label for="dterm-1-type">
+              DTerm Pass 1 Type
+              <tooltip entry="filter.dterm_1_type" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -70,7 +85,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-1-freq">DTerm Pass 1 Freq</label>
+            <label for="dterm-1-freq">
+              DTerm Pass 1 Freq
+              <tooltip entry="filter.dterm_1_freq" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -83,7 +101,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-2-type">DTerm Pass 2 Type</label>
+            <label for="dterm-2-type">
+              DTerm Pass 2 Type
+              <tooltip entry="filter.dterm_2_type" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -95,7 +116,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-2-freq">DTerm Pass 2 Freq</label>
+            <label for="dterm-2-freq">
+              DTerm Pass 2 Freq
+              <tooltip entry="filter.dterm_2_freq" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -109,7 +133,10 @@
 
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-dynamic-enable">DTerm Dynamic</label>
+            <label for="dterm-dynamic-enable">
+              DTerm Dynamic
+              <tooltip entry="filter.dterm_dynamic_enable" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -121,7 +148,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-dynamic-min">DTerm Dynamic Min</label>
+            <label for="dterm-dynamic-min">
+              DTerm Dynamic Min
+              <tooltip entry="filter.dterm_dynamic_min" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -134,7 +164,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="dterm-dynamic-max">DTerm Dynamic Max</label>
+            <label for="dterm-dynamic-max">
+              DTerm Dynamic Max
+              <tooltip entry="filter.dterm_dynamic_max" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -160,16 +193,16 @@ export default {
       filterTypeOptions: [
         { value: 0, text: "None" },
         { value: 1, text: "PT1 1st Order" },
-        { value: 2, text: "PT1 2nd Order" }
+        { value: 2, text: "PT1 2nd Order" },
       ],
       toggleOptions: [
         { value: 0, text: "Off" },
-        { value: 1, text: "On" }
-      ]
+        { value: 1, text: "On" },
+      ],
     };
   },
   computed: {
-    ...mapFields("profile", ["filter"])
-  }
+    ...mapFields("profile", ["filter"]),
+  },
 };
 </script>

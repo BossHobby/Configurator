@@ -6,7 +6,10 @@
       <b-col sm="6">
         <b-row class="my-2">
           <b-col sm="4" class="my-2">
-            <label for="pid-preset">PID Preset</label>
+            <label for="pid-preset">
+              PID Preset
+              <tooltip entry="pid.preset" />
+            </label>
           </b-col>
           <b-col sm="6" class="my-2">
             <b-form-select
@@ -21,7 +24,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="pid-profile">PIDProfile</label>
+            <label for="pid-profile">
+              PIDProfile
+              <tooltip entry="pid.profile" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -83,9 +89,10 @@
 
         <b-row class="mt-4">
           <b-col sm="4" class="my-2">
-            <label for="throttle_dterm_attenuation-enable"
-              >Throttle DTerm Attenuation</label
-            >
+            <label for="throttle_dterm_attenuation-enable">
+              Throttle DTerm Attenuation
+              <tooltip entry="pid.tda_active" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -97,9 +104,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="throttle_dterm_attenuation-breakpoint"
-              >TDA Breakpoint</label
-            >
+            <label for="throttle_dterm_attenuation-breakpoint">
+              TDA Breakpoint
+              <tooltip entry="pid.tda_breakpoint" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -112,7 +120,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="throttle_dterm_attenuation-percent">TDA Percent</label>
+            <label for="throttle_dterm_attenuation-percent">
+              TDA Percent
+              <tooltip entry="pid.tda_percent" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -127,7 +138,10 @@
       <b-col sm="6">
         <b-row class="mt-2">
           <b-col sm="4" class="my-2">
-            <label for="stick-profile">Stick Boost Profile</label>
+            <label for="stick-profile">
+              Stick Boost Profile
+              <tooltip entry="pid.stick_profile" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -188,7 +202,10 @@
         </b-row>
 
         <b-row class="mt-4">
-          <b-col sm="4" class="my-2">Angle Strength</b-col>
+          <b-col sm="4" class="my-2">
+            Angle Strength
+            <tooltip entry="pid.angle_strength" />
+          </b-col>
         </b-row>
         <b-row class="mt-3">
           <b-col offset="4" sm="8">

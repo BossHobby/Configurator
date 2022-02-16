@@ -5,7 +5,10 @@
       <b-col sm="8">
         <b-row v-for="(func, index) in auxFunctions" :key="func">
           <b-col sm="6" class="my-1">
-            <label :for="func" :class="classForIndex(index)">{{ func }}</label>
+            <label :for="func" :class="classForIndex(index)">
+              {{ func }}
+              <tooltip :entry="'channel.' + func.toLowerCase()" />
+            </label>
           </b-col>
           <b-col sm="3" class="my-1">
             <b-form-select

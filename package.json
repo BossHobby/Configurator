@@ -58,6 +58,7 @@
     "concurrently": "^6.2.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "glob": "^7.2.0",
     "nw": "0.54.0-sdk",
     "nwjs-builder-phoenix": "^1.15.0",
     "nwjs-types": "^1.0.0",

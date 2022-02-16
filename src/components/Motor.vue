@@ -5,7 +5,10 @@
       <b-col sm="6">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="invert-yaw">Invert Yaw</label>
+            <label for="invert-yaw">
+              Invert Yaw
+              <tooltip entry="motor.invert_yaw" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -17,7 +20,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="digital-idle">Digital Idle</label>
+            <label for="digital-idle">
+              Digital Idle
+              <tooltip entry="motor.digital_idle" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -34,7 +40,10 @@
           "
         >
           <b-col sm="4" class="my-2">
-            <label for="dshot-time">DShot Time</label>
+            <label for="dshot-time">
+              DShot Time
+              <tooltip entry="motor.dshot_time" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -46,7 +55,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-flip">Flip Gyro</label>
+            <label for="gyro-flip">
+              Flip Gyro
+              <tooltip entry="motor.flip_gyro" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <div class="custom-control custom-checkbox">
@@ -62,7 +74,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="gyro-orientation">Gyro Orientation</label>
+            <label for="gyro-orientation">
+              Gyro Orientation
+              <tooltip entry="motor.gyro_orientation" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-select
@@ -76,7 +91,10 @@
       <b-col sm="6">
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="torque-boost">Torque Boost</label>
+            <label for="torque-boost">
+              Torque Boost
+              <tooltip entry="motor.torque_boost" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -89,7 +107,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="throttle-boost">Throttle Boost</label>
+            <label for="throttle-boost">
+              Throttle Boost
+              <tooltip entry="motor.throttle_boost" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -102,7 +123,10 @@
         </b-row>
         <b-row>
           <b-col sm="4" class="my-2">
-            <label for="turtle-throttle-percent">Turtle Throttle Percent</label>
+            <label for="turtle-throttle-percent">
+              Turtle Throttle Percent
+              <tooltip entry="motor.turtle_throttle_percent" />
+            </label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
