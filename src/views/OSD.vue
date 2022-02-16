@@ -84,30 +84,35 @@
             </g>
           </svg>
         </b-card>
-        <b-card class="my-2">
+      </b-col>
+      <b-col class="my-4" sm="12">
+        <b-card>
           <h5 slot="header" class="mb-0">Font</h5>
-          <b-row class="my-2">
-            <b-col sm="2" class="my-2">
+          <b-row class="my-4">
+            <b-col sm="2">
               <label for="font-file">File</label>
             </b-col>
-            <b-col sm="6" class="my-2">
+            <b-col sm="6">
               <b-form-select
                 id="font-file"
                 v-model="current_font_file"
                 :options="fontFiles"
               ></b-form-select>
             </b-col>
-            <b-col sm="4" class="my-2">
-              <spinner-btn v-on:click="apply_osd_font(current_font_file)">
+            <b-col sm="4">
+              <spinner-btn
+                class="float-right"
+                v-on:click="apply_osd_font(current_font_file)"
+              >
                 Upload Font
               </spinner-btn>
             </b-col>
           </b-row>
-          <b-row class="my-2">
-            <b-col sm="8" class="my-2">
+          <b-row class="my-4">
+            <b-col sm="8">
               Custom Logo 288x72 Black/White/Transparent PNG
             </b-col>
-            <b-col sm="4" class="my-2">
+            <b-col sm="4">
               <form ref="form">
                 <input
                   accept=".png"
@@ -115,26 +120,49 @@
                   ref="file"
                   style="display: none"
                 />
-                <spinner-btn class="my-2" @click="uploadLogo()">
+                <spinner-btn class="float-right" @click="uploadLogo()">
                   Upload Logo
                 </spinner-btn>
               </form>
             </b-col>
           </b-row>
           <b-row>
-            <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
-            <canvas
-              ref="canvas"
-              class="mx-5 mt-3 d-none"
-              width="209"
-              height="305"
-            ></canvas>
-            <canvas
-              ref="logoCanvas"
-              class="mx-5 mt-3 d-none"
-              width="288"
-              height="72"
-            ></canvas>
+            <b-col sm="6">
+              <b-card>
+                <h5 slot="header" class="mb-0">Preview</h5>
+                <b-row>
+                  <b-img
+                    :src="'osd/' + current_font_file"
+                    fluid-grow
+                    class="mx-5 mt-3"
+                  ></b-img>
+                </b-row>
+              </b-card>
+            </b-col>
+            <b-col sm="6">
+              <b-card>
+                <h5 slot="header" class="mb-0">Current</h5>
+                <b-row>
+                  <b-img
+                    :src="imageSource"
+                    fluid-grow
+                    class="mx-5 mt-3"
+                  ></b-img>
+                  <canvas
+                    ref="canvas"
+                    class="mx-5 mt-3 d-none"
+                    width="209"
+                    height="305"
+                  ></canvas>
+                  <canvas
+                    ref="logoCanvas"
+                    class="mx-5 mt-3 d-none"
+                    width="288"
+                    height="72"
+                  ></canvas>
+                </b-row>
+              </b-card>
+            </b-col>
           </b-row>
         </b-card>
       </b-col>
@@ -170,8 +198,19 @@ export default {
         char_width: 12,
         char_height: 18,
       },
-      fontFiles: [{ text: "Clarity", value: "clarity" }],
-      current_font_file: "clarity",
+      fontFiles: [
+        { text: "betaflight", value: "betaflight.png" },
+        { text: "bold", value: "bold.png" },
+        { text: "clarity", value: "clarity.png" },
+        { text: "default", value: "default.png" },
+        { text: "digital", value: "digital.png" },
+        { text: "extra_large", value: "extra_large.png" },
+        { text: "impact_mini", value: "impact_mini.png" },
+        { text: "impact", value: "impact.png" },
+        { text: "large", value: "large.png" },
+        { text: "vision", value: "vision.png" },
+      ],
+      current_font_file: "clarity.png",
       imageSource: null,
     };
   },
@@ -263,7 +302,7 @@ export default {
   },
   methods: {
     apply_osd_font(name) {
-      return loadImage(name + ".png")
+      return loadImage("osd/" + name)
         .then((src) => {
           const font = OSD.packFont(this.$refs.canvas, src);
           return serial.set(QuicVal.OSDFont, ...font);
