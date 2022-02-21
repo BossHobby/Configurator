@@ -1,36 +1,37 @@
 {
   "filter.gyro_1_type": {
+    "link": "https://www.google.com/",
     "disabled": true
   },
   "filter.gyro_1_freq": {
-    "disabled":true
+    "disabled": true
   },
   "filter.gyro_2_type": {
-    "disabled":true
+    "disabled": true
   },
   "filter.gyro_2_freq": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_1_type": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_1_freq": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_2_type": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_2_freq": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_dynamic_enable": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_dynamic_min": {
-    "disabled":true
+    "disabled": true
   },
   "filter.dterm_dynamic_max": {
-    "disabled":true
+    "disabled": true
   },
   "motor.invert_yaw": {
     "text": "Default is props out"

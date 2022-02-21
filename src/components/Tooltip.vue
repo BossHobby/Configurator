@@ -9,6 +9,9 @@
     <b-tooltip :target="'tooltip-' + entry" triggers="click hover">
       <span v-if="!danger">
         {{ tooltip.text }}
+        <div v-if="tooltip.link">
+          <a target="_blank" :href="tooltip.link">read more</a>
+        </div>
       </span>
       <span v-else> Missing tooltip entry {{ entry }} </span>
     </b-tooltip>
