@@ -2,6 +2,7 @@ const glob = require("glob");
 const fs = require('fs');
 
 const regex = /<tooltip\sentry="([\w_.]+)".*>/gm;
+const whitelist = ['channel.'];
 const tooltips = {};
 
 glob("src/**/*.vue", (err, files) => {
@@ -23,8 +24,24 @@ glob("src/**/*.vue", (err, files) => {
       ...existing[key]
     }
   }
+  for (const w of whitelist) {
+    for(const key of Object.keys(existing)) {
+      if (key.startsWith(w)) {
+        tooltips[key] = {
+          ...existing[key]
+        }
+      }
+    }
+  }
 
-  fs.writeFileSync('src/assets/tooltips.json', JSON.stringify(tooltips, null, 2));
+  const ordered = Object.keys(tooltips).sort().reduce(
+    (obj, key) => { 
+      obj[key] = tooltips[key]; 
+      return obj;
+    },
+    {}
+  );
+  fs.writeFileSync('src/assets/tooltips.json', JSON.stringify(ordered, null, 2));
 });
 
 

@@ -1,40 +1,52 @@
 {
-  "filter.gyro_1_type": {
-    "link": "https://www.google.com/",
-    "disabled": true
+  "channel.aux_arming": {
+    "text": "test"
   },
-  "filter.gyro_1_freq": {
-    "disabled": true
-  },
-  "filter.gyro_2_type": {
-    "disabled": true
-  },
-  "filter.gyro_2_freq": {
+  "channel.aux_blackbox": {},
+  "channel.aux_buzzer_enable": {},
+  "channel.aux_fpv_switch": {},
+  "channel.aux_high_rates": {},
+  "channel.aux_horizon": {},
+  "channel.aux_idle_up": {},
+  "channel.aux_levelmode": {},
+  "channel.aux_motor_test": {},
+  "channel.aux_racemode": {},
+  "channel.aux_rssi": {},
+  "channel.aux_stick_boost_profile": {},
+  "channel.aux_turtle": {},
+  "filter.dterm_1_freq": {
     "disabled": true
   },
   "filter.dterm_1_type": {
     "disabled": true
   },
-  "filter.dterm_1_freq": {
+  "filter.dterm_2_freq": {
     "disabled": true
   },
   "filter.dterm_2_type": {
     "disabled": true
   },
-  "filter.dterm_2_freq": {
-    "disabled": true
-  },
   "filter.dterm_dynamic_enable": {
-    "disabled": true
-  },
-  "filter.dterm_dynamic_min": {
     "disabled": true
   },
   "filter.dterm_dynamic_max": {
     "disabled": true
   },
-  "motor.invert_yaw": {
-    "text": "Default is props out"
+  "filter.dterm_dynamic_min": {
+    "disabled": true
+  },
+  "filter.gyro_1_freq": {
+    "disabled": true
+  },
+  "filter.gyro_1_type": {
+    "link": "https://www.google.com/",
+    "disabled": true
+  },
+  "filter.gyro_2_freq": {
+    "disabled": true
+  },
+  "filter.gyro_2_type": {
+    "disabled": true
   },
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
@@ -46,48 +58,51 @@
   "motor.gyro_orientation": {
     "text": "Change this if the fc is mounted in a non standard way, use with the flip-gyro option until the preview model moves correctly"
   },
-  "motor.torque_boost": {},
+  "motor.invert_yaw": {
+    "text": "Default is props out"
+  },
   "motor.throttle_boost": {},
+  "motor.torque_boost": {},
   "motor.turtle_throttle_percent": {
     "text": "For whoops set to 100% larger craft start at 10% and increase by 10 to suit needs"
   },
+  "motor_pins": {},
+  "motor_settings": {},
+  "pid.angle_strength": {},
   "pid.preset": {
     "text": "Select by thrust to weight ratio or props size, these presets give a safe starting point to further tune if needed"
   },
   "pid.profile": {
     "text": "You can have 2 different sets of pids loaded in 2 profiles"
   },
+  "pid.stick_profile": {},
   "pid.tda_active": {},
   "pid.tda_breakpoint": {},
   "pid.tda_percent": {},
-  "pid.stick_profile": {},
-  "pid.angle_strength": {},
-  "receiver.protocol": {},
-  "receiver.lqi_source": {},
+  "rate.level_max_angle": {},
+  "rate.low_rate_mulitplier": {},
+  "rate.mode": {
+    "text": "Silverware or Betaflight rates option"
+  },
+  "rate.sticks_deadband": {},
   "receiver.bind_saved": {},
+  "receiver.lqi_source": {},
+  "receiver.protocol": {},
   "serial.rx": {
     "text": "Enter the UART number the serial RX is connected to (for spi RX leave as NONE)"
   },
   "serial.smart_audio": {
     "text": "Enter the UART the VTX TX line is connected to"
   },
-  "rate.mode": {
-    "text": "Silverware or Betaflight rates option"
+  "serial_passthrough": {
+    "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
   },
-  "rate.level_max_angle": {},
-  "rate.low_rate_mulitplier": {},
-  "rate.sticks_deadband": {},
-  "voltage.lipo_cell_count": {},
-  "voltage.pid_voltage_compensation": {},
-  "voltage.vbattlow": {},
   "voltage.actual_battery_voltage": {},
-  "voltage.reported_telemetry_voltage": {},
   "voltage.ibat_scale": {
     "text": "Use the value provided by the FC manufacturer"
   },
-  "motor_pins": {},
-  "motor_settings": {},
-  "serial_passthrough": {
-    "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
-  }
+  "voltage.lipo_cell_count": {},
+  "voltage.pid_voltage_compensation": {},
+  "voltage.reported_telemetry_voltage": {},
+  "voltage.vbattlow": {}
 }
