@@ -1,19 +1,37 @@
 {
   "channel.aux_arming": {
-    "text": "test"
+    "text": "Arm the craft, default is to also activate Idle-up"
   },
-  "channel.aux_blackbox": {},
+  "channel.aux_blackbox": {
+    "text": "Start/stop blackbox recording"
+  },
   "channel.aux_buzzer_enable": {},
-  "channel.aux_fpv_switch": {},
+  "channel.aux_fpv_switch": {
+    "text": "Vtx Pit mode on a switch"
+  },
   "channel.aux_high_rates": {},
-  "channel.aux_horizon": {},
-  "channel.aux_idle_up": {},
-  "channel.aux_levelmode": {},
-  "channel.aux_motor_test": {},
-  "channel.aux_racemode": {},
-  "channel.aux_rssi": {},
+  "channel.aux_horizon": {
+    "text": "Self levelling up to a specific angle then Acro on both Roll and Pitch, requires Level mode active"
+  },
+  "channel.aux_idle_up": {
+    "text": "Ensures props never stop spinning, similar to airmode, default is to use the same channel as ARM"
+  },
+  "channel.aux_levelmode": {
+    "text": "Accelerometer data is used to self level, needed for Racemode and Horizon"
+  },
+  "channel.aux_motor_test": {
+    "text": "Activate the motor test function, useful to check individual motors in the field"
+  },
+  "channel.aux_racemode": {
+    "text": "Uses self levelling only on the roll axis, acro on pitch, requires Level mode active"
+  },
+  "channel.aux_rssi": {
+    "text": "For fcs that can send rssi on a channel"
+  },
   "channel.aux_stick_boost_profile": {},
-  "channel.aux_turtle": {},
+  "channel.aux_turtle": {
+    "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch"
+  },
   "filter.dterm_1_freq": {
     "disabled": true
   },
