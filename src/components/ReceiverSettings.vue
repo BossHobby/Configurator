@@ -70,7 +70,10 @@
       </b-col>
     </b-row>
 
-    <b-card class="mt-4" v-if="info.rx_protocol == proto.EXPRESS_LRS">
+    <b-card
+      class="mt-4"
+      v-if="bind.info.raw && info.rx_protocol == proto.EXPRESS_LRS"
+    >
       <h5 slot="header" class="mb-0">EXPRESS_LRS</h5>
       <b-row>
         <b-col sm="4" class="my-2">
