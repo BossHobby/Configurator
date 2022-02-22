@@ -30,7 +30,8 @@
   },
   "channel.aux_stick_boost_profile": {},
   "channel.aux_turtle": {
-    "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch"
+    "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
   },
   "filter.dterm_1_freq": {
     "disabled": true
@@ -45,7 +46,7 @@
     "disabled": true
   },
   "filter.dterm_dynamic_enable": {
-    "text": "enable a dynamic dterm filtercut, you almost always want to leave this on",
+    "text": "Enable a dynamic dterm filtercut, you almost always want to leave this ON",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES"
   },
   "filter.dterm_dynamic_max": {
@@ -82,10 +83,16 @@
     "text": "Default is props out"
   },
   "motor.test": {},
-  "motor.throttle_boost": {},
-  "motor.torque_boost": {},
+  "motor.throttle_boost": {
+    "text": "Experimental, use with caution, can rob motors of power if set too high"
+  },
+  "motor.torque_boost": {
+    "text": "A very experimental feature for more advanced use",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#torque-boost"
+  },
   "motor.turtle_throttle_percent": {
-    "text": "For whoops set to 100% larger craft start at 10% and increase by 10 to suit needs"
+    "text": "For whoops set to 100% larger craft start at 10% and increase by 10 to suit needs",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
   },
   "motor_pins": {
     "text": "Use this section to change motor positions, useful when using an fc in non standard configuration"
@@ -93,9 +100,16 @@
   "motor_settings": {
     "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
   },
-  "osd.elements": {},
-  "osd.font": {},
-  "pid.angle_strength": {},
+  "osd.elements": {
+    "text": "Select and position OSD elements, callsign must use upper case"
+  },
+  "osd.font": {
+    "text": "A choice of fonts are available, select and upload. You can also upload your own custom boot logo as long as it a 288x72 Black/White/Transparent PNG"
+  },
+  "pid.angle_strength": {
+    "text": "Angle Strength adjusts how your craft responds to external forces from bumps to stick inputs",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#angle-strength"
+  },
   "pid.preset": {
     "text": "Select by thrust to weight ratio or props size, these presets give a safe starting point to further tune if needed"
   },
