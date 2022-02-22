@@ -5,12 +5,8 @@
         <b-card>
           <h5 slot="header" class="mb-0">
             Motor Test
-            <b-button
-              size="sm"
-              class="my-2 mx-2"
-              @click="motor_test_toggle()"
-              >{{ motor.test.active ? "Disable" : "Enable" }}</b-button
-            >
+            <tooltip entry="motor.test" />
+
             <small class="float-right my-3">
               {{ state.vbattfilt.toPrecision(3) }}V <br />
               {{ state.ibat_filtered }}mAh
@@ -58,6 +54,15 @@
             <b-row v-else>
               <b-col sm="12">
                 <h6 class="text-muted">Motor Test disabled</h6>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col offset="10" sm="2">
+                <b-button
+                  class="my-2 mx-2 float-right"
+                  @click="motor_test_toggle()"
+                  >{{ motor.test.active ? "Disable" : "Enable" }}</b-button
+                >
               </b-col>
             </b-row>
           </div>

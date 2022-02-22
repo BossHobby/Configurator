@@ -45,6 +45,7 @@
     "disabled": true
   },
   "filter.dterm_dynamic_enable": {
+    "text": "enable a dynamic dterm filtercut, you almost always want to leave this on",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES"
   },
   "filter.dterm_dynamic_max": {
@@ -57,8 +58,7 @@
     "disabled": true
   },
   "filter.gyro_1_type": {
-    "link": "https://www.google.com/"
-    ,"disabled": false
+    "disabled": false
   },
   "filter.gyro_2_freq": {
     "disabled": true
@@ -81,6 +81,7 @@
   "motor.invert_yaw": {
     "text": "Default is props out"
   },
+  "motor.test": {},
   "motor.throttle_boost": {},
   "motor.torque_boost": {},
   "motor.turtle_throttle_percent": {
@@ -92,6 +93,8 @@
   "motor_settings": {
     "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
   },
+  "osd.elements": {},
+  "osd.font": {},
   "pid.angle_strength": {},
   "pid.preset": {
     "text": "Select by thrust to weight ratio or props size, these presets give a safe starting point to further tune if needed"

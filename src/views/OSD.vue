@@ -3,7 +3,10 @@
     <b-row v-if="osd && osd.elements">
       <b-col sm="6">
         <b-card>
-          <h5 slot="header" class="mb-0">Elements</h5>
+          <h5 slot="header" class="mb-0">
+            Elements
+            <tooltip entry="osd.elements" />
+          </h5>
           <b-row>
             <b-col sm="4">
               <label>Callsign Text</label>
@@ -87,7 +90,10 @@
       </b-col>
       <b-col class="my-4" sm="12">
         <b-card>
-          <h5 slot="header" class="mb-0">Font</h5>
+          <h5 slot="header" class="mb-0">
+            Font
+            <tooltip entry="osd.font" />
+          </h5>
           <b-row class="my-4">
             <b-col sm="2">
               <label for="font-file">File</label>
