@@ -16,7 +16,8 @@
     "build:vue": "vue-cli-service build",
     "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
-    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\""
+    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\"",
+    "pwa": "npm run build:vue && npx http-server ./dist"
   },
   "main": "http://localhost:8080",
   "dependencies": {
@@ -59,6 +60,7 @@
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
     "glob": "^7.2.0",
+    "http-server": "^14.1.0",
     "nw": "0.54.0-sdk",
     "nwjs-builder-phoenix": "^1.15.0",
     "nwjs-types": "^1.0.0",
