@@ -25,11 +25,11 @@ function newNWUpdater() {
       return nw?.App.argv.includes("--finish-update");
     }
 
-    public async checkForUpdate(currentVersion: string): Promise<any> {
+    public async checkForUpdate(currentVersion: string, updateCallback: (v: any) => Promise<any>): Promise<any> {
       if (nw?.App === undefined) {
         return false;
       }
-      return await github.checkForUpdate(currentVersion)
+      updateCallback(await github.checkForUpdate(currentVersion));
     }
 
     public async update(release: any) {
@@ -124,11 +124,16 @@ function newPWAUpdater() {
     private hasUpdate = false;
     private refreshing = false;
     private registration?: ServiceWorkerRegistration;
+    private updateCallback?: (v: any) => Promise<any>;
 
     constructor() {
       document.addEventListener('swUpdated', (event: any) => {
         this.registration = event.detail;
         this.hasUpdate = true;
+
+        if (this.updateCallback) {
+          this.updateCallback(this.hasUpdate);
+        }
       }, { once: true });
 
       navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -149,8 +154,8 @@ function newPWAUpdater() {
       return false;
     }
 
-    public async checkForUpdate(currentVersion: string): Promise<any> {
-      return Promise.resolve(this.hasUpdate);
+    public async checkForUpdate(currentVersion: string, updateCallback: (v: any) => Promise<any>) {
+      this.updateCallback = updateCallback;
     }
 
     public async update(release: any) {
@@ -173,9 +178,11 @@ function newPWAUpdater() {
 function newUpdater() {
   try {
     if (nw?.App) {
+      console.log("Registering NW updater")
       return newNWUpdater();
     }
   } catch {
+    console.log("Registering PWA updater")
     return newPWAUpdater();
   }
 }

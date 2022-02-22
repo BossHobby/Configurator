@@ -17,9 +17,7 @@
       </a>
       for common configurations are available.
     </p>
-    <p class="lead" v-if="updateAvailable">
-      Version {{ updateAvailable.tag_name }} available!
-    </p>
+    <p class="lead" v-if="updateAvailable">New Version available!</p>
     <b-button
       v-if="updateAvailable"
       variant="success"
@@ -48,9 +46,10 @@ export default {
   },
   created() {
     if (!updater.updatePending()) {
-      updater
-        .checkForUpdate(this.appVersion)
-        .then((updateAvailable) => (this.updateAvailable = updateAvailable));
+      updater.checkForUpdate(
+        this.appVersion,
+        (updateAvailable) => (this.updateAvailable = updateAvailable)
+      );
     }
   },
 };
