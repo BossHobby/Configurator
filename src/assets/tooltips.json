@@ -45,7 +45,7 @@
     "disabled": true
   },
   "filter.dterm_dynamic_enable": {
-    "disabled": true
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES"
   },
   "filter.dterm_dynamic_max": {
     "disabled": true
@@ -57,8 +57,8 @@
     "disabled": true
   },
   "filter.gyro_1_type": {
-    "link": "https://www.google.com/",
-    "disabled": true
+    "link": "https://www.google.com/"
+    ,"disabled": false
   },
   "filter.gyro_2_freq": {
     "disabled": true
@@ -69,7 +69,9 @@
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
   },
-  "motor.dshot_time": {},
+  "motor.dshot_time": {
+    "text": "On some fcs this might need set to 300 to avoid failloops, Default 600"
+  },
   "motor.flip_gyro": {
     "disabled": true
   },
@@ -84,8 +86,12 @@
   "motor.turtle_throttle_percent": {
     "text": "For whoops set to 100% larger craft start at 10% and increase by 10 to suit needs"
   },
-  "motor_pins": {},
-  "motor_settings": {},
+  "motor_pins": {
+    "text": "Use this section to change motor positions, useful when using an fc in non standard configuration"
+  },
+  "motor_settings": {
+    "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
+  },
   "pid.angle_strength": {},
   "pid.preset": {
     "text": "Select by thrust to weight ratio or props size, these presets give a safe starting point to further tune if needed"
@@ -103,9 +109,15 @@
     "text": "Silverware or Betaflight rates option"
   },
   "rate.sticks_deadband": {},
-  "receiver.bind_saved": {},
-  "receiver.lqi_source": {},
-  "receiver.protocol": {},
+  "receiver.bind_saved": {
+    "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
+  },
+  "receiver.lqi_source": {
+    "text": "Select the source for your rssi/lqi OSD display. Direct is best for ELRS, others can use Packet-Rate"
+  },
+  "receiver.protocol": {
+    "text": "Serial or spi connected rx will be detected automatically here"
+  },
   "serial.rx": {
     "text": "Enter the UART number the serial RX is connected to (for spi RX leave as NONE)"
   },
@@ -115,12 +127,22 @@
   "serial_passthrough": {
     "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
   },
-  "voltage.actual_battery_voltage": {},
+  "voltage.actual_battery_voltage": {
+    "text": "Default is 4.2V for normal lipo packs, set to 4.35V for HV packs"
+  },
   "voltage.ibat_scale": {
     "text": "Use the value provided by the FC manufacturer"
   },
-  "voltage.lipo_cell_count": {},
-  "voltage.pid_voltage_compensation": {},
-  "voltage.reported_telemetry_voltage": {},
-  "voltage.vbattlow": {}
+  "voltage.lipo_cell_count": {
+    "text": "Enter the number of cells, leave at 0 to use autodetect"
+  },
+  "voltage.pid_voltage_compensation": {
+    "text": "Adsjusts the pids to compensate for lipo voltage drop, default ON"
+  },
+  "voltage.reported_telemetry_voltage": {
+    "disabled": true
+  },
+  "voltage.vbattlow": {
+    "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V"
+  }
 }
