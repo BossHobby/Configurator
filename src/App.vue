@@ -87,6 +87,18 @@
         >
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
+        <b-alert :show="needs_apply" class="mb-0" variant="warning">
+          <b-icon icon="exclamation-triangle"></b-icon>
+          Unsaved changes
+        </b-alert>
+        <b-alert
+          :show="!needs_apply && needs_reboot"
+          class="mb-0"
+          variant="warning"
+        >
+          <b-icon icon="exclamation-triangle"></b-icon>
+          Reboot required
+        </b-alert>
         <spinner-btn class="my-1 mx-2" v-on:click="soft_reboot()">
           Reboot
         </spinner-btn>
@@ -121,7 +133,15 @@ export default {
     };
   },
   computed: {
-    ...mapState(["info", "profile", "alerts", "state", "serial"]),
+    ...mapState([
+      "info",
+      "profile",
+      "alerts",
+      "state",
+      "serial",
+      "needs_reboot",
+      "needs_apply",
+    ]),
     ...mapGetters(["has_feature", "is_read_only"]),
     availablePortOptions() {
       return this.serial.available.map((p) => {

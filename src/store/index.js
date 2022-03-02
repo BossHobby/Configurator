@@ -18,6 +18,15 @@ import bindModule from "./modules/bind";
 import serialModule from "./modules/serial";
 import flashModule from "./modules/flash";
 
+
+const rebootNeededKeys = [
+  'profile.serial.'
+];
+
+const applyNeededKeys = [
+  'profile.'
+]
+
 const store = new Vuex.Store({
   modules: {
     profile: profileModule,
@@ -33,6 +42,9 @@ const store = new Vuex.Store({
     flash: flashModule,
   },
   state: {
+    needs_apply: false,
+    needs_reboot: false,
+
     log: [],
     alerts: [],
 
@@ -59,6 +71,30 @@ const store = new Vuex.Store({
 
     append_alert(state, alert) {
       state.alerts = [...state.alerts, alert]
+    },
+
+    track_key_change(state, path) {
+      for (const key of applyNeededKeys) {
+        if (path.startsWith(key)) {
+          state.needs_apply = true;
+          break;
+        }
+      }
+
+      for (const key of rebootNeededKeys) {
+        if (path.startsWith(key)) {
+          state.needs_reboot = true;
+          break;
+        }
+      }
+    },
+
+    reset_needs_apply(state) {
+      state.needs_apply = false;
+    },
+    reset_needs_reboot(state) {
+      state.needs_apply = false;
+      state.needs_reboot = false;
     }
   },
   actions: {
@@ -69,10 +105,7 @@ const store = new Vuex.Store({
     },
     cal_imu() {
       return serial.command(QuicCmd.CalImu);
-    },
-    update() {
-
-    },
+    }
   }
 });
 

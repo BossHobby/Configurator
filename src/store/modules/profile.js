@@ -96,6 +96,7 @@ const store = {
         .set(QuicVal.Profile, profile)
         .then(p => commit('set_profile', p))
         .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }))
+        .then(() => commit('reset_needs_apply'))
         .catch(err => {
           Log.error(err);
           commit('append_alert', { type: "danger", msg: "Apply failed! " + err });

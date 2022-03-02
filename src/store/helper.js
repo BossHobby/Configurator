@@ -1,4 +1,4 @@
-function mapFieldGetter({ getterType, mutationType }, store, path) {
+function mapFieldGetter({ module, getterType, mutationType }, store, path) {
   const val = store.getters[getterType](path);
   if (Array.isArray(val)) {
     return val.reduce((prev, val, index) => {
@@ -27,6 +27,7 @@ function mapFieldGetter({ getterType, mutationType }, store, path) {
         },
         set(value) {
           store.commit(mutationType, { path: fieldPath, value });
+          store.commit('track_key_change', module + '.' + fieldPath);
         }
       });
     }, {});
@@ -43,7 +44,7 @@ export function mapFields(module, fields) {
   if (Array.isArray(fields)) {
     entries = fields.map(path => {
       return {
-        key: path.split(".").join("_"),
+        key: path.split('.').join('_'),
         path: path,
       }
     })
@@ -59,10 +60,11 @@ export function mapFields(module, fields) {
   return entries.reduce((prev, e) => {
     prev[e.key] = {
       get() {
-        return mapFieldGetter({ getterType, mutationType }, this.$store, e.path);
+        return mapFieldGetter({ module, getterType, mutationType }, this.$store, e.path);
       },
       set(value) {
         this.$store.commit(mutationType, { path: e.path, value });
+        this.$store.commit('track_key_change', module + '.' + e.path);
       }
     };
     return prev;
@@ -73,11 +75,11 @@ export function createHelpers(module) {
   return {
     [`get_${module}_field`](state) {
       return (path) => {
-        return path.split(".").reduce((prev, key) => prev[key], state);
+        return path.split('.').reduce((prev, key) => prev[key], state);
       }
     },
     [`update_${module}_field`](state, { path, value }) {
-      path.split(".").reduce((prev, key, index, array) => {
+      path.split('.').reduce((prev, key, index, array) => {
         if (array.length === index + 1) {
           prev[key] = value;
         }

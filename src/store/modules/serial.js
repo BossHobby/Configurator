@@ -78,6 +78,7 @@ const store = {
 
         commit('set_connected', false);
         commit('set_connecting', false);
+        commit('reset_needs_reboot');
 
         if (router.currentRoute.fullPath != "/home") {
           router.push("/home")
@@ -99,6 +100,7 @@ const store = {
   
           commit('set_connected', false);
           commit('set_connecting', false);
+          commit('reset_needs_reboot');
 
           if (router.currentRoute.fullPath != "/home") {
             router.push("/home")
@@ -127,6 +129,7 @@ const store = {
         .catch((err) => {
           Log.error("serial", err);
           commit('set_connected', false);
+          commit('reset_needs_reboot');
           commit('append_alert', { type: "danger", msg: 'Connection to the board failed' });
         })
         .finally(() => {
