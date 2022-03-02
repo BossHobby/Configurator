@@ -5,11 +5,15 @@
   "channel.aux_blackbox": {
     "text": "Start/stop blackbox recording"
   },
-  "channel.aux_buzzer_enable": {},
+  "channel.aux_buzzer_enable": {
+    "disabled": true
+  },
   "channel.aux_fpv_switch": {
     "text": "Vtx Pit mode on a switch"
   },
-  "channel.aux_high_rates": {},
+  "channel.aux_high_rates": {
+    "disabled": true
+  },
   "channel.aux_horizon": {
     "text": "Self levelling up to a specific angle then Acro on both Roll and Pitch, requires Level mode active"
   },
@@ -28,7 +32,9 @@
   "channel.aux_rssi": {
     "text": "For fcs that can send rssi on a channel"
   },
-  "channel.aux_stick_boost_profile": {},
+  "channel.aux_stick_boost_profile": {
+    "disabled": true
+  },
   "channel.aux_turtle": {
     "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
@@ -59,7 +65,7 @@
     "disabled": true
   },
   "filter.gyro_1_type": {
-    "disabled": false
+    "disabled": true
   },
   "filter.gyro_2_freq": {
     "disabled": true
@@ -82,7 +88,9 @@
   "motor.invert_yaw": {
     "text": "Default is props out"
   },
-  "motor.test": {},
+  "motor.test": {
+    "disabled": true
+  },
   "motor.throttle_boost": {
     "text": "Experimental, use with caution, can rob motors of power if set too high"
   },
@@ -116,16 +124,30 @@
   "pid.profile": {
     "text": "You can have 2 different sets of pids loaded in 2 profiles"
   },
-  "pid.stick_profile": {},
-  "pid.tda_active": {},
-  "pid.tda_breakpoint": {},
-  "pid.tda_percent": {},
-  "rate.level_max_angle": {},
-  "rate.low_rate_mulitplier": {},
+  "pid.stick_profile": {
+    "disabled": true
+  },
+  "pid.tda_active": {
+    "disabled": true
+  },
+  "pid.tda_breakpoint": {
+    "disabled": true
+  },
+  "pid.tda_percent": {
+    "disabled": true
+  },
+  "rate.level_max_angle": {
+    "disabled": true
+  },
+  "rate.low_rate_mulitplier": {
+    "disabled": true
+  },
   "rate.mode": {
     "text": "Silverware or Betaflight rates option"
   },
-  "rate.sticks_deadband": {},
+  "rate.sticks_deadband": {
+    "disabled": true
+  },
   "receiver.bind_saved": {
     "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
   },
