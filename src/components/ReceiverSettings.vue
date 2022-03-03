@@ -117,7 +117,9 @@
 <script>
 import { mapState, mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
+import { $enum } from "ts-enum-util";
 import * as md5 from "md5";
+import { RXProtocol, RXSerialProtocol } from "@/store/constants";
 
 export default {
   name: "ReceiverSettings",
@@ -128,35 +130,8 @@ export default {
         { value: 1, text: "CHANNEL" },
         { value: 2, text: "DIRECT" },
       ],
-      protoNames: [
-        "INVALID",
-        "UNIFIED_SERIAL",
-        "SBUS",
-        "CRSF",
-        "IBUS",
-        "FPORT",
-        "DSMX_2048",
-        "DSM2_1024",
-        "NRF24_BAYANG_TELEMETRY",
-        "BAYANG_PROTOCOL_BLE_BEACON",
-        "BAYANG_PROTOCOL_TELEMETRY_AUTOBIND",
-        "FRSKY_D8",
-        "FRSKY_D16",
-        "REDPINE",
-        "EXPRESS_LRS",
-      ],
-      serialProtoNames: [
-        "SERIAL_INVALID",
-        "SERIAL_DSM",
-        "SERIAL_SBUS",
-        "SERIAL_IBUS",
-        "SERIAL_FPORT",
-        "SERIAL_CRSF",
-        "SERIAL_REDPINE",
-        "SERIAL_SBUS_INVERTED",
-        "SERIAL_FPORT_INVERTED",
-        "SERIAL_REDPINE_INVERTED",
-      ],
+      protoNames: $enum(RXProtocol).getKeys(),
+      serialProtoNames: $enum(RXSerialProtocol).getKeys(),
       elrsBindPhraseInput: "",
     };
   },

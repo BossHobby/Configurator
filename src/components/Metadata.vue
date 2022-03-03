@@ -76,9 +76,11 @@
 
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
+import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
 import { QuicVal } from "@/store/serial/quic";
+import { Features } from "@/store/constants";
 
 export default {
   name: "Metadata",
@@ -93,8 +95,8 @@ export default {
       return new Date(this.meta.datetime * 1000);
     },
     features() {
-      const feat = ["BRUSHLESS", "OSD", "BLACKBOX", "DEBUG"];
-      return feat
+      return $enum(Features)
+        .getKeys()
         .filter((f, i) => {
           return this.info.features & (1 << (i + 1));
         })
