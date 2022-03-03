@@ -36,7 +36,7 @@
         </b-row>
         <b-row
           v-if="
-            info.quic_protocol_version > 1 && has_feature(FEATURE_BRUSHLESS)
+            info.quic_protocol_version > 1 && has_feature(Features.BRUSHLESS)
           "
         >
           <b-col sm="4" class="my-2">
@@ -151,29 +151,27 @@ export default {
   name: "Motor",
   data() {
     return {
-      ...Features,
+      Features,
 
       invertYawModes: [
         { value: 0, text: "Props In" },
         { value: 1, text: "Props Out" },
       ],
       gyroOrientations: [
-        { value: GyroRotation.GYRO_ROTATE_NONE, text: "ROTATE_NONE" },
-        { value: GyroRotation.GYRO_ROTATE_45_CCW, text: "ROTATE_45_CCW" },
-        { value: GyroRotation.GYRO_ROTATE_45_CW, text: "ROTATE_45_CW" },
-        { value: GyroRotation.GYRO_ROTATE_90_CW, text: "ROTATE_90_CW" },
-        { value: GyroRotation.GYRO_ROTATE_90_CCW, text: "ROTATE_90_CCW" },
+        { value: GyroRotation.ROTATE_NONE, text: "ROTATE_NONE" },
+        { value: GyroRotation.ROTATE_45_CCW, text: "ROTATE_45_CCW" },
+        { value: GyroRotation.ROTATE_45_CW, text: "ROTATE_45_CW" },
+        { value: GyroRotation.ROTATE_90_CW, text: "ROTATE_90_CW" },
+        { value: GyroRotation.ROTATE_90_CCW, text: "ROTATE_90_CCW" },
         {
-          value:
-            GyroRotation.GYRO_ROTATE_90_CCW | GyroRotation.GYRO_ROTATE_45_CCW,
+          value: GyroRotation.ROTATE_90_CCW | GyroRotation.ROTATE_45_CCW,
           text: "ROTATE_135_CW",
         },
         {
-          value:
-            GyroRotation.GYRO_ROTATE_90_CW | GyroRotation.GYRO_ROTATE_45_CW,
+          value: GyroRotation.ROTATE_90_CW | GyroRotation.ROTATE_45_CW,
           text: "ROTATE_135_CCW",
         },
-        { value: GyroRotation.GYRO_ROTATE_180, text: "ROTATE_180" },
+        { value: GyroRotation.ROTATE_180, text: "ROTATE_180" },
       ],
       dshotTimes: [
         { value: 150, text: "150" },
@@ -192,16 +190,16 @@ export default {
       },
       set(value) {
         this.motor.gyro_orientation =
-          value | (this.gyroFlip ? GyroRotation.GYRO_FLIP_180 : 0x0);
+          value | (this.gyroFlip ? GyroRotation.FLIP_180 : 0x0);
       },
     },
     gyroFlip: {
       get() {
-        return (this.motor.gyro_orientation & GyroRotation.GYRO_FLIP_180) > 0;
+        return (this.motor.gyro_orientation & GyroRotation.FLIP_180) > 0;
       },
       set(value) {
         this.motor.gyro_orientation =
-          this.gyroOrientation | (value ? GyroRotation.GYRO_FLIP_180 : 0x0);
+          this.gyroOrientation | (value ? GyroRotation.FLIP_180 : 0x0);
       },
     },
   },

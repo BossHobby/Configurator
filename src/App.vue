@@ -24,16 +24,18 @@
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
         <b-nav-item to="/receiver">Receiver</b-nav-item>
-        <b-nav-item v-if="has_feature(FEATURE_OSD)" to="/osd">OSD</b-nav-item>
+        <b-nav-item v-if="has_feature(Features.OSD)" to="/osd">OSD</b-nav-item>
         <b-nav-item to="/motor">Motor</b-nav-item>
         <b-nav-item
-          v-if="has_feature(FEATURE_BLACKBOX) && info.quic_protocol_version > 1"
+          v-if="
+            has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1
+          "
           to="/blackbox"
           >Blackbox</b-nav-item
         >
         <b-nav-item to="/state">State</b-nav-item>
         <b-nav-item
-          v-if="has_feature(FEATURE_DEBUG) && info.quic_protocol_version > 1"
+          v-if="has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
           to="/perf"
           >Perf</b-nav-item
         >
@@ -123,7 +125,7 @@ export default {
   name: "app",
   data() {
     return {
-      ...Features,
+      Features,
     };
   },
   computed: {

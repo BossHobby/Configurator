@@ -103,7 +103,7 @@
           </b-row>
         </b-card>
       </b-col>
-      <b-col sm="12" class="my-4" v-if="has_feature(FEATURE_BRUSHLESS)">
+      <b-col sm="12" class="my-4" v-if="has_feature(Features.BRUSHLESS)">
         <b-card>
           <h5 slot="header" class="mb-0">
             ESC Settings
@@ -180,7 +180,7 @@ export default {
   components: {},
   data() {
     return {
-      ...Features,
+      Features,
 
       motors: [
         {
