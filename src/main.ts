@@ -2,7 +2,6 @@ import Vue from 'vue'
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
 
 import './style.scss'
-// import 'chartjs-plugin-crosshair'
 import './registerServiceWorker'
 
 import App from './App.vue'
