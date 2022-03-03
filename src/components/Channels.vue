@@ -39,7 +39,9 @@
 
 <script>
 import { mapState } from "vuex";
+import { $enum } from "ts-enum-util";
 import { mapFields } from "@/store/helper.js";
+import { AuxFunctions, AuxChannels } from "@/store/constants";
 
 export default {
   name: "Channels",
@@ -52,38 +54,13 @@ export default {
   },
   data() {
     return {
-      auxChannels: [
-        { value: 0, text: "CHANNEL_5" },
-        { value: 1, text: "CHANNEL_6" },
-        { value: 2, text: "CHANNEL_7" },
-        { value: 3, text: "CHANNEL_8" },
-        { value: 4, text: "CHANNEL_9" },
-        { value: 5, text: "CHANNEL_10" },
-        { value: 6, text: "CHANNEL_11" },
-        { value: 7, text: "CHANNEL_12" },
-        { value: 8, text: "CHANNEL_13" },
-        { value: 9, text: "CHANNEL_14" },
-        { value: 10, text: "CHANNEL_15" },
-        { value: 11, text: "CHANNEL_16" },
-        { value: 12, text: "OFF" },
-        { value: 13, text: "ON" },
-        { value: 14, text: "AUX_GESTURE" },
-      ],
-      auxFunctions: [
-        "AUX_ARMING",
-        "AUX_IDLE_UP",
-        "AUX_LEVELMODE",
-        "AUX_RACEMODE",
-        "AUX_HORIZON",
-        "AUX_STICK_BOOST_PROFILE",
-        "AUX_HIGH_RATES",
-        "AUX_BUZZER_ENABLE",
-        "AUX_TURTLE",
-        "AUX_MOTOR_TEST",
-        "AUX_RSSI",
-        "AUX_FPV_SWITCH",
-        "AUX_BLACKBOX",
-      ],
+      auxChannels: $enum(AuxChannels).map((value, key) => {
+        return {
+          text: key,
+          value,
+        };
+      }),
+      auxFunctions: $enum(AuxFunctions).getKeys(),
     };
   },
   methods: {

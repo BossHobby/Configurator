@@ -11,7 +11,7 @@
   "channel.aux_fpv_switch": {
     "text": "Vtx Pit mode on a switch"
   },
-  "channel.aux_high_rates": {
+  "channel.aux_rate_profile": {
     "disabled": true
   },
   "channel.aux_horizon": {
