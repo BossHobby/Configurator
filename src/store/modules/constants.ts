@@ -51,7 +51,7 @@ enum AuxFunctions {
   AUX_BLACKBOX,
 }
 
-enum RXProtocol {
+enum RXProtocolLegacy {
   INVALID,
   UNIFIED_SERIAL,
   SBUS,
@@ -60,6 +60,23 @@ enum RXProtocol {
   FPORT,
   DSMX_2048,
   DSM2_1024,
+  NRF24_BAYANG_TELEMETRY,
+  BAYANG_PROTOCOL_BLE_BEACON,
+  BAYANG_PROTOCOL_TELEMETRY_AUTOBIND,
+  FRSKY_D8,
+  FRSKY_D16,
+  REDPINE,
+  EXPRESS_LRS,
+}
+
+enum RXProtocol {
+  INVALID,
+  UNIFIED_SERIAL,
+  SBUS,
+  CRSF,
+  IBUS,
+  FPORT,
+  DSM,
   NRF24_BAYANG_TELEMETRY,
   BAYANG_PROTOCOL_BLE_BEACON,
   BAYANG_PROTOCOL_TELEMETRY_AUTOBIND,
@@ -89,11 +106,15 @@ const store = {
     GyroRotation,
     AuxChannels,
     AuxFunctions,
-    RXProtocol,
     RXSerialProtocol
   },
   getters: {
-
+    RXProtocol: (state, getters, rootState) => {
+      if (rootState.info.quic_protocol_version > 5) {
+        return RXProtocol;
+      }
+      return RXProtocolLegacy;
+    }
   },
   mutations: {
 

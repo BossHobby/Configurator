@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import { mapFields } from "@/store/helper.js";
 import { $enum } from "ts-enum-util";
 import * as md5 from "md5";
@@ -136,9 +136,12 @@ export default {
     ...mapFields("profile", ["receiver.lqi_source"]),
     ...mapState(["info", "state", "bind"]),
     ...mapState("constants", {
-      protoNames: (state) => $enum(state.RXProtocol).getKeys(),
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
     }),
+    ...mapGetters("constants", ["RXProtocol"]),
+    protoNames() {
+      return $enum(this.RXProtocol).getKeys();
+    },
     proto() {
       return this.protoNames.reduce((m, v, i) => {
         m[v] = i;
