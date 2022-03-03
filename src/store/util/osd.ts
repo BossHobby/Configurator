@@ -64,7 +64,7 @@ export class OSD {
 
   private static packCanvas(ctx: CanvasRenderingContext2D) {
     const img = ctx.getImageData(0, 0, FULL_WIDTH, FULL_HEIGHT);
-    const font = [];
+    const font: Uint8Array[] = [];
     for (let cy = 0; cy < FONT_HEIGHT; cy++) {
       for (let cx = 0; cx < FONT_WIDTH; cx++) {
         const char = new Uint8Array((CHAR_WIDTH * CHAR_HEIGHT) / 4);
@@ -105,7 +105,7 @@ export class OSD {
     logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
     logoCtx.drawImage(logo, 0, 0);
 
-    const logoChars = [];
+    const logoChars: Uint8ClampedArray[] = [];
     const img = logoCtx.getImageData(0, 0, logo.width as number, logo.height as number);
     for (let cy = 0; cy < LOGO_HEIGHT; cy++) {
       for (let cx = 0; cx < LOGO_WIDTH; cx++) {

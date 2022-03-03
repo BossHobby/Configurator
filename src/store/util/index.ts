@@ -1,3 +1,5 @@
+import semver from 'semver';
+
 export function concatUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
   const res = new Uint8Array(a.length + b.length);
   res.set(a);
@@ -75,6 +77,13 @@ export class ArrayReader {
   public peekFloat32(): number {
     return this.view.getFloat32(this.offset);
   }
+}
 
+export function decodeSemver(v: number): string {
+  return `v${(v >> 16) & 0xFF}.${(v >> 8) & 0xFF}.${(v >> 0) & 0xFF}`
+}
 
+export function encodeSemver(version: string): number {
+  const v = semver.parse(version)!;
+  return (v.major << 16) | (v.minor << 8) | (v.patch & 0xFF);
 }

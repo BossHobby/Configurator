@@ -152,7 +152,7 @@ export class DFU {
   }
 
   private async getInterfaceDescriptors(interfaceNum: number) {
-    const descStrings = [];
+    const descStrings: string[] = [];
     const config = this.device.configuration!;
 
     for (const iface of config.interfaces) {
@@ -272,7 +272,7 @@ export class DFU {
       const start_address = parseInt(tmp1[1]);
 
       // split sectors into array
-      const sectors = [];
+      const sectors: any[] = [];
       let total_size = 0;
       const tmp2 = tmp1[2].split(',');
       if (tmp2.length < 1) {

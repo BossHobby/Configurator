@@ -4,8 +4,8 @@ import { Log } from '@/log';
 import { settings } from '../settings';
 import { QuicCmd } from '../serial/quic';
 
-var interval = null;
-var intervalCounter = 0;
+let interval: any = null;
+let intervalCounter = 0;
 
 const store = {
   state: {
@@ -92,12 +92,12 @@ const store = {
       return serial
         .connect((err) => {
           Log.error("serial", err)
-  
+
           if (interval) {
             clearInterval(interval);
             interval = null;
           }
-  
+
           commit('set_connected', false);
           commit('set_connecting', false);
           commit('reset_needs_reboot');
