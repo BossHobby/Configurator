@@ -117,19 +117,13 @@
 <script>
 import { updater } from "@/store/util/updater";
 import { mapActions, mapState, mapGetters } from "vuex";
-import {
-  FEATURE_BLACKBOX,
-  FEATURE_OSD,
-  FEATURE_DEBUG,
-} from "@/store/constants.js";
+import { Features } from "@/store/constants";
 
 export default {
   name: "app",
   data() {
     return {
-      FEATURE_BLACKBOX,
-      FEATURE_OSD,
-      FEATURE_DEBUG,
+      ...Features,
     };
   },
   computed: {

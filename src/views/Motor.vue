@@ -172,7 +172,7 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
-import { FEATURE_BRUSHLESS } from "@/store/constants.js";
+import { Features } from "@/store/constants";
 import { mapFields } from "@/store/helper.js";
 
 export default {
@@ -180,7 +180,7 @@ export default {
   components: {},
   data() {
     return {
-      FEATURE_BRUSHLESS,
+      ...Features,
 
       motors: [
         {

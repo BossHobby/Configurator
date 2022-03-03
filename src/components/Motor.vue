@@ -145,41 +145,35 @@
 <script>
 import { mapFields } from "@/store/helper.js";
 import { mapGetters, mapState } from "vuex";
-import { FEATURE_BRUSHLESS } from "@/store/constants.js";
-
-const GYRO_ROTATE_NONE = 0x0;
-const GYRO_ROTATE_45_CCW = 0x1;
-const GYRO_ROTATE_45_CW = 0x2;
-const GYRO_ROTATE_90_CW = 0x4;
-const GYRO_ROTATE_90_CCW = 0x8;
-const GYRO_ROTATE_180 = 0x10;
-const GYRO_FLIP_180 = 0x20;
+import { Features, GyroRotation } from "@/store/constants";
 
 export default {
   name: "Motor",
   data() {
     return {
-      FEATURE_BRUSHLESS,
+      ...Features,
 
       invertYawModes: [
         { value: 0, text: "Props In" },
         { value: 1, text: "Props Out" },
       ],
       gyroOrientations: [
-        { value: GYRO_ROTATE_NONE, text: "ROTATE_NONE" },
-        { value: GYRO_ROTATE_45_CCW, text: "ROTATE_45_CCW" },
-        { value: GYRO_ROTATE_45_CW, text: "ROTATE_45_CW" },
-        { value: GYRO_ROTATE_90_CW, text: "ROTATE_90_CW" },
-        { value: GYRO_ROTATE_90_CCW, text: "ROTATE_90_CCW" },
+        { value: GyroRotation.GYRO_ROTATE_NONE, text: "ROTATE_NONE" },
+        { value: GyroRotation.GYRO_ROTATE_45_CCW, text: "ROTATE_45_CCW" },
+        { value: GyroRotation.GYRO_ROTATE_45_CW, text: "ROTATE_45_CW" },
+        { value: GyroRotation.GYRO_ROTATE_90_CW, text: "ROTATE_90_CW" },
+        { value: GyroRotation.GYRO_ROTATE_90_CCW, text: "ROTATE_90_CCW" },
         {
-          value: GYRO_ROTATE_90_CCW | GYRO_ROTATE_45_CCW,
+          value:
+            GyroRotation.GYRO_ROTATE_90_CCW | GyroRotation.GYRO_ROTATE_45_CCW,
           text: "ROTATE_135_CW",
         },
         {
-          value: GYRO_ROTATE_90_CW | GYRO_ROTATE_45_CW,
+          value:
+            GyroRotation.GYRO_ROTATE_90_CW | GyroRotation.GYRO_ROTATE_45_CW,
           text: "ROTATE_135_CCW",
         },
-        { value: GYRO_ROTATE_180, text: "ROTATE_180" },
+        { value: GyroRotation.GYRO_ROTATE_180, text: "ROTATE_180" },
       ],
       dshotTimes: [
         { value: 150, text: "150" },
@@ -198,16 +192,16 @@ export default {
       },
       set(value) {
         this.motor.gyro_orientation =
-          value | (this.gyroFlip ? GYRO_FLIP_180 : 0x0);
+          value | (this.gyroFlip ? GyroRotation.GYRO_FLIP_180 : 0x0);
       },
     },
     gyroFlip: {
       get() {
-        return (this.motor.gyro_orientation & GYRO_FLIP_180) > 0;
+        return (this.motor.gyro_orientation & GyroRotation.GYRO_FLIP_180) > 0;
       },
       set(value) {
         this.motor.gyro_orientation =
-          this.gyroOrientation | (value ? GYRO_FLIP_180 : 0x0);
+          this.gyroOrientation | (value ? GyroRotation.GYRO_FLIP_180 : 0x0);
       },
     },
   },

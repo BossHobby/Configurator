@@ -78,7 +78,6 @@
 import { mapState, mapActions, mapGetters } from "vuex";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
-import { PROFILE_VERSION } from "@/store/constants.js";
 import { QuicVal } from "@/store/serial/quic";
 
 export default {
@@ -122,8 +121,6 @@ export default {
     },
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
-        profile.version = PROFILE_VERSION;
-
         const encoded = encodeURIComponent(JSON.stringify(profile));
         const json = "data:text/json;charset=utf-8," + encoded;
 
