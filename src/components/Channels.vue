@@ -41,7 +41,6 @@
 import { mapState } from "vuex";
 import { $enum } from "ts-enum-util";
 import { mapFields } from "@/store/helper.js";
-import { AuxFunctions, AuxChannels } from "@/store/constants";
 
 export default {
   name: "Channels",
@@ -51,17 +50,19 @@ export default {
     ...mapState({
       aux: (state) => state.state.aux,
     }),
+    ...mapState("constants", {
+      auxChannels: (state) =>
+        $enum(state.AuxChannels).map((value, key) => {
+          return {
+            text: key,
+            value,
+          };
+        }),
+      auxFunctions: (state) => $enum(state.AuxFunctions).getKeys(),
+    }),
   },
   data() {
-    return {
-      auxChannels: $enum(AuxChannels).map((value, key) => {
-        return {
-          text: key,
-          value,
-        };
-      }),
-      auxFunctions: $enum(AuxFunctions).getKeys(),
-    };
+    return {};
   },
   methods: {
     valueForIndex(index) {

@@ -119,7 +119,6 @@ import { mapState, mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
 import { $enum } from "ts-enum-util";
 import * as md5 from "md5";
-import { RXProtocol, RXSerialProtocol } from "@/store/constants";
 
 export default {
   name: "ReceiverSettings",
@@ -130,14 +129,16 @@ export default {
         { value: 1, text: "CHANNEL" },
         { value: 2, text: "DIRECT" },
       ],
-      protoNames: $enum(RXProtocol).getKeys(),
-      serialProtoNames: $enum(RXSerialProtocol).getKeys(),
       elrsBindPhraseInput: "",
     };
   },
   computed: {
     ...mapFields("profile", ["receiver.lqi_source"]),
     ...mapState(["info", "state", "bind"]),
+    ...mapState("constants", {
+      protoNames: (state) => $enum(state.RXProtocol).getKeys(),
+      serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
+    }),
     proto() {
       return this.protoNames.reduce((m, v, i) => {
         m[v] = i;

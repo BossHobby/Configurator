@@ -119,15 +119,9 @@
 <script>
 import { updater } from "@/store/util/updater";
 import { mapActions, mapState, mapGetters } from "vuex";
-import { Features } from "@/store/constants";
 
 export default {
   name: "app",
-  data() {
-    return {
-      Features,
-    };
-  },
   computed: {
     ...mapState([
       "info",
@@ -138,6 +132,7 @@ export default {
       "needs_reboot",
       "needs_apply",
     ]),
+    ...mapState("constants", ["Features"]),
     ...mapGetters(["has_feature", "is_read_only"]),
     availablePortOptions() {
       return this.serial.available.map((p) => {

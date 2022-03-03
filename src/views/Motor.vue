@@ -172,7 +172,6 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
-import { Features } from "@/store/constants";
 import { mapFields } from "@/store/helper.js";
 
 export default {
@@ -180,8 +179,6 @@ export default {
   components: {},
   data() {
     return {
-      Features,
-
       motors: [
         {
           index: 1,
@@ -220,6 +217,7 @@ export default {
       motor_pins: (state) => state.info.motor_pins,
     }),
     ...mapGetters(["has_feature"]),
+    ...mapState("constants", ["Features"]),
     value() {
       return this.motor.test.value.map((v) => v * 100);
     },

@@ -80,7 +80,6 @@ import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
 import { QuicVal } from "@/store/serial/quic";
-import { Features } from "@/store/constants";
 
 export default {
   name: "Metadata",
@@ -91,11 +90,12 @@ export default {
     ...mapFields("profile", ["meta"]),
     ...mapState(["info", "state", "serial"]),
     ...mapGetters(["is_read_only"]),
+    ...mapState("constants", ["Features"]),
     date() {
       return new Date(this.meta.datetime * 1000);
     },
     features() {
-      return $enum(Features)
+      return $enum(this.Features)
         .getKeys()
         .filter((f, i) => {
           return this.info.features & (1 << (i + 1));

@@ -1,13 +1,13 @@
 import { $enum } from 'ts-enum-util';
 
-export enum Features {
+enum Features {
   BRUSHLESS = (1 << 1),
   OSD = (1 << 2),
   BLACKBOX = (1 << 3),
   DEBUG = (1 << 4),
 }
 
-export enum GyroRotation {
+enum GyroRotation {
   ROTATE_NONE = 0x0,
   ROTATE_45_CCW = 0x1,
   ROTATE_45_CW = 0x2,
@@ -17,7 +17,7 @@ export enum GyroRotation {
   FLIP_180 = 0x20,
 }
 
-export enum AuxChannels {
+enum AuxChannels {
   CHANNEL_5,
   CHANNEL_6,
   CHANNEL_7,
@@ -35,7 +35,7 @@ export enum AuxChannels {
   AUX_GESTURE,
 }
 
-export enum AuxFunctions {
+enum AuxFunctions {
   AUX_ARMING,
   AUX_IDLE_UP,
   AUX_LEVELMODE,
@@ -51,7 +51,7 @@ export enum AuxFunctions {
   AUX_BLACKBOX,
 }
 
-export enum RXProtocol {
+enum RXProtocol {
   INVALID,
   UNIFIED_SERIAL,
   SBUS,
@@ -69,7 +69,7 @@ export enum RXProtocol {
   EXPRESS_LRS,
 }
 
-export enum RXSerialProtocol {
+enum RXSerialProtocol {
   INVALID,
   DSM,
   SBUS,
@@ -81,3 +81,26 @@ export enum RXSerialProtocol {
   FPORT_INVERTED,
   REDPINE_INVERTED,
 }
+
+const store = {
+  namespaced: true,
+  state: {
+    Features,
+    GyroRotation,
+    AuxChannels,
+    AuxFunctions,
+    RXProtocol,
+    RXSerialProtocol
+  },
+  getters: {
+
+  },
+  mutations: {
+
+  },
+  actions: {
+
+  }
+}
+
+export default store;
