@@ -1,5 +1,7 @@
+import semver from 'semver';
 import { QuicVal } from '../serial/quic';
 import { serial } from '../serial/serial';
+import { decodeSemver } from '../util';
 
 const store = {
   state: {
@@ -16,6 +18,7 @@ const store = {
       elements: []
     },
     meta: {
+      version: 0,
       datetime: 0,
     },
     motor: {
@@ -42,6 +45,9 @@ const store = {
     }
   },
   getters: {
+    has_legacy_stickrates(state) {
+      return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
+    }
   },
   mutations: {
     set_default_profile(state, profile) {

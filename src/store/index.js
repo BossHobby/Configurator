@@ -53,9 +53,6 @@ const store = new Vuex.Store({
     pid_rate_presets: [],
   },
   mutations: {
-    set_default_profile(state, default_profile) {
-      state.default_profile = default_profile
-    },
     set_pid_rate_presets(state, pid_rate_presets) {
       state.pid_rate_presets = pid_rate_presets
     },

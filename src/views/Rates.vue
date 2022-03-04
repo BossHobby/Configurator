@@ -2,7 +2,11 @@
   <b-container>
     <b-row>
       <b-col sm="12">
-        <StickRates class="my-2"></StickRates>
+        <StickRatesLegacy
+          v-if="has_legacy_stickrates"
+          class="my-2"
+        ></StickRatesLegacy>
+        <StickRates v-else class="my-2"></StickRates>
       </b-col>
       <b-col sm="12">
         <PIDRates class="my-2"></PIDRates>
@@ -16,16 +20,22 @@
 
 <script>
 import StickRates from "@/components/StickRates";
+import StickRatesLegacy from "@/components/StickRatesLegacy";
 import PIDRates from "@/components/PIDRates";
 import FilterSettings from "@/components/FilterSettings";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Rate",
   components: {
     StickRates,
+    StickRatesLegacy,
     PIDRates,
-    FilterSettings
-  }
+    FilterSettings,
+  },
+  computed: {
+    ...mapGetters(["has_legacy_stickrates"]),
+  },
 };
 </script>
 
