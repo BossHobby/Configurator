@@ -24,6 +24,7 @@ const store = {
       return serial
         .set(QuicVal.BindInfo, info)
         .then(b => commit('set_bind_info', b))
+        .then(b => commit('track_key_change', 'bind.info'))
         .then(() => commit('append_alert', { type: "success", msg: "Bind info applied!" }))
         .catch(err => {
           Log.error(err);

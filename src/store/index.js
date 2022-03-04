@@ -20,7 +20,8 @@ import flashModule from "./modules/flash";
 import constantsModule from "./modules/constants";
 
 const rebootNeededKeys = [
-  'profile.serial.'
+  'profile.serial.',
+  'bind.info'
 ];
 
 const applyNeededKeys = [
