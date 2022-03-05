@@ -5,6 +5,37 @@ import { Log } from '@/log';
 
 const { get_profile_field, update_profile_field } = createHelpers("profile")
 
+function makeSemver(major, minor, patch) {
+  return ((major << 16) | (minor << 8) | patch)
+}
+
+function migrateProfile(profile, version) {
+  switch (version) {
+    case makeSemver(0, 1, 0):
+      profile.rate.profile = 0;
+      profile.rate.rates = [
+        {
+          mode: profile.rate.mode,
+          rate: [
+            profile.rate.mode == 1 ? profile.rate.betaflight.rc_rate : profile.rate.silverware.max_rate,
+            profile.rate.mode == 1 ? profile.rate.betaflight.super_rate : profile.rate.silverware.acro_expo,
+            profile.rate.mode == 1 ? profile.rate.betaflight.expo : profile.rate.silverware.angle_expo,
+          ]
+        },
+        {
+          mode: profile.rate.mode == 1 ? 0 : 1,
+          rate: [
+            profile.rate.mode == 0 ? profile.rate.betaflight.rc_rate : profile.rate.silverware.max_rate,
+            profile.rate.mode == 0 ? profile.rate.betaflight.super_rate : profile.rate.silverware.acro_expo,
+            profile.rate.mode == 0 ? profile.rate.betaflight.expo : profile.rate.silverware.angle_expo,
+          ]
+        }
+      ]
+      break;
+  }
+  return profile;
+}
+
 const store = {
   state: {
     serial: {
@@ -90,10 +121,19 @@ const store = {
         .get(QuicVal.Profile)
         .then(p => commit('set_profile', p));
     },
-    apply_profile({ commit }, profile) {
-      profile.meta.datetime = Math.floor(Date.now() / 1000);
+    apply_profile({ commit, rootState }, profile) {
+      const firmwareVersion = rootState.default_profile.meta.version;
+      const profileVersion = profile.meta.version;
+
+      let p = profile
+      if (firmwareVersion != profileVersion) {
+        p = migrateProfile(p, profileVersion);
+      }
+
+      p.meta.datetime = Math.floor(Date.now() / 1000);
+
       return serial
-        .set(QuicVal.Profile, profile)
+        .set(QuicVal.Profile, p)
         .then(p => commit('set_profile', p))
         .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }))
         .then(() => commit('reset_needs_apply'))
