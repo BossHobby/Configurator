@@ -4,24 +4,39 @@
     <b-row>
       <b-col sm="6">
         <b-row>
-          <b-col sm="4">
+          <b-col sm="4" class="my-2">
+            <label for="profile">
+              Profile
+              <tooltip entry="rate.profile" />
+            </label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-select
+              id="profile"
+              v-model.number="rate.profile"
+              :options="rateProfiles"
+              @change="update()"
+            ></b-form-select>
+          </b-col>
+
+          <b-col sm="4" class="my-2">
             <label for="rate-mode">
               Mode
               <tooltip entry="rate.mode" />
             </label>
           </b-col>
-          <b-col sm="8">
+          <b-col sm="8" class="my-2">
             <b-form-select
               id="rate-mode"
-              v-model.number="rate.mode"
+              v-model.number="currentMode"
               :options="rateModes"
               @change="update()"
             ></b-form-select>
           </b-col>
 
-          <b-col sm="12" v-for="mode in rateModes" :key="mode.text">
-            <b-card class="my-3" v-if="mode.value == rate.mode">
-              <h6 slot="header" class="mb-0">{{ mode.text }}</h6>
+          <b-col sm="12">
+            <b-card class="my-3">
+              <h6 slot="header" class="mb-0">{{ currentModeText }}</h6>
               <b-row>
                 <b-col offset="4" sm="8">
                   <b-row>
@@ -37,40 +52,41 @@
                   </b-row>
                 </b-col>
               </b-row>
-
               <b-row
-                v-for="(val, key) in rate[mode.text.toLowerCase()]"
-                :key="key"
+                v-for="(val, index) in currentProfile.rate"
+                :key="rateLabel[index]"
               >
                 <b-col sm="4">
-                  <label :for="`${mode.text}-${key}`">{{ key }}</label>
+                  <label :for="`${currentModeText}-${rateLabel[index]}`">{{
+                    rateLabel[index]
+                  }}</label>
                 </b-col>
                 <b-col sm="8">
                   <b-row>
                     <b-col sm="4">
                       <b-form-input
-                        :id="`${mode.text}-${key}-roll`"
+                        :id="`${currentModeText}-${rateLabel[index]}-roll`"
                         type="number"
                         step="0.05"
-                        v-model.number="rate[mode.text.toLowerCase()][key][0]"
+                        v-model.number="currentProfile.rate[index][0]"
                         @update="update()"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
                       <b-form-input
-                        :id="`${mode.text}-${key}-pitch`"
+                        :id="`${currentModeText}-${rateLabel[index]}-pitch`"
                         type="number"
                         step="0.05"
-                        v-model.number="rate[mode.text.toLowerCase()][key][1]"
+                        v-model.number="currentProfile.rate[index][1]"
                         @update="update()"
                       ></b-form-input>
                     </b-col>
                     <b-col sm="4">
                       <b-form-input
-                        :id="`${mode.text}-${key}-yaw`"
+                        :id="`${currentModeText}-${rateLabel[index]}-yaw`"
                         type="number"
                         step="0.05"
-                        v-model.number="rate[mode.text.toLowerCase()][key][2]"
+                        v-model.number="currentProfile.rate[index][2]"
                         @update="update()"
                       ></b-form-input>
                     </b-col>
@@ -96,25 +112,7 @@
           </b-col>
 
           <b-col sm="4" class="my-2">
-            <label for="low-rate-mulitplier">
-              LowRateMulitplier
-              <tooltip entry="rate.low_rate_mulitplier" />
-            </label>
-          </b-col>
-          <b-col sm="8" class="my-2">
-            <b-form-input
-              id="low-rate-mulitplier"
-              type="number"
-              v-model.number="rate.low_rate_mulitplier"
-              step="0.05"
-            ></b-form-input>
-          </b-col>
-
-          <b-col sm="4" class="my-2">
-            <label for="sticks-deadband">
-              SticksDeadband
-              <tooltip entry="rate.sticks_deadband" />
-            </label>
+            <label for="sticks-deadband">SticksDeadband</label>
           </b-col>
           <b-col sm="8" class="my-2">
             <b-form-input
@@ -128,12 +126,10 @@
       </b-col>
       <b-col sm="6">
         <LineChart
-          v-if="rate.silverware.acro_expo"
-          :title="(plotLowRates ? 'Low ' : '') + 'Rates'"
+          :title="'Rates'"
           :labels="plot.labels"
           :axis="plot.axis"
         ></LineChart>
-        <b-form-checkbox v-model="plotLowRates">Plot LowRates</b-form-checkbox>
       </b-col>
     </b-row>
   </b-card>
@@ -150,21 +146,91 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["rate"]),
-    currentMode() {
-      return this.rateModes[this.rate.mode].text;
+    currentProfile() {
+      return this.rate.rates[this.rate.profile];
+    },
+    currentMode: {
+      get() {
+        return this.currentProfile.mode;
+      },
+      set(val) {
+        const oldMode = this.rate.rates[this.rate.profile].mode;
+        this.rateBackup[oldMode] = JSON.parse(
+          JSON.stringify(this.rate.rates[this.rate.profile].rate)
+        );
+        this.rate.rates[this.rate.profile].mode = val;
+
+        const copy = [...(this.rateBackup[val] || this.rateDefaults[val])];
+        this.rate.rates[this.rate.profile].rate = copy;
+      },
+    },
+    currentModeText() {
+      return this.rateModes[this.currentProfile.mode].text;
+    },
+    rateMap() {
+      return this.rateMappings[this.currentProfile.mode];
+    },
+    rateLabel() {
+      return this.rateLabels[this.currentProfile.mode];
     },
   },
   data() {
     return {
-      plotLowRates: false,
+      rateProfiles: [
+        { value: 0, text: "Rate Profile 1" },
+        { value: 1, text: "Rate Profile 2" },
+      ],
+
+      MODE_SILVERWARE: 0,
+      MODE_BETAFLIGHT: 1,
+      MODE_ACTUAL: 2,
+
+      rateBackup: {},
+      rateDefaults: [
+        [
+          [860, 860, 500],
+          [0.8, 0.8, 0.6],
+          [0.55, 0.0, 0.55],
+        ],
+        [
+          [1.3, 1.3, 1.3],
+          [0.7, 0.7, 0.7],
+          [0.4, 0.4, 0.4],
+        ],
+        [
+          [250, 250, 250],
+          [860, 860, 860],
+          [0.5, 0.5, 0.5],
+        ],
+      ],
+
       rateModes: [
         { value: 0, text: "Silverware" },
         { value: 1, text: "Betaflight" },
+        { value: 2, text: "Actual" },
       ],
       plot: {
         axis: [],
         label: [],
       },
+
+      SILVERWARE_MAX_RATE: 0,
+      SILVERWARE_ACRO_EXPO: 1,
+      SILVERWARE_ANGLE_EXPO: 2,
+
+      BETAFLIGHT_RC_RATE: 0,
+      BETAFLIGHT_SUPER_RATE: 1,
+      BETAFLIGHT_EXPO: 2,
+
+      ACTUAL_CENTER_SENSITIVITY: 0,
+      ACTUAL_MAX_RATE: 1,
+      ACTUAL_EXPO: 2,
+
+      rateLabels: [
+        ["MAX_RATE", "ACRO_EXPO", "ANGLE_EXPO"],
+        ["RC_RATE", "SUPER_RATE", "EXPO"],
+        ["CENTER_SENSITIVITY", "MAX_RATE", "EXPO"],
+      ],
     };
   },
   methods: {
@@ -176,34 +242,47 @@ export default {
     limitf(val, limit) {
       return this.constrainf(val, -limit, limit);
     },
-    rcexpo(val, exp) {
-      if (exp > 1) exp = 1;
+    rcexpo(val, expo) {
+      expo = this.limitf(expo, 1.0);
+      var result = 0;
 
-      if (exp < -1) exp = -1;
+      switch (this.currentProfile.mode) {
+        case this.MODE_SILVERWARE:
+          result = val * val * val * expo + val * (1 - expo);
+          break;
+        case this.MODE_BETAFLIGHT:
+          result = Math.abs(val) * val * val * val * expo + val * (1 - expo);
+          break;
+        case this.MODE_ACTUAL:
+          result =
+            Math.abs(val) * val * val * val * val * val * expo +
+            val * (1 - expo);
+          break;
+      }
 
-      const ans = val * val * val * exp + val * (1 - exp);
-      return this.limitf(ans, 1.0);
+      return this.limitf(result, 1.0);
     },
     calcSilverware(axis, val) {
-      const expo = this.rate.silverware.acro_expo[axis];
-      const maxRate = this.rate.silverware.max_rate[axis];
+      const expo = this.currentProfile.rate[this.SILVERWARE_ACRO_EXPO][axis];
+      const maxRate = this.currentProfile.rate[this.SILVERWARE_MAX_RATE][axis];
       return this.rcexpo(val, expo) * maxRate;
     },
     calcBetatflight(axis, val) {
       const SETPOINT_RATE_LIMIT = 1998.0;
       const RC_RATE_INCREMENTAL = 14.54;
 
-      const expo = this.rate.betaflight.expo[axis];
+      const expo = this.currentProfile.rate[this.BETAFLIGHT_EXPO][axis];
       val = this.rcexpo(val, expo);
 
-      var rcRate = this.rate.betaflight.rc_rate[axis];
+      var rcRate = this.currentProfile.rate[this.BETAFLIGHT_RC_RATE][axis];
       if (rcRate > 2.0) {
         rcRate += RC_RATE_INCREMENTAL * (rcRate - 2.0);
       }
       const rcCommandfAbs = val > 0 ? val : -val;
       var angleRate = 200.0 * rcRate * val;
 
-      const superExpo = this.rate.betaflight.super_rate[axis];
+      const superExpo =
+        this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
       if (superExpo) {
         const rcSuperfactor =
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
@@ -214,6 +293,21 @@ export default {
         -SETPOINT_RATE_LIMIT,
         SETPOINT_RATE_LIMIT
       );
+    },
+    calcActual(axis, val) {
+      const expo = this.currentProfile.rate[this.ACTUAL_EXPO][axis];
+      const rate_expo = this.rcexpo(val, expo);
+
+      const center_sensitivity =
+        this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][axis];
+      const max_rate = this.currentProfile.rate[this.ACTUAL_MAX_RATE][axis];
+
+      let stick_movement = max_rate - center_sensitivity;
+      if (stick_movement < 0) {
+        stick_movement = 0;
+      }
+
+      return val * center_sensitivity + stick_movement * rate_expo;
     },
     update() {
       const axis = [
@@ -233,23 +327,33 @@ export default {
 
       const labels = [];
 
-      const rateMulit = this.plotLowRates ? this.rate.low_rate_mulitplier : 1.0;
       for (let i = -100; i <= 100; i++) {
         const input = i / 100.0;
 
         labels.push("" + i);
 
         for (let j = 0; j < 3; j++) {
-          if (this.currentMode == "Silverware") {
-            axis[j].data.push({
-              x: i,
-              y: this.calcSilverware(j, input) * rateMulit,
-            });
-          } else if (this.currentMode == "Betaflight") {
-            axis[j].data.push({
-              x: i,
-              y: this.calcBetatflight(j, input) * rateMulit,
-            });
+          switch (this.currentProfile.mode) {
+            case this.MODE_SILVERWARE:
+              axis[j].data.push({
+                x: i,
+                y: this.calcSilverware(j, input),
+              });
+              break;
+
+            case this.MODE_BETAFLIGHT:
+              axis[j].data.push({
+                x: i,
+                y: this.calcBetatflight(j, input),
+              });
+              break;
+
+            case this.MODE_ACTUAL:
+              axis[j].data.push({
+                x: i,
+                y: this.calcActual(j, input),
+              });
+              break;
           }
         }
       }
