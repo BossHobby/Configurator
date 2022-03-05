@@ -31,6 +31,21 @@
         ></b-form-select>
       </b-col>
     </b-row>
+    <b-row>
+      <b-col sm="4" class="my-2">
+        <label for="hdzero">
+          HDZero
+          <tooltip entry="serial.hdzero" />
+        </label>
+      </b-col>
+      <b-col sm="8" class="my-2">
+        <b-form-select
+          id="hdzero"
+          v-model.number="serial.hdzero"
+          :options="serialPorts"
+        ></b-form-select>
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 

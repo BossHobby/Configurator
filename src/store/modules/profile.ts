@@ -41,6 +41,7 @@ const store = {
     serial: {
       rx: 0,
       smart_audio: 0,
+      hdzero: 0,
       port_max: 1,
     },
     filter: {
@@ -48,7 +49,9 @@ const store = {
       dterm: [{}, {}]
     },
     osd: {
-      elements: []
+      callsign: "",
+      elements: [],
+      elements_hd: []
     },
     meta: {
       datetime: 0,
@@ -111,7 +114,14 @@ const store = {
     },
     set_osd_elements(state, elements) {
       state.osd = {
+        ...state.osd,
         elements
+      };
+    },
+    set_osd_elements_hd(state, elements) {
+      state.osd = {
+        ...state.osd,
+        elements_hd: elements
       };
     }
   },

@@ -8,6 +8,7 @@ const store = {
     serial: {
       rx: 0,
       smart_audio: 0,
+      hdzero: 0,
       port_max: 1,
     },
     filter: {
@@ -15,7 +16,9 @@ const store = {
       dterm: [{}, {}]
     },
     osd: {
-      elements: []
+      callsign: "",
+      elements: [],
+      elements_hd: []
     },
     meta: {
       version: 0,
@@ -46,6 +49,9 @@ const store = {
   },
   getters: {
     has_legacy_stickrates(state) {
+      return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
+    },
+    has_legacy_osd(state) {
       return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
     }
   },

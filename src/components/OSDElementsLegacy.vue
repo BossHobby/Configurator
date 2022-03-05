@@ -14,7 +14,7 @@
             <b-form-input
               size="sm"
               type="text"
-              v-model="this.osd.callsign"
+              v-model="callsign"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -68,7 +68,12 @@
     <b-col sm="6">
       <b-card>
         <h5 slot="header" class="mb-0">Preview</h5>
-        <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          :width="svg_width"
+          :height="svg_height"
+          :viewBox="viewBox"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <g v-for="(el, i) of elements" :key="i">
             <text
               v-if="el.enabled && el.active"
@@ -86,30 +91,23 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
 import { mapFields } from "@/store/helper.js";
 
 export default {
-  name: "OSDElements",
+  name: "OSDElementsLegacy",
   data() {
-    return {};
+    return {
+      screen: {
+        width: 30 - 2,
+        height: 16 - 2,
+        char_width: 12,
+        char_height: 18,
+      },
+      imageSource: null,
+    };
   },
   computed: {
     ...mapFields("profile", ["osd"]),
-    ...mapState({
-      is_hd: (state) => state.profile.serial.hdzero,
-    }),
-    currentElements() {
-      return this.is_hd ? this.osd.elements_hd : this.osd.elements;
-    },
-    screen() {
-      return {
-        width: this.is_hd ? 50 : 30 - 2,
-        height: this.is_hd ? 18 : 16 - 2,
-        char_width: 12,
-        char_height: 18,
-      };
-    },
     svg_width() {
       return this.screen.width * this.screen.char_width;
     },
@@ -119,9 +117,52 @@ export default {
     viewBox() {
       return `0 0 ${this.svg_width} ${this.svg_height}`;
     },
+    callsign: {
+      get() {
+        return this.osd.elements
+          .slice(1, 5)
+          .flatMap((e) => {
+            return [0, 8, 16, 24].map((shift) => {
+              const val = (e >> shift) & 0xff;
+              if (val == 0x3f) {
+                return "";
+              }
+              return String.fromCharCode(val);
+            });
+          })
+          .join("");
+      },
+      set(val) {
+        const elements = Array(20)
+          .fill(0x3f)
+          .map((v, i) => {
+            if (i < val.length) {
+              return val.charCodeAt(i);
+            }
+            return v;
+          })
+          .reduce((prev, curr, i) => {
+            const byte = Math.floor(i / 4);
+            const shift = [0, 8, 16, 24][i % 4];
+            prev[byte] = prev[byte] | ((curr & 0xff) << shift);
+            return prev;
+          }, []);
+
+        const copy = [...this.osd.elements];
+        for (let i = 0; i < elements.length; i++) {
+          copy[i + 1] = elements[i];
+        }
+        this.osd.elements = copy;
+      },
+    },
     element_options() {
       return [
-        { name: "CALLSIGN", enabled: true, text: this.osd.callsign },
+        { name: "CALLSIGN", enabled: true, text: this.callsign },
+        { name: "callsign2", enabled: false, text: "" },
+        { name: "callsign3", enabled: false, text: "" },
+        { name: "callsign4", enabled: false, text: "" },
+        { name: "callsign5", enabled: false, text: "" },
+        { name: "callsign6", enabled: false, text: "" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
         { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
         { name: "GYRO TEMP", enabled: true, text: "40C" },
@@ -135,7 +176,7 @@ export default {
       ];
     },
     elements() {
-      return this.currentElements
+      return this.osd.elements
         .filter((el, i) => {
           return this.element_options[i];
         })
@@ -153,13 +194,9 @@ export default {
   },
   methods: {
     osd_set(i, attr, val) {
-      const elements = this.is_hd ? this.osd.elements_hd : this.osd.elements;
-      const copy = [...elements];
-      copy[i] = this.osd_encode(elements[i], attr, val);
-      this.$store.commit(
-        this.is_hd ? "set_osd_elements_hd" : "set_osd_elements",
-        copy
-      );
+      const copy = [...this.osd.elements];
+      copy[i] = this.osd_encode(this.osd.elements[i], attr, val);
+      this.$store.commit("set_osd_elements", copy);
     },
     osd_decode(element, attr) {
       switch (attr) {
@@ -168,9 +205,9 @@ export default {
         case "invert":
           return (element >> 1) & 0x01;
         case "pos_x":
-          return (element >> 2) & 0xff;
+          return (element >> 2) & 0x1f;
         case "pos_y":
-          return (element >> 10) & 0xff;
+          return (element >> 7) & 0x0f;
       }
     },
     osd_encode(element, attr, val) {
@@ -188,9 +225,9 @@ export default {
             return element & ~(0x01 << 1);
           }
         case "pos_x":
-          return (element & ~(0xff << 2)) | ((val & 0xff) << 2);
+          return (element & ~(0x1f << 2)) | ((val & 0x1f) << 2);
         case "pos_y":
-          return (element & ~(0xff << 10)) | ((val & 0xff) << 10);
+          return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
       }
     },
   },

@@ -1,54 +1,31 @@
 <template>
   <b-container>
-    <OSDElements></OSDElements>
-    <OSDFont></OSDFont>
+    <OSDElementsLegacy v-if="has_legacy_osd"></OSDElementsLegacy>
+    <OSDElements v-else></OSDElements>
+    <OSDFont v-if="!is_hd"></OSDFont>
   </b-container>
 </template>
 
 <script>
-import { mapFields } from "@/store/helper.js";
-
+import { mapGetters, mapState } from "vuex";
+import OSDElementsLegacy from "@/components/OSDElementsLegacy";
 import OSDElements from "@/components/OSDElements";
 import OSDFont from "@/components/OSDFont";
 
 export default {
   name: "OSD",
   components: {
+    OSDElementsLegacy,
     OSDElements,
     OSDFont,
   },
   computed: {
-    ...mapFields("profile", ["osd"]),
+    ...mapGetters(["has_legacy_osd"]),
+    ...mapState({
+      is_hd: (state) => state.profile.serial.hdzero,
+    }),
   },
   methods: {},
   created() {},
 };
 </script>
-
-<style lang="scss" scoped>
-svg {
-  display: block;
-
-  background-image: url("~@/assets/osd_background.jpg");
-  background-attachment: local;
-  background-size: cover;
-
-  font-family: monospace;
-  font-size: 18px;
-  border: 1px solid #3333334d;
-  margin: auto;
-
-  text {
-    fill: #fff;
-  }
-
-  .text-invert {
-    paint-order: stroke;
-    fill: #000;
-    stroke: #fff;
-    stroke-width: 3px;
-    stroke-linecap: butt;
-    stroke-linejoin: miter;
-  }
-}
-</style>
