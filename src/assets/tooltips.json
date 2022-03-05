@@ -11,9 +11,6 @@
   "channel.aux_fpv_switch": {
     "text": "Vtx Pit mode on a switch"
   },
-  "channel.aux_rate_profile": {
-    "disabled": true
-  },
   "channel.aux_horizon": {
     "text": "Self levelling up to a specific angle then Acro on both Roll and Pitch, requires Level mode active"
   },
@@ -28,6 +25,9 @@
   },
   "channel.aux_racemode": {
     "text": "Uses self levelling only on the roll axis, acro on pitch, requires Level mode active"
+  },
+  "channel.aux_rate_profile": {
+    "disabled": true
   },
   "channel.aux_rssi": {
     "text": "For fcs that can send rssi on a channel"
@@ -144,6 +144,9 @@
   },
   "rate.mode": {
     "text": "Silverware or Betaflight rates option"
+  },
+  "rate.profile": {
+    "disabled": true
   },
   "rate.sticks_deadband": {
     "disabled": true
