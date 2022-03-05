@@ -12,6 +12,8 @@ function makeSemver(major, minor, patch) {
 function migrateProfile(profile, version) {
   switch (version) {
     case makeSemver(0, 1, 0):
+      profile.osd = {};
+
       profile.rate.profile = 0;
       profile.rate.rates = [
         {
