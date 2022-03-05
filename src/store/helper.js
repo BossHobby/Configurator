@@ -7,10 +7,11 @@ function mapFieldGetter({ module, getterType, mutationType }, store, path) {
         enumerable: true,
 
         get() {
-          return mapFieldGetter({ getterType, mutationType }, store, fieldPath)
+          return mapFieldGetter({ module, getterType, mutationType }, store, fieldPath)
         },
         set(value) {
           store.commit(mutationType, { path: fieldPath, value });
+          store.commit('track_key_change', module + '.' + fieldPath);
         }
       }, {
         enumerable: true
@@ -23,7 +24,7 @@ function mapFieldGetter({ module, getterType, mutationType }, store, path) {
         enumerable: true,
 
         get() {
-          return mapFieldGetter({ getterType, mutationType }, store, fieldPath)
+          return mapFieldGetter({ module, getterType, mutationType }, store, fieldPath)
         },
         set(value) {
           store.commit(mutationType, { path: fieldPath, value });
