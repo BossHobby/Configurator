@@ -185,6 +185,7 @@
     "disabled": true
   },
   "voltage.vbattlow": {
-    "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V"
+    "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V (uses Fuel gauge volts)",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#voltage"
   }
 }
