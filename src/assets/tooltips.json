@@ -89,7 +89,7 @@
     "text": "Default is props out"
   },
   "motor.test": {
-    "disabled": true
+    "text": "Connect a lipo, PROPS OFF, use sliders to confirm motor operation and direction"
   },
   "motor.throttle_boost": {
     "text": "Experimental, use with caution, can rob motors of power if set too high"
@@ -109,7 +109,8 @@
     "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
   },
   "osd.elements": {
-    "text": "Select and position OSD elements, callsign must use upper case"
+    "text": "Select and position OSD elements, callsign must use upper case",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#osd"
   },
   "osd.font": {
     "text": "A choice of fonts are available, select and upload. You can also upload your own custom boot logo as long as it a 288x72 Black/White/Transparent PNG"
@@ -128,7 +129,8 @@
     "disabled": true
   },
   "pid.tda_active": {
-    "disabled": true
+    "text": "As higher throttle levels are reached D-term gain is reduced allowing the D-term notch filter to work safely",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#throttle-d-term-attenuation-tda"
   },
   "pid.tda_breakpoint": {
     "disabled": true
@@ -179,7 +181,7 @@
     "text": "Enter the number of cells, leave at 0 to use autodetect"
   },
   "voltage.pid_voltage_compensation": {
-    "text": "Adsjusts the pids to compensate for lipo voltage drop, default ON"
+    "text": "Adjusts the pids to compensate for lipo voltage drop, default ON"
   },
   "voltage.reported_telemetry_voltage": {
     "disabled": true
