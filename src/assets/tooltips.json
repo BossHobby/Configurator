@@ -52,7 +52,7 @@
     "disabled": true
   },
   "filter.dterm_dynamic_enable": {
-    "text": "Enable a dynamic dterm filtercut, you almost always want to leave this ON",
+    "text": "Enable a dynamic D-term filtercut, you almost always want to leave this ON",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES"
   },
   "filter.dterm_dynamic_max": {
@@ -133,10 +133,10 @@
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#throttle-d-term-attenuation-tda"
   },
   "pid.tda_breakpoint": {
-    "disabled": true
+    "text": "Throttle percentage before TDA starts to act"
   },
   "pid.tda_percent": {
-    "disabled": true
+    "text": "Percentage reduction of D-term at max throttle"
   },
   "rate.level_max_angle": {
     "disabled": true
@@ -145,10 +145,10 @@
     "disabled": true
   },
   "rate.mode": {
-    "text": "Silverware or Betaflight rates option"
+    "text": "Silverware, Betaflight and Actual rates option"
   },
   "rate.profile": {
-    "disabled": true
+    "text": "2 slots available for different profiles"
   },
   "rate.sticks_deadband": {
     "disabled": true
