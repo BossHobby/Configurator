@@ -14,7 +14,7 @@
             <b-form-input
               size="sm"
               type="text"
-              v-model="osd.callsign"
+              v-model="callsign"
             ></b-form-input>
           </b-col>
         </b-row>
@@ -149,6 +149,18 @@ export default {
             value: el,
           };
         });
+    },
+    callsign: {
+      set(val) {
+        let str = val.toUpperCase();
+        for (let i = val.length; i < 36; i++) {
+          str += "\0";
+        }
+        this.osd.callsign = str;
+      },
+      get() {
+        return this.osd.callsign.replace(/\0/g, "");
+      },
     },
   },
   methods: {

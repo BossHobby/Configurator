@@ -133,11 +133,12 @@ export default {
           .join("");
       },
       set(val) {
+        const str = val.toUpperCase();
         const elements = Array(20)
           .fill(0x3f)
           .map((v, i) => {
-            if (i < val.length) {
-              return val.charCodeAt(i);
+            if (i < str.length) {
+              return str.charCodeAt(i);
             }
             return v;
           })
