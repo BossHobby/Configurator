@@ -9,6 +9,14 @@ function makeSemver(major, minor, patch) {
   return ((major << 16) | (minor << 8) | patch)
 }
 
+function ensureMinVersion(version) {
+  version = version || makeSemver(0, 1, 0);
+  if (version < makeSemver(0, 1, 0)) {
+    version = makeSemver(0, 1, 0);
+  }
+  return version;
+}
+
 function migrateProfile(profile, version) {
   switch (version) {
     case makeSemver(0, 1, 0):
@@ -134,8 +142,8 @@ const store = {
         .then(p => commit('set_profile', p));
     },
     apply_profile({ commit, rootState }, profile) {
-      const firmwareVersion = rootState.default_profile.meta.version;
-      const profileVersion = profile.meta.version;
+      const firmwareVersion = ensureMinVersion(rootState.default_profile.meta.version);
+      const profileVersion = ensureMinVersion(profile.meta.version);
 
       let p = profile
       if (firmwareVersion != profileVersion) {
