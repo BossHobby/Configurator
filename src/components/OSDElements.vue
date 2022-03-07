@@ -14,7 +14,7 @@
             <b-form-input
               size="sm"
               type="text"
-              v-model="this.osd.callsign"
+              v-model="osd.callsign"
             ></b-form-input>
           </b-col>
         </b-row>
