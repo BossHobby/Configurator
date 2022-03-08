@@ -43,17 +43,12 @@
     </b-row>
     <b-row>
       <b-col sm="6">
-        <b-button
-          class="my-2"
-          @click="downloadProfile"
-          :hidden="!serial.is_connected"
-          >Save Profile</b-button
-        >
+        <b-button class="my-2" @click="downloadProfile">Save Profile</b-button>
       </b-col>
     </b-row>
     <b-row>
       <b-col sm="6">
-        <form :hidden="!serial.is_connected" ref="form">
+        <form ref="form">
           <input
             accept=".json, .cbor"
             type="file"
@@ -68,6 +63,13 @@
             Load Profile
           </b-button>
         </form>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="6">
+        <b-button class="my-2" @click="reset_profile" variant="warning">
+          Reset Profile
+        </b-button>
       </b-col>
     </b-row>
     <a ref="downloadAnchor" target="_blank"></a>
@@ -104,7 +106,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["apply_profile"]),
+    ...mapActions(["apply_profile", "reset_profile"]),
     uploadProfile() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {

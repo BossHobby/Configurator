@@ -104,6 +104,9 @@ const store = new Vuex.Store({
     },
     cal_imu() {
       return serial.command(QuicCmd.CalImu);
+    },
+    reset_profile({ state, dispatch }) {
+      return dispatch('apply_profile', state.default_profile);
     }
   }
 });
