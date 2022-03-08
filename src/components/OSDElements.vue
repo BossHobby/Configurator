@@ -70,14 +70,17 @@
         <h5 slot="header" class="mb-0">Preview</h5>
         <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
           <g v-for="(el, i) of elements" :key="i">
-            <text
-              v-if="el.enabled && el.active"
-              :x="el.pos_x * screen.char_width"
-              :y="el.pos_y * (screen.char_height - 1)"
-              :class="{ 'text-invert': el.invert }"
-            >
-              {{ el.text }}
-            </text>
+            <g v-if="el.enabled && el.active">
+              <text
+                v-for="(c, ci) of el.text"
+                :class="{ 'text-invert': el.invert }"
+                :key="'el-' + i + '-' + ci"
+                :x="(el.pos_x + ci) * screen.char_width"
+                :y="el.pos_y * (screen.char_height - 1)"
+              >
+                {{ c }}
+              </text>
+            </g>
           </g>
         </svg>
       </b-card>
@@ -104,7 +107,7 @@ export default {
     },
     screen() {
       return {
-        width: this.is_hd ? 50 : 30 - 2,
+        width: this.is_hd ? 50 : 30,
         height: this.is_hd ? 18 : 16 - 2,
         char_width: 12,
         char_height: 18,
@@ -122,16 +125,17 @@ export default {
     element_options() {
       return [
         { name: "CALLSIGN", enabled: true, text: this.osd.callsign },
-        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "GYRO TEMP", enabled: true, text: "40C" },
+        { name: "CELL COUNT", enabled: true, text: "1S" },
+        { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3V" },
+        { name: "FILTERED VOLTS", enabled: true, text: " 4.3V" },
+        { name: "GYRO TEMP", enabled: true, text: "  40C" },
         { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
-        { name: "RSSI", enabled: true, text: "90" },
-        { name: "STOPWATCH", enabled: true, text: "120" },
+        { name: "RSSI", enabled: true, text: "   90" },
+        { name: "STOPWATCH", enabled: true, text: "01:20" },
         { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
-        { name: "THROTTLE", enabled: true, text: "50" },
+        { name: "THROTTLE", enabled: true, text: "  50%" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
-        { name: "CURRENT", enabled: true, text: "2000A" },
+        { name: "CURRENT", enabled: true, text: "0.00A" },
       ];
     },
     elements() {
