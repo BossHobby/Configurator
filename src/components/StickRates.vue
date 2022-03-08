@@ -67,7 +67,7 @@
                       <b-form-input
                         :id="`${currentModeText}-${rateLabel[index]}-roll`"
                         type="number"
-                        step="0.05"
+                        :step="rateStep[currentMode][index]"
                         v-model.number="currentProfile.rate[index][0]"
                         @update="update()"
                       ></b-form-input>
@@ -76,7 +76,7 @@
                       <b-form-input
                         :id="`${currentModeText}-${rateLabel[index]}-pitch`"
                         type="number"
-                        step="0.05"
+                        :step="rateStep[currentMode][index]"
                         v-model.number="currentProfile.rate[index][1]"
                         @update="update()"
                       ></b-form-input>
@@ -85,7 +85,7 @@
                       <b-form-input
                         :id="`${currentModeText}-${rateLabel[index]}-yaw`"
                         type="number"
-                        step="0.05"
+                        :step="rateStep[currentMode][index]"
                         v-model.number="currentProfile.rate[index][2]"
                         @update="update()"
                       ></b-form-input>
@@ -198,10 +198,15 @@ export default {
           [0.4, 0.4, 0.4],
         ],
         [
-          [250, 250, 250],
-          [860, 860, 860],
-          [0.5, 0.5, 0.5],
+          [70, 70, 70],
+          [670, 670, 670],
+          [0.0, 0.0, 0.0],
         ],
+      ],
+      rateStep: [
+        [5, 0.05, 0.05],
+        [0.05, 0.05, 0.05],
+        [5, 5, 0.05],
       ],
 
       rateModes: [
