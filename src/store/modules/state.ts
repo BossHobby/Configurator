@@ -6,7 +6,8 @@ const store = {
   state: {
     looptime_autodetect: 0,
     cpu_load: 0.0,
-    vbattfilt: 0.0,
+    vbat_filtered: 0.0,
+    vbattfilt: null,
     ibat_filtered: 0.0,
     rx_filtered: [],
     rx_status: 0,
@@ -15,7 +16,11 @@ const store = {
     accel: null,
     aux: [],
   },
-  getters: {},
+  getters: {
+    vbat(state) {
+      return state.vbattfilt || state.vbat_filtered;
+    }
+  },
   mutations: {
     set_state(state, update) {
       for (const key in update) {

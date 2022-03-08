@@ -8,7 +8,7 @@
             <tooltip entry="motor.test" />
 
             <small class="float-right my-3">
-              {{ state.vbattfilt.toPrecision(3) }}V <br />
+              {{ vbat.toPrecision(3) }}V <br />
               {{ state.ibat_filtered }}mAh
             </small>
           </h5>
@@ -216,7 +216,7 @@ export default {
     ...mapState({
       motor_pins: (state) => state.info.motor_pins,
     }),
-    ...mapGetters(["has_feature"]),
+    ...mapGetters(["has_feature", "vbat"]),
     ...mapState("constants", ["Features"]),
     value() {
       return this.motor.test.value.map((v) => v * 100);

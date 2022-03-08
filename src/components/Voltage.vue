@@ -3,7 +3,7 @@
     <h5 slot="header" class="mb-0">
       Voltage
       <small class="float-right">
-        {{ state.vbattfilt.toPrecision(3) }}V <br />
+        {{ vbat.toPrecision(3) }}V <br />
         {{ state.ibat_filtered }}mAh
       </small>
     </h5>
@@ -100,7 +100,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import { mapFields } from "@/store/helper.js";
 
 export default {
@@ -116,6 +116,7 @@ export default {
   computed: {
     ...mapFields("profile", ["voltage"]),
     ...mapState(["state"]),
+    ...mapGetters(["vbat"]),
     pid_voltage_compensation: {
       get() {
         return this.voltage.pid_voltage_compensation;
