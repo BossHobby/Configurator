@@ -242,21 +242,19 @@ export default {
     limitf(val, limit) {
       return this.constrainf(val, -limit, limit);
     },
-    rcexpo(val, expo) {
+    rcexpo(rc, expo) {
       expo = this.limitf(expo, 1.0);
       var result = 0;
 
       switch (this.currentProfile.mode) {
         case this.MODE_SILVERWARE:
-          result = val * val * val * expo + val * (1 - expo);
+          result = rc * rc * rc * expo + rc * (1 - expo);
           break;
         case this.MODE_BETAFLIGHT:
-          result = Math.abs(val) * val * val * val * expo + val * (1 - expo);
+          result = Math.abs(rc) * rc * rc * rc * expo + rc * (1 - expo);
           break;
         case this.MODE_ACTUAL:
-          result =
-            Math.abs(val) * val * val * val * val * val * expo +
-            val * (1 - expo);
+          result = Math.abs(rc) * (Math.pow(rc, 5) * expo + rc * (1 - expo));
           break;
       }
 
