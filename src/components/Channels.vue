@@ -3,17 +3,17 @@
     <h5 slot="header" class="mb-0">Channels</h5>
     <b-row>
       <b-col sm="8">
-        <b-row v-for="(func, index) in auxFunctions" :key="func">
+        <b-row v-for="f in auxFunctions" :key="f.key">
           <b-col sm="6" class="my-1">
-            <label :for="func" :class="classForIndex(index)">
-              {{ func }}
-              <tooltip :entry="'channel.' + func.toLowerCase()" />
+            <label :for="func" :class="classForIndex(f.index)">
+              {{ f.key }}
+              <tooltip :entry="'channel.' + f.key.toLowerCase()" />
             </label>
           </b-col>
           <b-col sm="3" class="my-1">
             <b-form-select
-              :id="func"
-              v-model.number="receiver_aux[index]"
+              :id="f.key"
+              v-model.number="receiver_aux[f.index]"
               :options="auxChannels"
             ></b-form-select>
           </b-col>
@@ -58,7 +58,16 @@ export default {
             value,
           };
         }),
-      auxFunctions: (state) => $enum(state.AuxFunctions).getKeys(),
+      auxFunctions: (state) =>
+        $enum(state.AuxFunctions)
+          .getKeys()
+          .map((f, index) => {
+            return {
+              index,
+              key: f,
+            };
+          })
+          .filter((f) => !f.key.startsWith("_")),
     }),
   },
   data() {
