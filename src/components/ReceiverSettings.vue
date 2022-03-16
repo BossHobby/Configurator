@@ -74,7 +74,7 @@
       class="mt-4"
       v-if="bind.info.raw && info.rx_protocol == proto.EXPRESS_LRS"
     >
-      <h5 slot="header" class="mb-0">EXPRESS_LRS</h5>
+      <h5 slot="header" class="mb-0">ExpressLRS</h5>
       <b-row>
         <b-col sm="4" class="my-2">
           <label>Switch Mode</label>
@@ -111,6 +111,33 @@
         </b-col>
       </b-row>
     </b-card>
+
+    <b-card class="mt-4" v-if="bind.info.raw && isSpiProtocol">
+      <h5 slot="header" class="mb-0">Bind Data</h5>
+      <b-row>
+        <b-col sm="10">
+          Save and load bind information for spi protocols.<br />
+          Requires reboot after load.
+        </b-col>
+        <b-col sm="2">
+          <b-button class="my-2" @click="downloadBindData">
+            Save Bind Data
+          </b-button>
+          <form ref="form">
+            <input
+              accept=".base64"
+              type="file"
+              ref="file"
+              style="display: none"
+            />
+            <b-button class="my-2" @click="uploadBindData">
+              Load Bind Data
+            </b-button>
+          </form>
+        </b-col>
+        <a ref="downloadAnchor" target="_blank"></a>
+      </b-row>
+    </b-card>
   </b-card>
 </template>
 
@@ -133,12 +160,15 @@ export default {
     };
   },
   computed: {
-    ...mapFields("profile", ["receiver.lqi_source"]),
+    ...mapFields("profile", ["receiver.lqi_source", "meta"]),
     ...mapState(["info", "state", "bind"]),
     ...mapState("constants", {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
     }),
     ...mapGetters("constants", ["RXProtocol"]),
+    date() {
+      return new Date(this.meta.datetime * 1000);
+    },
     protoNames() {
       return $enum(this.RXProtocol).getKeys();
     },
@@ -153,6 +183,14 @@ export default {
         m[v] = i;
         return m;
       }, {});
+    },
+    isSpiProtocol() {
+      const spi = [
+        this.proto.FRSKY_D8,
+        this.proto.FRSKY_D16,
+        this.proto.REDPINE,
+      ];
+      return spi.includes(this.info.rx_protocol);
     },
     protoStatus() {
       const spi = [
@@ -224,6 +262,42 @@ export default {
       info.raw[7] = 0x37;
 
       return this.apply_bind_info(info);
+    },
+    downloadBindData() {
+      const base64 = window.btoa(
+        String.fromCharCode(...new Uint8Array(this.bind.info.raw))
+      );
+      const encoded = encodeURIComponent(base64);
+      const json = "data:application/octet-stream;charset=utf-8," + encoded;
+
+      const date = this.date.toISOString().substring(0, 10);
+      const name = this.meta.name.replace(/\0/g, "");
+      const filename = `BindData_${name}_${date}.base64`;
+
+      this.$refs.downloadAnchor.setAttribute("href", json);
+      this.$refs.downloadAnchor.setAttribute("download", filename);
+      this.$refs.downloadAnchor.click();
+    },
+    uploadBindData() {
+      const reader = new FileReader();
+      reader.addEventListener("load", (event) => {
+        const info = { ...this.bind?.info };
+        info.bind_saved = 1;
+        info.raw = Uint8Array.from(window.atob(event.target.result), (c) =>
+          c.charCodeAt(0)
+        );
+
+        this.apply_bind_info(info);
+      });
+
+      this.$refs.file.oninput = () => {
+        if (!this.$refs.file.files.length) {
+          return;
+        }
+        reader.readAsText(this.$refs.file.files[0]);
+      };
+
+      this.$refs.file.click();
     },
     reset() {
       const info = { ...this.bind?.info };
