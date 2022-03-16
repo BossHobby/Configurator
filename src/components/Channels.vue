@@ -5,7 +5,7 @@
       <b-col sm="8">
         <b-row v-for="f in auxFunctions" :key="f.key">
           <b-col sm="6" class="my-1">
-            <label :for="func" :class="classForIndex(f.index)">
+            <label :for="f.key" :class="classForIndex(f.index)">
               {{ f.key }}
               <tooltip :entry="'channel.' + f.key.toLowerCase()" />
             </label>
