@@ -192,8 +192,9 @@ export default {
     return {
       filterTypeOptions: [
         { value: 0, text: "None" },
-        { value: 1, text: "PT1 1st Order" },
-        { value: 2, text: "PT1 2nd Order" },
+        { value: 1, text: "PT1" },
+        { value: 2, text: "PT2" },
+        { value: 3, text: "PT3" },
       ],
       toggleOptions: [
         { value: 0, text: "Off" },
