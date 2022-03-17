@@ -98,17 +98,17 @@ export const DefaultFields: FieldDefinition[] = [
   { name: "gyroADC", array_index: 1, index: 10, signed: true },
   { name: "gyroADC", array_index: 2, index: 10, signed: true, convert: convertFlip },
 
-  //"debug[0]"
-  //"debug[1]"
-  //"debug[2]"
-  //"debug[3]"
-
   { name: "motor", array_index: 0, index: 11, signed: true },
   { name: "motor", array_index: 1, index: 11, signed: true },
   { name: "motor", array_index: 2, index: 11, signed: true },
   { name: "motor", array_index: 3, index: 11, signed: true },
 
-  { name: "debug[0]", index: 12, signed: false },
+  { name: "cpuload", index: 12, signed: false },
+
+  { name: "debug[0]", index: 13, signed: true },
+  { name: "debug[1]", index: 14, signed: true },
+  { name: "debug[2]", index: 15, signed: true },
+  { name: "debug[3]", index: 16, signed: true },
 ];
 
 export class Blackbox {
@@ -164,6 +164,8 @@ export class Blackbox {
     // todo: fetch real value
     this.writeHeaderRaw("looptime", "250")        // for FFT Hz scaling
     this.writeHeaderRaw("pid_process_denom", "2") // for FFT Hz scaling
+
+    this.writeHeaderRaw("debug_mode", "3")
   }
 
   public writeValue(val: any[]) {
