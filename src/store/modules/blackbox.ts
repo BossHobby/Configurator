@@ -29,6 +29,14 @@ const store = {
         .command(QuicCmd.Blackbox, QuicBlackbox.List)
         .then(p => commit('set_blackbox_list', p.payload[0]));
     },
+    download_blackbox_raw(_, index) {
+      return serial
+        .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
+        .then(p => {
+          const encoded = encodeURIComponent(JSON.stringify(p.payload));
+          return "data:text/json;charset=utf-8," + encoded;
+        })
+    },
     download_blackbox(_, index) {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
