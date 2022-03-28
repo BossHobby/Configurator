@@ -163,9 +163,9 @@ export class Blackbox {
 
     // todo: fetch real value
     this.writeHeaderRaw("looptime", "250")        // for FFT Hz scaling
-    this.writeHeaderRaw("pid_process_denom", "2") // for FFT Hz scaling
+    this.writeHeaderRaw("pid_process_denom", "1") // for FFT Hz scaling
 
-    this.writeHeaderRaw("debug_mode", "3")
+    // this.writeHeaderRaw("debug_mode", "3")
   }
 
   public writeValue(val: any[]) {
