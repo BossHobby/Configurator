@@ -73,11 +73,22 @@
   "filter.gyro_2_type": {
     "disabled": true
   },
-  "flash.file-local": {},
-  "flash.file-release": {},
-  "flash.file-remote": {},
-  "flash.reset": {},
-  "flash.source": {},
+  "flash.file-local": {
+    "text": "Choose either a self built hex or a downloaded nightly hex"
+  },
+  "flash.file-release": {
+    "text": "The default selection is the latest `stable` release, dev versions are available as testers"
+  },
+  "flash.file-remote": {
+    "text": "Targets are named `board_name.motor_type.rx_type` choose serial if your rx is separate and attatched to a uart. If you don't see your fc listed exactly then don't flash, please ask for a target in our Discord server",
+    "link": "https://discord.gg/qzyvewaCnP"
+  },
+  "flash.reset": {
+    "text": "Should force the fc into DFU mode for flashing, if it doesn't work use the button on the fc while connecting USB"
+  },
+  "flash.source": {
+    "text": "If you compile your own hex select `local` and choose it in the next box"
+  },
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
   },
