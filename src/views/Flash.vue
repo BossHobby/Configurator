@@ -5,18 +5,19 @@
         <b-card>
           <h5 slot="header" class="mb-0">
             Flash
-            <b-button size="sm" class="my-2 mx-2" @click="hard_reboot()"
-              >Reset to Bootloader</b-button
-            >
+            <b-button size="sm" class="my-2 mx-2" @click="hard_reboot()">
+              Reset to Bootloader
+            </b-button>
+            <tooltip entry="flash.reset" />
           </h5>
           <b-row>
             <b-col sm="8">
               <b-form @submit="onSubmit">
-                <b-form-group
-                  label="Source"
-                  label-for="source"
-                  label-cols-sm="2"
-                >
+                <b-form-group label-for="source" label-cols-sm="2">
+                  <span slot="label">
+                    Source
+                    <tooltip entry="flash.source" />
+                  </span>
                   <b-form-select
                     id="source"
                     v-model="source"
@@ -26,10 +27,13 @@
 
                 <b-form-group
                   v-if="source == 'local'"
-                  label="File"
                   label-for="file-local"
                   label-cols-sm="2"
                 >
+                  <span slot="label">
+                    File
+                    <tooltip entry="flash.file-local" />
+                  </span>
                   <b-form-file
                     id="file-local"
                     v-model="file"
@@ -39,10 +43,13 @@
 
                 <b-form-group
                   v-if="source != 'local'"
-                  label="Release"
                   label-for="file-release"
                   label-cols-sm="2"
                 >
+                  <span slot="label">
+                    Release
+                    <tooltip entry="flash.file-release" />
+                  </span>
                   <b-form-select
                     id="file-release"
                     v-model="release"
@@ -52,10 +59,13 @@
 
                 <b-form-group
                   v-if="source != 'local'"
-                  label="Target"
                   label-for="file-remote"
                   label-cols-sm="2"
                 >
+                  <span slot="label">
+                    Target
+                    <tooltip entry="flash.file-remote" />
+                  </span>
                   <b-form-select
                     id="file-remote"
                     v-model="target"

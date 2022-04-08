@@ -1,7 +1,7 @@
 const glob = require("glob");
 const fs = require('fs');
 
-const regex = /<tooltip\sentry="([\w_.]+)".*>/gm;
+const regex = /<tooltip\sentry="([\w_\-.]+)".*>/gm;
 const whitelist = ['channel.'];
 const tooltips = {};
 

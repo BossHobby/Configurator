@@ -73,6 +73,11 @@
   "filter.gyro_2_type": {
     "disabled": true
   },
+  "flash.file-local": {},
+  "flash.file-release": {},
+  "flash.file-remote": {},
+  "flash.reset": {},
+  "flash.source": {},
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
   },
@@ -162,6 +167,7 @@
   "receiver.protocol": {
     "text": "Serial or spi connected rx will be detected automatically here"
   },
+  "serial.hdzero": {},
   "serial.rx": {
     "text": "Enter the UART number the serial RX is connected to (for spi RX leave as NONE)"
   },
