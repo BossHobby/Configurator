@@ -1,4 +1,4 @@
-import { concatUint8Array, ArrayWriter } from '.';
+import { ArrayWriter } from '.';
 
 export interface FieldDefinition {
   name: string
@@ -10,6 +10,12 @@ export interface FieldDefinition {
 
 function convertFlip(val: number): number {
   return -val
+}
+
+function convertGyro(flip: number): (v: number) => number {
+  return (val) => {
+    return flip * val * 1 / 1000 * 180 / Math.PI;
+  }
 }
 
 function convertOffset(offset: number): (v: number) => number {
@@ -90,13 +96,13 @@ export const DefaultFields: FieldDefinition[] = [
   { name: "accSmooth", array_index: 1, index: 8, signed: true },
   { name: "accSmooth", array_index: 2, index: 8, signed: true, convert: convertOffset(1000) },
 
-  { name: "gyroRaw", array_index: 0, index: 9, signed: true },
-  { name: "gyroRaw", array_index: 1, index: 9, signed: true },
-  { name: "gyroRaw", array_index: 2, index: 9, signed: true, convert: convertFlip },
+  { name: "gyroRaw", array_index: 0, index: 9, signed: true, convert: convertGyro(1) },
+  { name: "gyroRaw", array_index: 1, index: 9, signed: true, convert: convertGyro(1) },
+  { name: "gyroRaw", array_index: 2, index: 9, signed: true, convert: convertGyro(-1) },
 
-  { name: "gyroADC", array_index: 0, index: 10, signed: true },
-  { name: "gyroADC", array_index: 1, index: 10, signed: true },
-  { name: "gyroADC", array_index: 2, index: 10, signed: true, convert: convertFlip },
+  { name: "gyroADC", array_index: 0, index: 10, signed: true, convert: convertGyro(1) },
+  { name: "gyroADC", array_index: 1, index: 10, signed: true, convert: convertGyro(1) },
+  { name: "gyroADC", array_index: 2, index: 10, signed: true, convert: convertGyro(-1) },
 
   { name: "motor", array_index: 0, index: 11, signed: true },
   { name: "motor", array_index: 1, index: 11, signed: true },
@@ -157,7 +163,10 @@ export class Blackbox {
       return "1"
     })
 
-    this.writeHeaderRaw("gyro_scale", "0x3089705f")
+    this.writeHeaderRaw("Firmware type", "Cleanflight");
+    this.writeHeaderRaw("Firmware revision", "Betaflight 4.3.0");
+
+    this.writeHeaderRaw("gyro_scale", "0x3f800000")
     this.writeHeaderRaw("acc_1G", "1000")
     this.writeHeaderRaw("motorOutput", "0,1000")
 
@@ -166,6 +175,9 @@ export class Blackbox {
     this.writeHeaderRaw("pid_process_denom", "1") // for FFT Hz scaling
 
     // this.writeHeaderRaw("debug_mode", "3")
+
+    this.writeHeaderRaw("rates", "78,78,78");
+    this.writeHeaderRaw("rates_type", "3");
   }
 
   public writeValue(val: any[]) {
