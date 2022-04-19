@@ -136,7 +136,7 @@ function newPWAUpdater() {
         }
       }, { once: true });
 
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
+      navigator.serviceWorker?.addEventListener('controllerchange', () => {
         if (this.refreshing) {
           return;
         }
