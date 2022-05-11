@@ -19,13 +19,26 @@ export class ArrayWriter {
   private buf = new ArrayBuffer(4);
   private view = new DataView(this.buf);
 
-  constructor(public chunkSize: number = 1024) { }
+  public get length() {
+    return this.offset;
+  }
+
+  constructor() { }
 
   public writeUint8(v: number) {
     this.grow();
 
     this.view.setUint8(this.offset, v);
     this.offset++;
+  }
+
+  public writeUint8s(values: number[]) {
+    this.grow(values.length);
+
+    for (const v of values) {
+      this.view.setUint8(this.offset, v);
+      this.offset++;
+    }
   }
 
   public writeFloat32(v: number) {
@@ -41,7 +54,12 @@ export class ArrayWriter {
 
   private grow(num: number = 1) {
     if (this.offset + num >= this.buf.byteLength) {
-      const newBuf = new ArrayBuffer(this.buf.byteLength + this.chunkSize);
+      let newSize = this.buf.byteLength;
+      while (newSize < this.offset + num) {
+        newSize *= 2;
+      }
+
+      const newBuf = new ArrayBuffer(newSize);
       new Uint8Array(newBuf).set(new Uint8Array(this.buf));
       this.buf = newBuf;
       this.view = new DataView(this.buf);

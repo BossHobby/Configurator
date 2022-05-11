@@ -1,5 +1,5 @@
 import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QUIC_MAGIC } from './quic';
-import { concatUint8Array } from '../util';
+import { ArrayWriter, concatUint8Array } from '../util';
 import { AsyncQueue, AsyncSemaphore } from './async';
 import { Log } from '@/log';
 import { CBOR } from './cbor';
@@ -239,8 +239,11 @@ export class Serial {
       }
     }
 
-    let buffer = Uint8Array.from(await this.queue.read(hdr.len));
-    while (buffer) {
+    const writer = new ArrayWriter();
+    writer.writeUint8s(await this.queue.read(hdr.len));
+    Log.trace("serial", "[quic] recv stream chunk", writer.length);
+
+    while (writer) {
       const nexthdr = await this.readHeader();
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
@@ -249,11 +252,12 @@ export class Serial {
         break;
       }
 
-      const nextbuffer = Uint8Array.from(await this.queue.read(nexthdr.len));
-      buffer = concatUint8Array(buffer, nextbuffer);
+      const buf = await this.queue.read(nexthdr.len);
+      writer.writeUint8s(buf);
+      Log.trace("serial", "[quic] recv stream chunk", writer.length, buf);
     }
 
-    const payload: any[] = this.cbor.decodeMultiple(buffer)!;
+    const payload: any[] = this.cbor.decodeMultiple(writer.array())!;
     return {
       ...hdr,
       payload,
