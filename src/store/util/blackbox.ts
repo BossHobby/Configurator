@@ -122,12 +122,14 @@ export class Blackbox {
 
   private defs = DefaultFields;
 
+  constructor(private file) { }
+
   public writeHeaders() {
     this.writeHeaderRaw("Product", "Blackbox flight data recorder by Nicholas Sherlock")
     this.writeHeaderRaw("Data version", "2")
 
-    this.writeHeaderRaw("I interval", "4")
-    this.writeHeaderRaw("P interval", "1/4")
+    this.writeHeaderRaw("I interval", "" + this.file.blackbox_rate)
+    this.writeHeaderRaw("P interval", "1/" + this.file.blackbox_rate)
 
     this.writeHeaderJoin("Field I name", (d: FieldDefinition) => {
       let name = d.name;
@@ -171,7 +173,7 @@ export class Blackbox {
     this.writeHeaderRaw("motorOutput", "0,1000")
 
     // todo: fetch real value
-    this.writeHeaderRaw("looptime", "250")        // for FFT Hz scaling
+    this.writeHeaderRaw("looptime", "" + this.file.looptime)        // for FFT Hz scaling
     this.writeHeaderRaw("pid_process_denom", "1") // for FFT Hz scaling
 
     // this.writeHeaderRaw("debug_mode", "3")

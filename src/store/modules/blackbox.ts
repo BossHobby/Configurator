@@ -37,11 +37,11 @@ const store = {
           return "data:text/json;charset=utf-8," + encoded;
         })
     },
-    download_blackbox(_, index) {
+    download_blackbox({ state }, index) {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
         .then(p => {
-          const writer = new Blackbox();
+          const writer = new Blackbox(state.list.files[index]);
           writer.writeHeaders();
           for (const v of p.payload) {
             writer.writeValue(v);

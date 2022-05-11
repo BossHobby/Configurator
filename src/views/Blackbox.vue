@@ -8,20 +8,20 @@
 
             <b-progress
               class="w-25 mt-2"
-              :value="usedSize * 128"
+              :value="usedSize"
               :max="blackbox.list.flash_size * 1024"
               show-progress
             >
             </b-progress>
             <h6>
               Used:
-              {{ humanFileSize(usedSize * 128) }} /
+              {{ humanFileSize(usedSize) }} /
               {{ humanFileSize(blackbox.list.flash_size * 1024) }}
             </h6>
           </h5>
           <div>
-            <div v-for="(size, index) in blackbox.list.files" :key="index">
-              File {{ index + 1 }}: {{ humanFileSize(size * 128) }}
+            <div v-for="(file, index) in blackbox.list.files" :key="index">
+              File {{ index + 1 }}: {{ humanFileSize(file.size) }}
               <spinner-btn size="sm" class="my-2 mx-2" @click="download(index)">
                 Download
               </spinner-btn>
@@ -56,7 +56,7 @@ export default {
   computed: {
     ...mapState(["blackbox", "profile"]),
     usedSize() {
-      return (this.blackbox?.list?.files || []).reduce((p, c) => p + c, 0);
+      return (this.blackbox?.list?.files || []).reduce((p, c) => p + c.size, 0);
     },
   },
   methods: {
