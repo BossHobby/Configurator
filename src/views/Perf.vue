@@ -36,6 +36,7 @@ export default {
         "PERF_COUNTER_OSD",
         "PERF_COUNTER_MISC",
         "PERF_COUNTER_BLACKBOX",
+        "PERF_COUNTER_DEBUG",
       ],
     };
   },
