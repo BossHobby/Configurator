@@ -254,7 +254,7 @@ export class Serial {
 
       const buf = await this.queue.read(nexthdr.len);
       writer.writeUint8s(buf);
-      Log.trace("serial", "[quic] recv stream chunk", writer.length, buf);
+      Log.trace("serial", "[quic] recv stream chunk", writer.length);
     }
 
     const payload: any[] = this.cbor.decodeMultiple(writer.array())!;
