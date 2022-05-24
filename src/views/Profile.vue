@@ -28,15 +28,15 @@
             </b-col>
             <b-col sm="4" class="my-2">
               <b-form-select
-                id="baudrate"
-                v-model.number="baudrate"
-                :options="baudrateOptions"
+                id="preset"
+                v-model="preset"
+                :options="presetOptions"
               ></b-form-select>
             </b-col>
-            <b-col sm="4" class="my-2">
+            <b-col sm="2" class="my-2">
               <b-button
                 class="my-2 float-right"
-                :disabled="serial_port == 0"
+                :disabled="serial_port == 0 || preset == null"
                 @click="start_passthrough"
               >
                 Start
@@ -59,8 +59,26 @@ export default {
   data() {
     return {
       serial_port: 0,
-      baudrate: 420000,
-      baudrateOptions: [420000],
+      preset: null,
+      presetOptions: [
+        { value: null, text: "Please select an option" },
+        {
+          text: "ExpressLRS",
+          value: {
+            baudrate: 420000,
+            half_duplex: false,
+            stop_bits: 1,
+          },
+        },
+        {
+          text: "OpenVTX",
+          value: {
+            baudrate: 4800,
+            half_duplex: true,
+            stop_bits: 2,
+          },
+        },
+      ],
     };
   },
   components: {
@@ -82,7 +100,7 @@ export default {
     start_passthrough() {
       return this.serial_passthrough({
         port: this.serial_port,
-        baudrate: this.baudrate,
+        ...this.preset,
       });
     },
   },
