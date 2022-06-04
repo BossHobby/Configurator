@@ -18,6 +18,7 @@ import bindModule from "./modules/bind";
 import serialModule from "./modules/serial";
 import flashModule from "./modules/flash";
 import constantsModule from "./modules/constants";
+import templatesModule from "./modules/templates";
 
 const rebootNeededKeys = [
   'profile.serial.',
@@ -42,6 +43,7 @@ const store = new Vuex.Store({
     serial: serialModule,
     flash: flashModule,
     constants: constantsModule,
+    templates: templatesModule,
   },
   state: {
     needs_apply: false,

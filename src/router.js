@@ -15,6 +15,7 @@ import Profile from './views/Profile.vue'
 import Flash from './views/Flash.vue'
 import Home from './views/Home.vue'
 import Log from './views/Log.vue'
+import Templates from './views/Templates.vue'
 
 Vue.use(Router)
 
@@ -35,6 +36,11 @@ const router = new Router({
       path: '/home',
       name: 'home',
       component: Home
+    },
+    {
+      path: '/templates',
+      name: 'templates',
+      component: Templates
     },
     {
       path: '/flash',

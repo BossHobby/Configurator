@@ -20,6 +20,7 @@
         QUICKSILVER
       </b-navbar-brand>
       <b-navbar-nav v-if="serial.is_connected">
+        <b-nav-item to="/templates">Templates</b-nav-item>
         <b-nav-item to="/profile">Profile</b-nav-item>
         <b-nav-item to="/setup">Setup</b-nav-item>
         <b-nav-item to="/rates">Rates</b-nav-item>
