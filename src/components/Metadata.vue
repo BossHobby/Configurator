@@ -50,7 +50,7 @@
       <b-col sm="6">
         <form ref="form">
           <input
-            accept=".json, .cbor"
+            accept=".json, .yaml"
             type="file"
             ref="file"
             style="display: none"
@@ -78,6 +78,7 @@
 
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
+import YAML from "yaml";
 import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
@@ -110,7 +111,7 @@ export default {
     uploadProfile() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {
-        const profile = JSON.parse(event.target.result);
+        const profile = YAML.parse(event.target.result);
         this.apply_profile(profile);
       });
 
@@ -125,14 +126,14 @@ export default {
     },
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
-        const encoded = encodeURIComponent(JSON.stringify(profile));
-        const json = "data:text/json;charset=utf-8," + encoded;
+        const encoded = encodeURIComponent(YAML.stringify(profile));
+        const yaml = "data:text/yaml;charset=utf-8," + encoded;
 
         const date = this.date.toISOString().substring(0, 10);
         const name = profile.meta.name.replace(/\0/g, "");
-        const filename = `Profile_${name}_${date}.json`;
+        const filename = `Profile_${name}_${date}.yaml`;
 
-        this.$refs.downloadAnchor.setAttribute("href", json);
+        this.$refs.downloadAnchor.setAttribute("href", yaml);
         this.$refs.downloadAnchor.setAttribute("download", filename);
         this.$refs.downloadAnchor.click();
       });
@@ -141,5 +142,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
