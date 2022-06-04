@@ -16,8 +16,8 @@
     "build:vue": "vue-cli-service build",
     "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
-    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\"",
-    "pwa": "npm run build:vue && npx http-server ./dist"
+    "pwa": "npm run build:vue && npx http-server ./dist",
+    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\""
   },
   "main": "http://localhost:8080",
   "dependencies": {
@@ -25,7 +25,7 @@
     "@types/dom-serial": "^1.0.2",
     "bootstrap-vue": "^2.21.2",
     "chart.js": "^2.9.4",
-    "core-js": "^3.21.1",
+    "core-js": "^3.8.3",
     "extract-zip": "^2.0.1",
     "follow-redirects": "^1.14.9",
     "md5": "^2.3.0",
@@ -33,6 +33,7 @@
     "semver": "^7.3.5",
     "three": "^0.133.1",
     "ts-enum-util": "^4.0.2",
+    "util": "^0.12.4",
     "vue": "^2.6.14",
     "vue-chartjs": "^3.5.1",
     "vue-class-component": "^7.2.6",
@@ -43,22 +44,23 @@
     "web-serial-polyfill": "^1.0.13"
   },
   "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
     "@types/node": "^16.11.26",
     "@types/nw.js": "^0.13.14",
     "@types/semver": "^7.3.9",
     "@types/w3c-web-usb": "^1.0.5",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "@vue/cli-plugin-babel": "^4.5.15",
-    "@vue/cli-plugin-eslint": "^4.5.15",
-    "@vue/cli-plugin-pwa": "^4.5.15",
-    "@vue/cli-plugin-typescript": "^4.5.15",
-    "@vue/cli-service": "^4.5.15",
-    "@vue/eslint-config-typescript": "^7.0.0",
-    "babel-eslint": "^10.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-pwa": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "@vue/eslint-config-typescript": "^9.1.0",
     "concurrently": "^6.5.1",
-    "eslint": "^6.8.0",
-    "eslint-plugin-vue": "^6.2.2",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
     "glob": "^7.2.0",
     "http-server": "^14.1.0",
     "nw": "0.54.0-sdk",
@@ -67,7 +69,7 @@
     "rimraf": "^3.0.2",
     "sass": "^1.49.9",
     "sass-loader": "^8.0.2",
-    "typescript": "~4.1.5",
+    "typescript": "~4.5.5",
     "vue-template-compiler": "^2.6.14",
     "wait-on": "^6.0.1"
   },
@@ -81,11 +83,11 @@
       "eslint:recommended",
       "@vue/typescript"
     ],
-    "rules": {
-      "no-console": "off"
-    },
     "parserOptions": {
       "parser": "@typescript-eslint/parser"
+    },
+    "rules": {
+      "vue/multi-word-component-names": "off"
     }
   },
   "postcss": {
@@ -95,7 +97,8 @@
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions"
+    "last 2 versions",
+    "not dead"
   ],
   "build": {
     "nwVersion": "v0.54.0",
