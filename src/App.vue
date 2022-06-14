@@ -12,7 +12,7 @@
     <b-navbar fixed="top" class="navbar-top">
       <b-navbar-brand to="/">
         <img
-          src="./assets/logo.png"
+          src="./assets/Logo.svg"
           class="d-inline-block"
           alt="Guano"
           height="40px"
