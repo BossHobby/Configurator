@@ -1,10 +1,10 @@
-import { $enum } from 'ts-enum-util';
+import { $enum } from "ts-enum-util";
 
 enum Features {
-  BRUSHLESS = (1 << 1),
-  OSD = (1 << 2),
-  BLACKBOX = (1 << 3),
-  DEBUG = (1 << 4),
+  BRUSHLESS = 1 << 1,
+  OSD = 1 << 2,
+  BLACKBOX = 1 << 3,
+  DEBUG = 1 << 4,
 }
 
 enum GyroRotation {
@@ -99,6 +99,17 @@ enum RXSerialProtocol {
   REDPINE_INVERTED,
 }
 
+export enum StickWizardState {
+  STICK_WIZARD_INACTIVE,
+  STICK_WIZARD_SUCCESS,
+  STICK_WIZARD_FAILED,
+  STICK_WIZARD_START,
+  STICK_WIZARD_CAPTURE_STICKS,
+  STICK_WIZARD_WAIT_FOR_CONFIRM,
+  STICK_WIZARD_CONFIRMED,
+  STICK_WIZARD_TIMEOUT,
+}
+
 const store = {
   namespaced: true,
   state: {
@@ -106,7 +117,8 @@ const store = {
     GyroRotation,
     AuxChannels,
     AuxFunctions,
-    RXSerialProtocol
+    RXSerialProtocol,
+    StickWizardState,
   },
   getters: {
     RXProtocol: (state, getters, rootState) => {
@@ -114,14 +126,10 @@ const store = {
         return RXProtocol;
       }
       return RXProtocolLegacy;
-    }
+    },
   },
-  mutations: {
-
-  },
-  actions: {
-
-  }
-}
+  mutations: {},
+  actions: {},
+};
 
 export default store;

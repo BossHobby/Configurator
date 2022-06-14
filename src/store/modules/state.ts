@@ -16,6 +16,7 @@ const store = {
     GEstG: null,
     accel: null,
     aux: [],
+    stick_calibration_wizard: 0,
   },
   getters: {
     vbat(state) {
