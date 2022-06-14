@@ -5,7 +5,10 @@
         <ReceiverSettings></ReceiverSettings>
       </b-col>
       <b-col sm="12" class="my-4">
-        <Channels></Channels>
+        <RCChannels></RCChannels>
+      </b-col>
+      <b-col sm="12" class="my-4">
+        <AuxChannels></AuxChannels>
       </b-col>
     </b-row>
   </b-container>
@@ -13,16 +16,17 @@
 
 <script>
 import ReceiverSettings from "@/components/ReceiverSettings";
-import Channels from "@/components/Channels";
+import RCChannels from "@/components/RCChannels";
+import AuxChannels from "@/components/AuxChannels";
 
 export default {
   name: "Receiver",
   components: {
     ReceiverSettings,
-    Channels,
+    RCChannels,
+    AuxChannels,
   },
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

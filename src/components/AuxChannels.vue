@@ -1,6 +1,6 @@
 <template>
   <b-card>
-    <h5 slot="header" class="mb-0">Channels</h5>
+    <h5 slot="header" class="mb-0">Aux Channels</h5>
     <b-row>
       <b-col sm="8">
         <b-row v-for="f in auxFunctions" :key="f.key">
@@ -43,7 +43,7 @@ import { $enum } from "ts-enum-util";
 import { mapFields } from "@/store/helper.js";
 
 export default {
-  name: "Channels",
+  name: "AuxChannels",
   components: {},
   computed: {
     ...mapFields("profile", ["receiver.aux"]),

@@ -1,12 +1,12 @@
 import { createHelpers } from "@/store/helper.js";
-import { serial } from '../serial/serial';
-import { QuicVal } from '../serial/quic';
-import { Log } from '@/log';
+import { serial } from "../serial/serial";
+import { QuicVal } from "../serial/quic";
+import { Log } from "@/log";
 
-const { get_profile_field, update_profile_field } = createHelpers("profile")
+const { get_profile_field, update_profile_field } = createHelpers("profile");
 
 function makeSemver(major, minor, patch) {
-  return ((major << 16) | (minor << 8) | patch)
+  return (major << 16) | (minor << 8) | patch;
 }
 
 function ensureMinVersion(version) {
@@ -27,20 +27,32 @@ function migrateProfile(profile, version) {
         {
           mode: profile.rate.mode,
           rate: [
-            profile.rate.mode == 1 ? profile.rate.betaflight.rc_rate : profile.rate.silverware.max_rate,
-            profile.rate.mode == 1 ? profile.rate.betaflight.super_rate : profile.rate.silverware.acro_expo,
-            profile.rate.mode == 1 ? profile.rate.betaflight.expo : profile.rate.silverware.angle_expo,
-          ]
+            profile.rate.mode == 1
+              ? profile.rate.betaflight.rc_rate
+              : profile.rate.silverware.max_rate,
+            profile.rate.mode == 1
+              ? profile.rate.betaflight.super_rate
+              : profile.rate.silverware.acro_expo,
+            profile.rate.mode == 1
+              ? profile.rate.betaflight.expo
+              : profile.rate.silverware.angle_expo,
+          ],
         },
         {
           mode: profile.rate.mode == 1 ? 0 : 1,
           rate: [
-            profile.rate.mode == 0 ? profile.rate.betaflight.rc_rate : profile.rate.silverware.max_rate,
-            profile.rate.mode == 0 ? profile.rate.betaflight.super_rate : profile.rate.silverware.acro_expo,
-            profile.rate.mode == 0 ? profile.rate.betaflight.expo : profile.rate.silverware.angle_expo,
-          ]
-        }
-      ]
+            profile.rate.mode == 0
+              ? profile.rate.betaflight.rc_rate
+              : profile.rate.silverware.max_rate,
+            profile.rate.mode == 0
+              ? profile.rate.betaflight.super_rate
+              : profile.rate.silverware.acro_expo,
+            profile.rate.mode == 0
+              ? profile.rate.betaflight.expo
+              : profile.rate.silverware.angle_expo,
+          ],
+        },
+      ];
       break;
   }
   return profile;
@@ -56,12 +68,12 @@ const store = {
     },
     filter: {
       gyro: [{}, {}],
-      dterm: [{}, {}]
+      dterm: [{}, {}],
     },
     osd: {
       callsign: "",
       elements: [],
-      elements_hd: []
+      elements_hd: [],
     },
     meta: {
       datetime: 0,
@@ -77,6 +89,7 @@ const store = {
     voltage: {},
     receiver: {
       lqi_source: -1,
+      channel_mapping: 0,
       aux: [],
     },
     pid: {
@@ -86,17 +99,17 @@ const store = {
       stick_rates: [{}],
       big_angle: {},
       small_angle: {},
-      throttle_dterm_attenuation: {}
-    }
+      throttle_dterm_attenuation: {},
+    },
   },
   getters: {
     get_profile_field,
-    current_pid_rate: state => {
+    current_pid_rate: (state) => {
       return state.pid.pid_rates[state.pid.pid_profile];
     },
-    current_stick_rate: state => {
+    current_stick_rate: (state) => {
       return state.pid.stick_rates[state.pid.stick_profile];
-    }
+    },
   },
   mutations: {
     update_profile_field,
@@ -111,7 +124,7 @@ const store = {
       rates[state.pid.pid_profile] = rate;
       state.pid = {
         ...state.pid,
-        pid_rates: rates
+        pid_rates: rates,
       };
     },
     set_current_stick_rate(state, rate) {
@@ -119,33 +132,33 @@ const store = {
       rates[state.pid.stick_profile] = rate;
       state.pid = {
         ...state.pid,
-        stick_rates: rates
+        stick_rates: rates,
       };
     },
     set_osd_elements(state, elements) {
       state.osd = {
         ...state.osd,
-        elements
+        elements,
       };
     },
     set_osd_elements_hd(state, elements) {
       state.osd = {
         ...state.osd,
-        elements_hd: elements
+        elements_hd: elements,
       };
-    }
+    },
   },
   actions: {
     fetch_profile({ commit }) {
-      return serial
-        .get(QuicVal.Profile)
-        .then(p => commit('set_profile', p));
+      return serial.get(QuicVal.Profile).then((p) => commit("set_profile", p));
     },
     apply_profile({ commit, rootState }, profile) {
-      const firmwareVersion = ensureMinVersion(rootState.default_profile.meta.version);
+      const firmwareVersion = ensureMinVersion(
+        rootState.default_profile.meta.version
+      );
       const profileVersion = ensureMinVersion(profile.meta.version);
 
-      let p = profile
+      let p = profile;
       if (firmwareVersion != profileVersion) {
         p = migrateProfile(p, profileVersion);
       }
@@ -154,15 +167,20 @@ const store = {
 
       return serial
         .set(QuicVal.Profile, p)
-        .then(p => commit('set_profile', p))
-        .then(() => commit('append_alert', { type: "success", msg: "Profile applied!" }))
-        .then(() => commit('reset_needs_apply'))
-        .catch(err => {
+        .then((p) => commit("set_profile", p))
+        .then(() =>
+          commit("append_alert", { type: "success", msg: "Profile applied!" })
+        )
+        .then(() => commit("reset_needs_apply"))
+        .catch((err) => {
           Log.error(err);
-          commit('append_alert', { type: "danger", msg: "Apply failed! " + err });
-        })
+          commit("append_alert", {
+            type: "danger",
+            msg: "Apply failed! " + err,
+          });
+        });
     },
-  }
-}
+  },
+};
 
 export default store;

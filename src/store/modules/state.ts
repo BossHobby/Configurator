@@ -1,6 +1,6 @@
-import { QuicVal } from '../serial/quic';
-import { serial } from '../serial/serial';
-import { Log } from '@/log';
+import { QuicVal } from "../serial/quic";
+import { serial } from "../serial/serial";
+import { Log } from "@/log";
 
 const store = {
   state: {
@@ -9,6 +9,7 @@ const store = {
     vbat_filtered: 0.0,
     vbattfilt: null,
     ibat_filtered: 0.0,
+    rx: [],
     rx_filtered: [],
     rx_status: 0,
     rx_rssi: 0,
@@ -19,7 +20,7 @@ const store = {
   getters: {
     vbat(state) {
       return state.vbattfilt || state.vbat_filtered;
-    }
+    },
   },
   mutations: {
     set_state(state, update) {
@@ -32,10 +33,10 @@ const store = {
     fetch_state({ commit }) {
       return serial
         .get(QuicVal.State)
-        .then(s => commit('set_state', s))
-        .catch(err => Log.warn("state", err))
-    }
-  }
-}
+        .then((s) => commit("set_state", s))
+        .catch((err) => Log.warn("state", err));
+    },
+  },
+};
 
 export default store;
