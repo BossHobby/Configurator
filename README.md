@@ -1,4 +1,4 @@
-![QUICKSILVER](https://github.com/BossHobby/QUICKSILVER/blob/master/misc/Logo_fixed.png)
+<img src="https://github.com/BossHobby/QUICKSILVER/blob/master/misc/Logo.svg?raw=true" width="256"></img>
 
 [![Build Status](https://ci.bkleiner.codes/api/badges/BossHobby/QUICKSILVER/status.svg)](https://ci.bkleiner.codes/BossHobby/QUICKSILVER)
 
