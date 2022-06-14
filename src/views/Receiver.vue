@@ -4,7 +4,7 @@
       <b-col sm="12" class="my-4">
         <ReceiverSettings></ReceiverSettings>
       </b-col>
-      <b-col sm="12" class="my-4">
+      <b-col v-if="quicVersionGt('0.1.0')" sm="12" class="my-4">
         <RCChannels></RCChannels>
       </b-col>
       <b-col sm="12" class="my-4">
@@ -19,12 +19,17 @@ import ReceiverSettings from "@/components/ReceiverSettings";
 import RCChannels from "@/components/RCChannels";
 import AuxChannels from "@/components/AuxChannels";
 
+import { mapGetters } from "vuex";
+
 export default {
   name: "Receiver",
   components: {
     ReceiverSettings,
     RCChannels,
     AuxChannels,
+  },
+  computed: {
+    ...mapGetters(["quicVersionGt"]),
   },
 };
 </script>

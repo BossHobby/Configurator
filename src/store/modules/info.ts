@@ -1,3 +1,5 @@
+import semver from "semver";
+import { decodeSemver } from "@/store/util";
 
 const store = {
   state: {
@@ -8,16 +10,22 @@ const store = {
   },
   getters: {
     has_feature(state) {
-      return feature => {
+      return (feature) => {
         if (state.features == null) {
           return true;
         }
-        return state.features & feature
+        return state.features & feature;
       };
     },
     is_read_only(state) {
       return state.quic_protocol_version < 5;
-    }
+    },
+    quicVersionGt(state) {
+      return (version) => {
+        const quic = decodeSemver(state.quic_protocol_version);
+        return semver.gt(quic, version);
+      };
+    },
   },
   mutations: {
     set_info(state, info) {
@@ -26,8 +34,7 @@ const store = {
       }
     },
   },
-  actions: {
-  }
-}
+  actions: {},
+};
 
 export default store;
