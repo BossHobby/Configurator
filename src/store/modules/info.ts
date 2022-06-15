@@ -6,6 +6,7 @@ const store = {
     usart_ports: [],
     motor_pins: [],
     quic_protocol_version: null,
+    quic_protocol_semver: null,
     features: null,
   },
   getters: {
@@ -22,8 +23,7 @@ const store = {
     },
     quicVersionGt(state) {
       return (version) => {
-        const quic = decodeSemver(state.quic_protocol_version);
-        return semver.gt(quic, version);
+        return semver.gt(state.quic_protocol_semver, version);
       };
     },
   },
@@ -32,6 +32,7 @@ const store = {
       for (const key in info) {
         state[key] = info[key];
       }
+      state.quic_protocol_semver = decodeSemver(state.quic_protocol_version);
     },
   },
   actions: {},

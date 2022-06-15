@@ -22,6 +22,7 @@ import templatesModule from "./modules/templates";
 
 const rebootNeededKeys = [
   'profile.serial.',
+  'profile.receiver.protocol',
   'bind.info'
 ];
 

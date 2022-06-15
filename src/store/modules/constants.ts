@@ -1,4 +1,4 @@
-import { $enum } from "ts-enum-util";
+import semver from "semver";
 
 enum Features {
   BRUSHLESS = 1 << 1,
@@ -51,7 +51,7 @@ enum AuxFunctions {
   AUX_BLACKBOX,
 }
 
-enum RXProtocolLegacy {
+enum RXProtocolV5 {
   INVALID,
   UNIFIED_SERIAL,
   SBUS,
@@ -69,7 +69,7 @@ enum RXProtocolLegacy {
   EXPRESS_LRS,
 }
 
-enum RXProtocol {
+enum RXProtocolV010 {
   INVALID,
   UNIFIED_SERIAL,
   SBUS,
@@ -82,6 +82,24 @@ enum RXProtocol {
   BAYANG_PROTOCOL_TELEMETRY_AUTOBIND,
   FRSKY_D8,
   FRSKY_D16,
+  REDPINE,
+  EXPRESS_LRS,
+}
+
+enum RXProtocolV011 {
+  INVALID,
+  UNIFIED_SERIAL,
+  SBUS,
+  CRSF,
+  IBUS,
+  FPORT,
+  DSM,
+  NRF24_BAYANG_TELEMETRY,
+  BAYANG_PROTOCOL_BLE_BEACON,
+  BAYANG_PROTOCOL_TELEMETRY_AUTOBIND,
+  FRSKY_D8,
+  FRSKY_D16_FCC,
+  FRSKY_D16_LBT,
   REDPINE,
   EXPRESS_LRS,
 }
@@ -122,10 +140,13 @@ const store = {
   },
   getters: {
     RXProtocol: (state, getters, rootState) => {
-      if (rootState.info.quic_protocol_version > 5) {
-        return RXProtocol;
+      if (semver.gt(rootState.info.quic_protocol_semver, "0.1.0")) {
+        return RXProtocolV011;
       }
-      return RXProtocolLegacy;
+      if (rootState.info.quic_protocol_version > 5) {
+        return RXProtocolV010;
+      }
+      return RXProtocolV5;
     },
   },
   mutations: {},

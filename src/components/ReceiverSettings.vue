@@ -13,6 +13,20 @@
       </b-col>
       <b-col sm="8" class="my-2">{{ protoNames[info.rx_protocol] }}</b-col>
     </b-row>
+    <b-row v-if="receiver_protocol != null">
+      <b-col sm="4" class="my-2">
+        <label>
+          Protocol
+          <tooltip entry="receiver.protocol" />
+        </label>
+      </b-col>
+      <b-col sm="4" class="my-2">
+        <b-form-select
+          v-model.number="receiver_protocol"
+          :options="protocolOptions"
+        ></b-form-select>
+      </b-col>
+    </b-row>
     <b-row v-if="info.quic_protocol_version > 3">
       <b-col sm="4" class="my-2">
         <label>
@@ -52,8 +66,7 @@
     </b-row>
     <b-row
       v-if="
-        info.quic_protocol_version > 2 &&
-        info.rx_protocol == proto.UNIFIED_SERIAL
+        info.quic_protocol_version > 2 && rx_protocol == proto.UNIFIED_SERIAL
       "
     >
       <b-col sm="4" class="my-2">
@@ -72,7 +85,7 @@
 
     <b-card
       class="mt-4"
-      v-if="bind.info.raw && info.rx_protocol == proto.EXPRESS_LRS"
+      v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS"
     >
       <h5 slot="header" class="mb-0">ExpressLRS</h5>
       <b-row>
@@ -160,7 +173,11 @@ export default {
     };
   },
   computed: {
-    ...mapFields("profile", ["receiver.lqi_source", "meta"]),
+    ...mapFields("profile", [
+      "receiver.protocol",
+      "receiver.lqi_source",
+      "meta",
+    ]),
     ...mapState(["info", "state", "bind"]),
     ...mapState("constants", {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
@@ -171,6 +188,16 @@ export default {
     },
     protoNames() {
       return $enum(this.RXProtocol).getKeys();
+    },
+    rx_protocol() {
+      return this.info.rx_protocol || this.receiver_protocol;
+    },
+    protocolOptions() {
+      return (this.info.rx_protocols || [])
+        .filter((val) => val > 0)
+        .map((val) => {
+          return { value: val, text: this.protoNames[val] };
+        });
     },
     proto() {
       return this.protoNames.reduce((m, v, i) => {
@@ -187,19 +214,21 @@ export default {
     isSpiProtocol() {
       const spi = [
         this.proto.FRSKY_D8,
-        this.proto.FRSKY_D16,
+        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_FCC,
+        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_LBT,
         this.proto.REDPINE,
       ];
-      return spi.includes(this.info.rx_protocol);
+      return spi.includes(this.rx_protocol);
     },
     protoStatus() {
       const spi = [
         this.proto.FRSKY_D8,
-        this.proto.FRSKY_D16,
+        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_FCC,
+        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_LBT,
         this.proto.REDPINE,
         this.proto.EXPRESS_LRS,
       ];
-      if (spi.includes(this.info.rx_protocol)) {
+      if (spi.includes(this.rx_protocol)) {
         const status = [
           "RX_STATUS_NONE",
           "RX_STATUS_BINDING",
@@ -207,7 +236,7 @@ export default {
         ];
         return status[this.state.rx_status];
       }
-      if (this.info.rx_protocol == this.proto.UNIFIED_SERIAL) {
+      if (this.rx_protocol == this.proto.UNIFIED_SERIAL) {
         if (this.state.rx_status < 100) {
           return "RX_STATUS_NONE";
         }
