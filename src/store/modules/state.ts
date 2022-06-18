@@ -1,6 +1,7 @@
 import { QuicVal } from "../serial/quic";
 import { serial } from "../serial/serial";
 import { Log } from "@/log";
+import Vue from "vue";
 
 const store = {
   state: {
@@ -26,7 +27,7 @@ const store = {
   mutations: {
     set_state(state, update) {
       for (const key in update) {
-        state[key] = update[key];
+        Vue.set(state, key, Object.freeze(update[key]));
       }
     },
   },
