@@ -23,7 +23,6 @@ const LOGO_FULL_WIDTH = pixelsWidth(LOGO_WIDTH, 0);
 const LOGO_FULL_HEIGHT = pixelsHeight(LOGO_HEIGHT, 0);
 
 export class OSD {
-
   public static unpackFont(canvas: HTMLCanvasElement, font: number[][]) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -51,11 +50,7 @@ export class OSD {
         }
 
         const img = new ImageData(char, CHAR_WIDTH, CHAR_HEIGHT);
-        ctx.putImageData(
-          img,
-          pixelsWidth(cx),
-          pixelsHeight(cy)
-        );
+        ctx.putImageData(img, pixelsWidth(cx), pixelsHeight(cy));
       }
     }
 
@@ -73,10 +68,34 @@ export class OSD {
         let y = 0;
         for (let j = 0; j < 54; j++) {
           char[j] =
-            ((OSD.getPixel(img.data, x + 0 + pixelsWidth(cx), y + pixelsHeight(cy)) & 0x3) << 6) |
-            ((OSD.getPixel(img.data, x + 1 + pixelsWidth(cx), y + pixelsHeight(cy)) & 0x3) << 4) |
-            ((OSD.getPixel(img.data, x + 2 + pixelsWidth(cx), y + pixelsHeight(cy)) & 0x3) << 2) |
-            ((OSD.getPixel(img.data, x + 3 + pixelsWidth(cx), y + pixelsHeight(cy)) & 0x3) << 0);
+            ((OSD.getPixel(
+              img.data,
+              x + 0 + pixelsWidth(cx),
+              y + pixelsHeight(cy)
+            ) &
+              0x3) <<
+              6) |
+            ((OSD.getPixel(
+              img.data,
+              x + 1 + pixelsWidth(cx),
+              y + pixelsHeight(cy)
+            ) &
+              0x3) <<
+              4) |
+            ((OSD.getPixel(
+              img.data,
+              x + 2 + pixelsWidth(cx),
+              y + pixelsHeight(cy)
+            ) &
+              0x3) <<
+              2) |
+            ((OSD.getPixel(
+              img.data,
+              x + 3 + pixelsWidth(cx),
+              y + pixelsHeight(cy)
+            ) &
+              0x3) <<
+              0);
 
           x += 4;
           if (x == CHAR_WIDTH) {
@@ -100,20 +119,32 @@ export class OSD {
     return OSD.packCanvas(ctx);
   }
 
-  public static packLogo(fontCanvas: HTMLCanvasElement, logoCanvas: HTMLCanvasElement, logo: CanvasImageSource) {
+  public static packLogo(
+    fontCanvas: HTMLCanvasElement,
+    logoCanvas: HTMLCanvasElement,
+    logo: CanvasImageSource
+  ) {
     const logoCtx = logoCanvas.getContext("2d")!;
     logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
     logoCtx.drawImage(logo, 0, 0);
 
     const logoChars: Uint8ClampedArray[] = [];
-    const img = logoCtx.getImageData(0, 0, logo.width as number, logo.height as number);
+    const img = logoCtx.getImageData(
+      0,
+      0,
+      logo.width as number,
+      logo.height as number
+    );
     for (let cy = 0; cy < LOGO_HEIGHT; cy++) {
       for (let cx = 0; cx < LOGO_WIDTH; cx++) {
         const char = new Uint8ClampedArray(CHAR_WIDTH * CHAR_HEIGHT * 4);
 
         for (let y = 0; y < CHAR_HEIGHT; y++) {
           for (let x = 0; x < CHAR_WIDTH; x++) {
-            const logoOffset = (y + pixelsHeight(cy, 0)) * LOGO_FULL_WIDTH + x + pixelsWidth(cx, 0)
+            const logoOffset =
+              (y + pixelsHeight(cy, 0)) * LOGO_FULL_WIDTH +
+              x +
+              pixelsWidth(cx, 0);
             char[(y * CHAR_WIDTH + x) * 4 + 0] = img.data[logoOffset * 4 + 0];
             char[(y * CHAR_WIDTH + x) * 4 + 1] = img.data[logoOffset * 4 + 1];
             char[(y * CHAR_WIDTH + x) * 4 + 2] = img.data[logoOffset * 4 + 2];
@@ -131,18 +162,19 @@ export class OSD {
         const char = logoChars.shift()!;
 
         const img = new ImageData(char, CHAR_WIDTH, CHAR_HEIGHT);
-        ctx.putImageData(
-          img,
-          pixelsWidth(cx),
-          pixelsHeight(cy)
-        );
+        ctx.putImageData(img, pixelsWidth(cx), pixelsHeight(cy));
       }
     }
 
     return OSD.packCanvas(ctx);
   }
 
-  private static setPixel(data: Uint8ClampedArray, x: number, y: number, v: number) {
+  private static setPixel(
+    data: Uint8ClampedArray,
+    x: number,
+    y: number,
+    v: number
+  ) {
     switch (v) {
       case 0:
         data[(y * CHAR_WIDTH + x) * 4 + 0] = 0;
@@ -165,7 +197,11 @@ export class OSD {
     }
   }
 
-  private static getPixel(data: Uint8ClampedArray, vx: number, vy: number): number {
+  private static getPixel(
+    data: Uint8ClampedArray,
+    vx: number,
+    vy: number
+  ): number {
     let value = 0;
 
     const white = data[(vy * FULL_WIDTH + vx) * 4 + 0];
@@ -180,6 +216,4 @@ export class OSD {
 
     return value;
   }
-
-
 }

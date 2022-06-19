@@ -1,23 +1,21 @@
-import { github } from './github';
-import * as semver from 'semver';
+import { github } from "./github";
+import * as semver from "semver";
 
 function newNWUpdater() {
-  const fs = nw.require('fs');
-  const os = nw.require('os');
+  const fs = nw.require("fs");
+  const os = nw.require("os");
 
-  const path = nw.require('path');
-  const spawn = nw.require('child_process').spawn;
+  const path = nw.require("path");
+  const spawn = nw.require("child_process").spawn;
 
-  const { https } = nw.require('follow-redirects');
+  const { https } = nw.require("follow-redirects");
 
-  const extractZip = nw.require('extract-zip')
+  const extractZip = nw.require("extract-zip");
 
   class Updater {
-
     private preparing = false;
 
     public updatePreparing() {
-
       return this.preparing;
     }
 
@@ -25,7 +23,10 @@ function newNWUpdater() {
       return nw?.App.argv.includes("--finish-update");
     }
 
-    public async checkForUpdate(currentVersion: string, updateCallback: (v: any) => Promise<any>): Promise<any> {
+    public async checkForUpdate(
+      currentVersion: string,
+      updateCallback: (v: any) => Promise<any>
+    ): Promise<any> {
       if (nw?.App === undefined) {
         return false;
       }
@@ -42,23 +43,29 @@ function newNWUpdater() {
       const cleanVersion = semver.clean(release.tag_name);
       const filename = `quic-config-${cleanVersion}-${os.platform()}-x64.zip`;
 
-      const asset = release.assets.find((v: any) => v.name = filename);
+      const asset = release.assets.find((v: any) => (v.name = filename));
       const zipFile = path.join(os.tmpdir(), filename);
       await this.download(asset.browser_download_url, zipFile);
 
-      const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "quic-config-"));
+      const tmpDir = await fs.promises.mkdtemp(
+        path.join(os.tmpdir(), "quic-config-")
+      );
       await extractZip(zipFile, { dir: tmpDir });
 
-      const childBin = path.join(tmpDir, 'quic-config');
-      const tmpUserDataDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "quic-config-user-data-"));
+      const childBin = path.join(tmpDir, "quic-config");
+      const tmpUserDataDir = await fs.promises.mkdtemp(
+        path.join(os.tmpdir(), "quic-config-user-data-")
+      );
       const currentBinDir = path.resolve(path.dirname(process.execPath));
 
       await fs.promises.chmod(childBin, 0o755);
 
-      this.spawnConfig(
-        childBin,
-        ['--user-data-dir=' + tmpUserDataDir, '--finish-update', zipFile, currentBinDir]
-      );
+      this.spawnConfig(childBin, [
+        "--user-data-dir=" + tmpUserDataDir,
+        "--finish-update",
+        zipFile,
+        currentBinDir,
+      ]);
       nw.App.quit();
     }
 
@@ -73,7 +80,7 @@ function newNWUpdater() {
 
       await extractZip(zipFile, { dir: installPath });
 
-      const childBin = path.join(installPath, 'quic-config');
+      const childBin = path.join(installPath, "quic-config");
       await fs.promises.chmod(childBin, 0o755);
 
       this.spawnConfig(childBin, []);
@@ -83,33 +90,32 @@ function newNWUpdater() {
     private download(url: string, filename: string) {
       return new Promise<void>((resolve, reject) => {
         const file = fs.createWriteStream(filename);
-        https.get(url, {}, (res: any) => {
-          const { statusCode } = res;
+        https
+          .get(url, {}, (res: any) => {
+            const { statusCode } = res;
 
-          if (statusCode !== 200) {
-            // Consume response data to free up memory
-            res.resume();
-            reject(new Error("status != 200"));
-            return;
-          }
+            if (statusCode !== 200) {
+              // Consume response data to free up memory
+              res.resume();
+              reject(new Error("status != 200"));
+              return;
+            }
 
-          const stream = res.pipe(file);
-          stream.on('finish', () => resolve());
-        })
-          .on('error', (e: Error) => reject(e));
+            const stream = res.pipe(file);
+            stream.on("finish", () => resolve());
+          })
+          .on("error", (e: Error) => reject(e));
       });
     }
 
     private spawnConfig(binary: string, args: any[]) {
-      const child = spawn(
-        binary,
-        args, {
+      const child = spawn(binary, args, {
         detached: true,
-        stdio: ['ignore']
+        stdio: ["ignore"],
       });
 
-      child.on('error', (err: any) => {
-        console.error('Failed to start subprocess.', err);
+      child.on("error", (err: any) => {
+        console.error("Failed to start subprocess.", err);
       });
 
       child.unref();
@@ -127,23 +133,27 @@ function newPWAUpdater() {
     private updateCallback?: (v: any) => Promise<any>;
 
     constructor() {
-      document.addEventListener('swUpdated', (event: any) => {
-        this.registration = event.detail;
-        this.hasUpdate = true;
+      document.addEventListener(
+        "swUpdated",
+        (event: any) => {
+          this.registration = event.detail;
+          this.hasUpdate = true;
 
-        if (this.updateCallback) {
-          this.updateCallback(this.hasUpdate);
-        }
-      }, { once: true });
+          if (this.updateCallback) {
+            this.updateCallback(this.hasUpdate);
+          }
+        },
+        { once: true }
+      );
 
-      navigator.serviceWorker?.addEventListener('controllerchange', () => {
+      navigator.serviceWorker?.addEventListener("controllerchange", () => {
         if (this.refreshing) {
           return;
         }
 
-        this.refreshing = true
-        window.location.reload()
-      })
+        this.refreshing = true;
+        window.location.reload();
+      });
     }
 
     public updatePreparing() {
@@ -154,7 +164,10 @@ function newPWAUpdater() {
       return false;
     }
 
-    public async checkForUpdate(currentVersion: string, updateCallback: (v: any) => Promise<any>) {
+    public async checkForUpdate(
+      currentVersion: string,
+      updateCallback: (v: any) => Promise<any>
+    ) {
       this.updateCallback = updateCallback;
     }
 
@@ -165,11 +178,10 @@ function newPWAUpdater() {
         return;
       }
 
-      this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      this.registration.waiting.postMessage({ type: "SKIP_WAITING" });
     }
 
-    public async finishUpdate() {
-    }
+    public async finishUpdate() {}
   }
 
   return new Updater();
@@ -178,11 +190,11 @@ function newPWAUpdater() {
 function newUpdater() {
   try {
     if (nw?.App) {
-      console.log("Registering NW updater")
+      console.log("Registering NW updater");
       return newNWUpdater();
     }
   } catch {
-    console.log("Registering PWA updater")
+    console.log("Registering PWA updater");
     return newPWAUpdater();
   }
 }

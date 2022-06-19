@@ -8,7 +8,7 @@ export default {
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
-      lastUpdate: 0
+      lastUpdate: 0,
     };
   },
   computed: {
@@ -19,9 +19,9 @@ export default {
           return {
             label: l,
             data: [],
-            backgroundColor: this.colors[i]
+            backgroundColor: this.colors[i],
           };
-        })
+        }),
       };
     },
     options() {
@@ -29,14 +29,14 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 0
+          duration: 0,
         },
         title: {
           display: true,
-          text: this.title
-        }
+          text: this.title,
+        },
       };
-    }
+    },
   },
   watch: {
     input(val) {
@@ -57,10 +57,10 @@ export default {
         chart.update();
         this.lastUpdate = Date.now();
       }
-    }
+    },
   },
   mounted() {
     this.renderChart(this.chartdata, this.options);
-  }
+  },
 };
 </script>

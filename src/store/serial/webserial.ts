@@ -1,4 +1,4 @@
-import { serial } from 'web-serial-polyfill';
+import { serial } from "web-serial-polyfill";
 
 export function getWebSerial() {
   if (navigator.serial) {

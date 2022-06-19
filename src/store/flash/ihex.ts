@@ -1,4 +1,4 @@
-import { concatUint8Array } from '../util';
+import { concatUint8Array } from "../util";
 
 enum Record {
   DATA = 0,
@@ -10,17 +10,16 @@ enum Record {
 }
 
 export class IntelHEX {
-
   public start_linear_address: number;
   public start_segment_address: number;
-  public segments: { address: number, data: Uint8Array }[] = []
+  public segments: { address: number; data: Uint8Array }[] = [];
 
   public get linear_bytes_total() {
     return this.end_address - this.start_address;
   }
 
   public get segment_bytes_total() {
-    return this.segments.reduce((p, c) => p += c.data.length, 0);
+    return this.segments.reduce((p, c) => (p += c.data.length), 0);
   }
 
   public get start_address() {
@@ -28,7 +27,10 @@ export class IntelHEX {
   }
 
   public get end_address() {
-    return this.segments[this.segments.length - 1].address + this.segments[this.segments.length - 1].data.length;
+    return (
+      this.segments[this.segments.length - 1].address +
+      this.segments[this.segments.length - 1].data.length
+    );
   }
 
   constructor(start_linear_address: number, start_segment_address: number) {
@@ -56,13 +58,14 @@ export class IntelHEX {
       const dataBuffer = IntelHEX.fromHex(dataStr);
       const checksum = parseInt(line.substr(9 + byteCount * 2, 2), 16);
 
-      let calcChecksum = (byteCount + (address >> 8) + address + recordType) & 0xFF;
+      let calcChecksum =
+        (byteCount + (address >> 8) + address + recordType) & 0xff;
       for (let i = 0; i < byteCount; i++)
-        calcChecksum = (calcChecksum + dataBuffer[i]) & 0xFF;
-      calcChecksum = (0x100 - calcChecksum) & 0xFF;
+        calcChecksum = (calcChecksum + dataBuffer[i]) & 0xff;
+      calcChecksum = (0x100 - calcChecksum) & 0xff;
 
       if (checksum != calcChecksum) {
-        throw new Error('invalid checksum');
+        throw new Error("invalid checksum");
       }
 
       switch (recordType) {
@@ -72,8 +75,8 @@ export class IntelHEX {
 
           if (lastAddr == 0 || absoluteAddress != lastAddr) {
             result.segments.push({
-              'address': absoluteAddress,
-              'data': new Uint8Array(),
+              address: absoluteAddress,
+              data: new Uint8Array(),
             });
           }
 
@@ -137,5 +140,4 @@ export class IntelHEX {
     }
     return buffer;
   }
-
 }

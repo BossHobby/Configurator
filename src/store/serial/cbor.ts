@@ -1,9 +1,9 @@
-import { Log } from '@/log';
-import { ArrayReader, ArrayWriter } from '../util';
+import { Log } from "@/log";
+import { ArrayReader, ArrayWriter } from "../util";
 
 const CBOR_TYPE_OFFSET = 5;
-const CBOR_TYPE_MASK = 0xE0;
-const CBOR_VALUE_MASK = 0x1F;
+const CBOR_TYPE_MASK = 0xe0;
+const CBOR_VALUE_MASK = 0x1f;
 
 enum Max {
   Uint8 = 255,
@@ -42,18 +42,17 @@ function sizeForValue(val: number) {
 }
 
 // this is a table matching binary exponents to the multiplier to determine significant digit rounding
-const mult10 = new Array(147)
+const mult10 = new Array(147);
 for (let i = 0; i < 256; i++) {
-  mult10[i] = +('1e' + Math.floor(45.15 - i * 0.30103))
+  mult10[i] = +("1e" + Math.floor(45.15 - i * 0.30103));
 }
 
 class Encoder {
-
   private buf = new ArrayWriter();
 
   public encode(val: any): Uint8Array {
     this.encodeVal(val);
-    return this.buf.array()
+    return this.buf.array();
   }
 
   private encodeVal(val: any) {
@@ -79,7 +78,7 @@ class Encoder {
 
       default:
         Log.error("unhandled type", typ);
-        break
+        break;
     }
   }
 
@@ -136,16 +135,17 @@ class Encoder {
 
     this.encodeHeader(type, max);
 
-    const size = (1 << (max - SizeType.BYTE));
-    for (let i = (size - 1); i >= 0; i--) {
-      this.buf.writeUint8((val >> (i * 8)) & 0xFF);
+    const size = 1 << (max - SizeType.BYTE);
+    for (let i = size - 1; i >= 0; i--) {
+      this.buf.writeUint8((val >> (i * 8)) & 0xff);
     }
   }
 
   private encodeHeader(type: MajorType, val: number) {
-    return this.buf.writeUint8((type << CBOR_TYPE_OFFSET) | (val & CBOR_VALUE_MASK));
+    return this.buf.writeUint8(
+      (type << CBOR_TYPE_OFFSET) | (val & CBOR_VALUE_MASK)
+    );
   }
-
 }
 
 class Decoder {
@@ -173,7 +173,7 @@ class Decoder {
       }
 
       case MajorType.MAP: {
-        return this.decodeMap(max)
+        return this.decodeMap(max);
       }
 
       case MajorType.ARRAY: {
@@ -213,7 +213,7 @@ class Decoder {
 
       default:
         Log.error("unhandled type", type);
-        break
+        break;
     }
   }
 
@@ -222,7 +222,7 @@ class Decoder {
 
     const res: any[] = [];
     for (let i = 0; i < entriesLeft(); i++) {
-      res.push(this.decode())
+      res.push(this.decode());
     }
     return res;
   }
@@ -262,7 +262,7 @@ class Decoder {
       }
 
       return Infinity;
-    }
+    };
   }
 
   private decodeFloat(max: number): number {
@@ -279,7 +279,7 @@ class Decoder {
     const value = this.buf.peekFloat32();
     this.buf.advance(4);
 
-    const multiplier = mult10[((bytes[0] & 0x7f) << 1) | (bytes[1] >> 7)]
+    const multiplier = mult10[((bytes[0] & 0x7f) << 1) | (bytes[1] >> 7)];
     return ((multiplier * value + (value > 0 ? 0.5 : -0.5)) >> 0) / multiplier;
   }
 
@@ -288,13 +288,13 @@ class Decoder {
       return max;
     }
 
-    const size = (1 << (max - SizeType.BYTE));
+    const size = 1 << (max - SizeType.BYTE);
     if (this.buf.remaining() < size) {
       throw new Error("EOF");
     }
 
     let val = 0;
-    for (let i = (size - 1); i >= 0; i--) {
+    for (let i = size - 1; i >= 0; i--) {
       const v = this.buf.peekUint8();
       this.buf.advance(1);
       val |= v << (i * 8);
@@ -303,7 +303,7 @@ class Decoder {
     return val;
   }
 
-  private decodeType(): { type: MajorType, max: SizeType } {
+  private decodeType(): { type: MajorType; max: SizeType } {
     if (this.buf.remaining() <= 0) {
       throw new Error("EOF");
     }
@@ -311,22 +311,21 @@ class Decoder {
     return {
       type: (v & CBOR_TYPE_MASK) >> CBOR_TYPE_OFFSET,
       max: v & CBOR_VALUE_MASK,
-    }
+    };
   }
 }
 
 export class CBOR {
-
   encode(val: any): Uint8Array {
     return new Encoder().encode(val);
   }
 
   decodeMultiple(buf: Uint8Array): any[] {
-    const res: any[] = []
+    const res: any[] = [];
 
     const dec = new Decoder(buf);
     while (!dec.isEOF()) {
-      res.push(dec.decode())
+      res.push(dec.decode());
     }
 
     return res;

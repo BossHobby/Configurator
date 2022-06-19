@@ -1,23 +1,22 @@
-import { github } from '../util/github';
+import { github } from "../util/github";
 
 const store = {
   state: {
     firmware_releases: {},
   },
-  getters: {
-  },
+  getters: {},
   mutations: {
     set_firmware_releases(state, firmware_releases) {
-      state.firmware_releases = firmware_releases
+      state.firmware_releases = firmware_releases;
     },
   },
   actions: {
     fetch_firmware_releases({ commit }) {
       return github
         .fetchReleases()
-        .then(p => commit('set_firmware_releases', p))
-    }
-  }
-}
+        .then((p) => commit("set_firmware_releases", p));
+    },
+  },
+};
 
 export default store;

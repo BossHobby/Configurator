@@ -170,7 +170,7 @@ export default {
       updater.finishUpdate();
     }
   },
-  destroyed() {
+  unmounted() {
     clearInterval(this.interval);
   },
 };

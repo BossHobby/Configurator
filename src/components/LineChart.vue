@@ -7,7 +7,7 @@ export default {
   props: ["title", "axis", "labels"],
   data() {
     return {
-      colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+      colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
     };
   },
   computed: {
@@ -22,9 +22,9 @@ export default {
             fill: false,
             radius: 1,
             pointRadius: 0,
-            lineTension: 0.1
+            lineTension: 0.1,
           };
-        })
+        }),
       };
     },
     options() {
@@ -33,10 +33,10 @@ export default {
         maintainAspectRatio: false,
         title: {
           display: true,
-          text: this.title
+          text: this.title,
         },
         animation: {
-          duration: 0
+          duration: 0,
         },
         responsiveAnimationDuration: 0,
         scales: {
@@ -44,31 +44,31 @@ export default {
             {
               type: "linear",
               gridLines: {
-                display: true
+                display: true,
               },
               ticks: {
-                step: 10
-              }
-            }
+                step: 10,
+              },
+            },
           ],
           yAxes: [
             {
               gridLines: {
-                display: true
+                display: true,
               },
               ticks: {
-                step: 10
-              }
-            }
-          ]
+                step: 10,
+              },
+            },
+          ],
         },
         tooltips: {
           position: "average",
           mode: "index",
-          intersect: false
-        }
+          intersect: false,
+        },
       };
-    }
+    },
   },
   watch: {
     title() {
@@ -79,15 +79,15 @@ export default {
     },
     labels() {
       this.update();
-    }
+    },
   },
   methods: {
     update() {
       this.renderChart(this.chartdata, this.options);
-    }
+    },
   },
   mounted() {
     this.update();
-  }
+  },
 };
 </script>

@@ -1,120 +1,119 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue";
+import Router from "vue-router";
 
-import store from './store'
+import store from "./store";
 
-import Setup from './views/Setup.vue'
-import Rates from './views/Rates.vue'
-import Receiver from './views/Receiver.vue'
-import OSD from './views/OSD.vue'
-import Motor from './views/Motor.vue'
-import Blackbox from './views/Blackbox.vue'
-import State from './views/State.vue'
-import Perf from './views/Perf.vue'
-import Profile from './views/Profile.vue'
-import Flash from './views/Flash.vue'
-import Home from './views/Home.vue'
-import Log from './views/Log.vue'
-import Templates from './views/Templates.vue'
+import Setup from "./views/Setup.vue";
+import Rates from "./views/Rates.vue";
+import Receiver from "./views/Receiver.vue";
+import OSD from "./views/OSD.vue";
+import Motor from "./views/Motor.vue";
+import Blackbox from "./views/Blackbox.vue";
+import State from "./views/State.vue";
+import Perf from "./views/Perf.vue";
+import Profile from "./views/Profile.vue";
+import Flash from "./views/Flash.vue";
+import Home from "./views/Home.vue";
+import Log from "./views/Log.vue";
+import Templates from "./views/Templates.vue";
 
-Vue.use(Router)
+Vue.use(Router);
 
 const router = new Router({
-  mode: 'hash',
+  mode: "hash",
   base: import.meta.env.BASE_URL,
   routes: [
     {
-      path: '/',
+      path: "/",
       redirect: () => {
         if (store.state.serial.is_connected) {
-          return '/profile';
+          return "/profile";
         }
-        return '/home'
+        return "/home";
       },
     },
     {
-      path: '/home',
-      name: 'home',
-      component: Home
+      path: "/home",
+      name: "home",
+      component: Home,
     },
     {
-      path: '/templates',
-      name: 'templates',
-      component: Templates
+      path: "/templates",
+      name: "templates",
+      component: Templates,
     },
     {
-      path: '/flash',
-      name: 'flash',
-      component: Flash
+      path: "/flash",
+      name: "flash",
+      component: Flash,
     },
     {
-      path: '/profile',
-      name: 'profile',
-      component: Profile
+      path: "/profile",
+      name: "profile",
+      component: Profile,
     },
     {
-      path: '/setup',
-      name: 'setup',
-      component: Setup
+      path: "/setup",
+      name: "setup",
+      component: Setup,
     },
     {
-      path: '/rates',
-      name: 'rates',
-      component: Rates
+      path: "/rates",
+      name: "rates",
+      component: Rates,
     },
     {
-      path: '/receiver',
-      name: 'receiver',
-      component: Receiver
+      path: "/receiver",
+      name: "receiver",
+      component: Receiver,
     },
     {
-      path: '/osd',
-      name: 'osd',
-      component: OSD
+      path: "/osd",
+      name: "osd",
+      component: OSD,
     },
     {
-      path: '/motor',
-      name: 'motor',
-      component: Motor
+      path: "/motor",
+      name: "motor",
+      component: Motor,
     },
     {
-      path: '/blackbox',
-      name: 'blackbox',
-      component: Blackbox
+      path: "/blackbox",
+      name: "blackbox",
+      component: Blackbox,
     },
     {
-      path: '/state',
-      name: 'state',
-      component: State
+      path: "/state",
+      name: "state",
+      component: State,
     },
     {
-      path: '/perf',
-      name: 'perf',
-      component: Perf
+      path: "/perf",
+      name: "perf",
+      component: Perf,
     },
     {
-      path: '/log',
-      name: 'log',
-      component: Log
+      path: "/log",
+      name: "log",
+      component: Log,
     },
-  ]
-})
-
+  ],
+});
 
 router.beforeEach((to, from, next) => {
   if (store.state.serial.is_connected) {
-    if (to.name === 'home') {
-      next({ name: "profile" })
+    if (to.name === "home") {
+      next({ name: "profile" });
     } else {
       next();
     }
   } else {
-    if (to.name !== 'home' && to.name !== "flash" && to.name !== "log") {
-      next({ name: 'home' })
+    if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
+      next({ name: "home" });
     } else {
-      next()
+      next();
     }
   }
-})
+});
 
 export default router;

@@ -1,4 +1,4 @@
-import semver from 'semver';
+import semver from "semver";
 
 export function concatUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
   const res = new Uint8Array(a.length + b.length);
@@ -23,7 +23,7 @@ export class ArrayWriter {
     return this.offset;
   }
 
-  constructor() { }
+  constructor() {}
 
   public writeUint8(v: number) {
     this.grow();
@@ -49,10 +49,10 @@ export class ArrayWriter {
   }
 
   public array(): Uint8Array {
-    return new Uint8Array(this.buf, 0, this.offset)
+    return new Uint8Array(this.buf, 0, this.offset);
   }
 
-  private grow(num: number = 1) {
+  private grow(num = 1) {
     if (this.offset + num >= this.buf.byteLength) {
       let newSize = this.buf.byteLength;
       while (newSize < this.offset + num) {
@@ -98,10 +98,10 @@ export class ArrayReader {
 }
 
 export function decodeSemver(v: number): string {
-  return `v${(v >> 16) & 0xFF}.${(v >> 8) & 0xFF}.${(v >> 0) & 0xFF}`
+  return `v${(v >> 16) & 0xff}.${(v >> 8) & 0xff}.${(v >> 0) & 0xff}`;
 }
 
 export function encodeSemver(version: string): number {
   const v = semver.parse(version)!;
-  return (v.major << 16) | (v.minor << 8) | (v.patch & 0xFF);
+  return (v.major << 16) | (v.minor << 8) | (v.patch & 0xff);
 }

@@ -1,7 +1,7 @@
-import semver from 'semver';
-import { QuicVal } from '../serial/quic';
-import { serial } from '../serial/serial';
-import { decodeSemver } from '../util';
+import semver from "semver";
+import { QuicVal } from "../serial/quic";
+import { serial } from "../serial/serial";
+import { decodeSemver } from "../util";
 
 const store = {
   state: {
@@ -13,12 +13,12 @@ const store = {
     },
     filter: {
       gyro: [{}, {}],
-      dterm: [{}, {}]
+      dterm: [{}, {}],
     },
     osd: {
       callsign: "",
       elements: [],
-      elements_hd: []
+      elements_hd: [],
     },
     meta: {
       version: 0,
@@ -44,8 +44,8 @@ const store = {
       stick_rates: [{}],
       big_angle: {},
       small_angle: {},
-      throttle_dterm_attenuation: {}
-    }
+      throttle_dterm_attenuation: {},
+    },
   },
   getters: {
     has_legacy_stickrates(state) {
@@ -53,7 +53,7 @@ const store = {
     },
     has_legacy_osd(state) {
       return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
-    }
+    },
   },
   mutations: {
     set_default_profile(state, profile) {
@@ -61,15 +61,15 @@ const store = {
       for (const key in profile) {
         state[key] = profile[key];
       }
-    }
+    },
   },
   actions: {
     fetch_default_profile({ commit }) {
       return serial
         .get(QuicVal.DefaultProfile)
-        .then(p => commit('set_default_profile', p));
+        .then((p) => commit("set_default_profile", p));
     },
-  }
-}
+  },
+};
 
 export default store;

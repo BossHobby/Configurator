@@ -103,11 +103,10 @@ export default {
     this.initThree();
     this.animate();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     cancelAnimationFrame(this.frameRequest);
   },
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
