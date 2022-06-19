@@ -3,20 +3,21 @@ import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vite";
 import { createVuePlugin as vue } from "vite-plugin-vue2";
 
-let publicPath = "/";
+let base = "/";
 
 if (process.env.NODE_ENV === "production") {
   if (process.env.DEPLOYMENT === "gh-pages") {
-    publicPath = "/";
+    base = "/";
   } else {
-    publicPath = "/dist/";
+    base = "/dist/";
   }
 }
 
-process.env.VUE_APP_VERSION = require("./package.json").version;
+process.env.VITE_APP_VERSION = require("./package.json").version;
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: base,
   plugins: [vue()],
   server: {
     port: 8080,
