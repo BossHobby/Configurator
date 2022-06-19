@@ -1,5 +1,5 @@
 import { github } from "./github";
-import * as semver from "semver";
+import semver from "semver";
 
 function newNWUpdater() {
   const fs = nw.require("fs");

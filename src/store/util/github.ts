@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import * as semver from "semver";
+import semver from "semver";
 
 const FIRMWARE_REPO = {
   owner: "BossHobby",
@@ -27,16 +27,23 @@ class Github {
     return releases;
   }
 
+  private findNewVersion(versions, current) {
+    for (const v of versions) {
+      if (semver.gt(v, current)) {
+        return v;
+      }
+    }
+    return null;
+  }
+
   public async checkForUpdate(currentVersion: string) {
     const resp = await this.octokit.rest.repos.listReleases(CONFIGURATOR_REPO);
     const releases = resp.data.filter(
       (r) => r.assets.length > 0 && semver.valid(r.tag_name)
     );
 
-    const version = semver.maxSatisfying(
-      releases.map((r) => r.tag_name),
-      ">" + currentVersion
-    );
+    const versions = releases.map((r) => r.tag_name);
+    const version = this.findNewVersion(versions, currentVersion);
     if (!version) {
       return null;
     }
