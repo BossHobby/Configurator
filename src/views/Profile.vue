@@ -51,8 +51,8 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
-import Metadata from "@/components/Metadata";
-import Info from "@/components/Info";
+import Metadata from "@/components/Metadata.vue";
+import Info from "@/components/Info.vue";
 
 export default {
   name: "home",

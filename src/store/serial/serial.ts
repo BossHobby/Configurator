@@ -1,22 +1,29 @@
-import { QuicCmd, QuicFlag, QuicHeader, QuicPacket, QuicVal, QUIC_HEADER_LEN, QUIC_MAGIC } from './quic';
-import { ArrayWriter, concatUint8Array } from '../util';
-import { AsyncQueue, AsyncSemaphore } from './async';
-import { Log } from '@/log';
-import { CBOR } from './cbor';
-import { getWebSerial } from './webserial';
-import { settings } from '../settings';
+import {
+  QuicCmd,
+  QuicFlag,
+  QuicVal,
+  QUIC_HEADER_LEN,
+  QUIC_MAGIC,
+  type QuicHeader,
+  type QuicPacket,
+} from "./quic";
+import { ArrayWriter, concatUint8Array } from "../util";
+import { AsyncQueue, AsyncSemaphore } from "./async";
+import { Log } from "@/log";
+import { CBOR } from "./cbor";
+import { getWebSerial } from "./webserial";
+import { settings } from "../settings";
 
 const WebSerial = getWebSerial();
 
-const SOFT_REBOOT_MAGIC = 'S'.charCodeAt(0);
-const HARD_REBOOT_MAGIC = 'R'.charCodeAt(0);
+const SOFT_REBOOT_MAGIC = "S".charCodeAt(0);
+const HARD_REBOOT_MAGIC = "R".charCodeAt(0);
 
 const SERIAL_FILTERS = [
   { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
 ];
 
 export class Serial {
-
   private cbor = new CBOR();
 
   private shouldRun = true;
@@ -25,15 +32,14 @@ export class Serial {
   private queue = new AsyncQueue();
   private waitingCommands = new AsyncSemaphore(1);
 
-  private port?: any
+  private port?: any;
 
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<any>;
 
-
   private onErrorCallback?: (err: any) => void;
 
-  constructor() { }
+  constructor() {}
 
   async connect(errorCallback: any = undefined): Promise<any> {
     try {
@@ -47,7 +53,7 @@ export class Serial {
 
   private async _connectPort(errorCallback: any = undefined) {
     this.port = await WebSerial.requestPort({
-      filters: SERIAL_FILTERS
+      filters: SERIAL_FILTERS,
     });
     this.queue = new AsyncQueue();
     this.waitingCommands = new AsyncSemaphore(1);
@@ -56,7 +62,7 @@ export class Serial {
     await this.port.open({
       baudRate: settings.serial.baudRate,
       bufferSize: settings.serial.bufferSize,
-      flowControl: 'none',
+      flowControl: "none",
     });
 
     this.writer = await this.port.writable.getWriter();
@@ -91,7 +97,7 @@ export class Serial {
     if (packet.payload.length == 2) {
       return packet.payload[1];
     }
-    return packet.payload.slice(1)
+    return packet.payload.slice(1);
   }
 
   async set(id: QuicVal, ...val: any[]): Promise<any> {
@@ -105,7 +111,7 @@ export class Serial {
     if (packet.payload.length == 2) {
       return packet.payload[1];
     }
-    return packet.payload.slice(1)
+    return packet.payload.slice(1);
   }
 
   async command(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
@@ -129,7 +135,7 @@ export class Serial {
         this.reader.cancel();
         await this.reader.releaseLock();
       } catch (err) {
-        Log.warn('serial', err)
+        Log.warn("serial", err);
       }
     }
 
@@ -137,14 +143,14 @@ export class Serial {
       try {
         await this.writer.releaseLock();
       } catch (err) {
-        Log.warn('serial', err)
+        Log.warn("serial", err);
       }
     }
 
     try {
       await this.port?.close();
     } catch (err) {
-      Log.warn('serial', err)
+      Log.warn("serial", err);
     }
 
     this.reader = undefined;
@@ -169,11 +175,17 @@ export class Serial {
     const request = Uint8Array.from([
       QUIC_MAGIC,
       cmd,
-      (payload.length >> 8) & 0xFF,
-      (payload.length & 0xFF),
+      (payload.length >> 8) & 0xff,
+      payload.length & 0xff,
     ]);
 
-    Log.trace("serial", "[quic] sent cmd: %d len: %d", cmd, payload.length, values)
+    Log.trace(
+      "serial",
+      "[quic] sent cmd: %d len: %d",
+      cmd,
+      payload.length,
+      values
+    );
     await this.write(concatUint8Array(request, payload));
 
     let packet = await this.readPacket();
@@ -181,7 +193,14 @@ export class Serial {
       Log.info("serial", "[quic] " + packet.payload[0]);
       packet = await this.readPacket();
     }
-    Log.trace("serial", "[quic] recv cmd: %d flag: %d len: %d", packet.cmd, packet.flag, packet.len, packet.payload)
+    Log.trace(
+      "serial",
+      "[quic] recv cmd: %d flag: %d len: %d",
+      packet.cmd,
+      packet.flag,
+      packet.len,
+      packet.payload
+    );
     return packet;
   }
 
@@ -216,9 +235,9 @@ export class Serial {
     const header = await this.queue.read(QUIC_HEADER_LEN - 1);
     return {
       cmd: header[0] & (0xff >> 3),
-      flag: (header[0] >> 5),
-      len: (header[1]) << 8 | (header[2]),
-    }
+      flag: header[0] >> 5,
+      len: (header[1] << 8) | header[2],
+    };
   }
 
   private async readPacket(): Promise<QuicPacket> {
@@ -236,7 +255,7 @@ export class Serial {
       return {
         ...hdr,
         payload,
-      }
+      };
     }
 
     const writer = new ArrayWriter();
@@ -261,7 +280,7 @@ export class Serial {
     return {
       ...hdr,
       payload,
-    }
+    };
   }
 
   private async startReading() {
@@ -275,7 +294,7 @@ export class Serial {
           this.queue.write(value);
         }
       } catch (e) {
-        Log.warning("serial", e)
+        Log.warning("serial", e);
         this.close();
         if (this.onErrorCallback) {
           this.onErrorCallback(e);

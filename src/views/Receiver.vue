@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import ReceiverSettings from "@/components/ReceiverSettings";
-import RCChannels from "@/components/RCChannels";
-import AuxChannels from "@/components/AuxChannels";
+import ReceiverSettings from "@/components/ReceiverSettings.vue";
+import RCChannels from "@/components/RCChannels.vue";
+import AuxChannels from "@/components/AuxChannels.vue";
 
 import { mapGetters } from "vuex";
 

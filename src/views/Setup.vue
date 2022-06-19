@@ -25,11 +25,11 @@
 </template>
 
 <script>
-import Motor from "@/components/Motor";
-import Voltage from "@/components/Voltage";
-import Serial from "@/components/Serial";
-import VTX from "@/components/VTX";
-import GyroModel from "@/components/GyroModel";
+import Motor from "@/components/Motor.vue";
+import Voltage from "@/components/Voltage.vue";
+import Serial from "@/components/Serial.vue";
+import VTX from "@/components/VTX.vue";
+import GyroModel from "@/components/GyroModel.vue";
 
 import { mapActions, mapState } from "vuex";
 
@@ -40,11 +40,11 @@ export default {
     Voltage,
     Serial,
     VTX,
-    GyroModel
+    GyroModel,
   },
   computed: mapState(["profile"]),
   methods: {
-    ...mapActions([])
-  }
+    ...mapActions([]),
+  },
 };
 </script>

@@ -239,7 +239,7 @@ export default {
 svg {
   display: block;
 
-  background-image: url("~@/assets/osd_background.jpg");
+  background-image: url("@/assets/osd_background.jpg");
   background-attachment: local;
   background-size: cover;
 

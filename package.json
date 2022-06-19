@@ -3,31 +3,30 @@
   "version": "0.5.6",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "dev": "vite",
     "build": "npm run build:clean && npm run build:vue && npm run build:nw",
-    "lint": "vue-cli-service lint",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "build:clean": "rimraf ./dist ./build",
-    "build:gh-pages": "env DEPLOYMENT=gh-pages vue-cli-service build --dest docs",
+    "build:vue": "vue-tsc --noEmit && vite build",
+    "build:gh-pages": "env DEPLOYMENT=gh-pages vue-tsc --noEmit && vite build --dest docs",
     "build:linux": "npm run build:linux:clean && npm run build:vue && build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
     "build:linux:clean": "rimraf ./dist ./build/quic-config*linux*",
     "build:mac": "npm run build:mac:clean && npm run build:vue && build --tasks mac-x64 --mirror https://dl.nwjs.io/ .",
     "build:mac:clean": "rimraf ./dist ./build/quic-config*mac*",
     "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
-    "build:vue": "vue-cli-service build",
     "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
     "pwa": "npm run build:vue && npx http-server ./dist",
-    "start": "concurrently \"npm run serve\" \"wait-on http://localhost:8080 && nw .\""
+    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:8080 && nw .\""
   },
   "main": "http://localhost:8080",
   "dependencies": {
     "@octokit/rest": "^18.12.0",
-    "@types/dom-serial": "^1.0.2",
     "bootstrap-vue": "^2.21.2",
     "chart.js": "^2.9.4",
-    "core-js": "^3.8.3",
     "extract-zip": "^2.0.1",
     "follow-redirects": "^1.14.9",
+    "isomorphic-fetch": "^3.0.0",
     "md5": "^2.3.0",
     "register-service-worker": "^1.7.2",
     "semver": "^7.3.5",
@@ -45,56 +44,31 @@
     "yaml": "^2.1.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
-    "@types/node": "^16.11.26",
+    "@rushstack/eslint-patch": "^1.1.0",
+    "@types/dom-serial": "^1.0.2",
+    "@types/node": "^16.11.27",
     "@types/nw.js": "^0.13.14",
     "@types/semver": "^7.3.9",
-    "@types/w3c-web-usb": "^1.0.5",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
-    "@typescript-eslint/parser": "^5.4.0",
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-eslint": "~5.0.0",
-    "@vue/cli-plugin-pwa": "~5.0.0",
-    "@vue/cli-plugin-typescript": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "@vue/eslint-config-typescript": "^9.1.0",
+    "@types/w3c-web-usb": "^1.0.6",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/eslint-config-typescript": "^10.0.0",
+    "@vue/tsconfig": "^0.1.3",
     "concurrently": "^6.5.1",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3",
+    "eslint": "^8.5.0",
+    "eslint-plugin-vue": "^8.2.0",
     "glob": "^7.2.0",
     "http-server": "^14.1.0",
     "nw": "0.54.0-sdk",
     "nwjs-builder-phoenix": "^1.15.0",
     "nwjs-types": "^1.0.0",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "sass": "^1.49.9",
-    "sass-loader": "^8.0.2",
-    "typescript": "~4.5.5",
-    "vue-template-compiler": "^2.6.14",
+    "sass": "^1.52.1",
+    "typescript": "~4.6.3",
+    "vite": "^2.9.5",
+    "vite-plugin-vue2": "^1.9.0",
+    "vue-tsc": "^0.34.7",
     "wait-on": "^6.0.1"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended",
-      "@vue/typescript"
-    ],
-    "parserOptions": {
-      "parser": "@typescript-eslint/parser"
-    },
-    "rules": {
-      "vue/multi-word-component-names": "off"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
   },
   "browserslist": [
     "> 1%",

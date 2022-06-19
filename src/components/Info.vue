@@ -36,7 +36,7 @@ export default {
   data() {
     return {
       updateAvailable: null,
-      appVersion: process.env.VUE_APP_VERSION,
+      appVersion: import.meta.env.VUE_APP_VERSION,
     };
   },
   methods: {

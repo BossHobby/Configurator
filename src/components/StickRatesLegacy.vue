@@ -140,7 +140,7 @@
 </template>
 
 <script>
-import LineChart from "@/components/LineChart";
+import LineChart from "@/components/LineChart.vue";
 import { mapFields } from "@/store/helper.js";
 
 export default {
@@ -266,5 +266,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

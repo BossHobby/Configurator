@@ -1,4 +1,4 @@
-export const QUIC_MAGIC = '#'.charCodeAt(0);
+export const QUIC_MAGIC = "#".charCodeAt(0);
 export const QUIC_HEADER_LEN = 4;
 
 export enum QuicCmd {
@@ -50,11 +50,11 @@ export enum QuicFlag {
 }
 
 export interface QuicHeader {
-  cmd: QuicCmd
-  flag: QuicFlag
-  len: number
+  cmd: QuicCmd;
+  flag: QuicFlag;
+  len: number;
 }
 
 export interface QuicPacket extends QuicHeader {
-  payload: any
+  payload: any;
 }

@@ -21,7 +21,7 @@ Vue.use(Router)
 
 const router = new Router({
   mode: 'hash',
-  base: process.env.BASE_URL,
+  base: import.meta.env.BASE_URL,
   routes: [
     {
       path: '/',

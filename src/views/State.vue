@@ -20,8 +20,8 @@
 <script>
 import { mapState } from "vuex";
 
-import RealtimePlot from "@/components/RealtimePlot";
-import GyroModel from "@/components/GyroModel";
+import RealtimePlot from "@/components/RealtimePlot.vue";
+import GyroModel from "@/components/GyroModel.vue";
 
 export default {
   name: "state",

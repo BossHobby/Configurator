@@ -8,9 +8,9 @@
 
 <script>
 import { mapGetters, mapState } from "vuex";
-import OSDElementsLegacy from "@/components/OSDElementsLegacy";
-import OSDElements from "@/components/OSDElements";
-import OSDFont from "@/components/OSDFont";
+import OSDElementsLegacy from "@/components/OSDElementsLegacy.vue";
+import OSDElements from "@/components/OSDElements.vue";
+import OSDFont from "@/components/OSDFont.vue";
 
 export default {
   name: "OSD",

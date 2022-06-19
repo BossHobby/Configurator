@@ -19,7 +19,7 @@
 <script>
 import { mapState } from "vuex";
 
-import RealtimePlot from "@/components/RealtimePlot";
+import RealtimePlot from "@/components/RealtimePlot.vue";
 
 export default {
   name: "perf",

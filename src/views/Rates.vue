@@ -19,10 +19,10 @@
 </template>
 
 <script>
-import StickRates from "@/components/StickRates";
-import StickRatesLegacy from "@/components/StickRatesLegacy";
-import PIDRates from "@/components/PIDRates";
-import FilterSettings from "@/components/FilterSettings";
+import StickRates from "@/components/StickRates.vue";
+import StickRatesLegacy from "@/components/StickRatesLegacy.vue";
+import PIDRates from "@/components/PIDRates.vue";
+import FilterSettings from "@/components/FilterSettings.vue";
 import { mapGetters } from "vuex";
 
 export default {
@@ -39,5 +39,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

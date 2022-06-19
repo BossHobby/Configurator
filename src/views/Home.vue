@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Info from "@/components/Info";
+import Info from "@/components/Info.vue";
 
 export default {
   name: "home",
