@@ -10,3 +10,4 @@ git commit --amend --no-edit
 git push -f
 
 git checkout master
+git push && git push --tags
