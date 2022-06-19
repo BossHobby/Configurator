@@ -158,7 +158,7 @@
 import { mapState, mapActions, mapGetters } from "vuex";
 import { mapFields } from "@/store/helper.js";
 import { $enum } from "ts-enum-util";
-import * as md5 from "md5";
+import md5 from "md5";
 
 export default {
   name: "ReceiverSettings",

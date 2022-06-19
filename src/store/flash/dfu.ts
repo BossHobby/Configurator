@@ -1,6 +1,6 @@
 import { Log } from "@/log";
 import type { FlashProgressCallback } from "./flash";
-import { IntelHEX } from "./ihex";
+import type { IntelHEX } from "./ihex";
 
 enum DFURequest {
   DETACH = 0x00, // OUT, Requests the device to leave DFU mode and enter the application.

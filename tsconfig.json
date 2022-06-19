@@ -10,7 +10,10 @@
       "node",
       "dom-serial",
       "w3c-web-usb",
-    ]
+      "nw.js"
+    ],
+    "allowJs": true,
+    "noImplicitAny": false
   },
 
   "references": [
