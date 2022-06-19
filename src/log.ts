@@ -1,4 +1,4 @@
-import store from "./store";
+import { store } from "./store";
 import util from "util";
 
 export enum LogLevel {

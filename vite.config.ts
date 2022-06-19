@@ -1,8 +1,8 @@
 import { fileURLToPath, URL } from "url";
 
 import { defineConfig } from "vite";
-import { createVuePlugin as vue } from "vite-plugin-vue2";
 import { VitePWA } from "vite-plugin-pwa";
+import vue from "@vitejs/plugin-vue";
 
 let base = "/";
 
@@ -23,7 +23,15 @@ process.env.VITE_APP_VERSION = require("./package.json").version;
 export default defineConfig({
   base: base,
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          compatConfig: {
+            MODE: 3,
+          },
+        },
+      }
+    }),
     VitePWA({
       includeAssets: [
         "favicon.svg",
@@ -66,6 +74,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      vue: "@vue/compat",
       "node-fetch": "isomorphic-fetch",
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },

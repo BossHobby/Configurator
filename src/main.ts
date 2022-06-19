@@ -1,29 +1,25 @@
-import Vue from "vue";
-import VueMoment from "vue-moment";
-import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
+import "@fortawesome/fontawesome-free/js/all";
 
 import "./style.scss";
 import "./chart.ts";
 
+import { createApp } from "vue";
+
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
+import { store } from "./store";
 
 import SpinnerBtn from "./components/SpinnerBtn.vue";
 import Tooltip from "./components/Tooltip.vue";
 
-Vue.component("spinner-btn", SpinnerBtn);
-Vue.component("tooltip", Tooltip);
-
-Vue.use(BootstrapVue);
-Vue.use(BootstrapVueIcons);
-
-Vue.use(VueMoment);
-
-Vue.config.productionTip = false;
-
-new Vue({
+const app = createApp({
   router,
-  store,
-  render: (h) => h(App),
-}).$mount("#app");
+  ...App,
+});
+
+app.component("spinner-btn", SpinnerBtn);
+app.component("tooltip", Tooltip);
+
+app.use(store);
+
+app.mount("#app");

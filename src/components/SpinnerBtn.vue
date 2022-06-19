@@ -1,8 +1,10 @@
 <template>
-  <b-button @click="clickHandler" v-bind="$attrs">
-    <b-spinner v-if="loading" small></b-spinner>
+  <button class="button" @click="clickHandler" v-bind="$attrs">
+    <span v-if="loading" class="icon">
+      <i class="fas fa-spinner fa-pulse"></i>
+    </span>
     <slot v-else></slot>
-  </b-button>
+  </button>
 </template>
 
 <script>

@@ -1,7 +1,4 @@
-import Vue from "vue";
-import Vuex from "vuex";
-
-Vue.use(Vuex);
+import { createStore } from "vuex";
 
 import { serial } from "./serial/serial";
 import { QuicCmd, QuicVal } from "./serial/quic";
@@ -28,7 +25,7 @@ const rebootNeededKeys = [
 
 const applyNeededKeys = ["profile."];
 
-const store = new Vuex.Store({
+export const store = createStore({
   modules: {
     profile: profileModule,
     default_profile: defaultProfileModule,
@@ -119,5 +116,3 @@ const store = new Vuex.Store({
     },
   },
 });
-
-export default store;

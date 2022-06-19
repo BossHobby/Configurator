@@ -3,14 +3,21 @@
     <b-overlay :show="updateProcessing" no-wrap z-index="9999">
       <template #overlay>
         <div class="text-center">
-          <b-spinner class="float-center" label="Spinning"></b-spinner>
+          <span class="icon">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
           <h1>Updating...</h1>
         </div>
       </template>
     </b-overlay>
 
-    <b-navbar fixed="top" class="navbar-top">
-      <b-navbar-brand to="/">
+    <nav
+      class="navbar"
+      role="navigation"
+      aria-label="main navigation"
+      fixed="top"
+    >
+      <div class="navbar-brand">
         <img
           src="./assets/Logo.svg"
           class="d-inline-block"
@@ -18,8 +25,8 @@
           height="40px"
         />
         QUICKSILVER
-      </b-navbar-brand>
-      <b-navbar-nav v-if="serial.is_connected">
+      </div>
+      <div class="navbar-menu" v-if="serial.is_connected">
         <b-nav-item to="/templates">Templates</b-nav-item>
         <b-nav-item to="/profile">Profile</b-nav-item>
         <b-nav-item to="/setup">Setup</b-nav-item>
@@ -41,13 +48,13 @@
           >Perf</b-nav-item
         >
         <b-nav-item to="/log">Log</b-nav-item>
-      </b-navbar-nav>
-      <b-navbar-nav v-else>
+      </div>
+      <div class="navbar-menu" v-else>
         <b-nav-item to="/">Home</b-nav-item>
         <b-nav-item to="/flash">Flash</b-nav-item>
         <b-nav-item to="/log">Log</b-nav-item>
-      </b-navbar-nav>
-      <b-navbar-nav class="ml-auto">
+      </div>
+      <div class="navbar-end">
         <b-nav-form v-on:submit.prevent="toggle_connection()" right>
           {{ serial.port }}
           <b-button
@@ -59,8 +66,8 @@
             {{ connectButtonText }}
           </b-button>
         </b-nav-form>
-      </b-navbar-nav>
-    </b-navbar>
+      </div>
+    </nav>
 
     <div class="alert-portal">
       <b-container>
@@ -81,9 +88,7 @@
     <b-navbar v-if="serial.is_connected" fixed="bottom" class="navbar">
       <b-navbar-brand>
         {{ profile.meta.name }}
-        <small class="text-muted ml-2"
-          >Modified {{ date | moment("from") }}</small
-        >
+        <small class="text-muted ml-2">Modified {{ timeAgo(date) }}</small>
         <small class="text-muted ml-2" style="font-size: 60%"
           >Looptime {{ state.looptime_autodetect }} CPU Load
           {{ state.cpu_load }}</small
@@ -120,6 +125,7 @@
 <script>
 import { updater } from "@/store/util/updater";
 import { mapActions, mapState, mapGetters } from "vuex";
+import { timeAgo } from "./filters";
 
 export default {
   name: "app",
@@ -163,6 +169,7 @@ export default {
     },
   },
   methods: {
+    timeAgo,
     ...mapActions(["toggle_connection", "apply_profile", "soft_reboot"]),
   },
   created() {
@@ -183,9 +190,5 @@ export default {
   top: 85px;
   z-index: 10001;
   width: 500px;
-}
-.navbar {
-  background-color: #fff;
-  box-shadow: 0px 0px 1px 0px #000;
 }
 </style>

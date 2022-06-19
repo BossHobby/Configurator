@@ -14,7 +14,7 @@
       <b-col sm="4" class="my-2">
         <label>Profile Last Modified</label>
       </b-col>
-      <b-col sm="8" class="my-2">{{ date | moment("from") }}</b-col>
+      <b-col sm="8" class="my-2">{{ timeAgo(date) }}</b-col>
     </b-row>
     <b-row>
       <b-col sm="4" class="my-2">
@@ -83,6 +83,7 @@ import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
 import { mapFields } from "@/store/helper.js";
 import { QuicVal } from "@/store/serial/quic";
+import { timeAgo } from "../filters";
 
 export default {
   name: "Metadata",
@@ -107,6 +108,7 @@ export default {
     },
   },
   methods: {
+    timeAgo,
     ...mapActions(["apply_profile", "reset_profile"]),
     uploadProfile() {
       const reader = new FileReader();
