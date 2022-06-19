@@ -55,6 +55,11 @@ const store = new Vuex.Store({
 
     pid_rate_presets: [],
   },
+  getters: {
+    is_read_only(state) {
+      return state.info.quic_protocol_version < 5 || state.state.failloop > 0;
+    },
+  },
   mutations: {
     set_pid_rate_presets(state, pid_rate_presets) {
       state.pid_rate_presets = pid_rate_presets
