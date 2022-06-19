@@ -10,7 +10,8 @@
       "node",
       "dom-serial",
       "w3c-web-usb",
-      "nw.js"
+      "nw.js",
+      "semver"
     ],
     "allowJs": true,
     "noImplicitAny": false
