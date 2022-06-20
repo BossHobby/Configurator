@@ -4,7 +4,7 @@
       Receiver
       <b-button size="sm" class="my-2 mx-2" @click="reset">Reset</b-button>
     </h5>
-    <b-row v-if="info.rx_protocol != null">
+    <b-row v-if="info.rx_protocol != null && receiver_protocol == null">
       <b-col sm="4" class="my-2">
         <label>
           Protocol
@@ -265,6 +265,11 @@ export default {
     },
     elrsSwitchMode() {
       return this.bind?.info?.raw[8] ? "Hybrid Switches" : "1Bit Switches";
+    },
+  },
+  watch: {
+    receiver_protocol() {
+      this.reset();
     },
   },
   methods: {
