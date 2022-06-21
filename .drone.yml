@@ -5,7 +5,7 @@ name: default
 
 steps:
   - name: web
-    image: hanfer/node-wine:14
+    image: hanfer/node-wine:16
     commands:
       - npm install
       - npm run build
