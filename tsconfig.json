@@ -11,7 +11,8 @@
       "dom-serial",
       "w3c-web-usb",
       "nw.js",
-      "semver"
+      "semver",
+      "vite-plugin-pwa/client",
     ],
     "allowJs": true,
     "noImplicitAny": false

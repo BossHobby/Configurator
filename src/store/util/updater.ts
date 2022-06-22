@@ -128,33 +128,10 @@ function newNWUpdater() {
 function newPWAUpdater() {
   class Updater {
     private hasUpdate = false;
-    private refreshing = false;
-    private registration?: ServiceWorkerRegistration;
+    private updateSW?: (reloadPage?: boolean) => Promise<void>;
     private updateCallback?: (v: any) => Promise<any>;
 
-    constructor() {
-      document.addEventListener(
-        "swUpdated",
-        (event: any) => {
-          this.registration = event.detail;
-          this.hasUpdate = true;
-
-          if (this.updateCallback) {
-            this.updateCallback(this.hasUpdate);
-          }
-        },
-        { once: true }
-      );
-
-      navigator.serviceWorker?.addEventListener("controllerchange", () => {
-        if (this.refreshing) {
-          return;
-        }
-
-        this.refreshing = true;
-        window.location.reload();
-      });
-    }
+    constructor() {}
 
     public updatePreparing() {
       return false;
@@ -169,16 +146,38 @@ function newPWAUpdater() {
       updateCallback: (v: any) => Promise<any>
     ) {
       this.updateCallback = updateCallback;
-    }
-
-    public async update(release: any) {
-      this.hasUpdate = false;
-
-      if (!this.registration || !this.registration.waiting) {
+      if (this.updateSW) {
         return;
       }
 
-      this.registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      try {
+        const updater = this;
+        const { registerSW } = await import("virtual:pwa-register");
+        this.updateSW = registerSW({
+          immediate: true,
+          onOfflineReady() {
+            console.log("PWA offline ready");
+          },
+          onNeedRefresh() {
+            updater.hasUpdate = true;
+
+            if (updater.updateCallback) {
+              updater.updateCallback(updater.hasUpdate);
+            }
+          },
+          onRegistered(swRegistration) {},
+          onRegisterError(e) {},
+        });
+      } catch {
+        console.log("PWA disabled");
+      }
+    }
+
+    public async update(release: any) {
+      if (this.hasUpdate) {
+        this.hasUpdate = false;
+        this.updateSW && this.updateSW(true);
+      }
     }
 
     public async finishUpdate() {}
