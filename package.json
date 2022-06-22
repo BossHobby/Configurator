@@ -16,7 +16,7 @@
     "build:nw": "build --concurrent --tasks win-x64,linux-x64,mac-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows": "npm run build:windows:clean && npm run build:vue && build --tasks win-x64 --mirror https://dl.nwjs.io/ .",
     "build:windows:clean": "rimraf ./dist ./build/quic-config*win*",
-    "pwa": "npm run build:vue && npx http-server ./dist",
+    "pwa": "env DEPLOYMENT=local vue-tsc --noEmit && env DEPLOYMENT=local vite build && npx http-server ./dist",
     "start": "concurrently \"npm run serve\" \"nw .\""
   },
   "main": "http://localhost:8080",

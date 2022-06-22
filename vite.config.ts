@@ -7,7 +7,10 @@ import { VitePWA } from "vite-plugin-pwa";
 let base = "/";
 
 if (process.env.NODE_ENV === "production") {
-  if (process.env.DEPLOYMENT === "gh-pages") {
+  if (
+    process.env.DEPLOYMENT === "gh-pages" ||
+    process.env.DEPLOYMENT === "local"
+  ) {
     base = "/";
   } else {
     base = "/dist/";
