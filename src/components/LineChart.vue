@@ -1,9 +1,13 @@
+<template>
+  <LineChart :chart-data="chartData" :chart-options="chartOptions" ref="chart" />
+</template>
+
 <script>
-import { Line } from "vue-chartjs";
+import { Line } from "vue-chartjs/legacy";
 
 export default {
   name: "line-chart",
-  extends: Line,
+  components: { LineChart: Line },
   props: ["title", "axis", "labels"],
   data() {
     return {
@@ -11,7 +15,7 @@ export default {
     };
   },
   computed: {
-    chartdata() {
+    chartData() {
       return {
         labels: this.labels,
         datasets: this.axis.map((a, i) => {
@@ -27,7 +31,7 @@ export default {
         }),
       };
     },
-    options() {
+    chartOptions() {
       return {
         responsive: true,
         maintainAspectRatio: false,
@@ -40,54 +44,34 @@ export default {
         },
         responsiveAnimationDuration: 0,
         scales: {
-          xAxes: [
-            {
-              type: "linear",
-              gridLines: {
-                display: true,
-              },
-              ticks: {
-                step: 10,
-              },
+          x: {
+            type: "linear",
+            gridLines: {
+              display: true,
             },
-          ],
-          yAxes: [
-            {
-              gridLines: {
-                display: true,
-              },
-              ticks: {
-                step: 10,
-              },
+            ticks: {
+              step: 10,
             },
-          ],
+          },
+          y: {
+            gridLines: {
+              display: true,
+            },
+            ticks: {
+              step: 10,
+            },
+          },
         },
-        tooltips: {
-          position: "average",
-          mode: "index",
-          intersect: false,
+        plugins: {
+          tooltip: {
+            enabled: true,
+            position: "average",
+            mode: "index",
+            intersect: false,
+          },
         },
       };
     },
-  },
-  watch: {
-    title() {
-      this.update();
-    },
-    axis() {
-      this.update();
-    },
-    labels() {
-      this.update();
-    },
-  },
-  methods: {
-    update() {
-      this.renderChart(this.chartdata, this.options);
-    },
-  },
-  mounted() {
-    this.update();
   },
 };
 </script>

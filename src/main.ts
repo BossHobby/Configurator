@@ -3,6 +3,7 @@ import VueMoment from "vue-moment";
 import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 
 import "./style.scss";
+import "./chart.ts";
 
 import App from "./App.vue";
 import router from "./router";

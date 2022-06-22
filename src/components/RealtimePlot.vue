@@ -1,9 +1,13 @@
+<template>
+  <Scatter :chart-data="chartData" :chart-options="chartOptions" ref="chart" />
+</template>
+
 <script>
-import { Scatter } from "vue-chartjs";
+import { Scatter } from "vue-chartjs/legacy";
 
 export default {
   name: "RealtimePlot",
-  extends: Scatter,
+  components: { Scatter },
   props: ["title", "time", "input", "axis", "transform"],
   data() {
     return {
@@ -12,7 +16,7 @@ export default {
     };
   },
   computed: {
-    chartdata() {
+    chartData() {
       var datasets = [];
 
       if (Array.isArray(this.axis)) {
@@ -44,7 +48,7 @@ export default {
         datasets,
       };
     },
-    options() {
+    chartOptions() {
       return {
         responsive: true,
         maintainAspectRatio: false,
@@ -61,42 +65,31 @@ export default {
           },
         },
         scales: {
-          xAxes: [
-            {
-              type: "time",
-              time: {
-                unit: "second",
-                displayFormats: {
-                  second: "HH:mm:ss",
-                },
+          x: {
+            type: "time",
+            time: {
+              unit: "second",
+              displayFormats: {
+                second: "HH:mm:ss",
               },
-            },
-          ],
-        },
-        tooltips: {
-          mode: "index",
-          position: "average",
-          intersect: false,
-          callbacks: {
-            label: function (tooltipItem, data) {
-              var label = data.datasets[tooltipItem.datasetIndex].label || "";
-              if (label) {
-                label += ": ";
-              }
-              label += tooltipItem.yLabel;
-              return label;
             },
           },
         },
         plugins: {
-          crosshair: {
-            line: {
-              color: "#333",
-            },
-            sync: {
-              enabled: true,
-              group: 1,
-              suppressTooltips: false,
+          tooltip: {
+            enabled: true,
+            mode: "index",
+            position: "average",
+            intersect: false,
+            callbacks: {
+              label: (item) => {
+                var label = item.dataset.label || "";
+                if (label) {
+                  label += ": ";
+                }
+                label += item.formattedValue;
+                return label;
+              },
             },
           },
         },
@@ -105,11 +98,7 @@ export default {
   },
   watch: {
     input(values) {
-      const chart = this.$data._chart;
-      if (!chart) {
-        return this.renderChart(this.chartdata, this.options);
-      }
-
+      const chart = this.$refs.chart.getCurrentChart();
       const transform = this.transform || ((v) => v);
       const time = this.time || Date.now();
 
@@ -136,22 +125,10 @@ export default {
         }
       }
 
-      if (Date.now() - this.lastUpdate > 100) {
-        chart.update();
+      if (Date.now() - this.lastUpdate > 250) {
         this.lastUpdate = time;
+        this.$refs.chart.updateChart();
       }
-    },
-  },
-  mounted() {
-    this.renderChart(this.chartdata, this.options);
-  },
-  methods: {
-    reset() {
-      const chart = this.$data._chart;
-      for (let i = 0; i < this.axis.length; i++) {
-        chart.data.datasets[i].data = [];
-      }
-      this.renderChart(this.chartdata, this.options);
     },
   },
 };
