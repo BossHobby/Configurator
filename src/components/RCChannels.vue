@@ -100,7 +100,7 @@ export default {
       "receiver.stick_calibration_limits",
     ]),
     ...mapState({
-      rx: (state) => state.state.rx,
+      rx: (state) => state.state.rx_filtered,
       stick_calibration_wizard: (state) => state.state.stick_calibration_wizard,
     }),
     channelStyle() {
