@@ -190,7 +190,7 @@ export default {
       return $enum(this.RXProtocol).getKeys();
     },
     rx_protocol() {
-      return this.info.rx_protocol || this.receiver_protocol;
+      return this.receiver_protocol || this.info.rx_protocol;
     },
     protocolOptions() {
       return (this.info.rx_protocols || [])
