@@ -2,6 +2,8 @@ import { createHelpers } from "@/store/helper.js";
 import { serial } from "../serial/serial";
 import { QuicVal } from "../serial/quic";
 import { Log } from "@/log";
+import semver from "semver";
+import { decodeSemver } from "../util";
 
 const { get_profile_field, update_profile_field } = createHelpers("profile");
 
@@ -110,10 +112,16 @@ const store = {
     current_stick_rate: (state) => {
       return state.pid.stick_rates[state.pid.stick_profile];
     },
+    profileVersionGt(state) {
+      return (version) => {
+        return semver.gt(state.semver, version);
+      };
+    },
   },
   mutations: {
     update_profile_field,
     set_profile(state, profile) {
+      profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");
       for (const key in profile) {
         state[key] = profile[key];

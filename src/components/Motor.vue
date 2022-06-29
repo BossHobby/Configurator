@@ -137,6 +137,22 @@
             ></b-form-input>
           </b-col>
         </b-row>
+        <b-row v-if="profileVersionGt('0.2.0')">
+          <b-col sm="4" class="my-2">
+            <label for="motor-limit-percent">
+              Motor Limit Percent
+              <tooltip entry="motor.motor_limit" />
+            </label>
+          </b-col>
+          <b-col sm="8" class="my-2">
+            <b-form-input
+              id="motor-limit-percent"
+              type="number"
+              step="1"
+              v-model.number="motor.motor_limit"
+            ></b-form-input>
+          </b-col>
+        </b-row>
       </b-col>
     </b-row>
   </b-card>
@@ -164,7 +180,7 @@ export default {
   },
   computed: {
     ...mapFields("profile", ["motor"]),
-    ...mapGetters(["has_feature"]),
+    ...mapGetters(["has_feature", "profileVersionGt"]),
     ...mapState(["info"]),
     ...mapState("constants", ["Features", "GyroRotation"]),
     gyroOrientation: {
