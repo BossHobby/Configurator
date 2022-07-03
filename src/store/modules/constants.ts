@@ -35,7 +35,7 @@ enum AuxChannels {
   AUX_GESTURE,
 }
 
-enum AuxFunctions {
+enum AuxFunctionsV010 {
   AUX_ARMING,
   AUX_IDLE_UP,
   AUX_LEVELMODE,
@@ -49,6 +49,23 @@ enum AuxFunctions {
   AUX_RSSI,
   AUX_FPV_SWITCH,
   AUX_BLACKBOX,
+}
+
+enum AuxFunctionsV011 {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_RACEMODE,
+  AUX_HORIZON,
+  AUX_STICK_BOOST_PROFILE,
+  _AUX_RATE_PROFILE,
+  AUX_BUZZER_ENABLE,
+  AUX_TURTLE,
+  AUX_MOTOR_TEST,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
 }
 
 enum RXProtocolV5 {
@@ -145,7 +162,6 @@ const store = {
     Features,
     GyroRotation,
     AuxChannels,
-    AuxFunctions,
     RXSerialProtocol,
     StickWizardState,
     Failloop,
@@ -159,6 +175,12 @@ const store = {
         return RXProtocolV010;
       }
       return RXProtocolV5;
+    },
+    AuxFunctions: (state, getters, rootState) => {
+      if (semver.gt(rootState.info.quic_protocol_semver, "0.1.0")) {
+        return AuxFunctionsV011;
+      }
+      return AuxFunctionsV010;
     },
   },
   mutations: {},

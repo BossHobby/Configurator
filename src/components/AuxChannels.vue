@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import { $enum } from "ts-enum-util";
 import { mapFields } from "@/store/helper.js";
 
@@ -51,24 +51,27 @@ export default {
       aux: (state) => state.state.aux,
     }),
     ...mapState("constants", {
-      auxChannels: (state) =>
-        $enum(state.AuxChannels).map((value, key) => {
+      auxChannels: (state) => {
+        return $enum(state.AuxChannels).map((value, key) => {
           return {
             text: key,
             value,
           };
-        }),
-      auxFunctions: (state) =>
-        $enum(state.AuxFunctions)
-          .getKeys()
-          .map((f, index) => {
-            return {
-              index,
-              key: f,
-            };
-          })
-          .filter((f) => !f.key.startsWith("_")),
+        });
+      },
     }),
+    ...mapGetters("constants", ["AuxFunctions"]),
+    auxFunctions: (state) => {
+      return $enum(state.AuxFunctions)
+        .getKeys()
+        .map((f, index) => {
+          return {
+            index,
+            key: f,
+          };
+        })
+        .filter((f) => !f.key.startsWith("_"));
+    },
   },
   data() {
     return {};
