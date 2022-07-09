@@ -5,6 +5,7 @@
         v-for="(counter, index) in perf.counters"
         :key="'counter' + index"
         sm="6"
+        class="my-3"
       >
         <RealtimePlot
           :title="counters[index]"
