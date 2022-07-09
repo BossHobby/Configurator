@@ -8,6 +8,10 @@
           Please update to be able to change settings. <br />
           Current profile can be exported and loaded.
         </b-alert>
+        <b-alert variant="danger" :show="state.failloop > 0">
+          Faillop {{ failloopMessage }} ({{ state.failloop }}) Detected! <br />
+          Please fix the issue to be able to change settings. <br />
+        </b-alert>
       </b-col>
       <b-col sm="12">
         <Metadata class="control-card"></Metadata>
@@ -50,7 +54,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import Metadata from "@/components/Metadata.vue";
 import Info from "@/components/Info.vue";
 
@@ -86,7 +90,8 @@ export default {
     Info,
   },
   computed: {
-    ...mapState(["info"]),
+    ...mapState(["info", "state"]),
+    ...mapGetters(["failloopMessage"]),
     serialPorts() {
       const ports = [{ value: 0, text: "UART_INVALID" }];
       for (let i = 1; i < this.info.usart_ports.length; i++) {

@@ -156,6 +156,19 @@ enum Failloop {
   FAILLOOP_SPI_MAIN = 8, // - spi error main loop  - triggered by hardware spi driver only
 }
 
+export const FailloopMessages = {
+  [Failloop.FAILLOOP_NONE]: "",
+  [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - currently unused",
+  [Failloop.FAILLOOP_RADIO]: "radio chip not found",
+  [Failloop.FAILLOOP_GYRO]: "gyro not found",
+  [Failloop.FAILLOOP_FAULT]:
+    "clock, intterrupts, systick, gcc bad code, bad memory access (code issues like bad pointers) - this should not come up",
+  [Failloop.FAILLOOP_LOOPTIME]: "loop time issue - if loop time exceeds 20mS",
+  [Failloop.FAILLOOP_SPI]: "spi error  - triggered by hardware spi driver only",
+  [Failloop.FAILLOOP_SPI_MAIN]:
+    "spi error main loop  - triggered by hardware spi driver only",
+};
+
 const store = {
   namespaced: true,
   state: {

@@ -1,6 +1,8 @@
 import { QuicVal } from "../serial/quic";
 import { serial } from "../serial/serial";
 import { Log } from "@/log";
+import { FailloopMessages } from "./constants";
+
 import Vue from "vue";
 
 const store = {
@@ -18,10 +20,14 @@ const store = {
     accel: null,
     aux: [],
     stick_calibration_wizard: 0,
+    failloop: 0,
   },
   getters: {
     vbat(state) {
       return state.vbattfilt || state.vbat_filtered;
+    },
+    failloopMessage(state) {
+      return FailloopMessages[state.failloop];
     },
   },
   mutations: {
