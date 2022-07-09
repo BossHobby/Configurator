@@ -6,25 +6,13 @@
     </h1>
     <p class="lead">
       Checkout our
-      <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki">
-        wiki
-      </a>
+      <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki"> wiki </a>
       for help on getting started.
     </p>
-    <p class="lead">
-      <a target="_blank" href="https://github.com/BossHobby/Templates">
-        Template Profiles
-      </a>
-      for common configurations are available.
-    </p>
     <p class="lead" v-if="updateAvailable">New Version available!</p>
-    <b-button
-      v-if="updateAvailable"
-      variant="success"
-      size="small"
-      @click="doUpdate"
-      >Update Now</b-button
-    >
+    <b-button v-if="updateAvailable" variant="success" size="small" @click="doUpdate">
+      Update Now
+    </b-button>
   </div>
 </template>
 
