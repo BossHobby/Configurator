@@ -1,18 +1,17 @@
 <template>
-  <b-container>
-    <OSDElementsLegacy v-if="has_legacy_osd"></OSDElementsLegacy>
-    <OSDElements v-else></OSDElements>
-    <OSDFont v-if="!is_hd"></OSDFont>
-  </b-container>
+  <OSDElementsLegacy v-if="has_legacy_osd"></OSDElementsLegacy>
+  <OSDElements v-else></OSDElements>
+  <OSDFont v-if="!is_hd"></OSDFont>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
-import OSDElementsLegacy from "@/components/OSDElementsLegacy.vue";
-import OSDElements from "@/components/OSDElements.vue";
-import OSDFont from "@/components/OSDFont.vue";
+import OSDElementsLegacy from "@/panel/OSDElementsLegacy.vue";
+import OSDElements from "@/panel/OSDElements.vue";
+import OSDFont from "@/panel/OSDFont.vue";
 
-export default {
+export default defineComponent({
   name: "OSD",
   components: {
     OSDElementsLegacy,
@@ -27,5 +26,5 @@ export default {
   },
   methods: {},
   created() {},
-};
+});
 </script>

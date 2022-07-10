@@ -1,57 +1,52 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col sm="12">
-        <b-card>
-          <h5 slot="header" class="mb-0">
-            Blackbox
+  <div class="columns">
+    <div class="column is-12">
+      <div class="card">
+        <h5 slot="header" class="mb-0">
+          Blackbox
 
-            <b-progress
-              class="w-25 mt-2"
-              :value="usedSize"
-              :max="blackbox.list.flash_size * 1024"
-              show-progress
-            >
-            </b-progress>
-            <h6>
-              Used:
-              {{ humanFileSize(usedSize) }} /
-              {{ humanFileSize(blackbox.list.flash_size * 1024) }}
-            </h6>
-          </h5>
-          <div>
-            <div v-for="(file, index) in blackbox.list.files" :key="index">
-              File {{ index + 1 }}: {{ humanFileSize(file.size) }}
-              <spinner-btn size="sm" class="my-2 mx-2" @click="download(index)">
-                Download
+          <b-progress
+            class="w-25 mt-2"
+            :value="usedSize"
+            :max="blackbox.list.flash_size * 1024"
+            show-progress
+          >
+          </b-progress>
+          <h6>
+            Used:
+            {{ humanFileSize(usedSize) }} /
+            {{ humanFileSize(blackbox.list.flash_size * 1024) }}
+          </h6>
+        </h5>
+        <div>
+          <div v-for="(file, index) in blackbox.list.files" :key="index">
+            File {{ index + 1 }}: {{ humanFileSize(file.size) }}
+            <spinner-btn class="is-small my-2 mx-2" @click="download(index)">
+              Download
+            </spinner-btn>
+          </div>
+          <div class="columns my-2" v-if="blackbox.list.files">
+            <div class="column is-2">
+              <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
+            </div>
+            <div class="column is-offset-8 is-2">
+              <spinner-btn class="my-2 mx-2 is-danger" @click="reset()">
+                Reset
               </spinner-btn>
             </div>
-            <b-row class="my-2" v-if="blackbox.list.files">
-              <b-col sm="2">
-                <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
-              </b-col>
-              <b-col offset="8" sm="2">
-                <spinner-btn
-                  class="my-2 mx-2"
-                  variant="danger"
-                  @click="reset()"
-                >
-                  Reset
-                </spinner-btn>
-              </b-col>
-            </b-row>
-            <a ref="downloadAnchor" target="_blank"></a>
           </div>
-        </b-card>
-      </b-col>
-    </b-row>
-  </b-container>
+          <a ref="downloadAnchor" target="_blank"></a>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
 
-export default {
+export default defineComponent({
   name: "blackbox",
   computed: {
     ...mapState(["blackbox", "profile"]),
@@ -77,10 +72,7 @@ export default {
       do {
         bytes /= thresh;
         ++u;
-      } while (
-        Math.round(Math.abs(bytes) * r) / r >= thresh &&
-        u < units.length - 1
-      );
+      } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
 
       return bytes.toFixed(dp) + " " + units[u];
     },
@@ -102,5 +94,5 @@ export default {
   created() {
     this.list_blackbox();
   },
-};
+});
 </script>

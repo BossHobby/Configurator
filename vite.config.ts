@@ -23,15 +23,7 @@ process.env.VITE_APP_VERSION = require("./package.json").version;
 export default defineConfig({
   base: base,
   plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          compatConfig: {
-            MODE: 3,
-          },
-        },
-      }
-    }),
+    vue(),
     VitePWA({
       includeAssets: [
         "favicon.svg",
@@ -74,7 +66,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      vue: "@vue/compat",
       "node-fetch": "isomorphic-fetch",
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },

@@ -1,14 +1,18 @@
 <template>
-  <button class="button" @click="clickHandler" v-bind="$attrs">
-    <span v-if="loading" class="icon">
-      <i class="fas fa-spinner fa-pulse"></i>
-    </span>
-    <slot v-else></slot>
+  <button
+    class="button"
+    :class="{ 'is-loading': loading }"
+    @click="clickHandler"
+    v-bind="$attrs"
+  >
+    <slot></slot>
   </button>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   data() {
     return {
       loading: false,
@@ -16,7 +20,7 @@ export default {
   },
   methods: {
     clickHandler(event) {
-      const click = this.$listeners.click;
+      const click = this.$attrs.onClick as any;
 
       this.loading = true;
       Promise.resolve()
@@ -24,8 +28,7 @@ export default {
         .finally(() => (this.loading = false));
     },
   },
-  created() {},
-};
+});
 </script>
 
 <style></style>

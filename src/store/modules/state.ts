@@ -3,8 +3,6 @@ import { serial } from "../serial/serial";
 import { Log } from "@/log";
 import { FailloopMessages } from "./constants";
 
-import Vue from "vue";
-
 const store = {
   state: {
     looptime_autodetect: 0,
@@ -33,7 +31,7 @@ const store = {
   mutations: {
     set_state(state, update) {
       for (const key in update) {
-        Vue.set(state, key, Object.freeze(update[key]));
+        state[key] = Object.freeze(update[key]);
       }
     },
   },

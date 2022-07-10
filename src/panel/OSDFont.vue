@@ -1,87 +1,103 @@
 <template>
-  <b-row>
-    <b-col class="my-4" sm="12">
-      <b-card>
-        <h5 slot="header" class="mb-0">
-          Font
-          <tooltip entry="osd.font" />
-        </h5>
-        <b-row class="my-4">
-          <b-col sm="2">
-            <label for="font-file">File</label>
-          </b-col>
-          <b-col sm="6">
-            <b-form-select
-              id="font-file"
-              v-model="current_font_file"
-              :options="fontFiles"
-            ></b-form-select>
-          </b-col>
-          <b-col sm="4">
-            <spinner-btn
-              class="float-right"
-              v-on:click="apply_osd_font(current_font_file)"
-            >
-              Upload Font
-            </spinner-btn>
-          </b-col>
-        </b-row>
-        <b-row class="my-4">
-          <b-col sm="8"> Custom Logo 288x72 Black/White/Transparent PNG </b-col>
-          <b-col sm="4">
-            <form ref="form">
-              <input
-                accept=".png"
-                type="file"
-                ref="file"
-                style="display: none"
-              />
-              <spinner-btn class="float-right" @click="uploadLogo()">
-                Upload Logo
-              </spinner-btn>
-            </form>
-          </b-col>
-        </b-row>
-        <b-row>
-          <b-col sm="6">
-            <b-card>
-              <h5 slot="header" class="mb-0">Preview</h5>
-              <b-row>
-                <b-img
-                  :src="'osd/' + current_font_file"
-                  fluid-grow
-                  class="mx-5 mt-3"
-                ></b-img>
-              </b-row>
-            </b-card>
-          </b-col>
-          <b-col sm="6">
-            <b-card>
-              <h5 slot="header" class="mb-0">Current</h5>
-              <b-row>
-                <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
-                <canvas
-                  ref="canvas"
-                  class="mx-5 mt-3 d-none"
-                  width="209"
-                  height="305"
-                ></canvas>
-                <canvas
-                  ref="logoCanvas"
-                  class="mx-5 mt-3 d-none"
-                  width="288"
-                  height="72"
-                ></canvas>
-              </b-row>
-            </b-card>
-          </b-col>
-        </b-row>
-      </b-card>
-    </b-col>
-  </b-row>
+  <div class="columns">
+    <div class="column is-12 my-4">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">Font</p>
+          <tooltip class="card-header-icon" entry="osd.font" />
+        </header>
+
+        <div class="card-content">
+          <div class="content">
+            <div class="columns my-4">
+              <div class="column is-2">
+                <label for="font-file">File</label>
+              </div>
+              <div class="column is-6">
+                <input-select
+                  id="font-file"
+                  v-model="current_font_file"
+                  :options="fontFiles"
+                ></input-select>
+              </div>
+              <div class="column is-4">
+                <spinner-btn
+                  class="float-right"
+                  v-on:click="apply_osd_font(current_font_file)"
+                >
+                  Upload Font
+                </spinner-btn>
+              </div>
+            </div>
+            <div class="columns my-4">
+              <div class="column is-8">
+                Custom Logo 288x72 Black/White/Transparent PNG
+              </div>
+              <div class="column is-4">
+                <form ref="form">
+                  <input accept=".png" type="file" ref="file" style="display: none" />
+                  <spinner-btn class="float-right" @click="uploadLogo()">
+                    Upload Logo
+                  </spinner-btn>
+                </form>
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-6">
+                <div class="card">
+                  <header class="card-header">
+                    <p class="card-header-title">Preview</p>
+                  </header>
+
+                  <div class="card-content">
+                    <div class="content">
+                      <div class="columns">
+                        <b-img
+                          :src="'osd/' + current_font_file"
+                          fluid-grow
+                          class="mx-5 mt-3"
+                        ></b-img>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="card">
+                  <header class="card-header">
+                    <p class="card-header-title">Current</p>
+                  </header>
+                  <div class="card-content">
+                    <div class="content">
+                      <div class="columns">
+                        <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
+                        <canvas
+                          ref="canvas"
+                          class="mx-5 mt-3 d-none"
+                          width="209"
+                          height="305"
+                        ></canvas>
+                        <canvas
+                          ref="logoCanvas"
+                          class="mx-5 mt-3 d-none"
+                          width="288"
+                          height="72"
+                        ></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapFields } from "@/store/helper.js";
 import { serial } from "@/store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
@@ -96,7 +112,7 @@ const loadImage = (url) => {
   });
 };
 
-export default {
+export default defineComponent({
   name: "OSDFont",
   data() {
     return {
@@ -178,10 +194,7 @@ export default {
 
           this.$refs.file.oninvalid = reject;
           this.$refs.file.onchange = checkForFile;
-          setTimeout(
-            () => (document.body.onfocus = () => checkForFile()),
-            1000
-          );
+          setTimeout(() => (document.body.onfocus = () => checkForFile()), 1000);
 
           this.$refs.file.click();
         });
@@ -194,11 +207,7 @@ export default {
             throw new Error("Invalid logo dimensions");
           }
 
-          const font = OSD.packLogo(
-            this.$refs.canvas,
-            this.$refs.logoCanvas,
-            img
-          );
+          const font = OSD.packLogo(this.$refs.canvas, this.$refs.logoCanvas, img);
           return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())
@@ -220,5 +229,5 @@ export default {
   created() {
     this.get_osd_font();
   },
-};
+});
 </script>

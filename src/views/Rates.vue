@@ -1,31 +1,27 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col sm="12">
-        <StickRatesLegacy
-          v-if="has_legacy_stickrates"
-          class="my-2"
-        ></StickRatesLegacy>
-        <StickRates v-else class="my-2"></StickRates>
-      </b-col>
-      <b-col sm="12">
-        <PIDRates class="my-2"></PIDRates>
-      </b-col>
-      <b-col sm="12">
-        <FilterSettings class="my-2"></FilterSettings>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div class="columns is-multiline">
+    <div class="column is-12">
+      <StickRatesLegacy v-if="has_legacy_stickrates" class="my-2"></StickRatesLegacy>
+      <StickRates v-else class="my-2"></StickRates>
+    </div>
+    <div class="column is-12">
+      <PIDRates class="my-2"></PIDRates>
+    </div>
+    <div class="column is-12">
+      <FilterSettings class="my-2"></FilterSettings>
+    </div>
+  </div>
 </template>
 
-<script>
-import StickRates from "@/components/StickRates.vue";
-import StickRatesLegacy from "@/components/StickRatesLegacy.vue";
-import PIDRates from "@/components/PIDRates.vue";
-import FilterSettings from "@/components/FilterSettings.vue";
+<script lang="ts">
+import { defineComponent } from "vue";
+import StickRates from "@/panel/StickRates.vue";
+import StickRatesLegacy from "@/panel/StickRatesLegacy.vue";
+import PIDRates from "@/panel/PIDRates.vue";
+import FilterSettings from "@/panel/FilterSettings.vue";
 import { mapGetters } from "vuex";
 
-export default {
+export default defineComponent({
   name: "Rate",
   components: {
     StickRates,
@@ -36,7 +32,7 @@ export default {
   computed: {
     ...mapGetters(["has_legacy_stickrates"]),
   },
-};
+});
 </script>
 
 <style scoped></style>

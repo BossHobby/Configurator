@@ -1,28 +1,26 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col
-        v-for="(counter, index) in perf.counters"
-        :key="'counter' + index"
-        sm="6"
-        class="my-3"
-      >
-        <RealtimePlot
-          :title="counters[index]"
-          :axis="['min', 'max', 'current']"
-          :input="counter"
-        ></RealtimePlot>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div class="columns">
+    <div
+      class="column is-6 my-3"
+      v-for="(counter, index) in perf.counters"
+      :key="'counter' + index"
+    >
+      <RealtimePlot
+        :title="counters[index]"
+        :axis="['min', 'max', 'current']"
+        :input="counter"
+      ></RealtimePlot>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapState } from "vuex";
 
 import RealtimePlot from "@/components/RealtimePlot.vue";
 
-export default {
+export default defineComponent({
   name: "perf",
   components: {
     RealtimePlot,
@@ -42,5 +40,5 @@ export default {
     };
   },
   computed: mapState(["perf"]),
-};
+});
 </script>

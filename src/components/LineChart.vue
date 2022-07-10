@@ -2,10 +2,11 @@
   <LineChart :chart-data="chartData" :chart-options="chartOptions" ref="chart" />
 </template>
 
-<script>
-import { Line } from "vue-chartjs/legacy";
+<script lang="ts">
+import { defineComponent } from "vue";
+import { Line } from "vue-chartjs";
 
-export default {
+export default defineComponent({
   name: "line-chart",
   components: { LineChart: Line },
   props: ["title", "axis", "labels"],
@@ -73,5 +74,5 @@ export default {
       };
     },
   },
-};
+});
 </script>

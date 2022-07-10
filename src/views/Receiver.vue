@@ -1,27 +1,26 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col sm="12" class="my-4">
-        <ReceiverSettings></ReceiverSettings>
-      </b-col>
-      <b-col v-if="quicVersionGt('0.1.0')" sm="12" class="my-4">
-        <RCChannels></RCChannels>
-      </b-col>
-      <b-col sm="12" class="my-4">
-        <AuxChannels></AuxChannels>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div class="columns is-multiline">
+    <div class="column is-12 my-4">
+      <ReceiverSettings></ReceiverSettings>
+    </div>
+    <div class="column is-12 my-4" v-if="quicVersionGt('0.1.0')">
+      <RCChannels></RCChannels>
+    </div>
+    <div class="column is-12 my-4">
+      <AuxChannels></AuxChannels>
+    </div>
+  </div>
 </template>
 
-<script>
-import ReceiverSettings from "@/components/ReceiverSettings.vue";
-import RCChannels from "@/components/RCChannels.vue";
-import AuxChannels from "@/components/AuxChannels.vue";
+<script lang="ts">
+import { defineComponent } from "vue";
+import ReceiverSettings from "@/panel/ReceiverSettings.vue";
+import RCChannels from "@/panel/RCChannels.vue";
+import AuxChannels from "@/panel/AuxChannels.vue";
 
 import { mapGetters } from "vuex";
 
-export default {
+export default defineComponent({
   name: "Receiver",
   components: {
     ReceiverSettings,
@@ -31,7 +30,7 @@ export default {
   computed: {
     ...mapGetters(["quicVersionGt"]),
   },
-};
+});
 </script>
 
 <style scoped></style>

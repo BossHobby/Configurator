@@ -1,41 +1,42 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-card-group deck>
-        <b-card
-          v-for="tmpl of templates.index"
-          :key="tmpl.name"
-          :title="tmpl.name"
-          :sub-title="tmpl.category"
-          :img-src="tmpl.image"
-          img-top
-          class="template-card"
-        >
-          <b-card-text>
+  <div class="columns is-multiline">
+    <div class="column is-one-third" v-for="tmpl of templates.index" :key="tmpl.name">
+      <div class="card template-card">
+        <div class="card-image">
+          <figure class="image is-square">
+            <img :src="tmpl.image" />
+          </figure>
+        </div>
+        <div class="card-content">
+          <p class="title">
+            {{ tmpl.name }}
+          </p>
+          <p class="subtitle">
+            {{ tmpl.category }}
+          </p>
+          <div class="content">
             {{ tmpl.desc }}
-          </b-card-text>
-          <template #footer>
-            <b-button
-              class="float-right"
-              variant="primary"
-              @click="applyProfile(tmpl)"
-            >
-              Apply
-            </b-button>
-          </template>
-        </b-card>
-      </b-card-group>
-    </b-row>
-  </b-container>
+          </div>
+        </div>
+        <footer class="card-footer">
+          <span class="card-footer-item"></span>
+          <button class="card-footer-item button is-white" @click="applyProfile(tmpl)">
+            Apply
+          </button>
+        </footer>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import YAML from "yaml";
 
-export default {
+export default defineComponent({
   name: "Templates",
   computed: {
     ...mapState(["templates"]),
@@ -60,11 +61,17 @@ export default {
   created() {
     this.fetch_templates();
   },
-};
+});
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .template-card {
   max-width: 18em;
+
+  .card-content {
+    height: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

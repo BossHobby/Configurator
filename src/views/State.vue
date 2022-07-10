@@ -1,29 +1,29 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col sm="12">
-        <GyroModel class="my-3"></GyroModel>
-      </b-col>
+  <div class="columns is-multiline">
+    <div class="column is-12">
+      <GyroModel class="my-3"></GyroModel>
+    </div>
 
-      <b-col v-for="plot in plots" :key="plot.name" :sm="plot.size">
-        <RealtimePlot
-          :title="plot.title"
-          :axis="plot.axis"
-          :input="state[plot.name]"
-        >
-        </RealtimePlot>
-      </b-col>
-    </b-row>
-  </b-container>
+    <div
+      class="column"
+      v-for="plot in plots"
+      :key="plot.name"
+      :class="['is-' + plot.size]"
+    >
+      <RealtimePlot :title="plot.title" :axis="plot.axis" :input="state[plot.name]">
+      </RealtimePlot>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapState } from "vuex";
 
 import RealtimePlot from "@/components/RealtimePlot.vue";
-import GyroModel from "@/components/GyroModel.vue";
+import GyroModel from "@/panel/GyroModel.vue";
 
-export default {
+export default defineComponent({
   name: "state",
   components: {
     RealtimePlot,
@@ -90,5 +90,5 @@ export default {
     };
   },
   computed: mapState(["state"]),
-};
+});
 </script>

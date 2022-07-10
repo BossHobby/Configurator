@@ -3,3 +3,8 @@
 .control-card {
   height: 100%;
 }
+
+.card-footer-item.button {
+  border-radius: 0;
+  height: unset;
+}

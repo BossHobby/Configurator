@@ -1,144 +1,142 @@
 <template>
-  <div id="app">
-    <b-overlay :show="updateProcessing" no-wrap z-index="9999">
-      <template #overlay>
-        <div class="text-center">
-          <span class="icon">
-            <i class="fas fa-spinner fa-pulse"></i>
-          </span>
-          <h1>Updating...</h1>
-        </div>
-      </template>
-    </b-overlay>
+  <div class="overlay" v-if="updateProcessing" no-wrap z-index="9999">
+    <div class="text-center">
+      <span class="icon">
+        <i class="fas fa-spinner fa-pulse"></i>
+      </span>
+      <h1>Updating...</h1>
+    </div>
+  </div>
 
-    <nav
-      class="navbar"
-      role="navigation"
-      aria-label="main navigation"
-      fixed="top"
-    >
-      <div class="navbar-brand">
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://bulma.io">
         <img
           src="./assets/Logo.svg"
-          class="d-inline-block"
+          style="display: inline-block; max-height: 48px"
           alt="Guano"
-          height="40px"
+          class="mr-2"
         />
-        QUICKSILVER
-      </div>
-      <div class="navbar-menu" v-if="serial.is_connected">
-        <b-nav-item to="/templates">Templates</b-nav-item>
-        <b-nav-item to="/profile">Profile</b-nav-item>
-        <b-nav-item to="/setup">Setup</b-nav-item>
-        <b-nav-item to="/rates">Rates</b-nav-item>
-        <b-nav-item to="/receiver">Receiver</b-nav-item>
-        <b-nav-item v-if="has_feature(Features.OSD)" to="/osd">OSD</b-nav-item>
-        <b-nav-item to="/motor">Motor</b-nav-item>
-        <b-nav-item
-          v-if="
-            has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1
-          "
-          to="/blackbox"
-          >Blackbox</b-nav-item
-        >
-        <b-nav-item to="/state">State</b-nav-item>
-        <b-nav-item
-          v-if="has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
-          to="/perf"
-          >Perf</b-nav-item
-        >
-        <b-nav-item to="/log">Log</b-nav-item>
-      </div>
-      <div class="navbar-menu" v-else>
-        <b-nav-item to="/">Home</b-nav-item>
-        <b-nav-item to="/flash">Flash</b-nav-item>
-        <b-nav-item to="/log">Log</b-nav-item>
-      </div>
-      <div class="navbar-end">
-        <b-nav-form v-on:submit.prevent="toggle_connection()" right>
-          {{ serial.port }}
-          <b-button
-            size="sm"
-            class="my-2"
-            type="submit"
-            :disabled="!canConnect"
-          >
-            {{ connectButtonText }}
-          </b-button>
-        </b-nav-form>
-      </div>
-    </nav>
+      </a>
 
-    <div class="alert-portal">
-      <b-container>
-        <b-alert
-          v-for="(alert, index) in alerts"
-          :key="index"
-          :variant="alert.type"
-          show="2.0"
-          dismissible
-          fade
-          >{{ alert.msg }}</b-alert
-        >
-      </b-container>
+      <a
+        role="button"
+        class="navbar-burger"
+        aria-label="menu"
+        aria-expanded="false"
+        data-target="mainMavbar"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
     </div>
 
-    <router-view style="margin-top: 5rem; margin-bottom: 5rem"></router-view>
+    <div id="mainMavbar" class="navbar-menu">
+      <div v-if="serial.is_connected" class="navbar-start">
+        <router-link class="navbar-item" to="/templates">Templates</router-link>
+        <router-link class="navbar-item" to="/profile">Profile</router-link>
+        <router-link class="navbar-item" to="/setup">Setup</router-link>
+        <router-link class="navbar-item" to="/rates">Rates</router-link>
+        <router-link class="navbar-item" to="/receiver">Receiver</router-link>
+        <router-link v-if="has_feature(Features.OSD)" class="navbar-item" to="/osd"
+          >OSD</router-link
+        >
+        <router-link class="navbar-item" to="/motor">Motor</router-link>
+        <router-link
+          v-if="has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1"
+          class="navbar-item"
+          to="/blackbox"
+          >Blackbox</router-link
+        >
+        <router-link class="navbar-item" to="/state">State</router-link>
+        <router-link
+          v-if="has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
+          class="navbar-item"
+          to="/perf"
+          >Perf</router-link
+        >
+        <router-link class="navbar-item" to="/log">Log</router-link>
+      </div>
+      <div v-else class="navbar-start">
+        <router-link class="navbar-item" to="/">Home</router-link>
+        <router-link class="navbar-item" to="/flash">Flash</router-link>
+        <router-link class="navbar-item" to="/log">Log</router-link>
+      </div>
 
-    <b-navbar v-if="serial.is_connected" fixed="bottom" class="navbar">
-      <b-navbar-brand>
+      <div class="navbar-end">
+        <button
+          class="navbar-item button my-2"
+          @click="toggle_connection"
+          :disabled="!canConnect"
+        >
+          {{ connectButtonText }}
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <AlertPortal />
+
+  <div class="container is-fullhd mx-6 router-outlet-container">
+    <router-view></router-view>
+  </div>
+
+  <div v-if="serial.is_connected" class="navbar is-fixed-bottom">
+    <div class="navbar-brand">
+      <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
-        <small class="text-muted ml-2">Modified {{ timeAgo(date) }}</small>
-        <small class="text-muted ml-2" style="font-size: 60%"
-          >Looptime {{ state.looptime_autodetect }} CPU Load
-          {{ state.cpu_load }}</small
-        >
-      </b-navbar-brand>
-      <b-navbar-nav class="ml-auto">
-        <b-alert :show="needs_apply" class="mb-0" variant="warning">
-          <b-icon icon="exclamation-triangle"></b-icon>
+      </span>
+      <span class="navbar-item">Modified {{ timeAgo(date) }}</span>
+      <span class="navbar-item" style="font-size: 60%">
+        Looptime {{ state.looptime_autodetect }} CPU Load
+        {{ state.cpu_load }}
+      </span>
+    </div>
+
+    <div class="navbar-end">
+      <span class="navbar-item">
+        <div class="notification is-warning" v-show="needs_apply">
+          <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
           Unsaved changes
-        </b-alert>
-        <b-alert
-          :show="!needs_apply && needs_reboot"
-          class="mb-0"
-          variant="warning"
-        >
-          <b-icon icon="exclamation-triangle"></b-icon>
+        </div>
+        <div class="notification is-warning" v-show="!needs_apply && needs_reboot">
+          <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
           Reboot required
-        </b-alert>
-        <spinner-btn class="my-1 mx-2" v-on:click="soft_reboot()">
-          Reboot
-        </spinner-btn>
-        <spinner-btn
-          class="my-1 mx-2"
-          v-on:click="apply_profile(profile)"
-          :disabled="is_read_only"
-        >
-          Apply
-        </spinner-btn>
-      </b-navbar-nav>
-    </b-navbar>
+        </div>
+      </span>
+
+      <spinner-btn class="navbar-item my-auto mx-2" v-on:click="soft_reboot()">
+        Reboot
+      </spinner-btn>
+      <spinner-btn
+        class="navbar-item my-auto mx-2"
+        v-on:click="apply_profile(profile)"
+        :disabled="is_read_only"
+      >
+        Apply
+      </spinner-btn>
+    </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
+import { RouterLink, RouterView } from "vue-router";
 import { mapActions, mapState, mapGetters } from "vuex";
-import { timeAgo } from "./filters";
+import { timeAgo } from "@/mixin/filters";
+import AlertPortal from "@/components/AlertPortal.vue";
 
-export default {
+export default defineComponent({
   name: "app",
+  components: {
+    RouterLink,
+    RouterView,
+    AlertPortal,
+  },
   computed: {
-    ...mapState([
-      "info",
-      "profile",
-      "alerts",
-      "state",
-      "serial",
-      "needs_reboot",
-      "needs_apply",
-    ]),
+    ...mapState(["info", "profile", "state", "serial", "needs_reboot", "needs_apply"]),
     ...mapState("constants", ["Features"]),
     ...mapGetters(["has_feature", "is_read_only"]),
     availablePortOptions() {
@@ -180,15 +178,16 @@ export default {
   unmounted() {
     clearInterval(this.interval);
   },
-};
+});
 </script>
 
-<style>
-.alert-portal {
-  position: fixed;
-  right: 5px;
-  top: 85px;
-  z-index: 10001;
-  width: 500px;
+<style lang="scss">
+.navbar-item .notification {
+  padding: 15px !important;
+  margin-bottom: 0 !important;
+}
+.router-outlet-container {
+  margin-top: 4.25rem !important;
+  margin-bottom: 3rem !important;
 }
 </style>

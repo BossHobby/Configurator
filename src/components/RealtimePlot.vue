@@ -7,10 +7,11 @@
   />
 </template>
 
-<script>
-import { Scatter } from "vue-chartjs/legacy";
+<script lang="ts">
+import { defineComponent } from "vue";
+import { Scatter } from "vue-chartjs";
 
-export default {
+export default defineComponent({
   name: "RealtimePlot",
   components: { Scatter },
   props: ["title", "time", "input", "axis", "transform"],
@@ -156,5 +157,5 @@ export default {
       this.updateChartData();
     },
   },
-};
+});
 </script>

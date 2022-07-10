@@ -1,0 +1,233 @@
+<template>
+  <div class="card">
+    <header class="card-header">
+      <p class="card-header-title">Motor</p>
+    </header>
+
+    <div class="card-content">
+      <div class="content">
+        <div class="columns">
+          <div class="column is-6">
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="invert-yaw">
+                  Invert Yaw
+                  <tooltip entry="motor.invert_yaw" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input-select
+                  id="invert-yaw"
+                  v-model.number="motor.invert_yaw"
+                  :options="invertYawModes"
+                ></input-select>
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="digital-idle">
+                  Digital Idle
+                  <tooltip entry="motor.digital_idle" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input
+                  class="input"
+                  id="digital-idle"
+                  type="number"
+                  step="0.1"
+                  v-model.number="motor.digital_idle"
+                />
+              </div>
+            </div>
+            <div
+              class="columns"
+              v-if="info.quic_protocol_version > 1 && has_feature(Features.BRUSHLESS)"
+            >
+              <div class="column is-4 my-2">
+                <label for="dshot-time">
+                  DShot Time
+                  <tooltip entry="motor.dshot_time" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input-select
+                  id="dshot-time"
+                  v-model="motor.dshot_time"
+                  :options="dshotTimes"
+                ></input-select>
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="gyro-flip">
+                  Flip Gyro
+                  <tooltip entry="motor.flip_gyro" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <label class="checkbox">
+                  <input type="checkbox" id="gyro-flip" v-model="gyroFlip" />
+                  Enable
+                </label>
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="gyro-orientation">
+                  Gyro Orientation
+                  <tooltip entry="motor.gyro_orientation" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input-select
+                  id="gyro-orientation"
+                  v-model="gyroOrientation"
+                  :options="gyroOrientations"
+                ></input-select>
+              </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="torque-boost">
+                  Torque Boost
+                  <tooltip entry="motor.torque_boost" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input
+                  class="input"
+                  id="torque-boost"
+                  type="number"
+                  step="0.1"
+                  v-model.number="motor.torque_boost"
+                />
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="throttle-boost">
+                  Throttle Boost
+                  <tooltip entry="motor.throttle_boost" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input
+                  class="input"
+                  id="throttle-boost"
+                  type="number"
+                  step="0.1"
+                  v-model.number="motor.throttle_boost"
+                />
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <label for="turtle-throttle-percent">
+                  Turtle Throttle Percent
+                  <tooltip entry="motor.turtle_throttle_percent" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input
+                  class="input"
+                  id="turtle-throttle-percent"
+                  type="number"
+                  step="1"
+                  v-model.number="motor.turtle_throttle_percent"
+                />
+              </div>
+            </div>
+            <div class="columns" v-if="profileVersionGt('0.2.0')">
+              <div class="column is-4 my-2">
+                <label for="motor-limit-percent">
+                  Motor Limit Percent
+                  <tooltip entry="motor.motor_limit" />
+                </label>
+              </div>
+              <div class="column is-8 my-2">
+                <input
+                  class="input"
+                  id="motor-limit-percent"
+                  type="number"
+                  step="1"
+                  v-model.number="motor.motor_limit"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import { mapFields } from "@/store/helper.js";
+import { mapGetters, mapState } from "vuex";
+
+export default defineComponent({
+  name: "Motor",
+  data() {
+    return {
+      invertYawModes: [
+        { value: 0, text: "Props In" },
+        { value: 1, text: "Props Out" },
+      ],
+
+      dshotTimes: [
+        { value: 150, text: "150" },
+        { value: 300, text: "300" },
+        { value: 600, text: "600" },
+      ],
+    };
+  },
+  computed: {
+    ...mapFields("profile", ["motor"]),
+    ...mapGetters(["has_feature", "profileVersionGt"]),
+    ...mapState(["info"]),
+    ...mapState("constants", ["Features", "GyroRotation"]),
+    gyroOrientation: {
+      get() {
+        return this.motor.gyro_orientation & 0x1f;
+      },
+      set(value) {
+        this.motor.gyro_orientation =
+          value | (this.gyroFlip ? this.GyroRotation.FLIP_180 : 0x0);
+      },
+    },
+    gyroOrientations() {
+      return [
+        { value: this.GyroRotation.ROTATE_NONE, text: "ROTATE_NONE" },
+        { value: this.GyroRotation.ROTATE_45_CCW, text: "ROTATE_45_CCW" },
+        { value: this.GyroRotation.ROTATE_45_CW, text: "ROTATE_45_CW" },
+        { value: this.GyroRotation.ROTATE_90_CW, text: "ROTATE_90_CW" },
+        { value: this.GyroRotation.ROTATE_90_CCW, text: "ROTATE_90_CCW" },
+        {
+          value: this.GyroRotation.ROTATE_90_CCW | this.GyroRotation.ROTATE_45_CCW,
+          text: "ROTATE_135_CW",
+        },
+        {
+          value: this.GyroRotation.ROTATE_90_CW | this.GyroRotation.ROTATE_45_CW,
+          text: "ROTATE_135_CCW",
+        },
+        { value: this.GyroRotation.ROTATE_180, text: "ROTATE_180" },
+      ];
+    },
+    gyroFlip: {
+      get() {
+        return (this.motor.gyro_orientation & this.GyroRotation.FLIP_180) > 0;
+      },
+      set(value) {
+        this.motor.gyro_orientation =
+          this.gyroOrientation | (value ? this.GyroRotation.FLIP_180 : 0x0);
+      },
+    },
+  },
+});
+</script>
+
+<style scoped></style>

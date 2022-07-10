@@ -16,7 +16,7 @@ import Home from "./views/Home.vue";
 import Log from "./views/Log.vue";
 import Templates from "./views/Templates.vue";
 
-export const router = createRouter({
+const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {

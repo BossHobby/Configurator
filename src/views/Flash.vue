@@ -1,111 +1,113 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col sm="12">
-        <b-card>
-          <h5 slot="header" class="mb-0">
+  <div class="columns">
+    <form class="column is-12" @submit="onSubmit">
+      <div class="card">
+        <div class="card-header">
+          <p class="card-header-title">
             Flash
-            <b-button size="sm" class="my-2 mx-2" @click="hard_reboot()">
+            <button class="button is-small my-2 mx-2" @click="hard_reboot()">
               Reset to Bootloader
-            </b-button>
+            </button>
             <tooltip entry="flash.reset" />
-          </h5>
-          <b-row>
-            <b-col sm="8">
-              <b-form @submit="onSubmit">
-                <b-form-group label-for="source" label-cols-sm="2">
-                  <span slot="label">
-                    Source
-                    <tooltip entry="flash.source" />
-                  </span>
-                  <b-form-select
-                    id="source"
-                    v-model="source"
-                    :options="sourceOptions"
-                  ></b-form-select>
-                </b-form-group>
+          </p>
+        </div>
+        <div class="card-content">
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label"> Source <tooltip entry="flash.source" /> </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <input-select v-model="source" :options="sourceOptions">
+                    </input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <b-form-group
-                  v-if="source == 'local'"
-                  label-for="file-local"
-                  label-cols-sm="2"
-                >
-                  <span slot="label">
-                    File
-                    <tooltip entry="flash.file-local" />
-                  </span>
-                  <b-form-file
-                    id="file-local"
-                    v-model="file"
-                    accept=".hex"
-                  ></b-form-file>
-                </b-form-group>
+          <b-form-group v-if="source == 'local'" label-for="file-local" label-cols-sm="2">
+            <span slot="label">
+              File
+              <tooltip entry="flash.file-local" />
+            </span>
+            <b-form-file id="file-local" v-model="file" accept=".hex"></b-form-file>
+          </b-form-group>
 
-                <b-form-group
-                  v-if="source != 'local'"
-                  label-for="file-release"
-                  label-cols-sm="2"
-                >
-                  <span slot="label">
-                    Release
-                    <tooltip entry="flash.file-release" />
-                  </span>
-                  <b-form-select
-                    id="file-release"
-                    v-model="release"
-                    :options="releaseOptions"
-                  ></b-form-select>
-                </b-form-group>
+          <div class="field is-horizontal" v-if="source != 'local'">
+            <div class="field-label is-normal">
+              <label class="label">
+                Release
+                <tooltip entry="flash.file-release" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <input-select v-model="release" :options="releaseOptions" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <b-form-group
-                  v-if="source != 'local'"
-                  label-for="file-remote"
-                  label-cols-sm="2"
-                >
-                  <span slot="label">
-                    Target
-                    <tooltip entry="flash.file-remote" />
-                  </span>
-                  <b-form-select
-                    id="file-remote"
-                    v-model="target"
-                    :options="targetOptions"
-                  ></b-form-select>
-                </b-form-group>
+          <div class="field is-horizontal" v-if="source != 'local'">
+            <div class="field-label is-normal">
+              <label class="label">
+                Target
+                <tooltip entry="flash.file-remote" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <input-select v-model="target" :options="targetOptions" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <b-row v-for="(v, k) in progress" :key="k" class="my-2 mx-2">
-                  <b-col sm="2">{{ k }}</b-col>
-                  <b-col sm="10">
-                    <b-progress
-                      height="20px"
-                      :value="v.current"
-                      :max="v.total"
-                      show-progress
-                      animated
-                    ></b-progress>
-                  </b-col>
-                </b-row>
-
-                <spinner-btn class="my-2" :disabled="!canFlash" type="submit">
-                  Flash
-                </spinner-btn>
-              </b-form>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
-    </b-row>
-  </b-container>
+          <div v-for="(v, k) in progress" :key="k" class="my-2 mx-2">
+            <div class="column is-2">{{ k }}</div>
+            <div class="column is-10">
+              <b-progress
+                height="20px"
+                :value="v.current"
+                :max="v.total"
+                show-progress
+                animated
+              ></b-progress>
+            </div>
+          </div>
+        </div>
+        <footer class="card-footer">
+          <spinner-btn
+            class="card-footer-item button"
+            :disabled="!canFlash"
+            type="submit"
+          >
+            Flash
+          </spinner-btn>
+        </footer>
+      </div>
+    </form>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 import { Flasher } from "@/store/flash/flash";
 import { github } from "@/store/util/github";
 import { Log } from "@/log";
 import SpinnerBtn from "@/components/SpinnerBtn.vue";
 
-export default {
+export default defineComponent({
   components: { SpinnerBtn },
   name: "flash",
   data() {
@@ -197,5 +199,5 @@ export default {
       this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
     });
   },
-};
+});
 </script>

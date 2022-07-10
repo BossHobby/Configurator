@@ -1,17 +1,16 @@
 <template>
-  <b-container>
-    <Info></Info>
-  </b-container>
+  <Info></Info>
 </template>
 
-<script>
-import Info from "@/components/Info.vue";
+<script lang="ts">
+import { defineComponent } from "vue";
+import Info from "@/panel/Info.vue";
 
-export default {
+export default defineComponent({
   name: "home",
   components: {
     Info,
   },
   methods: {},
-};
+});
 </script>

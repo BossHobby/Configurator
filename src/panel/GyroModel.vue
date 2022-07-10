@@ -1,32 +1,31 @@
 <template>
-  <b-card>
-    <h5 slot="header" class="mb-0">
-      Model
-      <b-button size="sm" class="my-2 mx-2" @click="cal_imu()">
+  <div class="card">
+    <header class="card-header">
+      <p class="card-header-title">Model</p>
+      <button class="card-header-icon button my-2 mx-2" @click="cal_imu()">
         calibrate
-      </b-button>
-    </h5>
-    <div id="container" style="height: 30vh; width: 100%"></div>
-    <small class="float-right">Model: TKS GT20 by Tarkusx</small>
-  </b-card>
+      </button>
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <div id="container" style="height: 30vh; width: 100%"></div>
+        <small class="float-right">Model: TKS GT20 by Tarkusx</small>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import { mapState, mapActions } from "vuex";
 
-export default {
+export default defineComponent({
   name: "GyroModel",
   data() {
-    return {
-      frameRequest: null,
-      camera: null,
-      scene: null,
-      renderer: null,
-      model: null,
-    };
+    return {};
   },
   computed: {
     ...mapState({
@@ -37,8 +36,11 @@ export default {
   },
   methods: {
     ...mapActions(["cal_imu"]),
-    initThree() {
+    async initThree() {
       const container = document.getElementById("container");
+      if (!container) {
+        return;
+      }
 
       this.camera = new THREE.PerspectiveCamera(
         45,
@@ -49,11 +51,12 @@ export default {
       this.camera.position.z = 140;
       this.camera.position.y = 40;
       this.camera.lookAt(0, 0, 0);
-      this.scene = new THREE.Scene();
 
       const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 10);
       const mainLight = new THREE.DirectionalLight(0xffffff, 10);
       mainLight.position.set(0, 500, 0);
+
+      this.scene = new THREE.Scene();
       this.scene.add(ambientLight, mainLight);
 
       const geometry = new THREE.BoxGeometry();
@@ -66,10 +69,9 @@ export default {
       this.scene.add(cube);
 
       const loader = new GLTFLoader();
-      loader.load("gt20.gltf", (gltf) => {
-        this.model = gltf.scene.children[0];
-        this.scene.add(this.model);
-      });
+      const gltf = await loader.loadAsync("gt20.gltf");
+      this.model = gltf.scene.children[0];
+      this.scene.add(this.model);
 
       this.renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -78,6 +80,8 @@ export default {
       this.renderer.setClearColor(0x000000, 0);
       this.renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(this.renderer.domElement);
+
+      this.animate();
     },
     animate() {
       if (this.model) {
@@ -95,18 +99,16 @@ export default {
         this.model.rotation.setFromQuaternion(q);
       }
       this.renderer.render(this.scene, this.camera);
-
       this.frameRequest = requestAnimationFrame(this.animate);
     },
   },
-  mounted() {
-    this.initThree();
-    this.animate();
+  async mounted() {
+    await this.initThree();
   },
   beforeUnmount() {
     cancelAnimationFrame(this.frameRequest);
   },
-};
+});
 </script>
 
 <style scoped></style>

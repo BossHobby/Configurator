@@ -1,64 +1,67 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col class="my-2" sm="12"><Info></Info></b-col>
-      <b-col sm="12">
-        <b-alert variant="warning" :show="info.quic_protocol_version < 5">
-          Incompatible Firmware! <br />
-          Please update to be able to change settings. <br />
-          Current profile can be exported and loaded.
-        </b-alert>
-        <b-alert variant="danger" :show="state.failloop > 0">
-          Faillop {{ failloopMessage }} ({{ state.failloop }}) Detected! <br />
-          Please fix the issue to be able to change settings. <br />
-        </b-alert>
-      </b-col>
-      <b-col sm="12">
-        <Metadata class="control-card"></Metadata>
-      </b-col>
-      <b-col class="my-4" sm="12">
-        <b-card class="control-card">
-          <h5 slot="header" class="mb-0">
-            Serial Passthrough
-            <tooltip entry="serial_passthrough" />
-          </h5>
-          <b-row>
-            <b-col sm="4" class="my-2">
-              <b-form-select
-                id="serial-port"
-                v-model.number="serial_port"
-                :options="serialPorts"
-              ></b-form-select>
-            </b-col>
-            <b-col sm="4" class="my-2">
-              <b-form-select
-                id="preset"
-                v-model="preset"
-                :options="presetOptions"
-              ></b-form-select>
-            </b-col>
-            <b-col sm="2" class="my-2">
-              <b-button
-                class="my-2 float-right"
-                :disabled="serial_port == 0 || preset == null"
-                @click="start_passthrough"
-              >
-                Start
-              </b-button>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div class="columns is-multiline">
+    <div class="column is-12 my-2"><Info></Info></div>
+    <div class="column is-12">
+      <div class="notification is-warning" v-show="info.quic_protocol_version < 5">
+        Incompatible Firmware! <br />
+        Please update to be able to change settings. <br />
+        Current profile can be exported and loaded.
+      </div>
+      <div class="notification is-danger" v-show="state.failloop > 0">
+        Faillop {{ failloopMessage }} ({{ state.failloop }}) Detected! <br />
+        Please fix the issue to be able to change settings. <br />
+      </div>
+    </div>
+    <div class="column is-12">
+      <Metadata class="control-card"></Metadata>
+    </div>
+    <div class="column is-12 my-4">
+      <div class="card control-card">
+        <header class="card-header">
+          <p class="card-header-title">Serial Passthrough</p>
+          <tooltip class="card-header-icon" entry="serial_passthrough" />
+        </header>
+
+        <div class="card-content">
+          <div class="content">
+            <div class="columns">
+              <div class="column is-4 my-2">
+                <div class="select">
+                  <input-select v-model.number="serial_port" :options="serialPorts" />
+                </div>
+              </div>
+              <div class="column is-4 my-2">
+                <div class="select">
+                  <input-select v-model="preset" :options="presetOptions" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="card-footer">
+          <span class="card-footer-item"></span>
+          <span class="card-footer-item"></span>
+          <button
+            class="card-footer-item button"
+            :disabled="serial_port == 0 || preset == null"
+            @click="start_passthrough"
+          >
+            Start
+          </button>
+        </footer>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapState, mapActions, mapGetters } from "vuex";
-import Metadata from "@/components/Metadata.vue";
-import Info from "@/components/Info.vue";
+import Metadata from "@/panel/Metadata.vue";
+import Info from "@/panel/Info.vue";
 
-export default {
+export default defineComponent({
   name: "home",
   data() {
     return {
@@ -105,9 +108,9 @@ export default {
     start_passthrough() {
       return this.serial_passthrough({
         port: this.serial_port,
-        ...this.preset,
+        ...(this.preset || {}),
       });
     },
   },
-};
+});
 </script>

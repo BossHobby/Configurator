@@ -1,98 +1,109 @@
 <template>
-  <b-row>
-    <b-col sm="6">
-      <b-card>
-        <h5 slot="header" class="mb-0">
-          Elements
-          <tooltip entry="osd.elements" />
-        </h5>
-        <b-row>
-          <b-col sm="4">
-            <label>Callsign Text</label>
-          </b-col>
-          <b-col sm="8">
-            <b-form-input
-              size="sm"
-              type="text"
-              v-model="callsign"
-            ></b-form-input>
-          </b-col>
-        </b-row>
-        <div v-for="(el, i) of elements" :key="i">
-          <b-row v-if="el.enabled" class="my-3" align-v="center">
-            <b-col sm="4">
-              <label>{{ el.name }}</label>
-            </b-col>
-            <b-col sm="2">
-              <b-form-checkbox
-                :checked="el.active == 1"
-                @input="osd_set(i, 'active', $event ? 1 : 0)"
-                name="check-button"
-                size="sm"
-                switch
-                >Active</b-form-checkbox
-              >
-            </b-col>
-            <b-col sm="2">
-              <b-form-checkbox
-                :checked="el.invert == 1"
-                @input="osd_set(i, 'invert', $event ? 1 : 0)"
-                name="check-button"
-                size="sm"
-                switch
-                >Invert</b-form-checkbox
-              >
-            </b-col>
-            <b-col sm="2">
-              <b-form-input
-                size="sm"
-                type="number"
-                step="1"
-                :value="el.pos_x"
-                @input="osd_set(i, 'pos_x', $event)"
-              ></b-form-input>
-            </b-col>
-            <b-col sm="2">
-              <b-form-input
-                size="sm"
-                type="number"
-                step="1"
-                :value="el.pos_y"
-                @input="osd_set(i, 'pos_y', $event)"
-              ></b-form-input>
-            </b-col>
-          </b-row>
+  <div class="card">
+    <header class="card-header">
+      <p class="card-header-title">Elements</p>
+      <tooltip class="card-header-icon" entry="osd.elements" />
+    </header>
+    <div class="card-content">
+      <div class="content">
+        <div class="columns is-multiline">
+          <div class="column is-6">
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <label>Callsign Text</label>
+              </div>
+              <div class="column is-8">
+                <input class="input is-small" type="text" v-model="callsign" />
+              </div>
+            </div>
+            <div v-for="(el, i) of elements" :key="i">
+              <div class="columns is-multiline" v-if="el.enabled" align-v="center">
+                <div class="column is-4">
+                  <label>{{ el.name }}</label>
+                </div>
+                <div class="column is-2">
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      :checked="el.active == 1"
+                      @input="osd_set(i, 'active', $event ? 1 : 0)"
+                      name="check-button"
+                      switch
+                    />
+                    Active
+                  </label>
+                </div>
+                <div class="column is-2">
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      :checked="el.invert == 1"
+                      @input="osd_set(i, 'invert', $event ? 1 : 0)"
+                      name="check-button"
+                      switch
+                    />
+                    Invert
+                  </label>
+                </div>
+                <div class="column is-2">
+                  <input
+                    class="input is-small"
+                    type="number"
+                    step="1"
+                    :value="el.pos_x"
+                    @input="osd_set(i, 'pos_x', $event)"
+                  />
+                </div>
+                <div class="column is-2">
+                  <input
+                    class="input is-small"
+                    type="number"
+                    step="1"
+                    :value="el.pos_y"
+                    @input="osd_set(i, 'pos_y', $event)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">Preview</p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
+                    <g v-for="(el, i) of elements" :key="i">
+                      <g v-if="el.enabled && el.active">
+                        <text
+                          v-for="(c, ci) of el.text"
+                          :class="{ 'text-invert': el.invert }"
+                          :key="'el-' + i + '-' + ci"
+                          :x="(el.pos_x + ci) * screen.char_width"
+                          :y="el.pos_y * (screen.char_height - 1)"
+                        >
+                          {{ c }}
+                        </text>
+                      </g>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </b-card>
-    </b-col>
-    <b-col sm="6">
-      <b-card>
-        <h5 slot="header" class="mb-0">Preview</h5>
-        <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
-          <g v-for="(el, i) of elements" :key="i">
-            <g v-if="el.enabled && el.active">
-              <text
-                v-for="(c, ci) of el.text"
-                :class="{ 'text-invert': el.invert }"
-                :key="'el-' + i + '-' + ci"
-                :x="(el.pos_x + ci) * screen.char_width"
-                :y="el.pos_y * (screen.char_height - 1)"
-              >
-                {{ c }}
-              </text>
-            </g>
-          </g>
-        </svg>
-      </b-card>
-    </b-col>
-  </b-row>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapState } from "vuex";
 import { mapFields } from "@/store/helper.js";
 
-export default {
+export default defineComponent({
   name: "OSDElements",
   data() {
     return {};
@@ -172,10 +183,7 @@ export default {
       const elements = this.is_hd ? this.osd.elements_hd : this.osd.elements;
       const copy = [...elements];
       copy[i] = this.osd_encode(elements[i], attr, val);
-      this.$store.commit(
-        this.is_hd ? "set_osd_elements_hd" : "set_osd_elements",
-        copy
-      );
+      this.$store.commit(this.is_hd ? "set_osd_elements_hd" : "set_osd_elements", copy);
     },
     osd_decode(element, attr) {
       switch (attr) {
@@ -210,7 +218,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>

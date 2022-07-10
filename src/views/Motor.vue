@@ -1,150 +1,149 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col v-if="motor.test" sm="12" class="my-4">
-        <b-card>
-          <h5 slot="header" class="mb-0">
-            Motor Test
-            <tooltip entry="motor.test" />
+  <div class="columns is-multiline">
+    <div class="column my-4 is-12" v-if="motor.test">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">Motor Test</p>
+          <small class="card-header-icon">
+            {{ vbat.toPrecision(3) }}V <br />
+            {{ state.ibat_filtered }}mAh
+          </small>
+          <tooltip class="card-header-icon" entry="motor.test" />
+        </header>
 
-            <small class="float-right my-3">
-              {{ vbat.toPrecision(3) }}V <br />
-              {{ state.ibat_filtered }}mAh
-            </small>
-          </h5>
-          <div>
-            <b-row v-if="motor.test.active">
-              <b-col
-                v-for="m in motors"
-                :key="m.index"
-                sm="6"
-                class="my-2 px-5"
-              >
-                <b-row>
-                  <b-col sm="3" class="my-2">
-                    <label :for="m.id">
-                      <h6>{{ m.label }}</h6>
-                    </label>
-                  </b-col>
-                  <b-col sm="7" class="my-2">
-                    <b-form-input
-                      :id="m.id"
-                      type="range"
-                      step="1"
-                      min="0"
-                      max="50"
-                      v-model.number="value[m.index]"
-                      @update="update()"
-                    ></b-form-input>
-                  </b-col>
-                  <b-col sm="2" class="px-1">
-                    <b-form-input
-                      :id="m.id"
-                      type="number"
-                      step="1"
-                      min="0"
-                      max="50"
-                      v-model.number="value[m.index]"
-                      @change="update()"
-                    ></b-form-input>
-                  </b-col>
-                </b-row>
-              </b-col>
-            </b-row>
-            <b-row v-else>
-              <b-col sm="12">
-                <h6 class="text-muted">Motor Test disabled</h6>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col offset="10" sm="2">
-                <b-button
-                  class="my-2 mx-2 float-right"
-                  @click="motor_test_toggle()"
-                  >{{ motor.test.active ? "Disable" : "Enable" }}</b-button
-                >
-              </b-col>
-            </b-row>
-          </div>
-        </b-card>
-      </b-col>
-      <b-col sm="12" class="my-4">
-        <b-card class="my-2">
-          <h5 slot="header" class="mb-0">
-            Motor Pins
-            <tooltip entry="motor_pins" />
-          </h5>
-          <b-row class="my-2">
-            <b-col
-              v-for="m in motors"
-              :key="'motor-pin-' + m.index"
-              sm="6"
-              class="my-2 px-5"
-            >
-              <b-row>
-                <b-col sm="4">
-                  <label :for="'motor-pin-' + m.index">
-                    <h6>
-                      {{ m.label }}
-                      <br />
-                      <span class="text-muted">Motor {{ m.index }}</span>
-                    </h6>
+        <div>
+          <div class="columns is-multiline" v-if="motor.test.active">
+            <div class="column is-6 my-2 px-5" v-for="m in motors" :key="m.index">
+              <div class="columns is-multiline">
+                <div class="column is-3 my-2">
+                  <label :for="m.id">
+                    <h6>{{ m.label }}</h6>
                   </label>
-                </b-col>
-                <b-col sm="8" v-if="profile_motor.motor_pins">
-                  <b-form-select
-                    :id="'motor-pin-' + m.index"
-                    v-model="profile_motor.motor_pins[m.index]"
-                    :options="motorPins"
-                  ></b-form-select>
-                </b-col>
-              </b-row>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
-      <b-col sm="12" class="my-4" v-if="has_feature(Features.BRUSHLESS)">
-        <b-card>
-          <h5 slot="header" class="mb-0">
-            ESC Settings
-            <tooltip entry="motor_settings" />
-          </h5>
-          <div>
-            <b-row v-if="motor.settings && motor.settings.length">
-              <b-col
+                </div>
+                <div class="column is-7 my-2">
+                  <input
+                    class="input"
+                    :id="m.id"
+                    type="range"
+                    step="1"
+                    min="0"
+                    max="50"
+                    v-model.number="value[m.index]"
+                    @update="update()"
+                  />
+                </div>
+                <div class="column is-2 px-1">
+                  <input
+                    class="input"
+                    :id="m.id"
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="50"
+                    v-model.number="value[m.index]"
+                    @change="update()"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="columns" v-else>
+            <div class="column is-12">
+              <h6 class="text-muted">Motor Test disabled</h6>
+            </div>
+          </div>
+          <div class="columns">
+            <div class="column is-offset-10 is-2">
+              <button class="button my-2 mx-2 float-right" @click="motor_test_toggle()">
+                {{ motor.test.active ? "Disable" : "Enable" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="column is-12 my-4">
+      <div class="card my-2">
+        <header class="card-header">
+          <p class="card-header-title">Motor Pins</p>
+          <tooltip class="card-header-icon" entry="motor_pins" />
+        </header>
+
+        <div class="columns is-multiline my-2">
+          <div
+            class="column is-6 my-2 px-5"
+            v-for="m in motors"
+            :key="'motor-pin-' + m.index"
+          >
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <label :for="'motor-pin-' + m.index">
+                  <h6>
+                    {{ m.label }}
+                    <br />
+                    <span class="text-muted">Motor {{ m.index }}</span>
+                  </h6>
+                </label>
+              </div>
+              <div class="column is-8" v-if="profile_motor.motor_pins">
+                <input-select
+                  :id="'motor-pin-' + m.index"
+                  v-model="profile_motor.motor_pins[m.index]"
+                  :options="motorPins"
+                ></input-select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="column is-12 my-4" v-if="has_feature(Features.BRUSHLESS)">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">ESC Settings</p>
+          <tooltip class="card-header-icon" entry="motor_settings" />
+        </header>
+
+        <div class="card-content">
+          <div class="content">
+            <div
+              class="columns is-multiline"
+              v-if="motor.settings && motor.settings.length"
+            >
+              <div
+                class="column is-6 my-2 px-5"
                 v-for="m in motors"
                 :key="'motor-settings-' + m.index"
-                sm="6"
-                class="my-2 px-5"
               >
-                <b-row>
-                  <b-col sm="4" class="my-2">
+                <div class="columns is-multiline">
+                  <div class="column is-4 my-2">
                     <h6>{{ m.label }}</h6>
-                  </b-col>
-                  <b-col sm="8" class="my-2">
+                  </div>
+                  <div class="column is-8 my-2">
                     {{ trim(motor.settings[m.index].LAYOUT) }}
                     -
                     {{ trim(motor.settings[m.index].NAME) }},
                     {{ motor.settings[m.index].MAIN_REVISION }}.{{
                       motor.settings[m.index].SUB_REVISION
                     }}
-                  </b-col>
+                  </div>
 
-                  <b-col sm="4" class="my-2">
+                  <div class="column is-4 my-2">
                     <label :for="'motor-direction-' + m.index">Direction</label>
-                  </b-col>
-                  <b-col sm="8" class="my-2">
-                    <b-form-select
+                  </div>
+                  <div class="column is-8 my-2">
+                    <input-select
                       id="direction"
                       v-model.number="motor.settings[m.index].MOTOR_DIRECTION"
                       :options="motor_direction_options"
-                    ></b-form-select>
-                  </b-col>
-                </b-row>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col offset="10" sm="2">
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-multiline">
+              <div class="column is-offset-10 is-2">
                 <spinner-btn
                   class="ml-4 mt-2"
                   v-if="motor.settings && motor.settings.length"
@@ -161,20 +160,21 @@
                 >
                   Load
                 </spinner-btn>
-              </b-col>
-            </b-row>
+              </div>
+            </div>
           </div>
-        </b-card>
-      </b-col>
-    </b-row>
-  </b-container>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapActions, mapState, mapGetters } from "vuex";
 import { mapFields } from "@/store/helper.js";
 
-export default {
+export default defineComponent({
   name: "motor",
   components: {},
   data() {
@@ -248,5 +248,5 @@ export default {
   created() {
     this.fetch_motor_test();
   },
-};
+});
 </script>
