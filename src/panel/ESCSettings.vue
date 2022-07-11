@@ -7,10 +7,13 @@
 
     <div class="card-content">
       <div class="content">
-        <div class="columns is-multiline" v-if="motor.settings && motor.settings.length">
+        <div
+          class="columns is-multiline"
+          v-if="motor.settings && motor.settings.length"
+        >
           <div
             class="column is-6 px-5"
-            v-for="m in motors"
+            v-for="m in motor.pins"
             :key="'motor-settings-' + m.index"
           >
             <div class="columns is-multiline my-2">
@@ -39,7 +42,10 @@
             </div>
           </div>
         </div>
-        <div v-else class="is-size-5 has-text-centered has-text-weight-semibold">
+        <div
+          v-else
+          class="is-size-5 has-text-centered has-text-weight-semibold"
+        >
           Settings not loaded
         </div>
       </div>
@@ -77,29 +83,6 @@ export default defineComponent({
   name: "ESCSettings",
   data() {
     return {
-      motors: [
-        {
-          index: 1,
-          id: "MOTOR_FL",
-          label: "Front Left",
-        },
-        {
-          index: 3,
-          id: "MOTOR_FR",
-          label: "Front Right",
-        },
-        {
-          index: 0,
-          id: "MOTOR_BL",
-          label: "Back Left",
-        },
-        {
-          index: 2,
-          id: "MOTOR_BR",
-          label: "Back Right",
-        },
-      ],
-
       motor_direction_options: [
         { value: 1, text: "Normal" },
         { value: 2, text: "Reversed" },

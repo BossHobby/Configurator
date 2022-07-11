@@ -13,7 +13,7 @@
       <div class="content">
         <template v-if="motor.test.active">
           <div class="columns is-multiline">
-            <div class="column is-6" v-for="m in motors" :key="m.index">
+            <div class="column is-6" v-for="m in motor.pins" :key="m.index">
               <div class="field field-is-2 is-horizontal">
                 <div class="field-label">
                   <label class="label" for="pid-preset">
@@ -84,7 +84,11 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(["fetch_motor_test", "motor_test_toggle", "motor_test_set_value"]),
+    ...mapActions([
+      "fetch_motor_test",
+      "motor_test_toggle",
+      "motor_test_set_value",
+    ]),
     update() {
       return this.motor_test_set_value(this.value.map((v) => v / 100));
     },

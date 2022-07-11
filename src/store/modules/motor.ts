@@ -7,6 +7,28 @@ const store = {
     loading: false,
     test: null,
     settings: null,
+    pins: [
+      {
+        index: 1,
+        id: "MOTOR_FL",
+        label: "Front Left",
+      },
+      {
+        index: 3,
+        id: "MOTOR_FR",
+        label: "Front Right",
+      },
+      {
+        index: 0,
+        id: "MOTOR_BL",
+        label: "Back Left",
+      },
+      {
+        index: 2,
+        id: "MOTOR_BR",
+        label: "Back Right",
+      },
+    ],
   },
   getters: {},
   mutations: {
