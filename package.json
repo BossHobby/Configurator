@@ -30,6 +30,7 @@
     "@octokit/rest": "^19.0.3",
     "@vue/compat": "^3.1.0",
     "bulma": "^0.9.4",
+    "bulma-switch": "^2.0.4",
     "chart.js": "^3.8.0",
     "chartjs-adapter-moment": "^1.0.0",
     "extract-zip": "^2.0.1",

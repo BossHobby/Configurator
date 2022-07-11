@@ -1,7 +1,7 @@
 <template>
   <div class="columns is-multiline">
     <div class="column is-12">
-      <GyroModel class="my-3"></GyroModel>
+      <GyroModel></GyroModel>
     </div>
 
     <div

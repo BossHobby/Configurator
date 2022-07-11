@@ -8,99 +8,134 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
-        <div class="columns is-multiline">
-          <div class="column is-6">
-            <label for="lipo-cell-count">
+      <div class="content column-narrow field-is-5">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               LipoCellCount
               <tooltip entry="voltage.lipo_cell_count" />
             </label>
           </div>
-          <div class="column is-6">
-            <input
-              class="input"
-              id="lipo-cell-count"
-              type="number"
-              step="1"
-              v-model.number="voltage.lipo_cell_count"
-            />
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="lipo-cell-count"
+                  type="number"
+                  step="1"
+                  v-model.number="voltage.lipo_cell_count"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="column is-6">
-            <label for="pid-voltage-compensation">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               PidVoltageCompensation
               <tooltip entry="voltage.pid_voltage_compensation" />
             </label>
           </div>
-          <div class="column is-6">
-            <input-select
-              v-model.number="voltage.pid_voltage_compensation"
-              :options="pidVoltageCompensationOptions"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  v-model.number="voltage.pid_voltage_compensation"
+                  :options="pidVoltageCompensationOptions"
+                ></input-select>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="column is-6">
-            <label for="vbattlow">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               VBattLow
               <tooltip entry="voltage.vbattlow" />
             </label>
           </div>
-          <div class="column is-6">
-            <input
-              class="input"
-              id="vbattlow"
-              type="number"
-              step="0.1"
-              v-model.number="voltage.vbattlow"
-            />
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="vbattlow"
+                  type="number"
+                  step="0.1"
+                  v-model.number="voltage.vbattlow"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="column is-6">
-            <label for="actual-battery-voltage">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               ActualBatteryVoltage
               <tooltip entry="voltage.actual_battery_voltage" />
             </label>
           </div>
-          <div class="column is-6">
-            <input
-              class="input"
-              id="actual-battery-voltage"
-              type="number"
-              step="0.1"
-              v-model.number="voltage.actual_battery_voltage"
-            />
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="actual-battery-voltage"
+                  type="number"
+                  step="0.1"
+                  v-model.number="voltage.actual_battery_voltage"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="column is-6">
-            <label for="reported-telemetry-voltage">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               ReportedTelemetryVoltage
               <tooltip entry="voltage.reported_telemetry_voltage" />
             </label>
           </div>
-          <div class="column is-6">
-            <input
-              class="input"
-              id="reported-telemetry-voltage"
-              type="number"
-              step="0.1"
-              v-model.number="voltage.reported_telemetry_voltage"
-            />
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="reported-telemetry-voltage"
+                  type="number"
+                  step="0.1"
+                  v-model.number="voltage.reported_telemetry_voltage"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="column is-6">
-            <label for="ibat_scale">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               Current Meter Scale
               <tooltip entry="voltage.ibat_scale" />
             </label>
           </div>
-          <div class="column is-6">
-            <input
-              class="input"
-              id="ibat_scale"
-              type="number"
-              step="1"
-              v-model.number="voltage.ibat_scale"
-            />
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="ibat_scale"
+                  type="number"
+                  step="1"
+                  v-model.number="voltage.ibat_scale"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

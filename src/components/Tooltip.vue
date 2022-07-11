@@ -13,7 +13,7 @@
       :class="{ 'has-text-danger': danger, 'has-text-grey': !danger }"
       :id="'tooltip-' + entry"
     >
-      <font-awesome-icon icon="fa-solid fa-circle-question" />
+      <font-awesome-icon icon="fa-solid fa-circle-question" :size="size" fixed-width />
     </span>
 
     <Transition name="tooltip">
@@ -57,7 +57,10 @@ const visible = {
 };
 
 export default defineComponent({
-  props: ["entry"],
+  props: {
+    entry: String,
+    size: String,
+  },
   directives: {
     visible,
   },

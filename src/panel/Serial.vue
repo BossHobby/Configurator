@@ -5,50 +5,67 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
-        <div class="columns">
-          <div class="column is-4">
-            <label for="rx">
+      <div class="content column-narrow field-is-5">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               RX
               <tooltip entry="serial.rx" />
             </label>
           </div>
-          <div class="column is-8">
-            <input-select
-              id="rx"
-              v-model.number="serial.rx"
-              :options="serialPorts"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  id="rx"
+                  v-model.number="serial.rx"
+                  :options="serialPorts"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns">
-          <div class="column is-4">
-            <label for="smart-audio">
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               Smart Audio
               <tooltip entry="serial.smart_audio" />
             </label>
           </div>
-          <div class="column is-8">
-            <input-select
-              id="smart-audio"
-              v-model.number="serial.smart_audio"
-              :options="serialPorts"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  id="smart-audio"
+                  v-model.number="serial.smart_audio"
+                  :options="serialPorts"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns">
-          <div class="column is-4">
-            <label for="hdzero">
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               HDZero
               <tooltip entry="serial.hdzero" />
             </label>
           </div>
-          <div class="column is-8">
-            <input-select
-              id="hdzero"
-              v-model.number="serial.hdzero"
-              :options="serialPorts"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  id="hdzero"
+                  v-model.number="serial.hdzero"
+                  :options="serialPorts"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
       </div>

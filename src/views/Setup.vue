@@ -1,23 +1,23 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-12 my-4">
-      <GyroModel class="control-card"></GyroModel>
+    <div class="column is-12">
+      <GyroModel></GyroModel>
     </div>
     <div class="column is-12">
-      <Motor class="control-card"></Motor>
+      <Motor></Motor>
     </div>
   </div>
-  <div class="columns my-4">
+  <div class="columns">
     <div class="column is-6">
-      <Voltage class="control-card"></Voltage>
+      <Voltage></Voltage>
     </div>
     <div class="column is-6">
-      <Serial class="control-card"></Serial>
+      <Serial></Serial>
     </div>
   </div>
-  <div class="columns my-4">
+  <div class="columns">
     <div class="column is-6">
-      <VTX class="control-card" v-if="profile.serial.smart_audio != 0"></VTX>
+      <VTX v-if="profile.serial.smart_audio != 0"></VTX>
     </div>
   </div>
 </template>

@@ -1,7 +1,45 @@
-@import 'node_modules/bulma/bulma.sass';
+$primary: hsl(96deg 56% 43%);
 
-.control-card {
-  height: 100%;
+@import 'node_modules/bulma/bulma.sass';
+@import 'node_modules/bulma-switch/src/sass/index.sass';
+
+.column-narrow {
+  .column {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+.field-label {
+  align-self: center;
+}
+
+.field-is-5 {
+  .field-label {
+    flex-grow: 5;
+  }
+}
+
+.field-is-4 {
+  .field-label {
+    flex-grow: 4;
+  }
+}
+
+.field-is-3 {
+  .field-label {
+    flex-grow: 3;
+  }
+}
+
+.field-is-2 {
+  .field-label {
+    flex-grow: 2;
+  }
+}
+
+.card-header-button {
+  margin: 10px;
 }
 
 .card-footer-item.button {

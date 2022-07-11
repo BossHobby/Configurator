@@ -10,12 +10,16 @@
 
   <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      <a class="navbar-item" href="https://bulma.io">
+      <a class="navbar-item px-1">
         <img
-          src="./assets/Logo.svg"
-          style="display: inline-block; max-height: 48px"
-          alt="Guano"
-          class="mr-2"
+          src="./assets/Logo_Clean.svg"
+          style="display: inline-block; max-height: 55px"
+          class="image"
+        />
+        <img
+          src="./assets/Logo_Text.svg"
+          style="display: inline-block; margin-left: -2px; max-width: 175px"
+          class="image"
         />
       </a>
 
@@ -34,39 +38,67 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
-        <router-link class="navbar-item" to="/templates">Templates</router-link>
-        <router-link class="navbar-item" to="/profile">Profile</router-link>
-        <router-link class="navbar-item" to="/setup">Setup</router-link>
-        <router-link class="navbar-item" to="/rates">Rates</router-link>
-        <router-link class="navbar-item" to="/receiver">Receiver</router-link>
-        <router-link v-if="has_feature(Features.OSD)" class="navbar-item" to="/osd"
+        <router-link active-class="is-active" class="navbar-item" to="/templates"
+          >Templates</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/profile"
+          >Profile</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/setup"
+          >Setup</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/rates"
+          >Rates</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/receiver"
+          >Receiver</router-link
+        >
+        <router-link
+          active-class="is-active"
+          v-if="has_feature(Features.OSD)"
+          class="navbar-item"
+          to="/osd"
           >OSD</router-link
         >
-        <router-link class="navbar-item" to="/motor">Motor</router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/motor"
+          >Motor</router-link
+        >
         <router-link
+          active-class="is-active"
           v-if="has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1"
           class="navbar-item"
           to="/blackbox"
           >Blackbox</router-link
         >
-        <router-link class="navbar-item" to="/state">State</router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/state"
+          >State</router-link
+        >
         <router-link
+          active-class="is-active"
           v-if="has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
           class="navbar-item"
           to="/perf"
           >Perf</router-link
         >
-        <router-link class="navbar-item" to="/log">Log</router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/log"
+          >Log</router-link
+        >
       </div>
       <div v-else class="navbar-start">
-        <router-link class="navbar-item" to="/">Home</router-link>
-        <router-link class="navbar-item" to="/flash">Flash</router-link>
-        <router-link class="navbar-item" to="/log">Log</router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/"
+          >Home</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/flash"
+          >Flash</router-link
+        >
+        <router-link active-class="is-active" class="navbar-item" to="/log"
+          >Log</router-link
+        >
       </div>
 
       <div class="navbar-end">
         <button
-          class="navbar-item button my-2"
+          class="navbar-item button my-2 mr-2 is-primary"
           @click="toggle_connection"
           :disabled="!canConnect"
         >
@@ -78,7 +110,7 @@
 
   <AlertPortal />
 
-  <div class="container is-fullhd mx-6 router-outlet-container">
+  <div class="container router-outlet-container">
     <router-view></router-view>
   </div>
 
@@ -88,7 +120,7 @@
         {{ profile.meta.name }}
       </span>
       <span class="navbar-item">Modified {{ timeAgo(date) }}</span>
-      <span class="navbar-item" style="font-size: 60%">
+      <span class="navbar-item" style="font-size: 70%">
         Looptime {{ state.looptime_autodetect }} CPU Load
         {{ state.cpu_load }}
       </span>
@@ -187,7 +219,7 @@ export default defineComponent({
   margin-bottom: 0 !important;
 }
 .router-outlet-container {
-  margin-top: 4.25rem !important;
-  margin-bottom: 3rem !important;
+  margin-top: 5rem !important;
+  margin-bottom: 4rem !important;
 }
 </style>

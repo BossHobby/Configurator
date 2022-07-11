@@ -5,83 +5,119 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
-        <div class="columns">
-          <div class="column is-4 my-2">
-            <label for="vtx-protocol">Protocol</label>
+      <div class="content column-narrow field-is-5">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">Protocol</label>
           </div>
-          <div class="column is-8 my-2">
-            <input-select
-              id="vtx-protocol"
-              v-model.number="settings.protocol"
-              :options="vtxProtocolOptions"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  id="vtx-protocol"
+                  v-model.number="settings.protocol"
+                  :options="vtxProtocolOptions"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
+
+        <template v-if="settings.detected">
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Frequency</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  {{ frequencyTable[settings.band][settings.channel] }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Band</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input-select
+                    id="vtx-band"
+                    v-model.number="settings.band"
+                    :options="vtxBandOptions"
+                  ></input-select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Channel</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input-select
+                    id="vtx-channel"
+                    v-model.number="settings.channel"
+                    :options="vtxChannelOptions"
+                  ></input-select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field is-horizontal" v-if="settings.pit_mode != 2">
+            <div class="field-label">
+              <label class="label">Pit Mode</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input-select
+                    id="vtx-pit-mode"
+                    v-model.number="settings.pit_mode"
+                    :options="vtxPitModeOptions"
+                  ></input-select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">">Power Level</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input-select
+                    id="vtx-power-level"
+                    v-model.number="settings.power_level"
+                    :options="vtxPowerLevelOptions"
+                  ></input-select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="is-size-5 has-text-centered has-text-weight-semibold">
+            Not detected
+          </div>
+        </template>
       </div>
-      <div v-if="settings.detected">
-        <div class="columns">
-          <div class="column is-4 my-2">
-            <label for="vtx-band">Frequency</label>
-          </div>
-          <div class="column is-8 my-2">
-            {{ frequencyTable[settings.band][settings.channel] }}
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column is-4 my-2">
-            <label for="vtx-band">Band</label>
-          </div>
-          <div class="column is-8 my-2">
-            <input-select
-              id="vtx-band"
-              v-model.number="settings.band"
-              :options="vtxBandOptions"
-            ></input-select>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column is-4 my-2">
-            <label for="vtx-channel">Channel</label>
-          </div>
-          <div class="column is-8 my-2">
-            <input-select
-              id="vtx-channel"
-              v-model.number="settings.channel"
-              :options="vtxChannelOptions"
-            ></input-select>
-          </div>
-        </div>
-        <div class="columns" v-if="settings.pit_mode != 2">
-          <div class="column is-4 my-2">
-            <label for="vtx-pit-mode">Pit Mode</label>
-          </div>
-          <div class="column is-8 my-2">
-            <input-select
-              id="vtx-pit-mode"
-              v-model.number="settings.pit_mode"
-              :options="vtxPitModeOptions"
-            ></input-select>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column is-4 my-2">
-            <label for="vtx-power-level">Power Level</label>
-          </div>
-          <div class="column is-8 my-2">
-            <input-select
-              id="vtx-power-level"
-              v-model.number="settings.power_level"
-              :options="vtxPowerLevelOptions"
-            ></input-select>
-          </div>
-        </div>
-      </div>
-      <div v-else>Not detected</div>
     </div>
 
     <footer class="card-footer">
-      <spinner-btn class="card-footer-item" v-on:click="apply_vtx_settings(settings)">
+      <spinner-btn
+        class="card-footer-item"
+        v-on:click="apply_vtx_settings(settings)"
+      >
         Apply
       </spinner-btn>
     </footer>

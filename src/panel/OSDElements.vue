@@ -2,70 +2,108 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Elements</p>
-      <tooltip class="card-header-icon" entry="osd.elements" />
+      <tooltip class="card-header-icon" entry="osd.elements" size="lg" />
     </header>
     <div class="card-content">
       <div class="content">
         <div class="columns is-multiline">
           <div class="column is-6">
-            <div class="columns is-multiline">
-              <div class="column is-4">
-                <label>Callsign Text</label>
+            <div class="field field-is-2 is-horizontal">
+              <div class="field-label">
+                <label class="label"> Callsign Text </label>
               </div>
-              <div class="column is-8">
-                <input class="input is-small" type="text" v-model="callsign" />
-              </div>
-            </div>
-            <div v-for="(el, i) of elements" :key="i">
-              <div class="columns is-multiline" v-if="el.enabled" align-v="center">
-                <div class="column is-4">
-                  <label>{{ el.name }}</label>
-                </div>
-                <div class="column is-2">
-                  <label class="checkbox">
-                    <input
-                      type="checkbox"
-                      :checked="el.active == 1"
-                      @input="osd_set(i, 'active', $event ? 1 : 0)"
-                      name="check-button"
-                      switch
-                    />
-                    Active
-                  </label>
-                </div>
-                <div class="column is-2">
-                  <label class="checkbox">
-                    <input
-                      type="checkbox"
-                      :checked="el.invert == 1"
-                      @input="osd_set(i, 'invert', $event ? 1 : 0)"
-                      name="check-button"
-                      switch
-                    />
-                    Invert
-                  </label>
-                </div>
-                <div class="column is-2">
-                  <input
-                    class="input is-small"
-                    type="number"
-                    step="1"
-                    :value="el.pos_x"
-                    @input="osd_set(i, 'pos_x', $event)"
-                  />
-                </div>
-                <div class="column is-2">
-                  <input
-                    class="input is-small"
-                    type="number"
-                    step="1"
-                    :value="el.pos_y"
-                    @input="osd_set(i, 'pos_y', $event)"
-                  />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input class="input" type="text" v-model="callsign" />
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div class="columns mt-4 mb-0">
+              <div class="column has-text-centered has-text-weight-semibold px-0 is-4">
+                Element
+              </div>
+              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+                Active
+              </div>
+              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+                Invert
+              </div>
+              <div class="column has-text-left has-text-weight-semibold px-0 is-2">X</div>
+              <div class="column has-text-left has-text-weight-semibold px-0 is-2">Y</div>
+            </div>
+
+            <template v-for="(el, i) of elements" :key="i">
+              <div v-if="el.enabled" class="field mb-2 field-is-2 is-horizontal">
+                <div class="field-label">
+                  <label class="label" for="pid-preset">
+                    {{ el.name }}
+                  </label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control is-expanded">
+                      <input
+                        :id="'active-' + i"
+                        :name="'active-' + i"
+                        type="checkbox"
+                        class="switch"
+                        :checked="el.active == 1"
+                        @input="osd_set(i, 'active', $event ? 1 : 0)"
+                      />
+                      <label
+                        class="py-0"
+                        style="height: 2em"
+                        :for="'active-' + i"
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="control is-expanded">
+                      <input
+                        :id="'invert-' + i"
+                        :name="'invert-' + i"
+                        type="checkbox"
+                        class="switch"
+                        :checked="el.invert == 1"
+                        @input="osd_set(i, 'invert', $event ? 1 : 0)"
+                      />
+                      <label
+                        class="py-0"
+                        style="height: 2em"
+                        :for="'invert-' + i"
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="field" style="align-self: center">
+                    <div class="control is-expanded">
+                      <input
+                        class="input"
+                        type="number"
+                        step="1"
+                        :value="el.pos_x"
+                        @input="osd_set(i, 'pos_x', $event)"
+                      />
+                    </div>
+                  </div>
+                  <div class="field" style="align-self: center">
+                    <div class="control is-expanded">
+                      <input
+                        class="input"
+                        type="number"
+                        step="1"
+                        :value="el.pos_y"
+                        @input="osd_set(i, 'pos_y', $event)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
+
           <div class="column is-6">
             <div class="card">
               <header class="card-header">

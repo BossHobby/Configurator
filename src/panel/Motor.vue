@@ -5,156 +5,209 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
+      <div class="content column-narrow field-is-5">
         <div class="columns">
           <div class="column is-6">
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="invert-yaw">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Invert Yaw
                   <tooltip entry="motor.invert_yaw" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input-select
-                  id="invert-yaw"
-                  v-model.number="motor.invert_yaw"
-                  :options="invertYawModes"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="invert-yaw"
+                      class="is-fullwidth"
+                      v-model.number="motor.invert_yaw"
+                      :options="invertYawModes"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="digital-idle">
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Digital Idle
                   <tooltip entry="motor.digital_idle" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input
-                  class="input"
-                  id="digital-idle"
-                  type="number"
-                  step="0.1"
-                  v-model.number="motor.digital_idle"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="digital-idle"
+                      type="number"
+                      step="0.1"
+                      v-model.number="motor.digital_idle"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+
             <div
-              class="columns"
-              v-if="info.quic_protocol_version > 1 && has_feature(Features.BRUSHLESS)"
+              class="field is-horizontal"
+              v-if="
+                info.quic_protocol_version > 1 &&
+                has_feature(Features.BRUSHLESS)
+              "
             >
-              <div class="column is-4 my-2">
-                <label for="dshot-time">
+              <div class="field-label">
+                <label class="label">
                   DShot Time
                   <tooltip entry="motor.dshot_time" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input-select
-                  id="dshot-time"
-                  v-model="motor.dshot_time"
-                  :options="dshotTimes"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="dshot-time"
+                      class="is-fullwidth"
+                      v-model="motor.dshot_time"
+                      :options="dshotTimes"
+                    ></input-select>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="gyro-flip">
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Flip Gyro
                   <tooltip entry="motor.flip_gyro" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <label class="checkbox">
-                  <input type="checkbox" id="gyro-flip" v-model="gyroFlip" />
-                  Enable
-                </label>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <label class="checkbox">
+                      <input
+                        type="checkbox"
+                        id="gyro-flip"
+                        v-model="gyroFlip"
+                      />
+                      Enable
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="gyro-orientation">
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Gyro Orientation
                   <tooltip entry="motor.gyro_orientation" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input-select
-                  id="gyro-orientation"
-                  v-model="gyroOrientation"
-                  :options="gyroOrientations"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      class="is-fullwidth"
+                      id="gyro-orientation"
+                      v-model="gyroOrientation"
+                      :options="gyroOrientations"
+                    ></input-select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <div class="column is-6">
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="torque-boost">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Torque Boost
                   <tooltip entry="motor.torque_boost" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input
-                  class="input"
-                  id="torque-boost"
-                  type="number"
-                  step="0.1"
-                  v-model.number="motor.torque_boost"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="torque-boost"
+                      type="number"
+                      step="0.1"
+                      v-model.number="motor.torque_boost"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="throttle-boost">
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Throttle Boost
                   <tooltip entry="motor.throttle_boost" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input
-                  class="input"
-                  id="throttle-boost"
-                  type="number"
-                  step="0.1"
-                  v-model.number="motor.throttle_boost"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="throttle-boost"
+                      type="number"
+                      step="0.1"
+                      v-model.number="motor.throttle_boost"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns">
-              <div class="column is-4 my-2">
-                <label for="turtle-throttle-percent">
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">
                   Turtle Throttle Percent
                   <tooltip entry="motor.turtle_throttle_percent" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input
-                  class="input"
-                  id="turtle-throttle-percent"
-                  type="number"
-                  step="1"
-                  v-model.number="motor.turtle_throttle_percent"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="turtle-throttle-percent"
+                      type="number"
+                      step="1"
+                      v-model.number="motor.turtle_throttle_percent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="columns" v-if="profileVersionGt('0.2.0')">
-              <div class="column is-4 my-2">
-                <label for="motor-limit-percent">
+
+            <div class="field is-horizontal" v-if="profileVersionGt('0.2.0')">
+              <div class="field-label">
+                <label class="label">
                   Motor Limit Percent
                   <tooltip entry="motor.motor_limit" />
                 </label>
               </div>
-              <div class="column is-8 my-2">
-                <input
-                  class="input"
-                  id="motor-limit-percent"
-                  type="number"
-                  step="1"
-                  v-model.number="motor.motor_limit"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="motor-limit-percent"
+                      type="number"
+                      step="1"
+                      v-model.number="motor.motor_limit"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -207,11 +260,13 @@ export default defineComponent({
         { value: this.GyroRotation.ROTATE_90_CW, text: "ROTATE_90_CW" },
         { value: this.GyroRotation.ROTATE_90_CCW, text: "ROTATE_90_CCW" },
         {
-          value: this.GyroRotation.ROTATE_90_CCW | this.GyroRotation.ROTATE_45_CCW,
+          value:
+            this.GyroRotation.ROTATE_90_CCW | this.GyroRotation.ROTATE_45_CCW,
           text: "ROTATE_135_CW",
         },
         {
-          value: this.GyroRotation.ROTATE_90_CW | this.GyroRotation.ROTATE_45_CW,
+          value:
+            this.GyroRotation.ROTATE_90_CW | this.GyroRotation.ROTATE_45_CW,
           text: "ROTATE_135_CCW",
         },
         { value: this.GyroRotation.ROTATE_180, text: "ROTATE_180" },

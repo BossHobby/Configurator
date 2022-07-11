@@ -45,8 +45,8 @@ export const store = createStore({
     needs_apply: false,
     needs_reboot: false,
 
-    log: [],
-    alerts: [],
+    log: [] as any[],
+    alerts: [] as any[],
 
     pid_rate_presets: [],
   },
@@ -72,7 +72,16 @@ export const store = createStore({
     },
 
     append_alert(state, alert) {
-      state.alerts = [...state.alerts, alert];
+      state.alerts = [
+        ...state.alerts,
+        {
+          id: Date.now().toString() + "-" + state.alerts.length.toString(),
+          ...alert,
+        },
+      ];
+    },
+    pop_alert(state, id) {
+      state.alerts = [...state.alerts.filter((a) => a.id != id)];
     },
 
     track_key_change(state, path) {

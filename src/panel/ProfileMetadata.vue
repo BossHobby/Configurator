@@ -4,45 +4,86 @@
       <p class="card-header-title">Metadata</p>
     </header>
     <div class="card-content">
-      <div class="content">
-        <div class="columns">
-          <div class="column is-4">
-            <label for="name">Profile Name</label>
+      <div class="content column-narrow field-is-2">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="name">Profile Name</label>
           </div>
-          <div class="column is-4">
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded"></div>
+            </div>
             <input class="input" type="text" v-model="meta.name" />
           </div>
         </div>
-        <div class="columns">
-          <div class="column is-4">
-            <label>Profile Last Modified</label>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">Profile Last Modified</label>
           </div>
-          <div class="column is-4">{{ timeAgo(date) }}</div>
-        </div>
-        <div class="columns">
-          <div class="column is-4">
-            <label>Target Name</label>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input class="input is-static" :value="timeAgo(date)" readonly />
+              </div>
+            </div>
           </div>
-          <div class="column is-4">{{ info.target_name }}</div>
-        </div>
-        <div class="columns" v-if="info.features != null">
-          <div class="column is-4">
-            <label>Features</label>
-          </div>
-          <div class="column is-4">{{ features }}</div>
         </div>
 
-        <div class="columns" v-if="info.gyro_id != null">
-          <div class="column is-4">
-            <label>Gyro ID</label>
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">Target Name</label>
           </div>
-          <div class="column is-4">0x{{ info.gyro_id.toString(16) }}</div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input class="input is-static" :value="info.target_name" readonly />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="columns">
-          <div class="column is-4">
-            <label>Version</label>
+
+        <div class="field is-horizontal" v-if="info.features != null">
+          <div class="field-label">
+            <label class="label">Features</label>
           </div>
-          <div class="column is-4">{{ info.git_version }}</div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input class="input is-static" :value="features" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal" v-if="info.gyro_id != null">
+          <div class="field-label">
+            <label class="label">Gyro ID</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input is-static"
+                  :value="'0x' + info.gyro_id.toString(16)"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">Version</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input class="input is-static" :value="info.git_version" readonly />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -77,7 +118,7 @@ import { QuicVal } from "@/store/serial/quic";
 import { timeAgo } from "@/mixin/filters";
 
 export default defineComponent({
-  name: "Metadata",
+  name: "ProlfileMetadata",
   data() {
     return {};
   },

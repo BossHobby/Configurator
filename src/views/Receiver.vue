@@ -1,12 +1,12 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-12 my-4">
+    <div class="column is-12">
       <ReceiverSettings></ReceiverSettings>
     </div>
-    <div class="column is-12 my-4" v-if="quicVersionGt('0.1.0')">
+    <div class="column is-12" v-if="quicVersionGt('0.1.0')">
       <RCChannels></RCChannels>
     </div>
-    <div class="column is-12 my-4">
+    <div class="column is-12">
       <AuxChannels></AuxChannels>
     </div>
   </div>

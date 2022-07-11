@@ -5,76 +5,88 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
-        <div class="columns is-multiline">
+      <div class="content column-narrow field-is-5">
+        <div class="columns">
           <div class="column is-6">
-            <div class="columns is-multiline">
-              <div class="column is-4">
-                <label for="profile">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="profile">
                   Profile
                   <tooltip entry="rate.profile" />
                 </label>
               </div>
-              <div class="column is-8">
-                <input-select
-                  id="profile"
-                  v-model.number="rate.profile"
-                  :options="rateProfiles"
-                  @change="update()"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="profile"
+                      v-model.number="rate.profile"
+                      :options="rateProfiles"
+                      @change="update()"
+                    ></input-select>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div class="column is-4">
-                <label for="rate-mode">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="rate-mode">
                   Mode
                   <tooltip entry="rate.mode" />
                 </label>
               </div>
-              <div class="column is-8">
-                <input-select
-                  id="rate-mode"
-                  v-model.number="currentMode"
-                  :options="rateModes"
-                  @change="update()"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="rate-mode"
+                      v-model.number="currentMode"
+                      :options="rateModes"
+                      @change="update()"
+                    ></input-select>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div class="column is-12">
-                <div class="card my-3">
-                  <header class="card-header">
-                    <p class="card-header-title">
-                      {{ currentModeText }}
-                    </p>
-                  </header>
+            <div class="card mt-5 mb-6">
+              <header class="card-header">
+                <p class="card-header-title">
+                  {{ currentModeText }}
+                </p>
+              </header>
 
-                  <div class="card-content">
-                    <div class="content">
+              <div class="card-content">
+                <div class="content">
+                  <div class="columns is-multiline">
+                    <div class="column is-offset-4 is-8">
                       <div class="columns is-multiline">
-                        <div class="column is-offset-4 is-8">
-                          <div class="columns is-multiline">
-                            <div class="column is-4">
-                              <h6>Roll</h6>
-                            </div>
-                            <div class="column is-4">
-                              <h6>Pitch</h6>
-                            </div>
-                            <div class="column is-4">
-                              <h6>Yaw</h6>
-                            </div>
-                          </div>
+                        <div class="column is-4">
+                          <h6>Roll</h6>
+                        </div>
+                        <div class="column is-4">
+                          <h6>Pitch</h6>
+                        </div>
+                        <div class="column is-4">
+                          <h6>Yaw</h6>
                         </div>
                       </div>
-                      <div
-                        class="columns is-multiline"
-                        v-for="(val, index) in currentProfile.rate"
-                        :key="rateLabel[index]"
-                      >
-                        <div class="column is-4">
-                          <label :for="`${currentModeText}-${rateLabel[index]}`">{{
-                            rateLabel[index]
-                          }}</label>
-                        </div>
-                        <div class="column is-8">
+                    </div>
+                  </div>
+                  <div
+                    class="columns is-multiline"
+                    v-for="(val, index) in currentProfile.rate"
+                    :key="rateLabel[index]"
+                  >
+                    <div class="column is-4">
+                      <label :for="`${currentModeText}-${rateLabel[index]}`">{{
+                        rateLabel[index]
+                      }}</label>
+                    </div>
+                    <div class="field-body">
+                      <div class="field">
+                        <div class="control is-expanded">
                           <div class="columns is-multiline">
                             <div class="column is-4">
                               <input
@@ -113,37 +125,52 @@
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="column is-4">
-                <label for="level-max-angle">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="level-max-angle">
                   LevelMaxAngle
                   <tooltip entry="rate.level_max_angle" />
                 </label>
               </div>
-              <div class="column is-8">
-                <input
-                  class="input"
-                  id="level-max-angle"
-                  type="number"
-                  step="5"
-                  v-model.number="rate.level_max_angle"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      id="level-max-angle"
+                      type="number"
+                      step="5"
+                      v-model.number="rate.level_max_angle"
+                    />
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div class="column is-4">
-                <label for="sticks-deadband">SticksDeadband</label>
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="sticks-deadband"
+                  >SticksDeadband</label
+                >
               </div>
-              <div class="column is-8">
-                <input
-                  class="input"
-                  step="0.01"
-                  id="sticks-deadband"
-                  type="number"
-                  v-model.number="rate.sticks_deadband"
-                />
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input"
+                      step="0.01"
+                      id="sticks-deadband"
+                      type="number"
+                      v-model.number="rate.sticks_deadband"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
           <div class="column is-6">
             <LineChart
               :title="'Rates'"
@@ -307,21 +334,25 @@ export default defineComponent({
       const rcCommandfAbs = val > 0 ? val : -val;
       var angleRate = 200.0 * rcRate * val;
 
-      const superExpo = this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
+      const superExpo =
+        this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
       if (superExpo) {
         const rcSuperfactor =
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
         angleRate *= rcSuperfactor;
       }
-      return this.constrainf(angleRate, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
+      return this.constrainf(
+        angleRate,
+        -SETPOINT_RATE_LIMIT,
+        SETPOINT_RATE_LIMIT
+      );
     },
     calcActual(axis, val) {
       const expo = this.currentProfile.rate[this.ACTUAL_EXPO][axis];
       const rate_expo = this.rcexpo(val, expo);
 
-      const center_sensitivity = this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][
-        axis
-      ];
+      const center_sensitivity =
+        this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][axis];
       const max_rate = this.currentProfile.rate[this.ACTUAL_MAX_RATE][axis];
 
       let stick_movement = max_rate - center_sensitivity;

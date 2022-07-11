@@ -1,91 +1,97 @@
 <template>
-  <div class="columns">
-    <div class="column is-12 my-4">
-      <div class="card">
-        <header class="card-header">
-          <p class="card-header-title">Font</p>
-          <tooltip class="card-header-icon" entry="osd.font" />
-        </header>
+  <div class="card">
+    <header class="card-header">
+      <p class="card-header-title">Font</p>
+      <tooltip class="card-header-icon" entry="osd.font" size="lg" />
+    </header>
 
-        <div class="card-content">
-          <div class="content">
-            <div class="columns my-4">
-              <div class="column is-2">
-                <label for="font-file">File</label>
-              </div>
-              <div class="column is-6">
+    <div class="card-content">
+      <div class="content">
+        <div class="field field-is-4 is-horizontal">
+          <div class="field-label">
+            <label class="label"> Full OSD font to upload </label>
+          </div>
+          <div class="field-body">
+            <div class="field has-addons">
+              <p class="control is-expanded">
                 <input-select
                   id="font-file"
+                  class="is-fullwidth"
                   v-model="current_font_file"
                   :options="fontFiles"
                 ></input-select>
-              </div>
-              <div class="column is-4">
+              </p>
+              <p class="control">
                 <spinner-btn
                   class="float-right"
                   v-on:click="apply_osd_font(current_font_file)"
                 >
                   Upload Font
                 </spinner-btn>
-              </div>
+              </p>
             </div>
-            <div class="columns my-4">
-              <div class="column is-8">
-                Custom Logo 288x72 Black/White/Transparent PNG
-              </div>
-              <div class="column is-4">
-                <form ref="form">
-                  <input accept=".png" type="file" ref="file" style="display: none" />
-                  <spinner-btn class="float-right" @click="uploadLogo()">
-                    Upload Logo
-                  </spinner-btn>
-                </form>
-              </div>
-            </div>
-            <div class="columns">
-              <div class="column is-6">
-                <div class="card">
-                  <header class="card-header">
-                    <p class="card-header-title">Preview</p>
-                  </header>
+          </div>
+        </div>
 
-                  <div class="card-content">
-                    <div class="content">
-                      <div class="columns">
-                        <b-img
-                          :src="'osd/' + current_font_file"
-                          fluid-grow
-                          class="mx-5 mt-3"
-                        ></b-img>
-                      </div>
-                    </div>
-                  </div>
+        <form ref="form">
+          <div class="field field-is-4 is-horizontal">
+            <div class="field-label">
+              <label class="label">
+                Custom Logo <br />
+                288x72 Black/White/Transparent PNG
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field has-addons">
+                <p class="control is-expanded">
+                  <input class="file-input" accept=".png" type="file" ref="file" />
+                </p>
+                <p class="control">
+                  <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="columns mt-5">
+          <div class="column is-6">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">Preview</p>
+              </header>
+
+              <div class="card-content">
+                <div class="content">
+                  <figure class="image m-0">
+                    <img :src="'osd/' + current_font_file" />
+                  </figure>
                 </div>
               </div>
-              <div class="column is-6">
-                <div class="card">
-                  <header class="card-header">
-                    <p class="card-header-title">Current</p>
-                  </header>
-                  <div class="card-content">
-                    <div class="content">
-                      <div class="columns">
-                        <b-img :src="imageSource" fluid-grow class="mx-5 mt-3"></b-img>
-                        <canvas
-                          ref="canvas"
-                          class="mx-5 mt-3 d-none"
-                          width="209"
-                          height="305"
-                        ></canvas>
-                        <canvas
-                          ref="logoCanvas"
-                          class="mx-5 mt-3 d-none"
-                          width="288"
-                          height="72"
-                        ></canvas>
-                      </div>
-                    </div>
-                  </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">Current</p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <figure class="image m-0">
+                    <img :src="imageSource" />
+                  </figure>
+                  <canvas
+                    ref="canvas"
+                    class="mx-5 mt-3 is-hidden"
+                    width="209"
+                    height="305"
+                  ></canvas>
+                  <canvas
+                    ref="logoCanvas"
+                    class="mx-5 mt-3 is-hidden"
+                    width="288"
+                    height="72"
+                  ></canvas>
                 </div>
               </div>
             </div>

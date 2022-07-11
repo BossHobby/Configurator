@@ -8,9 +8,12 @@
             {{ logFilePath }}
           </small>
         </header>
-
-        <div v-for="(line, index) in log" :key="line + '-' + index">
-          <samp>>> {{ line }}</samp>
+        <div class="card-content">
+          <div class="content">
+            <div v-for="(line, index) in log" :key="line + '-' + index">
+              <samp>>> {{ line }}</samp>
+            </div>
+          </div>
         </div>
       </div>
     </div>

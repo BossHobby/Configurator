@@ -2,103 +2,123 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Receiver</p>
-      <button class="card-header-icon button is-small" @click="reset">
-        Reset
-      </button>
+      <button class="card-header-button button is-warning" @click="reset">Reset</button>
     </header>
 
     <div class="card-content">
-      <div class="content">
+      <div class="content field-is-2">
         <div
-          class="columns"
+          class="field is-horizontal"
           v-if="info.rx_protocol != null && receiver_protocol == null"
         >
-          <div class="column is-4">
-            <label>
+          <div class="field-label">
+            <label class="label">
               Protocol
               <tooltip entry="receiver.protocol" />
             </label>
           </div>
-          <div class="column is-8">
-            {{ protoNames[info.rx_protocol] }}
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                {{ protoNames[info.rx_protocol] }}
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns" v-if="receiver_protocol != null">
-          <div class="column is-4">
-            <label>
+
+        <div class="field is-horizontal" v-if="receiver_protocol != null">
+          <div class="field-label">
+            <label class="label">
               Protocol
               <tooltip entry="receiver.protocol" />
             </label>
           </div>
-          <div class="column is-4">
-            <input-select
-              v-model.number="receiver_protocol"
-              :options="protocolOptions"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  v-model.number="receiver_protocol"
+                  :options="protocolOptions"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns" v-if="info.quic_protocol_version > 3">
-          <div class="column is-4">
-            <label>
+
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 3">
+          <div class="field-label">
+            <label class="label">
               LQI Source
               <tooltip entry="receiver.lqi_source" />
             </label>
           </div>
-          <div class="column is-4">
-            <input-select
-              v-model.number="receiver_lqi_source"
-              :options="lqiSourceNames"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  v-model.number="receiver_lqi_source"
+                  :options="lqiSourceNames"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns" v-if="info.quic_protocol_version > 2">
-          <div class="column is-4">
-            <label>
+
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
+          <div class="field-label">
+            <label class="label">
               Bind Saved
               <tooltip entry="receiver.bind_saved" />
             </label>
           </div>
-          <div class="column is-8">
-            {{ bind.info.bind_saved ? "yes" : "no" }}
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                {{ bind.info.bind_saved ? "yes" : "no" }}
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns" v-if="info.quic_protocol_version > 2">
-          <div class="column is-4">
-            <label>RSSI</label>
+
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
+          <div class="field-label">
+            <label class="label">RSSI</label>
           </div>
-          <div class="column is-8">{{ state.rx_rssi }}</div>
-        </div>
-        <div class="columns" v-if="info.quic_protocol_version > 2">
-          <div class="column is-4">
-            <label>Status</label>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">{{ state.rx_rssi }}</div>
+            </div>
           </div>
-          <div class="column is-8">{{ protoStatus }}</div>
         </div>
-        <div
-          class="columns"
-          v-if="
-            info.quic_protocol_version > 2 &&
-            rx_protocol == proto.UNIFIED_SERIAL
-          "
-        >
-          <div class="column is-4">
-            <label>Protocol</label>
+
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
+          <div class="field-label">
+            <label class="label">Status</label>
           </div>
-          <div class="column is-8">{{ serialProtoStatus }}</div>
-        </div>
-        <div class="columns">
-          <div class="column is-12">
-            <small>
-              Save Bind by moving your right transmitter stick UP-UP-UP followed
-              by DOWN-DOWN-DOWN
-            </small>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">{{ protoStatus }}</div>
+            </div>
           </div>
         </div>
 
         <div
-          class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS"
+          class="field is-horizontal"
+          v-if="info.quic_protocol_version > 2 && rx_protocol == proto.UNIFIED_SERIAL"
         >
+          <div class="field-label">
+            <label class="label">Serial Protocol</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">{{ serialProtoStatus }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4" v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS">
           <header class="card-header">
             <p class="card-header-title">ExpressLRS</p>
           </header>
@@ -157,9 +177,7 @@
                   Requires reboot after load.
                 </div>
                 <div class="column is-2">
-                  <button class="button" @click="downloadBindData">
-                    Save Bind Data
-                  </button>
+                  <button class="button" @click="downloadBindData">Save Bind Data</button>
                   <form ref="form">
                     <input
                       class="input"
@@ -168,14 +186,21 @@
                       ref="file"
                       style="display: none"
                     />
-                    <button class="button" @click="uploadBindData">
-                      Load Bind Data
-                    </button>
+                    <button class="button" @click="uploadBindData">Load Bind Data</button>
                   </form>
                 </div>
                 <a ref="downloadAnchor" target="_blank"></a>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="columns mt-4">
+          <div class="column is-12">
+            <small>
+              Save Bind by moving your right transmitter stick UP-UP-UP followed by
+              DOWN-DOWN-DOWN
+            </small>
           </div>
         </div>
       </div>
@@ -203,11 +228,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapFields("profile", [
-      "receiver.protocol",
-      "receiver.lqi_source",
-      "meta",
-    ]),
+    ...mapFields("profile", ["receiver.protocol", "receiver.lqi_source", "meta"]),
     ...mapState(["info", "state", "bind"]),
     ...mapState("constants", {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
@@ -259,11 +280,7 @@ export default defineComponent({
         this.proto.EXPRESS_LRS,
       ];
       if (spi.includes(this.rx_protocol)) {
-        const status = [
-          "RX_STATUS_NONE",
-          "RX_STATUS_BINDING",
-          "RX_STATUS_BOUND",
-        ];
+        const status = ["RX_STATUS_NONE", "RX_STATUS_BINDING", "RX_STATUS_BOUND"];
         return status[this.state.rx_status];
       }
       if (this.rx_protocol == this.proto.UNIFIED_SERIAL) {

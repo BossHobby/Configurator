@@ -7,17 +7,11 @@
       </p>
       <p class="subtitle">
         Checkout our
-        <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki">
-          wiki
-        </a>
+        <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki"> wiki </a>
         for help on getting started.
       </p>
       <p class="subtitle" v-if="updateAvailable">New Version available!</p>
-      <button
-        v-if="updateAvailable"
-        class="button is-success is-small"
-        @click="doUpdate"
-      >
+      <button v-if="updateAvailable" class="button is-success is-small" @click="doUpdate">
         Update Now
       </button>
     </div>

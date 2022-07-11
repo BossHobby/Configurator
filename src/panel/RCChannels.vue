@@ -6,25 +6,39 @@
 
     <div class="card-content">
       <div class="content">
-        <div class="columns mb-4">
-          <div class="column is-4">
-            <label>
+        <div class="field field-is-2 is-horizontal mb-6">
+          <div class="field-label">
+            <label class="label">
               Channel Mapping
               <tooltip entry="receiver.channel_mapping" />
             </label>
           </div>
-          <div class="column is-4">
-            <input-select
-              v-model.number="receiver_channel_mapping"
-              :options="receiverChannelMappingOptions"
-            ></input-select>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  v-model.number="receiver_channel_mapping"
+                  :options="receiverChannelMappingOptions"
+                ></input-select>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="columns" v-for="(style, i) of channelStyle" :key="'channel-' + i">
-          <div class="column is-2">{{ channelNames[i] }}</div>
-          <div class="column is-2">
+
+        <div
+          class="field is-horizontal"
+          v-for="(style, i) of channelStyle"
+          :key="'channel-' + i"
+        >
+          <div class="field-label" style="align-self: unset">
+            <label class="label">
+              {{ channelNames[i] }}
+            </label>
+          </div>
+          <div class="field-body">
             <div class="field has-addons">
-              <p class="control">
+              <p class="control my-0">
                 <input
                   class="input is-small"
                   :id="`limit-${channelNames[i]}-min`"
@@ -37,10 +51,8 @@
                 <a class="button is-small is-static"> min </a>
               </p>
             </div>
-          </div>
-          <div class="column is-2">
             <div class="field has-addons">
-              <p class="control">
+              <p class="control my-0">
                 <input
                   class="input is-small"
                   :id="`limit-${channelNames[i]}-max`"
@@ -54,7 +66,7 @@
               </p>
             </div>
           </div>
-          <div class="column is-6">
+          <div class="column is-6 py-0">
             <div class="channel-container">
               <div class="channel-bar" :style="style">
                 {{ Math.floor(rx[i] * (i != 3 ? 50 : 100)) }}
@@ -62,14 +74,14 @@
             </div>
           </div>
         </div>
-        <div class="columns">
-          <div class="column is-8 mt-4 wizard">
+        <div class="columns mt-5">
+          <div class="column is-8 wizard">
             Stick Calibration Wizard <br />
             {{ wizardStates[stick_calibration_wizard] }} <br />
             <span v-if="timerCount">Continuing in {{ timerCount }}s..</span>
           </div>
-          <div class="column is-4 mt-4">
-            <button class="button float-right" v-on:click="cal_sticks()">
+          <div class="column is-4">
+            <button class="button is-pulled-right is-primary" v-on:click="cal_sticks()">
               Calibrate
             </button>
           </div>

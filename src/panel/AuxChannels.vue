@@ -8,19 +8,28 @@
       <div class="content">
         <div class="columns">
           <div class="column is-8">
-            <div class="columns" v-for="f in auxFunctions" :key="f.key">
-              <div class="column is-6">
-                <label :for="f.key" :class="classForIndex(f.index)">
+            <div
+              class="field field-is-3 is-horizontal mr-4"
+              v-for="f in auxFunctions"
+              :key="f.key"
+            >
+              <div class="field-label">
+                <label class="label" :for="f.key" :class="classForIndex(f.index)">
                   {{ f.key }}
                   <tooltip :entry="'channel.' + f.key.toLowerCase()" />
                 </label>
               </div>
-              <div class="column is-3">
-                <input-select
-                  :id="f.key"
-                  v-model.number="receiver_aux[f.index]"
-                  :options="auxChannels"
-                ></input-select>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      :id="f.key"
+                      class="is-fullwidth"
+                      v-model.number="receiver_aux[f.index]"
+                      :options="auxChannels"
+                    ></input-select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -32,9 +41,9 @@
               <div class="card-content">
                 <div class="content">
                   <div class="columns" v-for="(v, index) in auxChannels" :key="v.text">
-                    <div class="column is-6">{{ v.text }}</div>
+                    <div class="column is-6 py-1">{{ v.text }}</div>
                     <div
-                      class="column is-6"
+                      class="column is-6 py-1"
                       :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
                     >
                       {{ valueForIndex(index) ? "ON" : "OFF" }}

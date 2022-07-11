@@ -1,6 +1,6 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column my-4 is-12" v-if="motor.test">
+    <div class="column is-12" v-if="motor.test">
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">Motor Test</p>
@@ -8,101 +8,114 @@
             {{ vbat.toPrecision(3) }}V <br />
             {{ state.ibat_filtered }}mAh
           </small>
-          <tooltip class="card-header-icon" entry="motor.test" />
+          <tooltip class="card-header-icon" entry="motor.test" size="lg" />
         </header>
 
-        <div>
-          <div class="columns is-multiline" v-if="motor.test.active">
-            <div class="column is-6 my-2 px-5" v-for="m in motors" :key="m.index">
+        <div class="card-content">
+          <div class="content">
+            <template v-if="motor.test.active">
               <div class="columns is-multiline">
-                <div class="column is-3 my-2">
-                  <label :for="m.id">
-                    <h6>{{ m.label }}</h6>
-                  </label>
-                </div>
-                <div class="column is-7 my-2">
-                  <input
-                    class="input"
-                    :id="m.id"
-                    type="range"
-                    step="1"
-                    min="0"
-                    max="50"
-                    v-model.number="value[m.index]"
-                    @update="update()"
-                  />
-                </div>
-                <div class="column is-2 px-1">
-                  <input
-                    class="input"
-                    :id="m.id"
-                    type="number"
-                    step="1"
-                    min="0"
-                    max="50"
-                    v-model.number="value[m.index]"
-                    @change="update()"
-                  />
+                <div class="column is-6" v-for="m in motors" :key="m.index">
+                  <div class="field field-is-2 is-horizontal">
+                    <div class="field-label">
+                      <label class="label" for="pid-preset">
+                        {{ m.label }}
+                      </label>
+                    </div>
+                    <div class="field-body">
+                      <div class="field has-addons">
+                        <div class="control is-expanded">
+                          <input
+                            class="input"
+                            :id="m.id"
+                            type="range"
+                            step="1"
+                            min="0"
+                            max="50"
+                            v-model.number="value[m.index]"
+                            @update="update()"
+                          />
+                        </div>
+                        <div class="control">
+                          <input
+                            class="input"
+                            :id="m.id"
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="50"
+                            v-model.number="value[m.index]"
+                            @change="update()"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="columns" v-else>
-            <div class="column is-12">
-              <h6 class="text-muted">Motor Test disabled</h6>
-            </div>
-          </div>
-          <div class="columns">
-            <div class="column is-offset-10 is-2">
-              <button class="button my-2 mx-2 float-right" @click="motor_test_toggle()">
-                {{ motor.test.active ? "Disable" : "Enable" }}
-              </button>
-            </div>
+            </template>
+            <template v-else>
+              <div class="is-size-5 has-text-centered has-text-weight-semibold">
+                Motor Test disabled
+              </div>
+            </template>
           </div>
         </div>
+
+        <footer class="card-footer">
+          <span class="card-footer-item"></span>
+          <span class="card-footer-item"></span>
+          <button class="card-footer-item button" @click="motor_test_toggle()">
+            {{ motor.test.active ? "Disable" : "Enable" }}
+          </button>
+        </footer>
       </div>
     </div>
 
-    <div class="column is-12 my-4">
-      <div class="card my-2">
+    <div class="column is-12">
+      <div class="card">
         <header class="card-header">
           <p class="card-header-title">Motor Pins</p>
-          <tooltip class="card-header-icon" entry="motor_pins" />
+          <tooltip class="card-header-icon" entry="motor_pins" size="lg" />
         </header>
 
-        <div class="columns is-multiline my-2">
-          <div
-            class="column is-6 my-2 px-5"
-            v-for="m in motors"
-            :key="'motor-pin-' + m.index"
-          >
-            <div class="columns is-multiline">
-              <div class="column is-4">
-                <label :for="'motor-pin-' + m.index">
-                  <h6>
-                    {{ m.label }}
-                    <br />
-                    <span class="text-muted">Motor {{ m.index }}</span>
-                  </h6>
-                </label>
-              </div>
-              <div class="column is-8" v-if="profile_motor.motor_pins">
-                <input-select
-                  :id="'motor-pin-' + m.index"
-                  v-model="profile_motor.motor_pins[m.index]"
-                  :options="motorPins"
-                ></input-select>
+        <div class="card-content">
+          <div class="content">
+            <div class="columns is-multiline my-2">
+              <div class="column is-6" v-for="m in motors" :key="'motor-pin-' + m.index">
+                <div class="field field-is-2 is-horizontal">
+                  <div class="field-label">
+                    <label class="label" for="pid-profile">
+                      {{ m.label }}
+                      <br />
+                      <span class="text-muted">Motor {{ m.index }}</span>
+                    </label>
+                  </div>
+                  <div class="field-body">
+                    <div class="field">
+                      <div class="control is-expanded">
+                        <input-select
+                          :id="'motor-pin-' + m.index"
+                          class="is-fullwidth"
+                          v-model="profile_motor.motor_pins[m.index]"
+                          :options="motorPins"
+                        ></input-select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="column is-12 my-4" v-if="has_feature(Features.BRUSHLESS)">
+
+    <div class="column is-12" v-if="has_feature(Features.BRUSHLESS)">
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">ESC Settings</p>
-          <tooltip class="card-header-icon" entry="motor_settings" />
+          <tooltip class="card-header-icon" entry="motor_settings" size="lg" />
         </header>
 
         <div class="card-content">
@@ -142,28 +155,32 @@
                 </div>
               </div>
             </div>
-            <div class="columns is-multiline">
-              <div class="column is-offset-10 is-2">
-                <spinner-btn
-                  class="ml-4 mt-2"
-                  v-if="motor.settings && motor.settings.length"
-                  :disabled="motor.loading"
-                  v-on:click="apply_motor_settings(motor.settings)"
-                >
-                  Apply
-                </spinner-btn>
-                <spinner-btn
-                  class="ml-4 mt-2"
-                  v-else
-                  :disabled="motor.loading"
-                  v-on:click="fetch_motor_settings()"
-                >
-                  Load
-                </spinner-btn>
-              </div>
+            <div v-else class="is-size-5 has-text-centered has-text-weight-semibold">
+              Settings not loaded
             </div>
           </div>
         </div>
+
+        <footer class="card-footer">
+          <span class="card-footer-item"></span>
+          <span class="card-footer-item"></span>
+          <spinner-btn
+            class="card-footer-item"
+            v-if="motor.settings && motor.settings.length"
+            :disabled="motor.loading"
+            v-on:click="apply_motor_settings(motor.settings)"
+          >
+            Apply
+          </spinner-btn>
+          <spinner-btn
+            class="card-footer-item"
+            v-else
+            :disabled="motor.loading"
+            v-on:click="fetch_motor_settings()"
+          >
+            Load
+          </spinner-btn>
+        </footer>
       </div>
     </div>
   </div>
