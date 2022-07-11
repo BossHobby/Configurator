@@ -26,7 +26,7 @@
                     ></input-select>
                   </div>
                   <div class="control">
-                    <button class="button" v-on:click="load_preset(current_preset)">
+                    <button class="button" @click="load_preset(current_preset)">
                       Load
                     </button>
                   </div>
@@ -139,7 +139,10 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="throttle_dterm_attenuation-breakpoint">
+                <label
+                  class="label"
+                  for="throttle_dterm_attenuation-breakpoint"
+                >
                   TDA Breakpoint
                   <tooltip entry="pid.tda_breakpoint" />
                 </label>
@@ -152,7 +155,9 @@
                       id="throttle_dterm_attenuation-breakpoint"
                       type="number"
                       step="0.05"
-                      v-model.number="pid.throttle_dterm_attenuation.tda_breakpoint"
+                      v-model.number="
+                        pid.throttle_dterm_attenuation.tda_breakpoint
+                      "
                     />
                   </div>
                 </div>
@@ -174,7 +179,9 @@
                       id="throttle_dterm_attenuation-percent"
                       type="number"
                       step="0.05"
-                      v-model.number="pid.throttle_dterm_attenuation.tda_percent"
+                      v-model.number="
+                        pid.throttle_dterm_attenuation.tda_percent
+                      "
                     />
                   </div>
                 </div>

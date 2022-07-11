@@ -24,7 +24,7 @@
               <p class="control">
                 <spinner-btn
                   class="float-right"
-                  v-on:click="apply_osd_font(current_font_file)"
+                  @click="apply_osd_font(current_font_file)"
                 >
                   Upload Font
                 </spinner-btn>
@@ -44,7 +44,12 @@
             <div class="field-body">
               <div class="field has-addons">
                 <p class="control is-expanded">
-                  <input class="file-input" accept=".png" type="file" ref="file" />
+                  <input
+                    class="file-input"
+                    accept=".png"
+                    type="file"
+                    ref="file"
+                  />
                 </p>
                 <p class="control">
                   <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
@@ -200,7 +205,10 @@ export default defineComponent({
 
           this.$refs.file.oninvalid = reject;
           this.$refs.file.onchange = checkForFile;
-          setTimeout(() => (document.body.onfocus = () => checkForFile()), 1000);
+          setTimeout(
+            () => (document.body.onfocus = () => checkForFile()),
+            1000
+          );
 
           this.$refs.file.click();
         });
@@ -213,7 +221,11 @@ export default defineComponent({
             throw new Error("Invalid logo dimensions");
           }
 
-          const font = OSD.packLogo(this.$refs.canvas, this.$refs.logoCanvas, img);
+          const font = OSD.packLogo(
+            this.$refs.canvas,
+            this.$refs.logoCanvas,
+            img
+          );
           return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())

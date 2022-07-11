@@ -116,7 +116,7 @@
     <footer class="card-footer">
       <spinner-btn
         class="card-footer-item"
-        v-on:click="apply_vtx_settings(settings)"
+        @click="apply_vtx_settings(settings)"
       >
         Apply
       </spinner-btn>

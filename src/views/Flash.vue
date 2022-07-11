@@ -7,14 +7,19 @@
             Flash
             <tooltip entry="flash.reset" />
           </p>
-          <button class="card-header-button button is-info" @click="hard_reboot()">
+          <button
+            class="card-header-button button is-info"
+            @click="hard_reboot()"
+          >
             Reset to Bootloader
           </button>
         </div>
         <div class="card-content field-is-3">
           <div class="field is-horizontal">
             <div class="field-label is-normal">
-              <label class="label"> Source <tooltip entry="flash.source" /> </label>
+              <label class="label">
+                Source <tooltip entry="flash.source" />
+              </label>
             </div>
             <div class="field-body">
               <div class="field is-narrow">
@@ -37,12 +42,15 @@
             </div>
             <div class="field-body">
               <div class="field">
-                <div class="file is-boxed is-medium" :class="{ 'has-name': file }">
+                <div
+                  class="file is-boxed is-medium"
+                  :class="{ 'has-name': file }"
+                >
                   <label class="file-label">
                     <input
                       class="file-input"
                       type="file"
-                      v-on:change="updateFile()"
+                      @change="updateFile()"
                       ref="file"
                     />
                     <span class="file-cta">

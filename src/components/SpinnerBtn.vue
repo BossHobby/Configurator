@@ -2,8 +2,8 @@
   <button
     class="button"
     :class="{ 'is-loading': loading }"
+    v-bind="filteredAttrs"
     @click="clickHandler"
-    v-bind="$attrs"
   >
     <slot></slot>
   </button>
@@ -13,10 +13,25 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  inheritAttrs: false,
   data() {
     return {
       loading: false,
     };
+  },
+  computed: {
+    filteredAttrs() {
+      const onRE = /^on[^a-z]/;
+      const attributes = {};
+      const { $attrs } = this;
+
+      for (const property in $attrs) {
+        if (!onRE.test(property)) {
+          attributes[property] = $attrs[property];
+        }
+      }
+      return attributes;
+    },
   },
   methods: {
     clickHandler(event) {

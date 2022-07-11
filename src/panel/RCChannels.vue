@@ -81,7 +81,10 @@
             <span v-if="timerCount">Continuing in {{ timerCount }}s..</span>
           </div>
           <div class="column is-4">
-            <button class="button is-pulled-right is-primary" v-on:click="cal_sticks()">
+            <button
+              class="button is-pulled-right is-primary"
+              @click="cal_sticks()"
+            >
               Calibrate
             </button>
           </div>
