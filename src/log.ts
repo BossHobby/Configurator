@@ -1,4 +1,4 @@
-import { store } from "./store";
+import { useRootStore } from "./store/root";
 import util from "util";
 
 export enum LogLevel {
@@ -96,19 +96,21 @@ export class Log {
       Log.file.write(line);
     }
 
+    const root = useRootStore();
+
     switch (level) {
       case LogLevel.Debug:
       case LogLevel.Info:
         console.log(str, ...data);
-        store.commit("append_log", line);
+        root.append_log(line);
         break;
       case LogLevel.Warning:
         console.warn(str, ...data);
-        store.commit("append_log", line);
+        root.append_log(line);
         break;
       case LogLevel.Error:
         console.error(str, ...data);
-        store.commit("append_log", line);
+        root.append_log(line);
         break;
       default:
         break;

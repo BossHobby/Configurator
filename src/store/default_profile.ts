@@ -1,10 +1,11 @@
+import { defineStore } from "pinia";
 import semver from "semver";
-import { QuicVal } from "../serial/quic";
-import { serial } from "../serial/serial";
-import { decodeSemver } from "../util";
+import { QuicVal } from "./serial/quic";
+import { serial } from "./serial/serial";
+import { decodeSemver } from "./util";
 
-const store = {
-  state: {
+export const useDefaultProfileStore = defineStore("default_profile", {
+  state: () => ({
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -46,7 +47,7 @@ const store = {
       small_angle: {},
       throttle_dterm_attenuation: {},
     },
-  },
+  }),
   getters: {
     has_legacy_stickrates(state) {
       return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
@@ -55,21 +56,14 @@ const store = {
       return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
     },
   },
-  mutations: {
-    set_default_profile(state, profile) {
-      profile.meta.name = profile.meta.name.replace(/\0/g, "");
-      for (const key in profile) {
-        state[key] = profile[key];
-      }
-    },
-  },
   actions: {
-    fetch_default_profile({ commit }) {
-      return serial
-        .get(QuicVal.DefaultProfile)
-        .then((p) => commit("set_default_profile", p));
+    fetch_default_profile() {
+      return serial.get(QuicVal.DefaultProfile).then((profile) => {
+        profile.meta.name = profile.meta.name.replace(/\0/g, "");
+        for (const key in profile) {
+          this[key] = profile[key];
+        }
+      });
     },
   },
-};
-
-export default store;
+});

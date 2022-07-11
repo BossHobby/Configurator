@@ -92,10 +92,10 @@
 </template>
 
 <script lang="ts">
+import { StickWizardState } from "@/store/constants";
 import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
 import { mapFields } from "@/store/helper.js";
-import { StickWizardState } from "@/store/modules/constants";
 
 export default defineComponent({
   name: "RCChannels",

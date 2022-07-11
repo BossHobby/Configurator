@@ -38,6 +38,7 @@
     "isomorphic-fetch": "^3.0.0",
     "md5": "^2.3.0",
     "moment": "^2.29.3",
+    "pinia": "^2.0.15",
     "semver": "^7.3.5",
     "three": "^0.142.0",
     "ts-enum-util": "^4.0.2",

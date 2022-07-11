@@ -1,11 +1,11 @@
-import { createHelpers } from "@/store/helper.js";
-import { serial } from "../serial/serial";
-import { QuicVal } from "../serial/quic";
+import { useDefaultProfileStore } from "./default_profile";
+import { defineStore } from "pinia";
+import { serial } from "./serial/serial";
+import { QuicVal } from "./serial/quic";
 import { Log } from "@/log";
 import semver from "semver";
-import { decodeSemver } from "../util";
-
-const { get_profile_field, update_profile_field } = createHelpers("profile");
+import { decodeSemver } from "./util";
+import { useRootStore } from "./root";
 
 function makeSemver(major, minor, patch) {
   return (major << 16) | (minor << 8) | patch;
@@ -60,8 +60,9 @@ function migrateProfile(profile, version) {
   return profile;
 }
 
-const store = {
-  state: {
+export const useProfileStore = defineStore("profile", {
+  state: () => ({
+    semver: "v0.0.0",
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -103,9 +104,8 @@ const store = {
       small_angle: {},
       throttle_dterm_attenuation: {},
     },
-  },
+  }),
   getters: {
-    get_profile_field,
     current_pid_rate: (state) => {
       return state.pid.pid_rates[state.pid.pid_profile];
     },
@@ -118,52 +118,51 @@ const store = {
       };
     },
   },
-  mutations: {
-    update_profile_field,
-    set_profile(state, profile) {
+  actions: {
+    set_profile(profile) {
       profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");
       for (const key in profile) {
-        state[key] = profile[key];
+        this[key] = profile[key];
       }
     },
-    set_current_pid_rate(state, rate) {
-      const rates = [...state.pid.pid_rates];
-      rates[state.pid.pid_profile] = rate;
-      state.pid = {
-        ...state.pid,
+    set_current_pid_rate(rate) {
+      const rates = [...this.pid.pid_rates];
+      rates[this.pid.pid_profile] = rate;
+      this.pid = {
+        ...this.pid,
         pid_rates: rates,
       };
     },
-    set_current_stick_rate(state, rate) {
-      const rates = [...state.pid.stick_rates];
-      rates[state.pid.stick_profile] = rate;
-      state.pid = {
-        ...state.pid,
+    set_current_stick_rate(rate) {
+      const rates = [...this.pid.stick_rates];
+      rates[this.pid.stick_profile] = rate;
+      this.pid = {
+        ...this.pid,
         stick_rates: rates,
       };
     },
-    set_osd_elements(state, elements) {
-      state.osd = {
-        ...state.osd,
+    set_osd_elements(elements) {
+      this.osd = {
+        ...this.osd,
         elements,
       };
     },
-    set_osd_elements_hd(state, elements) {
-      state.osd = {
-        ...state.osd,
+    set_osd_elements_hd(elements) {
+      this.osd = {
+        ...this.osd,
         elements_hd: elements,
       };
     },
-  },
-  actions: {
-    fetch_profile({ commit }) {
-      return serial.get(QuicVal.Profile).then((p) => commit("set_profile", p));
+
+    fetch_profile() {
+      return serial.get(QuicVal.Profile).then((p) => this.set_profile(p));
     },
-    apply_profile({ commit, rootState }, profile) {
-      const firmwareVersion = ensureMinVersion(
-        rootState.default_profile.meta.version
-      );
+    apply_profile(profile) {
+      const root = useRootStore();
+      const default_profile = useDefaultProfileStore();
+
+      const firmwareVersion = ensureMinVersion(default_profile.meta.version);
       const profileVersion = ensureMinVersion(profile.meta.version);
 
       let p = profile;
@@ -175,20 +174,18 @@ const store = {
 
       return serial
         .set(QuicVal.Profile, p)
-        .then((p) => commit("set_profile", p))
+        .then((p) => this.set_profile(p))
         .then(() =>
-          commit("append_alert", { type: "success", msg: "Profile applied!" })
+          root.append_alert({ type: "success", msg: "Profile applied!" })
         )
-        .then(() => commit("reset_needs_apply"))
+        .then(() => root.reset_needs_apply())
         .catch((err) => {
           Log.error(err);
-          commit("append_alert", {
+          root.append_alert({
             type: "danger",
             msg: "Apply failed! " + err,
           });
         });
     },
   },
-};
-
-export default store;
+});

@@ -1,10 +1,11 @@
-import { QuicVal } from "../serial/quic";
-import { serial } from "../serial/serial";
+import { QuicVal } from "./serial/quic";
+import { serial } from "./serial/serial";
 import { Log } from "@/log";
 import { FailloopMessages } from "./constants";
+import { defineStore } from "pinia";
 
-const store = {
-  state: {
+export const useStateStore = defineStore("state", {
+  state: () => ({
     looptime_autodetect: 0,
     cpu_load: 0.0,
     vbat_filtered: 0.0,
@@ -19,7 +20,7 @@ const store = {
     aux: [],
     stick_calibration_wizard: 0,
     failloop: 0,
-  },
+  }),
   getters: {
     vbat(state) {
       return state.vbattfilt || state.vbat_filtered;
@@ -28,21 +29,16 @@ const store = {
       return FailloopMessages[state.failloop];
     },
   },
-  mutations: {
-    set_state(state, update) {
-      for (const key in update) {
-        state[key] = Object.freeze(update[key]);
-      }
-    },
-  },
   actions: {
-    fetch_state({ commit }) {
+    fetch_state() {
       return serial
         .get(QuicVal.State)
-        .then((s) => commit("set_state", s))
+        .then((update) => {
+          for (const key in update) {
+            this[key] = Object.freeze(update[key]);
+          }
+        })
         .catch((err) => Log.warn("state", err));
     },
   },
-};
-
-export default store;
+});

@@ -1,14 +1,15 @@
 import semver from "semver";
 import { decodeSemver } from "@/store/util";
+import { defineStore } from "pinia";
 
-const store = {
-  state: {
+export const useInfoStore = defineStore("info", {
+  state: () => ({
     usart_ports: [],
     motor_pins: [],
-    quic_protocol_version: null,
-    quic_protocol_semver: null,
+    quic_protocol_version: 0,
+    quic_protocol_semver: "v0.0.0",
     features: null,
-  },
+  }),
   getters: {
     has_feature(state) {
       return (feature) => {
@@ -24,15 +25,14 @@ const store = {
       };
     },
   },
-  mutations: {
-    set_info(state, info) {
+  actions: {
+    set_info(info) {
       for (const key in info) {
-        state[key] = info[key];
+        this[key] = info[key];
       }
-      state.quic_protocol_semver = decodeSemver(state.quic_protocol_version);
+      if (this.quic_protocol_version) {
+        this.quic_protocol_semver = decodeSemver(this.quic_protocol_version);
+      }
     },
   },
-  actions: {},
-};
-
-export default store;
+});

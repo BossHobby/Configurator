@@ -1,6 +1,5 @@
+import { useSerialStore } from "./store/serial";
 import { createRouter, createWebHistory } from "vue-router";
-
-import { store } from "./store";
 
 import Setup from "./views/Setup.vue";
 import Rates from "./views/Rates.vue";
@@ -22,7 +21,8 @@ const router = createRouter({
     {
       path: "/",
       redirect: () => {
-        if (store.state.serial.is_connected) {
+        const serial = useSerialStore();
+        if (serial.is_connected) {
           return "/profile";
         }
         return "/home";
@@ -97,7 +97,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (store.state.serial.is_connected) {
+  const serial = useSerialStore();
+  if (serial.is_connected) {
     if (to.name === "home") {
       next({ name: "profile" });
     } else {

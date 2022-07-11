@@ -1,4 +1,6 @@
+import { defineStore } from "pinia";
 import semver from "semver";
+import { useInfoStore } from "./info";
 
 enum Features {
   BRUSHLESS = 1 << 1,
@@ -169,35 +171,35 @@ export const FailloopMessages = {
     "spi error main loop  - triggered by hardware spi driver only",
 };
 
-const store = {
-  namespaced: true,
-  state: {
+export const useConstantStore = defineStore("constant", {
+  state: () => ({
     Features,
     GyroRotation,
     AuxChannels,
     RXSerialProtocol,
     StickWizardState,
     Failloop,
-  },
+  }),
   getters: {
-    RXProtocol: (state, getters, rootState) => {
-      if (semver.gt(rootState.info.quic_protocol_semver, "0.1.0")) {
+    RXProtocol() {
+      const info = useInfoStore();
+
+      if (semver.gt(info.quic_protocol_semver, "0.1.0")) {
         return RXProtocolV011;
       }
-      if (rootState.info.quic_protocol_version > 5) {
+      if (info.quic_protocol_version > 5) {
         return RXProtocolV010;
       }
       return RXProtocolV5;
     },
-    AuxFunctions: (state, getters, rootState) => {
-      if (semver.gt(rootState.info.quic_protocol_semver, "0.1.0")) {
+    AuxFunctions() {
+      const info = useInfoStore();
+
+      if (semver.gt(info.quic_protocol_semver, "0.1.0")) {
         return AuxFunctionsV011;
       }
       return AuxFunctionsV010;
     },
   },
-  mutations: {},
   actions: {},
-};
-
-export default store;
+});

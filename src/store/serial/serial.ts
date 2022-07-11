@@ -12,7 +12,7 @@ import { AsyncQueue, AsyncSemaphore } from "./async";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
 import { getWebSerial } from "./webserial";
-import { settings } from "../settings";
+import { settings } from "./settings";
 
 const WebSerial = getWebSerial();
 
