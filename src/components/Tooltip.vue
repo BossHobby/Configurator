@@ -139,12 +139,12 @@ export default defineComponent({
   &.tooltip-top {
     .tooltip-text {
       bottom: 100%;
-      left: 50%;
+      left: 54%;
       transform: translateX(-50%);
 
       &::after {
         top: 100%;
-        left: 54%;
+        left: 50%;
         border-color: hsl(0deg, 0%, 21%) transparent transparent transparent;
       }
     }

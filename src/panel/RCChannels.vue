@@ -198,7 +198,7 @@ export default defineComponent({
 
   .channel-bar {
     color: #fff;
-    background-color: #2196f3;
+    background-color: hsl(96deg 56% 43%);
     border-radius: 8px;
     text-align: center;
 

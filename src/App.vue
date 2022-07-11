@@ -138,11 +138,11 @@
         </div>
       </span>
 
-      <spinner-btn class="navbar-item my-auto mx-2" v-on:click="soft_reboot()">
+      <spinner-btn class="navbar-item is-warning my-auto mx-2" v-on:click="soft_reboot()">
         Reboot
       </spinner-btn>
       <spinner-btn
-        class="navbar-item my-auto mx-2"
+        class="navbar-item is-info my-auto mx-2"
         v-on:click="apply_profile(profile)"
         :disabled="is_read_only"
       >
