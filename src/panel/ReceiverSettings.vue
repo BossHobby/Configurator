@@ -170,33 +170,33 @@
           </header>
 
           <div class="card-content">
-            <div class="content">
-              <div class="columns">
-                <div class="column is-10">
-                  Save and load bind information for spi protocols.<br />
-                  Requires reboot after load.
-                </div>
-                <div class="column is-2">
-                  <button class="button" @click="downloadBindData">Save Bind Data</button>
-                  <form ref="form">
-                    <input
-                      class="input"
-                      accept=".base64"
-                      type="file"
-                      ref="file"
-                      style="display: none"
-                    />
-                    <button class="button" @click="uploadBindData">Load Bind Data</button>
-                  </form>
-                </div>
-                <a ref="downloadAnchor" target="_blank"></a>
-              </div>
+            <div class="content has-text-centered">
+              Save and load bind information for spi protocols.<br />
+              Requires reboot after load.
             </div>
           </div>
+
+          <footer class="card-footer">
+            <button class="card-footer-item button" @click="downloadBindData">
+              Save Bind Data
+            </button>
+            <button class="card-footer-item button" @click="uploadBindData">
+              Load Bind Data
+            </button>
+          </footer>
+
+          <input
+            class="input"
+            accept=".base64"
+            type="file"
+            ref="file"
+            style="display: none"
+          />
+          <a ref="downloadAnchor" target="_blank"></a>
         </div>
 
         <div class="columns mt-4">
-          <div class="column is-12">
+          <div class="column is-12 has-text-centered">
             <small>
               Save Bind by moving your right transmitter stick UP-UP-UP followed by
               DOWN-DOWN-DOWN
