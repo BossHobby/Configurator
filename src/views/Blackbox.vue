@@ -1,7 +1,7 @@
 <template>
   <div class="columns">
     <div class="column is-12">
-      <div class="card">
+      <div class="card" v-if="blackbox.list">
         <div class="card-header">
           <p class="card-header-title">Blackbox</p>
           <div class="blackbox-progress has-text-right">
@@ -31,7 +31,9 @@
         </div>
 
         <footer class="card-footer">
-          <span class="card-footer-item">{{ blackbox.list.files.length }} Files</span>
+          <span class="card-footer-item">
+            {{ blackbox?.list?.files?.length || 0 }} Files
+          </span>
           <span class="card-footer-item"></span>
           <spinner-btn class="card-footer-item is-danger" @click="reset()">
             Reset
