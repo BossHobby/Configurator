@@ -5,7 +5,7 @@
     </header>
 
     <div class="card-content">
-      <div class="content column-narrow field-is-5">
+      <div class="content column-narrow field-is-3">
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">Protocol</label>
@@ -90,7 +90,7 @@
 
           <div class="field is-horizontal">
             <div class="field-label">
-              <label class="label">">Power Level</label>
+              <label class="label">Power Level</label>
             </div>
             <div class="field-body">
               <div class="field">
@@ -114,10 +114,7 @@
     </div>
 
     <footer class="card-footer">
-      <spinner-btn
-        class="card-footer-item"
-        @click="apply_vtx_settings(settings)"
-      >
+      <spinner-btn class="card-footer-item" @click="apply_vtx_settings(settings)">
         Apply
       </spinner-btn>
     </footer>
