@@ -29,13 +29,22 @@ const store = {
       }
 
       dispatch("fetch_state");
-      if (intervalCounter % 4 && router.currentRoute.fullPath == "/receiver") {
+      if (
+        intervalCounter % 4 &&
+        router.currentRoute.value.fullPath == "/receiver"
+      ) {
         dispatch("fetch_bind_info");
       }
-      if (intervalCounter % 4 && router.currentRoute.fullPath == "/perf") {
+      if (
+        intervalCounter % 4 &&
+        router.currentRoute.value.fullPath == "/perf"
+      ) {
         dispatch("fetch_perf_counters");
       }
-      if (intervalCounter % 4 && router.currentRoute.fullPath == "/setup") {
+      if (
+        intervalCounter % 4 &&
+        router.currentRoute.value.fullPath == "/setup"
+      ) {
         dispatch("update_vtx_settings");
       }
     },
@@ -99,7 +108,7 @@ const store = {
         commit("set_connecting", false);
         commit("reset_needs_reboot");
 
-        if (router.currentRoute.fullPath != "/home") {
+        if (router.currentRoute.value.fullPath != "/home") {
           router.push("/home");
         }
 
@@ -121,7 +130,7 @@ const store = {
           commit("set_connecting", false);
           commit("reset_needs_reboot");
 
-          if (router.currentRoute.fullPath != "/home") {
+          if (router.currentRoute.value.fullPath != "/home") {
             router.push("/home");
           }
         })
@@ -144,7 +153,7 @@ const store = {
             settings.serial.updateInterval
           );
 
-          if (router.currentRoute.fullPath != "/profile") {
+          if (router.currentRoute.value.fullPath != "/profile") {
             router.push("/profile");
           }
         })
