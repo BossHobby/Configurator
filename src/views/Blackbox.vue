@@ -2,41 +2,41 @@
   <div class="columns">
     <div class="column is-12">
       <div class="card">
-        <h5 slot="header" class="mb-0">
-          Blackbox
-
-          <b-progress
-            class="w-25 mt-2"
-            :value="usedSize"
-            :max="blackbox.list.flash_size * 1024"
-            show-progress
-          >
-          </b-progress>
-          <h6>
-            Used:
-            {{ humanFileSize(usedSize) }} /
-            {{ humanFileSize(blackbox.list.flash_size * 1024) }}
-          </h6>
-        </h5>
-        <div>
-          <div v-for="(file, index) in blackbox.list.files" :key="index">
-            File {{ index + 1 }}: {{ humanFileSize(file.size) }}
-            <spinner-btn class="is-small my-2 mx-2" @click="download(index)">
-              Download
-            </spinner-btn>
+        <div class="card-header">
+          <p class="card-header-title">Blackbox</p>
+          <div class="blackbox-progress has-text-right">
+            <progress
+              class="progress my-0"
+              :value="usedSize"
+              :max="blackbox.list.flash_size * 1024"
+            ></progress>
+            <h6>
+              Used:
+              {{ humanFileSize(usedSize) }} /
+              {{ humanFileSize(blackbox.list.flash_size * 1024) }}
+            </h6>
           </div>
-          <div class="columns my-2" v-if="blackbox.list.files">
-            <div class="column is-2">
-              <h6 class="mt-4">{{ blackbox.list.files.length }} Files</h6>
-            </div>
-            <div class="column is-offset-8 is-2">
-              <spinner-btn class="my-2 mx-2 is-danger" @click="reset()">
-                Reset
+        </div>
+
+        <div class="card-content">
+          <div class="content">
+            <div v-for="(file, index) in blackbox.list.files" :key="index">
+              File {{ index + 1 }}: {{ humanFileSize(file.size) }}
+              <spinner-btn class="is-small my-2 mx-2" @click="download(index)">
+                Download
               </spinner-btn>
             </div>
+            <a ref="downloadAnchor" target="_blank"></a>
           </div>
-          <a ref="downloadAnchor" target="_blank"></a>
         </div>
+
+        <footer class="card-footer">
+          <span class="card-footer-item">{{ blackbox.list.files.length }} Files</span>
+          <span class="card-footer-item"></span>
+          <spinner-btn class="card-footer-item is-danger" @click="reset()">
+            Reset
+          </spinner-btn>
+        </footer>
       </div>
     </div>
   </div>
@@ -96,3 +96,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss">
+.blackbox-progress {
+  width: 50%;
+  margin: 10px;
+}
+</style>
