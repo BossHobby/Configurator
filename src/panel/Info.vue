@@ -11,9 +11,9 @@
         for help on getting started.
       </p>
       <p class="subtitle" v-if="updateAvailable">New Version available!</p>
-      <button v-if="updateAvailable" class="button is-success is-small" @click="doUpdate">
+      <spinner-btn v-if="updateAvailable" class="is-success is-small" @click="doUpdate">
         Update Now
-      </button>
+      </spinner-btn>
     </div>
   </section>
 </template>

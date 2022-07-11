@@ -1,6 +1,10 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-one-third" v-for="tmpl of templates.index" :key="tmpl.name">
+    <div
+      class="column is-one-third"
+      v-for="tmpl of templates.index"
+      :key="tmpl.name"
+    >
       <div class="card template-card">
         <div class="card-image">
           <figure class="image is-square">
@@ -20,9 +24,12 @@
         </div>
         <footer class="card-footer">
           <span class="card-footer-item"></span>
-          <button class="card-footer-item button is-white" @click="applyProfile(tmpl)">
+          <spinner-btn
+            class="card-footer-item is-white"
+            @click="applyProfile(tmpl)"
+          >
             Apply
-          </button>
+          </spinner-btn>
         </footer>
       </div>
     </div>

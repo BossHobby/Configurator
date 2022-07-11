@@ -88,19 +88,19 @@
       </div>
     </div>
     <footer class="card-footer">
-      <button class="card-footer-item button" @click="downloadProfile">
+      <spinner-btn class="card-footer-item" @click="downloadProfile">
         Save Profile
-      </button>
-      <button
-        class="card-footer-item button"
+      </spinner-btn>
+      <spinner-btn
+        class="card-footer-item"
         @click="uploadProfile"
         :disabled="is_read_only"
       >
         Load Profile
-      </button>
-      <button class="card-footer-item button is-warning" @click="reset_profile">
+      </spinner-btn>
+      <spinner-btn class="card-footer-item is-warning" @click="reset_profile">
         Reset Profile
-      </button>
+      </spinner-btn>
     </footer>
     <input accept=".json, .yaml" type="file" ref="file" style="display: none" />
     <a ref="downloadAnchor" target="_blank"></a>

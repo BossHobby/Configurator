@@ -63,9 +63,9 @@
     <footer class="card-footer">
       <span class="card-footer-item"></span>
       <span class="card-footer-item"></span>
-      <button class="card-footer-item button" @click="motor_test_toggle()">
+      <spinner-btn class="card-footer-item" @click="motor_test_toggle()">
         {{ motor.test.active ? "Disable" : "Enable" }}
-      </button>
+      </spinner-btn>
     </footer>
   </div>
 </template>

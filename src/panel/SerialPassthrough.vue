@@ -40,13 +40,13 @@
     <footer class="card-footer">
       <span class="card-footer-item"></span>
       <span class="card-footer-item"></span>
-      <button
-        class="card-footer-item button"
+      <spinner-btn
+        class="card-footer-item"
         :disabled="serial_port == 0 || preset == null"
         @click="start_passthrough"
       >
         Start
-      </button>
+      </spinner-btn>
     </footer>
   </div>
 </template>

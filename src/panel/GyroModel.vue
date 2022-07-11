@@ -2,9 +2,9 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Model</p>
-      <button class="card-header-button button is-primary" @click="cal_imu()">
+      <spinner-btn class="card-header-button is-primary" @click="cal_imu()">
         calibrate
-      </button>
+      </spinner-btn>
     </header>
     <div class="card-content">
       <div class="content">

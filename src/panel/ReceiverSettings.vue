@@ -2,9 +2,9 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Receiver</p>
-      <button class="card-header-button button is-warning" @click="reset">
-        Reset
-      </button>
+      <spinner-btn class="card-header-button is-warning" @click="reset"
+        >Reset</spinner-btn
+      >
     </header>
 
     <div class="card-content">
@@ -108,10 +108,7 @@
 
         <div
           class="field is-horizontal"
-          v-if="
-            info.quic_protocol_version > 2 &&
-            rx_protocol == proto.UNIFIED_SERIAL
-          "
+          v-if="info.quic_protocol_version > 2 && rx_protocol == proto.UNIFIED_SERIAL"
         >
           <div class="field-label">
             <label class="label">Serial Protocol</label>
@@ -123,53 +120,64 @@
           </div>
         </div>
 
-        <div
-          class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS"
-        >
+        <div class="card mt-4" v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS">
           <header class="card-header">
             <p class="card-header-title">ExpressLRS</p>
           </header>
           <div class="card-content">
             <div class="content">
-              <div class="columns">
-                <div class="column is-4">
-                  <label>Switch Mode</label>
+              <div class="field is-horizontal">
+                <div class="field-label">
+                  <label class="label">Switch Mode</label>
                 </div>
-                <div class="column is-8">{{ elrsSwitchMode }}</div>
-              </div>
-              <div class="columns">
-                <div class="column is-4">
-                  <label>Current Bind Phrase</label>
-                </div>
-                <div class="column is-8">{{ elrsBindPhrase }}</div>
-              </div>
-              <div class="columns">
-                <div class="column is-4">
-                  <label>New Bind Phrase</label>
-                </div>
-                <div class="column is-4">
-                  <input
-                    class="input"
-                    id="name"
-                    type="text"
-                    v-model="elrsBindPhraseInput"
-                  />
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control is-expanded">{{ elrsSwitchMode }}</div>
+                  </div>
                 </div>
               </div>
-              <div class="columns">
-                <div class="column is-offset-10 is-2">
-                  <button
-                    class="button ml-auto mr-1 mt-2"
-                    @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
-                    :disabled="elrsBindPhraseInput.length < 4"
-                  >
-                    Apply
-                  </button>
+
+              <div class="field is-horizontal">
+                <div class="field-label">
+                  <label class="label">Current Bind Phrase</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control is-expanded">{{ elrsBindPhrase }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label">
+                  <label class="label">New Bind Phrase</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control is-expanded">
+                      <input
+                        class="input"
+                        id="name"
+                        type="text"
+                        v-model="elrsBindPhraseInput"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <footer class="card-footer">
+            <span class="card-footer-item"></span>
+            <spinner-btn
+              class="card-footer-item"
+              @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
+              :disabled="elrsBindPhraseInput.length < 4"
+            >
+              Apply
+            </spinner-btn>
+          </footer>
         </div>
 
         <div class="card mt-4" v-if="bind.info.raw && isSpiProtocol">
@@ -185,12 +193,12 @@
           </div>
 
           <footer class="card-footer">
-            <button class="card-footer-item button" @click="downloadBindData">
+            <spinner-btn class="card-footer-item" @click="downloadBindData">
               Save Bind Data
-            </button>
-            <button class="card-footer-item button" @click="uploadBindData">
+            </spinner-btn>
+            <spinner-btn class="card-footer-item" @click="uploadBindData">
               Load Bind Data
-            </button>
+            </spinner-btn>
           </footer>
 
           <input
@@ -206,8 +214,8 @@
         <div class="columns mt-4">
           <div class="column is-12 has-text-centered">
             <small>
-              Save Bind by moving your right transmitter stick UP-UP-UP followed
-              by DOWN-DOWN-DOWN
+              Save Bind by moving your right transmitter stick UP-UP-UP followed by
+              DOWN-DOWN-DOWN
             </small>
           </div>
         </div>
@@ -236,11 +244,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapFields("profile", [
-      "receiver.protocol",
-      "receiver.lqi_source",
-      "meta",
-    ]),
+    ...mapFields("profile", ["receiver.protocol", "receiver.lqi_source", "meta"]),
     ...mapState(["info", "state", "bind"]),
     ...mapState("constants", {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
@@ -292,11 +296,7 @@ export default defineComponent({
         this.proto.EXPRESS_LRS,
       ];
       if (spi.includes(this.rx_protocol)) {
-        const status = [
-          "RX_STATUS_NONE",
-          "RX_STATUS_BINDING",
-          "RX_STATUS_BOUND",
-        ];
+        const status = ["RX_STATUS_NONE", "RX_STATUS_BINDING", "RX_STATUS_BOUND"];
         return status[this.state.rx_status];
       }
       if (this.rx_protocol == this.proto.UNIFIED_SERIAL) {

@@ -106,13 +106,13 @@
       </div>
 
       <div class="navbar-end">
-        <button
+        <spinner-btn
           class="navbar-item button my-2 mr-2 is-primary"
           @click="toggle_connection"
           :disabled="!canConnect"
         >
           {{ connectButtonText }}
-        </button>
+        </spinner-btn>
       </div>
     </div>
   </nav>
