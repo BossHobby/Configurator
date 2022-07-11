@@ -4,8 +4,9 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faCircleQuestion,
   faTriangleExclamation,
+  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faCircleQuestion, faTriangleExclamation);
+library.add(faCircleQuestion, faTriangleExclamation, faUpload);
 
 export default FontAwesomeIcon;

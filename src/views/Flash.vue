@@ -5,13 +5,13 @@
         <div class="card-header">
           <p class="card-header-title">
             Flash
-            <button class="button is-small my-2 mx-2" @click="hard_reboot()">
-              Reset to Bootloader
-            </button>
             <tooltip entry="flash.reset" />
           </p>
+          <button class="card-header-button button is-info" @click="hard_reboot()">
+            Reset to Bootloader
+          </button>
         </div>
-        <div class="card-content">
+        <div class="card-content field-is-3">
           <div class="field is-horizontal">
             <div class="field-label is-normal">
               <label class="label"> Source <tooltip entry="flash.source" /> </label>
@@ -28,13 +28,37 @@
             </div>
           </div>
 
-          <b-form-group v-if="source == 'local'" label-for="file-local" label-cols-sm="2">
-            <span slot="label">
-              File
-              <tooltip entry="flash.file-local" />
-            </span>
-            <b-form-file id="file-local" v-model="file" accept=".hex"></b-form-file>
-          </b-form-group>
+          <div class="field is-horizontal" v-if="source == 'local'">
+            <div class="field-label is-medium">
+              <label class="label">
+                File
+                <tooltip entry="flash.file-local" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="file is-boxed is-medium" :class="{ 'has-name': file }">
+                  <label class="file-label">
+                    <input
+                      class="file-input"
+                      type="file"
+                      v-on:change="updateFile()"
+                      ref="file"
+                    />
+                    <span class="file-cta">
+                      <span class="file-icon">
+                        <font-awesome-icon icon="fa-solid fa-upload" />
+                      </span>
+                      <span class="file-label"> Choose a file… </span>
+                    </span>
+                    <span v-if="file" class="file-name">
+                      {{ file.name }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div class="field is-horizontal" v-if="source != 'local'">
             <div class="field-label is-normal">
@@ -72,16 +96,15 @@
             </div>
           </div>
 
-          <div v-for="(v, k) in progress" :key="k" class="my-2 mx-2">
+          <div v-for="(v, k) in progress" :key="k" class="columns my-2 mx-2">
             <div class="column is-2">{{ k }}</div>
             <div class="column is-10">
-              <b-progress
+              <progress
+                class="progress is-primary"
                 height="20px"
                 :value="v.current"
                 :max="v.total"
-                show-progress
-                animated
-              ></b-progress>
+              ></progress>
             </div>
           </div>
         </div>
@@ -118,9 +141,9 @@ export default defineComponent({
         { value: "local", text: "Local" },
       ],
       source: "bosshobby",
-      release: null,
-      target: null,
-      file: null,
+      release: undefined,
+      target: undefined,
+      file: undefined as File | undefined,
       progress: {},
     };
   },
@@ -150,20 +173,36 @@ export default defineComponent({
   },
   methods: {
     ...mapActions(["hard_reboot", "fetch_firmware_releases"]),
+    updateFile() {
+      const fileInput = this.$refs.file as HTMLInputElement;
+      if (fileInput.files && fileInput.files.length) {
+        this.file = fileInput.files[0];
+      } else {
+        this.file = undefined;
+      }
+    },
     onSubmit(evt) {
       evt.preventDefault();
 
-      var promise = null;
+      let promise = undefined as Promise<string> | undefined;
       if (this.source == "local") {
-        promise = new Promise((resolve) => {
+        promise = new Promise((resolve, reject) => {
+          if (!this.file) {
+            return reject();
+          }
+
           const reader = new FileReader();
           reader.addEventListener("load", (event) => {
-            resolve(event.target.result);
+            resolve(event?.target?.result);
           });
           reader.readAsText(this.file);
         });
       } else if (this.target) {
         promise = github.fetchAsset(this.target).then((res) => res.text());
+      }
+
+      if (!promise) {
+        return;
       }
 
       const flasher = new Flasher();
