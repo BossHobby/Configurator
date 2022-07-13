@@ -141,27 +141,24 @@ import { defineComponent } from "vue";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
-  name: "OSDElements",
+  name: "OSDElementsLegacy",
+  data() {
+    return {
+      screen: {
+        width: 30 - 2,
+        height: 16 - 2,
+        char_width: 12,
+        char_height: 18,
+      },
+      imageSource: null,
+    };
+  },
   setup() {
     return {
       profile: useProfileStore(),
     };
   },
   computed: {
-    is_hd() {
-      return this.profile.serial.hdzero;
-    },
-    currentElements() {
-      return this.is_hd ? this.profile.osd.elements_hd : this.profile.osd.elements;
-    },
-    screen() {
-      return {
-        width: this.is_hd ? 50 : 30,
-        height: this.is_hd ? 18 : 16 - 2,
-        char_width: 12,
-        char_height: 18,
-      };
-    },
     svg_width() {
       return this.screen.width * this.screen.char_width;
     },
@@ -171,24 +168,67 @@ export default defineComponent({
     viewBox() {
       return `0 0 ${this.svg_width} ${this.svg_height}`;
     },
+    callsign: {
+      get() {
+        return this.profile.osd.elements
+          .slice(1, 5)
+          .flatMap((e) => {
+            return [0, 8, 16, 24].map((shift) => {
+              const val = (e >> shift) & 0xff;
+              if (val == 0x3f) {
+                return "";
+              }
+              return String.fromCharCode(val);
+            });
+          })
+          .join("");
+      },
+      set(val) {
+        const str = val.toUpperCase();
+        const elements = Array(20)
+          .fill(0x3f)
+          .map((v, i) => {
+            if (i < str.length) {
+              return str.charCodeAt(i);
+            }
+            return v;
+          })
+          .reduce((prev, curr, i) => {
+            const byte = Math.floor(i / 4);
+            const shift = [0, 8, 16, 24][i % 4];
+            prev[byte] = prev[byte] | ((curr & 0xff) << shift);
+            return prev;
+          }, []);
+
+        const copy = [...this.profile.osd.elements];
+        for (let i = 0; i < elements.length; i++) {
+          copy[i + 1] = elements[i];
+        }
+        this.profile.osd.elements = copy;
+      },
+    },
     element_options() {
       return [
-        { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
-        { name: "CELL COUNT", enabled: true, text: "1S" },
-        { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3V" },
-        { name: "FILTERED VOLTS", enabled: true, text: " 4.3V" },
-        { name: "GYRO TEMP", enabled: true, text: "  40C" },
+        { name: "CALLSIGN", enabled: true, text: this.callsign },
+        { name: "callsign2", enabled: false, text: "" },
+        { name: "callsign3", enabled: false, text: "" },
+        { name: "callsign4", enabled: false, text: "" },
+        { name: "callsign5", enabled: false, text: "" },
+        { name: "callsign6", enabled: false, text: "" },
+        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
+        { name: "GYRO TEMP", enabled: true, text: "40C" },
         { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
-        { name: "RSSI", enabled: true, text: "   90" },
-        { name: "STOPWATCH", enabled: true, text: "01:20" },
+        { name: "RSSI", enabled: true, text: "90" },
+        { name: "STOPWATCH", enabled: true, text: "120" },
         { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
-        { name: "THROTTLE", enabled: true, text: "  50%" },
+        { name: "THROTTLE", enabled: true, text: "50" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
-        { name: "CURRENT", enabled: true, text: "0.00A" },
+        { name: "CURRENT", enabled: true, text: "2000A" },
       ];
     },
     elements() {
-      return this.currentElements
+      return this.profile.osd.elements
         .filter((el, i) => {
           return this.element_options[i];
         })
@@ -203,33 +243,12 @@ export default defineComponent({
           };
         });
     },
-    callsign: {
-      set(val) {
-        let str = val.toUpperCase();
-        for (let i = val.length; i < 36; i++) {
-          str += "\0";
-        }
-        this.profile.osd.callsign = str;
-      },
-      get() {
-        return this.profile.osd.callsign.replace(/\0/g, "");
-      },
-    },
   },
   methods: {
     osd_set(i, attr, val) {
-      const elements = this.is_hd
-        ? this.profile.osd.elements_hd
-        : this.profile.osd.elements;
-
-      const copy = [...elements];
-      copy[i] = this.osd_encode(elements[i], attr, val);
-
-      if (this.is_hd) {
-        this.profile.set_osd_elements_hd(copy);
-      } else {
-        this.profile.set_osd_elements(copy);
-      }
+      const copy = [...this.profile.osd.elements];
+      copy[i] = this.osd_encode(this.profile.osd.elements[i], attr, val);
+      this.profile.set_osd_elements(copy);
     },
     osd_decode(element, attr) {
       switch (attr) {
@@ -238,9 +257,9 @@ export default defineComponent({
         case "invert":
           return (element >> 1) & 0x01;
         case "pos_x":
-          return (element >> 2) & 0xff;
+          return (element >> 2) & 0x1f;
         case "pos_y":
-          return (element >> 10) & 0xff;
+          return (element >> 7) & 0x0f;
         default:
           return 0;
       }
@@ -260,9 +279,9 @@ export default defineComponent({
             return element & ~(0x01 << 1);
           }
         case "pos_x":
-          return (element & ~(0xff << 2)) | ((val & 0xff) << 2);
+          return (element & ~(0x1f << 2)) | ((val & 0x1f) << 2);
         case "pos_y":
-          return (element & ~(0xff << 10)) | ((val & 0xff) << 10);
+          return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
         default:
           return element;
       }
