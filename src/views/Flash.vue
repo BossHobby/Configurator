@@ -7,7 +7,11 @@
             Flash
             <tooltip entry="flash.reset" />
           </p>
-          <spinner-btn class="card-header-button is-info" @click="serial.hard_reboot()">
+          <spinner-btn
+            class="card-header-button is-info"
+            type="button"
+            @click="serial.hard_reboot()"
+          >
             Reset to Bootloader
           </spinner-btn>
         </div>
