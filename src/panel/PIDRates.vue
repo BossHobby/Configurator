@@ -266,7 +266,7 @@
 
             <div class="columns mt-6 mb-1">
               <div class="column is-4">
-                <h6>
+                <h6 class="has-text-right">
                   Angle Strength
                   <tooltip entry="pid.angle_strength" />
                 </h6>
