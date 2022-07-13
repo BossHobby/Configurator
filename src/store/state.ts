@@ -20,6 +20,8 @@ export const useStateStore = defineStore("state", {
     aux: [],
     stick_calibration_wizard: 0,
     failloop: 0,
+    pidoutput: null,
+    accel_raw: null,
   }),
   getters: {
     vbat(state) {
