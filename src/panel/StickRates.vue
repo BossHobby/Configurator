@@ -20,6 +20,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="profile"
+                      class="is-fullwidth"
                       v-model.number="profile.rate.profile"
                       :options="rateProfiles"
                       @change="update()"
@@ -41,6 +42,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="rate-mode"
+                      class="is-fullwidth"
                       v-model.number="currentMode"
                       :options="rateModes"
                       @change="update()"
