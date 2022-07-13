@@ -1,14 +1,7 @@
+import type { pid_rate_preset_t } from "./serial/types";
 import { defineStore } from "pinia";
 import { serial } from "./serial/serial";
 import { QuicCmd, QuicVal } from "./serial/quic";
-
-const rebootNeededKeys = [
-  "profile.serial.",
-  "profile.receiver.protocol",
-  "bind.info",
-];
-
-const applyNeededKeys = ["profile."];
 
 export const useRootStore = defineStore("root", {
   state: () => ({
@@ -18,7 +11,7 @@ export const useRootStore = defineStore("root", {
     log: [] as any[],
     alerts: [] as any[],
 
-    pid_rate_presets: [],
+    pid_rate_presets: [] as pid_rate_preset_t[],
   }),
   actions: {
     append_log(line) {
@@ -45,20 +38,12 @@ export const useRootStore = defineStore("root", {
       this.alerts = [...this.alerts.filter((a) => a.id != id)];
     },
 
-    track_key_change(path) {
-      for (const key of applyNeededKeys) {
-        if (path.startsWith(key)) {
-          this.needs_apply = true;
-          break;
-        }
-      }
-
-      for (const key of rebootNeededKeys) {
-        if (path.startsWith(key)) {
-          this.needs_reboot = true;
-          break;
-        }
-      }
+    set_needs_apply() {
+      this.needs_apply = true;
+    },
+    set_needs_reboot() {
+      this.needs_apply = true;
+      this.needs_reboot = true;
     },
 
     reset_needs_apply() {

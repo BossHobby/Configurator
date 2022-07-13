@@ -18,16 +18,21 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
 
 import RealtimePlot from "@/components/RealtimePlot.vue";
 import GyroModel from "@/panel/GyroModel.vue";
+import { useStateStore } from "@/store/state";
 
 export default defineComponent({
   name: "state",
   components: {
     RealtimePlot,
     GyroModel,
+  },
+  setup() {
+    return {
+      state: useStateStore(),
+    };
   },
   data() {
     return {
@@ -89,6 +94,5 @@ export default defineComponent({
       ],
     };
   },
-  computed: mapState(["state"]),
 });
 </script>

@@ -29,8 +29,7 @@ import Voltage from "@/panel/Voltage.vue";
 import Serial from "@/panel/Serial.vue";
 import VTX from "@/panel/VTX.vue";
 import GyroModel from "@/panel/GyroModel.vue";
-
-import { mapActions, mapState } from "vuex";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "home",
@@ -41,9 +40,10 @@ export default defineComponent({
     VTX,
     GyroModel,
   },
-  computed: mapState(["profile"]),
-  methods: {
-    ...mapActions([]),
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
   },
 });
 </script>

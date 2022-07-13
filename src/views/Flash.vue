@@ -7,7 +7,7 @@
             Flash
             <tooltip entry="flash.reset" />
           </p>
-          <spinner-btn class="card-header-button is-info" @click="hard_reboot()">
+          <spinner-btn class="card-header-button is-info" @click="serial.hard_reboot()">
             Reset to Bootloader
           </spinner-btn>
         </div>
@@ -120,15 +120,24 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapActions, mapState } from "vuex";
 import { Flasher } from "@/store/flash/flash";
 import { github } from "@/store/util/github";
 import { Log } from "@/log";
 import SpinnerBtn from "@/components/SpinnerBtn.vue";
+import { useFlashStore } from "@/store/flash";
+import { useSerialStore } from "@/store/serial";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
+  name: "Flash",
   components: { SpinnerBtn },
-  name: "flash",
+  setup() {
+    return {
+      flash: useFlashStore(),
+      serial: useSerialStore(),
+      root: useRootStore(),
+    };
+  },
   data() {
     return {
       loading: false,
@@ -137,18 +146,21 @@ export default defineComponent({
         { value: "local", text: "Local" },
       ],
       source: "bosshobby",
-      release: undefined,
+      release: undefined as string | undefined,
       target: undefined,
       file: undefined as File | undefined,
       progress: {},
     };
   },
   computed: {
-    ...mapState(["flash"]),
     releaseOptions() {
       return Object.keys(this.flash.firmware_releases);
     },
     targetOptions() {
+      if (!this.release) {
+        return [];
+      }
+
       const release = this.flash.firmware_releases[this.release];
       if (!release) {
         return [];
@@ -168,7 +180,6 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(["hard_reboot", "fetch_firmware_releases"]),
     updateFile() {
       const fileInput = this.$refs.file as HTMLInputElement;
       if (fileInput.files && fileInput.files.length) {
@@ -189,7 +200,11 @@ export default defineComponent({
 
           const reader = new FileReader();
           reader.addEventListener("load", (event) => {
-            resolve(event?.target?.result);
+            if (event?.target?.result) {
+              resolve(event.target.result as string);
+            } else {
+              reject();
+            }
           });
           reader.readAsText(this.file);
         });
@@ -212,7 +227,7 @@ export default defineComponent({
       return promise
         .then((hex) => flasher.flash(hex))
         .then(() =>
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "success",
             msg: "Firmware flashed!",
           })
@@ -220,7 +235,7 @@ export default defineComponent({
         .catch((err) => {
           Log.error("Flash", err);
 
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "danger",
             msg: "Flash failed!",
           });
@@ -230,7 +245,7 @@ export default defineComponent({
     },
   },
   created() {
-    this.fetch_firmware_releases().then(() => {
+    this.flash.fetch_firmware_releases().then(() => {
       this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
     });
   },

@@ -45,7 +45,7 @@
                     <input-select
                       id="pid-profile"
                       class="is-fullwidth"
-                      v-model.number="pid.pid_profile"
+                      v-model.number="profile.pid.pid_profile"
                       :options="pidProfiles"
                     ></input-select>
                   </div>
@@ -127,7 +127,7 @@
                     <input-select
                       id="throttle_dterm_attenuation-enable"
                       class="is-fullwidth"
-                      v-model.number="pid.throttle_dterm_attenuation.tda_active"
+                      v-model.number="profile.pid.throttle_dterm_attenuation.tda_active"
                       :options="tdaOptions"
                     ></input-select>
                   </div>
@@ -150,7 +150,9 @@
                       id="throttle_dterm_attenuation-breakpoint"
                       type="number"
                       step="0.05"
-                      v-model.number="pid.throttle_dterm_attenuation.tda_breakpoint"
+                      v-model.number="
+                        profile.pid.throttle_dterm_attenuation.tda_breakpoint
+                      "
                     />
                   </div>
                 </div>
@@ -172,7 +174,7 @@
                       id="throttle_dterm_attenuation-percent"
                       type="number"
                       step="0.05"
-                      v-model.number="pid.throttle_dterm_attenuation.tda_percent"
+                      v-model.number="profile.pid.throttle_dterm_attenuation.tda_percent"
                     />
                   </div>
                 </div>
@@ -193,7 +195,7 @@
                     <input-select
                       id="stick-profile"
                       class="is-fullwidth"
-                      v-model.number="pid.stick_profile"
+                      v-model.number="profile.pid.stick_profile"
                       :options="stickProfiles"
                     ></input-select>
                   </div>
@@ -293,7 +295,7 @@
                       :id="`small-angle-${key}`"
                       type="number"
                       step="0.01"
-                      v-model.number="pid.small_angle[key]"
+                      v-model.number="profile.pid.small_angle[key]"
                     />
                   </p>
                 </div>
@@ -304,7 +306,7 @@
                       :id="`big-angle-${key}`"
                       type="number"
                       step="0.01"
-                      v-model.number="pid.big_angle[key]"
+                      v-model.number="profile.pid.big_angle[key]"
                     />
                   </p>
                 </div>
@@ -319,8 +321,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "PIDRates",
@@ -342,29 +344,31 @@ export default defineComponent({
       current_preset: 0,
     };
   },
+  setup() {
+    return {
+      root: useRootStore(),
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["pid"]),
-    ...mapState({
-      pid_rate_presets: (state) => state.pid_rate_presets,
-    }),
     pid_rates: {
       get() {
-        return this.$store.getters.current_pid_rate;
+        return this.profile.current_pid_rate;
       },
       set(value) {
-        this.$store.commit("set_current_pid_rate", value);
+        this.profile.set_current_pid_rate(value);
       },
     },
     stick_rates: {
       get() {
-        return this.$store.getters.current_stick_rate;
+        return this.profile.current_stick_rate;
       },
       set(value) {
-        this.$store.commit("set_current_stick_rate", value);
+        this.profile.set_current_stick_rate(value);
       },
     },
     presets() {
-      return this.pid_rate_presets.map((p) => {
+      return this.root.pid_rate_presets.map((p) => {
         return {
           value: p.index,
           text: p.name,
@@ -374,7 +378,7 @@ export default defineComponent({
   },
   methods: {
     load_preset(index) {
-      this.pid_rates = this.pid_rate_presets[index].rate;
+      this.pid_rates = this.root.pid_rate_presets[index].rate;
     },
   },
 });

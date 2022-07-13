@@ -23,7 +23,7 @@
                     <input-select
                       :id="'motor-pin-' + m.index"
                       class="is-fullwidth"
-                      v-model="profile_motor.motor_pins[m.index]"
+                      v-model="profile.motor.motor_pins[m.index]"
                       :options="motorPins"
                     ></input-select>
                   </div>
@@ -39,19 +39,22 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
+import { useInfoStore } from "@/store/info";
+import { useMotorStore } from "@/store/motor";
 
 export default defineComponent({
   name: "MotorPins",
+  setup() {
+    return {
+      profile: useProfileStore(),
+      info: useInfoStore(),
+      motor: useMotorStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", { profile_motor: "motor" }),
-    ...mapState({
-      motor_pins: (state) => state.info.motor_pins,
-    }),
-    ...mapState(["motor"]),
     motorPins() {
-      return this.motor_pins.map((v, i) => {
+      return this.info.motor_pins.map((v, i) => {
         return {
           value: i,
           text: `Pin ${i} (${v})`,

@@ -10,7 +10,7 @@
         </header>
         <div class="card-content">
           <div class="content">
-            <div v-for="(line, index) in log" :key="line + '-' + index">
+            <div v-for="(line, index) in root.log" :key="line + '-' + index">
               <samp>>> {{ line }}</samp>
             </div>
           </div>
@@ -22,13 +22,17 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
 import { Log } from "@/log";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
-  name: "log",
+  name: "Log",
+  setup() {
+    return {
+      root: useRootStore(),
+    };
+  },
   computed: {
-    ...mapState(["log"]),
     logFilePath() {
       return Log.filePath();
     },

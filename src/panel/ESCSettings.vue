@@ -7,10 +7,7 @@
 
     <div class="card-content">
       <div class="content">
-        <div
-          class="columns is-multiline"
-          v-if="motor.settings && motor.settings.length"
-        >
+        <div class="columns is-multiline" v-if="motor.settings && motor.settings.length">
           <div
             class="column is-6 px-5"
             v-for="m in motor.pins"
@@ -42,10 +39,7 @@
             </div>
           </div>
         </div>
-        <div
-          v-else
-          class="is-size-5 has-text-centered has-text-weight-semibold"
-        >
+        <div v-else class="is-size-5 has-text-centered has-text-weight-semibold">
           Settings not loaded
         </div>
       </div>
@@ -58,7 +52,7 @@
         class="card-footer-item"
         v-if="motor.settings && motor.settings.length"
         :disabled="motor.loading"
-        @click="apply_motor_settings(motor.settings)"
+        @click="motor.apply_motor_settings(motor.settings)"
       >
         Apply
       </spinner-btn>
@@ -66,7 +60,7 @@
         class="card-footer-item"
         v-else
         :disabled="motor.loading"
-        @click="fetch_motor_settings()"
+        @click="motor.fetch_motor_settings()"
       >
         Load
       </spinner-btn>
@@ -76,11 +70,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapActions, mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useMotorStore } from "@/store/motor";
 
 export default defineComponent({
   name: "ESCSettings",
+  setup() {
+    return {
+      motor: useMotorStore(),
+    };
+  },
   data() {
     return {
       motor_direction_options: [
@@ -91,12 +89,7 @@ export default defineComponent({
       ],
     };
   },
-  computed: {
-    ...mapState(["motor"]),
-    ...mapFields("profile", { profile_motor: "motor" }),
-  },
   methods: {
-    ...mapActions(["fetch_motor_settings", "apply_motor_settings"]),
     trim(str) {
       return str.replace(/#/g, "").replace(/\$/g, " ");
     },

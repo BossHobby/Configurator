@@ -11,9 +11,9 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
 import OSDElements from "@/panel/OSDElements.vue";
 import OSDFont from "@/panel/OSDFont.vue";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "OSD",
@@ -21,13 +21,15 @@ export default defineComponent({
     OSDElements,
     OSDFont,
   },
-  computed: {
-    ...mapGetters(["has_legacy_osd"]),
-    ...mapState({
-      is_hd: (state) => state.profile.serial.hdzero,
-    }),
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
   },
-  methods: {},
-  created() {},
+  computed: {
+    is_hd() {
+      return this.profile.serial.hdzero;
+    },
+  },
 });
 </script>

@@ -52,10 +52,18 @@
 </template>
 
 <script lang="ts">
+import { useInfoStore } from "@/store/info";
+import { useSerialStore } from "@/store/serial";
 import { defineComponent } from "vue";
-import { mapState, mapActions } from "vuex";
 
 export default defineComponent({
+  name: "SerialPassthrough",
+  setup() {
+    return {
+      info: useInfoStore(),
+      serial: useSerialStore(),
+    };
+  },
   data() {
     return {
       serial_port: 0,
@@ -82,7 +90,6 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(["info"]),
     serialPorts() {
       const ports = [{ value: 0, text: "UART_INVALID" }];
       for (let i = 1; i < this.info.usart_ports.length; i++) {
@@ -92,9 +99,8 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(["serial_passthrough"]),
     start_passthrough() {
-      return this.serial_passthrough({
+      return this.serial.serial_passthrough({
         port: this.serial_port,
         ...(this.preset || {}),
       });

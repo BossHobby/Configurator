@@ -11,7 +11,7 @@
       <div class="content field-is-2">
         <div
           class="field is-horizontal"
-          v-if="info.rx_protocol != null && receiver_protocol == null"
+          v-if="info.rx_protocol != null && profile.receiver.protocol == null"
         >
           <div class="field-label">
             <label class="label">
@@ -28,7 +28,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="receiver_protocol != null">
+        <div class="field is-horizontal" v-if="profile.receiver.protocol != null">
           <div class="field-label">
             <label class="label">
               Protocol
@@ -40,7 +40,7 @@
               <div class="control is-expanded">
                 <input-select
                   class="is-fullwidth"
-                  v-model.number="receiver_protocol"
+                  v-model.number="profile.receiver.protocol"
                   :options="protocolOptions"
                 ></input-select>
               </div>
@@ -60,7 +60,7 @@
               <div class="control is-expanded">
                 <input-select
                   class="is-fullwidth"
-                  v-model.number="receiver_lqi_source"
+                  v-model.number="profile.receiver.lqi_source"
                   :options="lqiSourceNames"
                 ></input-select>
               </div>
@@ -108,7 +108,9 @@
 
         <div
           class="field is-horizontal"
-          v-if="info.quic_protocol_version > 2 && rx_protocol == proto.UNIFIED_SERIAL"
+          v-if="
+            info.quic_protocol_version > 2 && rx_protocol == RXProtocol.UNIFIED_SERIAL
+          "
         >
           <div class="field-label">
             <label class="label">Serial Protocol</label>
@@ -120,7 +122,10 @@
           </div>
         </div>
 
-        <div class="card mt-4" v-if="bind.info.raw && rx_protocol == proto.EXPRESS_LRS">
+        <div
+          class="card mt-4"
+          v-if="bind.info.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
+        >
           <header class="card-header">
             <p class="card-header-title">ExpressLRS</p>
           </header>
@@ -226,10 +231,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState, mapActions, mapGetters } from "vuex";
-import { mapFields } from "@/store/helper.js";
 import { $enum } from "ts-enum-util";
 import md5 from "md5";
+import { useInfoStore } from "@/store/info";
+import { useProfileStore } from "@/store/profile";
+import { useConstantStore } from "@/store/constants";
+import { mapState } from "pinia";
+import { useBindStore } from "@/store/bind";
+import { useStateStore } from "@/store/state";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "ReceiverSettings",
@@ -243,21 +253,28 @@ export default defineComponent({
       elrsBindPhraseInput: "",
     };
   },
+  setup() {
+    return {
+      profile: useProfileStore(),
+      info: useInfoStore(),
+      bind: useBindStore(),
+      state: useStateStore(),
+      root: useRootStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["receiver.protocol", "receiver.lqi_source", "meta"]),
-    ...mapState(["info", "state", "bind"]),
-    ...mapState("constants", {
+    ...mapState(useConstantStore, {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
+      RXProtocol: (state) => state.RXProtocol,
     }),
-    ...mapGetters("constants", ["RXProtocol"]),
     date() {
-      return new Date(this.meta.datetime * 1000);
+      return new Date(this.profile.meta.datetime * 1000);
     },
     protoNames() {
       return $enum(this.RXProtocol).getKeys();
     },
     rx_protocol() {
-      return this.receiver_protocol || this.info.rx_protocol;
+      return this.profile.receiver.protocol || this.info.rx_protocol;
     },
     protocolOptions() {
       return (this.info.rx_protocols || [])
@@ -265,12 +282,6 @@ export default defineComponent({
         .map((val) => {
           return { value: val, text: this.protoNames[val] };
         });
-    },
-    proto() {
-      return this.protoNames.reduce((m, v, i) => {
-        m[v] = i;
-        return m;
-      }, {});
     },
     serialProto() {
       return this.serialProtoNames.reduce((m, v, i) => {
@@ -280,26 +291,26 @@ export default defineComponent({
     },
     isSpiProtocol() {
       const spi = [
-        this.proto.FRSKY_D8,
-        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_FCC,
-        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_LBT,
-        this.proto.REDPINE,
+        this.RXProtocol.FRSKY_D8,
+        this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_FCC,
+        this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_LBT,
+        this.RXProtocol.REDPINE,
       ];
       return spi.includes(this.rx_protocol);
     },
     protoStatus() {
       const spi = [
-        this.proto.FRSKY_D8,
-        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_FCC,
-        this.proto.FRSKY_D16 || this.proto.FRSKY_D16_LBT,
-        this.proto.REDPINE,
-        this.proto.EXPRESS_LRS,
+        this.RXProtocol.FRSKY_D8,
+        this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_FCC,
+        this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_LBT,
+        this.RXProtocol.REDPINE,
+        this.RXProtocol.EXPRESS_LRS,
       ];
       if (spi.includes(this.rx_protocol)) {
         const status = ["RX_STATUS_NONE", "RX_STATUS_BINDING", "RX_STATUS_BOUND"];
         return status[this.state.rx_status];
       }
-      if (this.rx_protocol == this.proto.UNIFIED_SERIAL) {
+      if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
         if (this.state.rx_status < 100) {
           return "RX_STATUS_NONE";
         }
@@ -313,7 +324,7 @@ export default defineComponent({
       return "";
     },
     serialProtoStatus() {
-      var index = 0;
+      let index = 0;
 
       if (this.state.rx_status >= 100 && this.state.rx_status < 200) {
         index = this.state.rx_status - 100;
@@ -331,14 +342,14 @@ export default defineComponent({
     },
   },
   watch: {
-    receiver_protocol() {
+    "profile.receiver.protocol"() {
       this.reset();
+      this.root.set_needs_reboot();
     },
   },
   methods: {
-    ...mapActions(["apply_bind_info"]),
-    parseHexString(str) {
-      const result = [];
+    parseHexString(str: string) {
+      const result = [] as number[];
       while (str.length >= 2) {
         result.push(parseInt(str.substring(0, 2), 16));
         str = str.substring(2, str.length);
@@ -358,7 +369,7 @@ export default defineComponent({
       }
       info.raw[7] = 0x37;
 
-      return this.apply_bind_info(info);
+      return this.bind.apply_bind_info(info);
     },
     downloadBindData() {
       const base64 = window.btoa(
@@ -380,7 +391,7 @@ export default defineComponent({
       reader.addEventListener("load", (event) => {
         const info = { ...this.bind?.info };
         info.bind_saved = 1;
-        info.raw = Uint8Array.from(window.atob(event.target.result), (c) =>
+        info.raw = Uint8Array.from(window.atob(event?.target?.result), (c) =>
           c.charCodeAt(0)
         );
 
@@ -403,9 +414,8 @@ export default defineComponent({
         info.raw[i] = 0;
       }
 
-      return this.apply_bind_info(info);
+      return this.bind.apply_bind_info(info);
     },
   },
-  created() {},
 });
 </script>

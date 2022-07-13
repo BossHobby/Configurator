@@ -6,8 +6,8 @@
 
     <div class="card-content">
       <div class="content column-narrow field-is-5">
-        <div class="columns" v-if="filter">
-          <div class="column is-6" v-if="filter.gyro">
+        <div class="columns" v-if="profile">
+          <div class="column is-6" v-if="profile.filter.gyro">
             <div class="field is-horizontal">
               <div class="field-label">
                 <label class="label" for="gyro-1-type">
@@ -21,7 +21,7 @@
                     <input-select
                       class="is-fullwidth"
                       id="gyro-1-type"
-                      v-model.number="filter.gyro[0].type"
+                      v-model.number="profile.filter.gyro[0].type"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -44,7 +44,7 @@
                       id="gyro-1-freq"
                       type="number"
                       step="5"
-                      v-model.number="filter.gyro[0].cutoff_freq"
+                      v-model.number="profile.filter.gyro[0].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -64,7 +64,7 @@
                     <input-select
                       class="is-fullwidth"
                       id="gyro-2-type"
-                      v-model.number="filter.gyro[1].type"
+                      v-model.number="profile.filter.gyro[1].type"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -87,7 +87,7 @@
                       id="gyro-2-freq"
                       type="number"
                       step="5"
-                      v-model.number="filter.gyro[1].cutoff_freq"
+                      v-model.number="profile.filter.gyro[1].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -95,7 +95,7 @@
             </div>
           </div>
 
-          <div class="column is-6" v-if="filter.dterm">
+          <div class="column is-6" v-if="profile.filter.dterm">
             <div class="field is-horizontal">
               <div class="field-label">
                 <label class="label" for="dterm-1-type">
@@ -109,7 +109,7 @@
                     <input-select
                       class="is-fullwidth"
                       id="dterm-1-type"
-                      v-model.number="filter.dterm[0].type"
+                      v-model.number="profile.filter.dterm[0].type"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -132,7 +132,7 @@
                       id="dterm-1-freq"
                       type="number"
                       step="5"
-                      v-model.number="filter.dterm[0].cutoff_freq"
+                      v-model.number="profile.filter.dterm[0].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -152,7 +152,7 @@
                     <input-select
                       class="is-fullwidth"
                       id="dterm-2-type"
-                      v-model.number="filter.dterm[1].type"
+                      v-model.number="profile.filter.dterm[1].type"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -175,7 +175,7 @@
                       id="dterm-2-freq"
                       type="number"
                       step="5"
-                      v-model.number="filter.dterm[1].cutoff_freq"
+                      v-model.number="profile.filter.dterm[1].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -195,7 +195,7 @@
                     <input-select
                       class="is-fullwidth"
                       id="dterm-dynamic-enable"
-                      v-model.number="filter.dterm_dynamic_enable"
+                      v-model.number="profile.filter.dterm_dynamic_enable"
                       :options="toggleOptions"
                     ></input-select>
                   </div>
@@ -218,7 +218,7 @@
                       id="dterm-dynamic-min"
                       type="number"
                       step="5"
-                      v-model.number="filter.dterm_dynamic_min"
+                      v-model.number="profile.filter.dterm_dynamic_min"
                     />
                   </div>
                 </div>
@@ -240,7 +240,7 @@
                       id="dterm-dynamic-max"
                       type="number"
                       step="5"
-                      v-model.number="filter.dterm_dynamic_max"
+                      v-model.number="profile.filter.dterm_dynamic_max"
                     />
                   </div>
                 </div>
@@ -255,10 +255,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "FilterSettings",
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
+  },
   data() {
     return {
       filterTypeOptions: [
@@ -272,9 +277,6 @@ export default defineComponent({
         { value: 1, text: "On" },
       ],
     };
-  },
-  computed: {
-    ...mapFields("profile", ["filter"]),
   },
 });
 </script>

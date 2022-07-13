@@ -25,7 +25,7 @@
                     <input-select
                       :id="f.key"
                       class="is-fullwidth"
-                      v-model.number="receiver_aux[f.index]"
+                      v-model.number="profile.receiver.aux[f.index]"
                       :options="auxChannels"
                     ></input-select>
                   </div>
@@ -61,19 +61,22 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
 import { $enum } from "ts-enum-util";
-import { mapFields } from "@/store/helper.js";
+import { useConstantStore } from "@/store/constants";
+import { useStateStore } from "@/store/state";
+import { useProfileStore } from "@/store/profile";
+import { mapState } from "pinia";
 
 export default defineComponent({
   name: "AuxChannels",
-  components: {},
+  setup() {
+    return {
+      state: useStateStore(),
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["receiver.aux"]),
-    ...mapState({
-      aux: (state) => state.state.aux,
-    }),
-    ...mapState("constants", {
+    ...mapState(useConstantStore, {
       auxChannels: (state) => {
         return $enum(state.AuxChannels).map((value, key) => {
           return {
@@ -82,35 +85,31 @@ export default defineComponent({
           };
         });
       },
+      auxFunctions: (state) => {
+        return $enum(state.AuxFunctions)
+          .getKeys()
+          .map((f, index) => {
+            return {
+              index,
+              key: f,
+            };
+          })
+          .filter((f) => !f.key.startsWith("_"));
+      },
     }),
-    ...mapGetters("constants", ["AuxFunctions"]),
-    auxFunctions: (state) => {
-      return $enum(state.AuxFunctions)
-        .getKeys()
-        .map((f, index) => {
-          return {
-            index,
-            key: f,
-          };
-        })
-        .filter((f) => !f.key.startsWith("_"));
-    },
-  },
-  data() {
-    return {};
   },
   methods: {
     valueForIndex(index) {
-      return this.aux[index];
+      return this.state.aux[index];
     },
     classForIndex(index) {
-      if (!this.receiver_aux) {
+      if (!this.profile.receiver.aux) {
         return "";
       }
 
-      if (this.receiver_aux[index] == 12) return "text-danger";
-      if (this.receiver_aux[index] == 13) return "text-success";
-      if (this.valueForIndex(this.receiver_aux[index])) {
+      if (this.profile.receiver.aux[index] == 12) return "text-danger";
+      if (this.profile.receiver.aux[index] == 13) return "text-success";
+      if (this.valueForIndex(this.profile.receiver.aux[index])) {
         return "text-success";
       }
       return "";

@@ -33,11 +33,7 @@ export const useStateStore = defineStore("state", {
     fetch_state() {
       return serial
         .get(QuicVal.State)
-        .then((update) => {
-          for (const key in update) {
-            this[key] = Object.freeze(update[key]);
-          }
-        })
+        .then((update) => this.$patch(update))
         .catch((err) => Log.warn("state", err));
     },
   },

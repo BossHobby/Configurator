@@ -3,7 +3,7 @@
     <div class="column is-12">
       <ReceiverSettings></ReceiverSettings>
     </div>
-    <div class="column is-12" v-if="quicVersionGt('0.1.0')">
+    <div class="column is-12" v-if="info.quicVersionGt('0.1.0')">
       <RCChannels></RCChannels>
     </div>
     <div class="column is-12">
@@ -17,8 +17,7 @@ import { defineComponent } from "vue";
 import ReceiverSettings from "@/panel/ReceiverSettings.vue";
 import RCChannels from "@/panel/RCChannels.vue";
 import AuxChannels from "@/panel/AuxChannels.vue";
-
-import { mapGetters } from "vuex";
+import { useInfoStore } from "@/store/info";
 
 export default defineComponent({
   name: "Receiver",
@@ -27,8 +26,10 @@ export default defineComponent({
     RCChannels,
     AuxChannels,
   },
-  computed: {
-    ...mapGetters(["quicVersionGt"]),
+  setup() {
+    return {
+      info: useInfoStore(),
+    };
   },
 });
 </script>

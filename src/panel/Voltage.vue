@@ -3,7 +3,7 @@
     <header class="card-header">
       <p class="card-header-title">Voltage</p>
       <small class="card-header-icon">
-        {{ vbat.toPrecision(3) }}V {{ state.ibat_filtered }}mAh
+        {{ state.vbat.toPrecision(3) }}V {{ state.ibat_filtered }}mAh
       </small>
     </header>
 
@@ -24,7 +24,7 @@
                   id="lipo-cell-count"
                   type="number"
                   step="1"
-                  v-model.number="voltage.lipo_cell_count"
+                  v-model.number="profile.voltage.lipo_cell_count"
                 />
               </div>
             </div>
@@ -43,7 +43,7 @@
               <div class="control is-expanded">
                 <input-select
                   class="is-fullwidth"
-                  v-model.number="voltage.pid_voltage_compensation"
+                  v-model.number="profile.voltage.pid_voltage_compensation"
                   :options="pidVoltageCompensationOptions"
                 ></input-select>
               </div>
@@ -66,7 +66,7 @@
                   id="vbattlow"
                   type="number"
                   step="0.1"
-                  v-model.number="voltage.vbattlow"
+                  v-model.number="profile.voltage.vbattlow"
                 />
               </div>
             </div>
@@ -88,7 +88,7 @@
                   id="actual-battery-voltage"
                   type="number"
                   step="0.1"
-                  v-model.number="voltage.actual_battery_voltage"
+                  v-model.number="profile.voltage.actual_battery_voltage"
                 />
               </div>
             </div>
@@ -110,7 +110,7 @@
                   id="reported-telemetry-voltage"
                   type="number"
                   step="0.1"
-                  v-model.number="voltage.reported_telemetry_voltage"
+                  v-model.number="profile.voltage.reported_telemetry_voltage"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@
                   id="ibat_scale"
                   type="number"
                   step="1"
-                  v-model.number="voltage.ibat_scale"
+                  v-model.number="profile.voltage.ibat_scale"
                 />
               </div>
             </div>
@@ -145,8 +145,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
+import { useStateStore } from "@/store/state";
 
 export default defineComponent({
   name: "voltage",
@@ -158,16 +158,19 @@ export default defineComponent({
       ],
     };
   },
+  setup() {
+    return {
+      profile: useProfileStore(),
+      state: useStateStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["voltage"]),
-    ...mapState(["state"]),
-    ...mapGetters(["vbat"]),
     pid_voltage_compensation: {
       get() {
-        return this.voltage.pid_voltage_compensation;
+        return this.profile.voltage.pid_voltage_compensation;
       },
       set(val) {
-        this.voltage.pid_voltage_compensation = val ? 1 : 0;
+        this.profile.voltage.pid_voltage_compensation = val ? 1 : 0;
       },
     },
   },

@@ -45,19 +45,24 @@
 </template>
 
 <script lang="ts">
+import { useBlackboxStore } from "@/store/blackbox";
+import { useProfileStore } from "@/store/profile";
 import { defineComponent } from "vue";
-import { mapState, mapActions } from "vuex";
 
 export default defineComponent({
   name: "blackbox",
+  setup() {
+    return {
+      blackbox: useBlackboxStore(),
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapState(["blackbox", "profile"]),
     usedSize() {
       return (this.blackbox?.list?.files || []).reduce((p, c) => p + c.size, 0);
     },
   },
   methods: {
-    ...mapActions(["reset_blackbox", "list_blackbox", "download_blackbox"]),
     humanFileSize(bytes, si = false, dp = 1) {
       const thresh = si ? 1000 : 1024;
 
@@ -79,10 +84,10 @@ export default defineComponent({
       return bytes.toFixed(dp) + " " + units[u];
     },
     reset() {
-      return this.reset_blackbox().then(() => this.list_blackbox());
+      return this.blackbox.reset_blackbox().then(() => this.blackbox.list_blackbox());
     },
     download(index) {
-      return this.download_blackbox(index).then((url) => {
+      return this.blackbox.download_blackbox(index).then((url) => {
         const date = new Date().toISOString().substring(0, 10);
         const name = this.profile.meta.name.replace(/\0/g, "");
         const filename = `${name}_${date}_file_${index}.bfl`;
@@ -94,7 +99,7 @@ export default defineComponent({
     },
   },
   created() {
-    this.list_blackbox();
+    this.blackbox.list_blackbox();
   },
 });
 </script>

@@ -1,3 +1,4 @@
+import type { profile_t } from "./serial/types";
 import { useDefaultProfileStore } from "./default_profile";
 import { defineStore } from "pinia";
 import { serial } from "./serial/serial";
@@ -60,14 +61,17 @@ function migrateProfile(profile, version) {
   return profile;
 }
 
+export interface local_profile_t extends profile_t {
+  semver: string;
+}
+
 export const useProfileStore = defineStore("profile", {
-  state: () => ({
+  state: (): local_profile_t => ({
     semver: "v0.0.0",
     serial: {
       rx: 0,
       smart_audio: 0,
       hdzero: 0,
-      port_max: 1,
     },
     filter: {
       gyro: [{}, {}],
@@ -79,6 +83,7 @@ export const useProfileStore = defineStore("profile", {
       elements_hd: [],
     },
     meta: {
+      name: "",
       datetime: 0,
     },
     motor: {
@@ -122,9 +127,7 @@ export const useProfileStore = defineStore("profile", {
     set_profile(profile) {
       profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");
-      for (const key in profile) {
-        this[key] = profile[key];
-      }
+      this.$patch(profile);
     },
     set_current_pid_rate(rate) {
       const rates = [...this.pid.pid_rates];
@@ -153,6 +156,11 @@ export const useProfileStore = defineStore("profile", {
         ...this.osd,
         elements_hd: elements,
       };
+    },
+
+    reset() {
+      const default_profile = useDefaultProfileStore();
+      return this.apply_profile(default_profile.$state);
     },
 
     fetch_profile() {

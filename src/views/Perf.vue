@@ -16,14 +16,18 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
-
 import RealtimePlot from "@/components/RealtimePlot.vue";
+import { usePerfStore } from "@/store/perf";
 
 export default defineComponent({
   name: "perf",
   components: {
     RealtimePlot,
+  },
+  setup() {
+    return {
+      perf: usePerfStore(),
+    };
   },
   data() {
     return {
@@ -39,6 +43,5 @@ export default defineComponent({
       ],
     };
   },
-  computed: mapState(["perf"]),
 });
 </script>

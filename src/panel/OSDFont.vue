@@ -44,12 +44,7 @@
             <div class="field-body">
               <div class="field has-addons">
                 <p class="control is-expanded">
-                  <input
-                    class="file-input"
-                    accept=".png"
-                    type="file"
-                    ref="file"
-                  />
+                  <input class="file-input" accept=".png" type="file" ref="file" />
                 </p>
                 <p class="control">
                   <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
@@ -109,14 +104,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapFields } from "@/store/helper.js";
 import { serial } from "@/store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import { OSD } from "@/store/util/osd";
+import { useRootStore } from "@/store/root";
+import { useProfileStore } from "@/store/profile";
 
 const loadImage = (url) => {
   return new Promise((r, e) => {
-    let i = new Image();
+    const i = new Image();
     i.onload = () => r(i);
     i.onerror = (err) => e(err);
     i.src = url;
@@ -140,11 +136,14 @@ export default defineComponent({
         { text: "vision", value: "vision.png" },
       ],
       current_font_file: "clarity.png",
-      imageSource: null,
+      imageSource: undefined as string | undefined,
     };
   },
-  computed: {
-    ...mapFields("profile", ["osd"]),
+  setup() {
+    return {
+      root: useRootStore(),
+      profile: useProfileStore(),
+    };
   },
   methods: {
     apply_osd_font(name) {
@@ -155,13 +154,13 @@ export default defineComponent({
         })
         .then(() => this.get_osd_font())
         .then(() =>
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "success",
             msg: "Font updated!",
           })
         )
         .catch(() => {
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "danger",
             msg: "Font update failed!",
           });
@@ -179,13 +178,13 @@ export default defineComponent({
           reader.onerror = reject;
           reader.onabort = reject;
           reader.onload = (event) => {
-            var img = new Image();
+            const img = new Image();
             img.onerror = reject;
             img.onabort = reject;
             img.onload = function () {
               resovle(img);
             };
-            img.src = event.target.result;
+            img.src = event?.target?.result || "";
           };
           reader.readAsDataURL(file);
         });
@@ -205,10 +204,7 @@ export default defineComponent({
 
           this.$refs.file.oninvalid = reject;
           this.$refs.file.onchange = checkForFile;
-          setTimeout(
-            () => (document.body.onfocus = () => checkForFile()),
-            1000
-          );
+          setTimeout(() => (document.body.onfocus = () => checkForFile()), 1000);
 
           this.$refs.file.click();
         });
@@ -221,22 +217,18 @@ export default defineComponent({
             throw new Error("Invalid logo dimensions");
           }
 
-          const font = OSD.packLogo(
-            this.$refs.canvas,
-            this.$refs.logoCanvas,
-            img
-          );
+          const font = OSD.packLogo(this.$refs.canvas, this.$refs.logoCanvas, img);
           return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())
         .then(() =>
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "success",
             msg: "Logo updated!",
           })
         )
         .catch((err) => {
-          this.$store.commit("append_alert", {
+          this.root.append_alert({
             type: "danger",
             msg: "Logo update failed! " + err.message,
           });

@@ -189,9 +189,10 @@ function newPWAUpdater() {
 function newUpdater() {
   try {
     if (nw?.App) {
-      console.log("Registering NW updater");
-      return newNWUpdater();
+      throw new Error("new.App undefined");
     }
+    console.log("Registering NW updater");
+    return newNWUpdater();
   } catch {
     console.log("Registering PWA updater");
     return newPWAUpdater();

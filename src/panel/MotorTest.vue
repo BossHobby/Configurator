@@ -3,7 +3,7 @@
     <header class="card-header">
       <p class="card-header-title">Motor Test</p>
       <small class="card-header-icon">
-        {{ vbat.toPrecision(3) }}V <br />
+        {{ state.vbat.toPrecision(3) }}V <br />
         {{ state.ibat_filtered }}mAh
       </small>
       <tooltip class="card-header-icon" entry="motor.test" size="lg" />
@@ -63,7 +63,7 @@
     <footer class="card-footer">
       <span class="card-footer-item"></span>
       <span class="card-footer-item"></span>
-      <spinner-btn class="card-footer-item" @click="motor_test_toggle()">
+      <spinner-btn class="card-footer-item" @click="motor.motor_test_toggle()">
         {{ motor.test.active ? "Disable" : "Enable" }}
       </spinner-btn>
     </footer>
@@ -71,33 +71,30 @@
 </template>
 
 <script lang="ts">
+import { useMotorStore } from "@/store/motor";
+import { useStateStore } from "@/store/state";
 import { defineComponent } from "vue";
-import { mapActions, mapState, mapGetters } from "vuex";
 
 export default defineComponent({
   name: "MotorTest",
+  setup() {
+    return {
+      motor: useMotorStore(),
+      state: useStateStore(),
+    };
+  },
   computed: {
-    ...mapState(["motor", "state"]),
-    ...mapGetters(["vbat"]),
     value() {
       return this.motor.test.value.map((v) => v * 100);
     },
   },
   methods: {
-    ...mapActions([
-      "fetch_motor_test",
-      "motor_test_toggle",
-      "motor_test_set_value",
-    ]),
     update() {
-      return this.motor_test_set_value(this.value.map((v) => v / 100));
-    },
-    trim(str) {
-      return str.replace(/#/g, "").replace(/\$/g, " ");
+      return this.motor.motor_test_set_value(this.value.map((v) => v / 100));
     },
   },
   created() {
-    this.fetch_motor_test();
+    this.motor.fetch_motor_test();
   },
 });
 </script>

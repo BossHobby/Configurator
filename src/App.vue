@@ -8,11 +8,7 @@
     </div>
   </div>
 
-  <nav
-    class="navbar is-fixed-top"
-    role="navigation"
-    aria-label="main navigation"
-  >
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <a class="navbar-item px-1">
         <img
@@ -42,10 +38,7 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
-        <router-link
-          active-class="is-active"
-          class="navbar-item"
-          to="/templates"
+        <router-link active-class="is-active" class="navbar-item" to="/templates"
           >Templates</router-link
         >
         <router-link active-class="is-active" class="navbar-item" to="/profile"
@@ -62,7 +55,7 @@
         >
         <router-link
           active-class="is-active"
-          v-if="has_feature(Features.OSD)"
+          v-if="info.has_feature(Features.OSD)"
           class="navbar-item"
           to="/osd"
           >OSD</router-link
@@ -72,9 +65,7 @@
         >
         <router-link
           active-class="is-active"
-          v-if="
-            has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1
-          "
+          v-if="info.has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1"
           class="navbar-item"
           to="/blackbox"
           >Blackbox</router-link
@@ -84,7 +75,7 @@
         >
         <router-link
           active-class="is-active"
-          v-if="has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
+          v-if="info.has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
           class="navbar-item"
           to="/perf"
           >Perf</router-link
@@ -108,7 +99,7 @@
       <div class="navbar-end">
         <spinner-btn
           class="navbar-item button my-2 mr-2 is-primary"
-          @click="toggle_connection"
+          @click="serial.toggle_connection"
           :disabled="!canConnect"
         >
           {{ connectButtonText }}
@@ -137,13 +128,13 @@
 
     <div class="navbar-end">
       <span class="navbar-item">
-        <div class="notification is-warning" v-show="needs_apply">
+        <div class="notification is-warning" v-show="root.needs_apply">
           <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
           Unsaved changes
         </div>
         <div
           class="notification is-warning"
-          v-show="!needs_apply && needs_reboot"
+          v-show="!root.needs_apply && root.needs_reboot"
         >
           <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
           Reboot required
@@ -152,14 +143,14 @@
 
       <spinner-btn
         class="navbar-item is-warning my-auto mx-2"
-        @click="soft_reboot()"
+        @click="serial.soft_reboot()"
       >
         Reboot
       </spinner-btn>
       <spinner-btn
         class="navbar-item is-info my-auto mx-2"
-        @click="apply_profile(profile)"
-        :disabled="is_read_only"
+        @click="profile.apply_profile(profile.$state)"
+        :disabled="info.is_read_only"
       >
         Apply
       </spinner-btn>
@@ -171,9 +162,15 @@
 import { defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
 import { RouterLink, RouterView } from "vue-router";
-import { mapActions, mapState, mapGetters } from "vuex";
 import { timeAgo } from "@/mixin/filters";
 import AlertPortal from "@/components/AlertPortal.vue";
+import { useInfoStore } from "./store/info";
+import { useProfileStore } from "./store/profile";
+import { useStateStore } from "./store/state";
+import { useSerialStore } from "./store/serial";
+import { useRootStore } from "./store/root";
+import { useConstantStore } from "./store/constants";
+import { computed } from "vue";
 
 export default defineComponent({
   name: "app",
@@ -182,17 +179,20 @@ export default defineComponent({
     RouterView,
     AlertPortal,
   },
+  setup() {
+    const constants = useConstantStore();
+
+    return {
+      info: useInfoStore(),
+      profile: useProfileStore(),
+      state: useStateStore(),
+      serial: useSerialStore(),
+      root: useRootStore(),
+
+      Features: computed(() => constants.Features),
+    };
+  },
   computed: {
-    ...mapState([
-      "info",
-      "profile",
-      "state",
-      "serial",
-      "needs_reboot",
-      "needs_apply",
-    ]),
-    ...mapState("constants", ["Features"]),
-    ...mapGetters(["has_feature", "is_read_only"]),
     availablePortOptions() {
       return this.serial.available.map((p) => {
         return {
@@ -222,7 +222,6 @@ export default defineComponent({
   },
   methods: {
     timeAgo,
-    ...mapActions(["toggle_connection", "apply_profile", "soft_reboot"]),
   },
   created() {
     if (updater.updatePending()) {

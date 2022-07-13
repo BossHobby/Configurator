@@ -13,7 +13,7 @@
             <div class="field">
               <div class="control is-expanded"></div>
             </div>
-            <input class="input" type="text" v-model="meta.name" />
+            <input class="input" type="text" v-model="profile.meta.name" />
           </div>
         </div>
 
@@ -94,11 +94,11 @@
       <spinner-btn
         class="card-footer-item"
         @click="uploadProfile"
-        :disabled="is_read_only"
+        :disabled="info.is_read_only"
       >
         Load Profile
       </spinner-btn>
-      <spinner-btn class="card-footer-item is-warning" @click="reset_profile">
+      <spinner-btn class="card-footer-item is-warning" @click="profile.reset">
         Reset Profile
       </spinner-btn>
     </footer>
@@ -108,27 +108,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapState, mapActions, mapGetters } from "vuex";
+import { computed, defineComponent } from "vue";
 import YAML from "yaml";
 import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
-import { mapFields } from "@/store/helper.js";
 import { QuicVal } from "@/store/serial/quic";
 import { timeAgo } from "@/mixin/filters";
+import { useInfoStore } from "@/store/info";
+import { useStateStore } from "@/store/state";
+import { useProfileStore } from "@/store/profile";
+import { useSerialStore } from "@/store/serial";
+import { useConstantStore } from "@/store/constants";
 
 export default defineComponent({
   name: "ProlfileMetadata",
-  data() {
-    return {};
+  setup() {
+    const constants = useConstantStore();
+
+    return {
+      info: useInfoStore(),
+      state: useStateStore(),
+      profile: useProfileStore(),
+      serial: useSerialStore(),
+
+      Features: computed(() => constants.Features),
+    };
   },
   computed: {
-    ...mapFields("profile", ["meta"]),
-    ...mapState(["info", "state", "serial"]),
-    ...mapGetters(["is_read_only"]),
-    ...mapState("constants", ["Features"]),
     date() {
-      return new Date(this.meta.datetime * 1000);
+      return new Date(this.profile.meta.datetime * 1000);
     },
     features() {
       return $enum(this.Features)
@@ -138,25 +146,32 @@ export default defineComponent({
         })
         .join(", ");
     },
+    fileRef(): HTMLInputElement {
+      return this.$refs.file as HTMLInputElement;
+    },
+    downloadAnchorRef(): HTMLAnchorElement {
+      return this.$refs.downloadAnchor as HTMLAnchorElement;
+    },
   },
   methods: {
     timeAgo,
-    ...mapActions(["apply_profile", "reset_profile"]),
     uploadProfile() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {
-        const profile = YAML.parse(event.target.result);
-        this.apply_profile(profile);
+        if (event?.target?.result) {
+          const profile = YAML.parse(event?.target?.result as string);
+          this.profile.apply_profile(profile);
+        }
       });
 
-      this.$refs.file.oninput = () => {
-        if (!this.$refs.file.files.length) {
+      this.fileRef.oninput = () => {
+        if (!this.fileRef?.files?.length) {
           return;
         }
-        reader.readAsText(this.$refs.file.files[0]);
+        reader.readAsText(this.fileRef.files[0]);
       };
 
-      this.$refs.file.click();
+      this.fileRef.click();
     },
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
@@ -167,9 +182,9 @@ export default defineComponent({
         const name = profile.meta.name.replace(/\0/g, "");
         const filename = `Profile_${name}_${date}.yaml`;
 
-        this.$refs.downloadAnchor.setAttribute("href", yaml);
-        this.$refs.downloadAnchor.setAttribute("download", filename);
-        this.$refs.downloadAnchor.click();
+        this.downloadAnchorRef.setAttribute("href", yaml);
+        this.downloadAnchorRef.setAttribute("download", filename);
+        this.downloadAnchorRef.click();
       });
     },
   },

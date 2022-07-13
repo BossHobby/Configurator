@@ -8,6 +8,7 @@ export const useBindStore = defineStore("bind", {
   state: () => ({
     info: {
       bind_saved: 0,
+      raw: new Uint8Array(),
     },
   }),
   actions: {
@@ -17,22 +18,20 @@ export const useBindStore = defineStore("bind", {
     apply_bind_info(info) {
       const root = useRootStore();
 
-      return (
-        serial
-          .set(QuicVal.BindInfo, info)
-          .then((b) => (this.info = b))
-          // .then((b) => commit("track_key_change", "bind.info"))
-          .then(() =>
-            root.append_alert({ type: "success", msg: "Bind info applied!" })
-          )
-          .catch((err) => {
-            Log.error(err);
-            root.append_alert({
-              type: "danger",
-              msg: "Apply failed! " + err,
-            });
-          })
-      );
+      return serial
+        .set(QuicVal.BindInfo, info)
+        .then((b) => (this.info = b))
+        .then(() => root.set_needs_reboot())
+        .then(() =>
+          root.append_alert({ type: "success", msg: "Bind info applied!" })
+        )
+        .catch((err) => {
+          Log.error(err);
+          root.append_alert({
+            type: "danger",
+            msg: "Apply failed! " + err,
+          });
+        });
     },
   },
 });

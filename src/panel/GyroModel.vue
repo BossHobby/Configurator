@@ -2,7 +2,7 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Model</p>
-      <spinner-btn class="card-header-button is-primary" @click="cal_imu()">
+      <spinner-btn class="card-header-button is-primary" @click="root.cal_imu()">
         calibrate
       </spinner-btn>
     </header>
@@ -19,23 +19,18 @@
 import { defineComponent } from "vue";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-
-import { mapState, mapActions } from "vuex";
+import { useStateStore } from "@/store/state";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "GyroModel",
-  data() {
-    return {};
-  },
-  computed: {
-    ...mapState({
-      rate: (state) => state.profile.rate,
-      gyro_vector: (state) => state.state.GEstG,
-      accel: (state) => state.state.accel,
-    }),
+  setup() {
+    return {
+      state: useStateStore(),
+      root: useRootStore(),
+    };
   },
   methods: {
-    ...mapActions(["cal_imu"]),
     async initThree() {
       const container = document.getElementById("container");
       if (!container) {
@@ -87,9 +82,9 @@ export default defineComponent({
       if (this.model) {
         const UP = new THREE.Vector3(0, 1, 0);
         const GYRO = new THREE.Vector3(
-          this.gyro_vector[0],
-          this.gyro_vector[2],
-          -this.gyro_vector[1]
+          this.state.GEstG[0],
+          this.state.GEstG[2],
+          -this.state.GEstG[1]
         );
         GYRO.normalize();
 

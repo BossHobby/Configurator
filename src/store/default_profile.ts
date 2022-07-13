@@ -1,3 +1,4 @@
+import type { profile_t } from "./serial/types";
 import { defineStore } from "pinia";
 import semver from "semver";
 import { QuicVal } from "./serial/quic";
@@ -5,12 +6,11 @@ import { serial } from "./serial/serial";
 import { decodeSemver } from "./util";
 
 export const useDefaultProfileStore = defineStore("default_profile", {
-  state: () => ({
+  state: (): profile_t => ({
     serial: {
       rx: 0,
       smart_audio: 0,
       hdzero: 0,
-      port_max: 1,
     },
     filter: {
       gyro: [{}, {}],
@@ -60,9 +60,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
     fetch_default_profile() {
       return serial.get(QuicVal.DefaultProfile).then((profile) => {
         profile.meta.name = profile.meta.name.replace(/\0/g, "");
-        for (const key in profile) {
-          this[key] = profile[key];
-        }
+        this.$patch(profile);
       });
     },
   },

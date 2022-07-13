@@ -7,7 +7,7 @@ import { Blackbox } from "./util/blackbox";
 export const useBlackboxStore = defineStore("blackbox", {
   state: () => ({
     busy: false,
-    list: { files: {} },
+    list: { files: [] },
   }),
   actions: {
     reset_blackbox() {

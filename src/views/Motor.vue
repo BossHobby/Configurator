@@ -6,7 +6,7 @@
     <div class="column is-12">
       <MotorPins></MotorPins>
     </div>
-    <div class="column is-12" v-if="has_feature(Features.BRUSHLESS)">
+    <div class="column is-12" v-if="info.has_feature(constants.Features.BRUSHLESS)">
       <ESCSettings></ESCSettings>
     </div>
   </div>
@@ -14,18 +14,20 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState, mapGetters } from "vuex";
-
 import MotorTest from "../panel/MotorTest.vue";
 import MotorPins from "../panel/MotorPins.vue";
 import ESCSettings from "../panel/ESCSettings.vue";
+import { useInfoStore } from "@/store/info";
+import { useConstantStore } from "@/store/constants";
 
 export default defineComponent({
   name: "Motor",
   components: { MotorTest, MotorPins, ESCSettings },
-  computed: {
-    ...mapGetters(["has_feature"]),
-    ...mapState("constants", ["Features"]),
+  setup() {
+    return {
+      info: useInfoStore(),
+      constants: useConstantStore(),
+    };
   },
 });
 </script>

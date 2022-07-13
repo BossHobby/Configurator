@@ -1,10 +1,6 @@
 <template>
   <div class="columns is-multiline">
-    <div
-      class="column is-one-third"
-      v-for="tmpl of templates.index"
-      :key="tmpl.name"
-    >
+    <div class="column is-one-third" v-for="tmpl of templates.index" :key="tmpl.name">
       <div class="card template-card">
         <div class="card-image">
           <figure class="image is-square">
@@ -24,10 +20,7 @@
         </div>
         <footer class="card-footer">
           <span class="card-footer-item"></span>
-          <spinner-btn
-            class="card-footer-item is-white"
-            @click="applyProfile(tmpl)"
-          >
+          <spinner-btn class="card-footer-item is-white" @click="applyProfile(tmpl)">
             Apply
           </spinner-btn>
         </footer>
@@ -38,18 +31,21 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapActions, mapState } from "vuex";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import YAML from "yaml";
+import { useTemplatesStore } from "@/store/templates";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "Templates",
-  computed: {
-    ...mapState(["templates"]),
+  setup() {
+    return {
+      templates: useTemplatesStore(),
+      profile: useProfileStore(),
+    };
   },
   methods: {
-    ...mapActions(["fetch_templates", "apply_profile"]),
     applyProfile(p) {
       return Promise.all([
         fetch(p.profile)
@@ -61,12 +57,12 @@ export default defineComponent({
           ...profile,
           ...patch,
         };
-        return this.apply_profile(p);
+        return this.profile.apply_profile(p);
       });
     },
   },
   created() {
-    this.fetch_templates();
+    this.templates.fetch_templates();
   },
 });
 </script>

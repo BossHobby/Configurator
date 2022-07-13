@@ -2,7 +2,7 @@
   <div class="alert-portal">
     <TransitionGroup name="alert" tag="div">
       <div
-        v-for="alert of alerts"
+        v-for="alert of root.alerts"
         :key="alert.id"
         class="notification"
         :class="['is-' + alert.type]"
@@ -15,27 +15,30 @@
 </template>
 
 <script lang="ts">
+import { useRootStore } from "@/store/root";
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
 
 export default defineComponent({
+  name: "AlterPortal",
+  setup() {
+    return {
+      root: useRootStore(),
+    };
+  },
   data() {
     return {
       timeouts: {},
     };
   },
-  computed: {
-    ...mapState(["alerts"]),
-  },
   watch: {
-    alerts(current: any[], previous: any[]) {
+    "root.alerts"(current: any[], previous: any[]) {
       if (current.length <= previous.length) {
         return;
       }
 
       const id = current[current.length - 1].id;
       this.timeouts[id] = window.setTimeout(() => {
-        this.$store.commit("pop_alert", id);
+        this.root.pop_alert(id);
         delete this.timeouts[id];
       }, 2500);
     },
@@ -43,7 +46,7 @@ export default defineComponent({
   methods: {
     dismiss(id) {
       clearTimeout(this.timeouts[id]);
-      this.$store.commit("pop_alert", id);
+      this.root.pop_alert(id);
       delete this.timeouts[id];
     },
   },

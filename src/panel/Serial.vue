@@ -19,7 +19,7 @@
                 <input-select
                   class="is-fullwidth"
                   id="rx"
-                  v-model.number="serial.rx"
+                  v-model.number="profile.serial.rx"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -40,7 +40,7 @@
                 <input-select
                   class="is-fullwidth"
                   id="smart-audio"
-                  v-model.number="serial.smart_audio"
+                  v-model.number="profile.serial.smart_audio"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -61,7 +61,7 @@
                 <input-select
                   class="is-fullwidth"
                   id="hdzero"
-                  v-model.number="serial.hdzero"
+                  v-model.number="profile.serial.hdzero"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -75,20 +75,34 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useInfoStore } from "@/store/info";
+import { useProfileStore } from "@/store/profile";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "serial",
+  setup() {
+    return {
+      info: useInfoStore(),
+      root: useRootStore(),
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["serial"]),
-    ...mapState(["info"]),
     serialPorts() {
       const ports = [{ value: 0, text: "None" }];
       for (let i = 1; i < this.info.usart_ports.length; i++) {
         ports.push({ value: i, text: this.info.usart_ports[i] });
       }
       return ports;
+    },
+  },
+  watch: {
+    "profile.serial": {
+      handler() {
+        this.root.set_needs_reboot();
+      },
+      deep: true,
     },
   },
 });

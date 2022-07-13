@@ -20,7 +20,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="profile"
-                      v-model.number="rate.profile"
+                      v-model.number="profile.rate.profile"
                       :options="rateProfiles"
                       @change="update()"
                     ></input-select>
@@ -142,7 +142,7 @@
                       id="level-max-angle"
                       type="number"
                       step="5"
-                      v-model.number="rate.level_max_angle"
+                      v-model.number="profile.rate.level_max_angle"
                     />
                   </div>
                 </div>
@@ -151,9 +151,7 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="sticks-deadband"
-                  >SticksDeadband</label
-                >
+                <label class="label" for="sticks-deadband">SticksDeadband</label>
               </div>
               <div class="field-body">
                 <div class="field">
@@ -163,7 +161,7 @@
                       step="0.01"
                       id="sticks-deadband"
                       type="number"
-                      v-model.number="rate.sticks_deadband"
+                      v-model.number="profile.rate.sticks_deadband"
                     />
                   </div>
                 </div>
@@ -187,38 +185,40 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import LineChart from "@/components/LineChart.vue";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
+import type { vec3_t } from "@/store/serial/types";
 
 export default defineComponent({
   name: "StickRates",
   components: {
     LineChart,
   },
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", ["rate"]),
     currentProfile() {
-      return this.rate.rates[this.rate.profile];
+      return this.profile.rate.rates[this.profile.rate.profile];
     },
     currentMode: {
       get() {
         return this.currentProfile.mode;
       },
       set(val) {
-        const oldMode = this.rate.rates[this.rate.profile].mode;
+        const oldMode = this.profile.rate.rates[this.profile.rate.profile].mode;
         this.rateBackup[oldMode] = JSON.parse(
-          JSON.stringify(this.rate.rates[this.rate.profile].rate)
+          JSON.stringify(this.profile.rate.rates[this.profile.rate.profile].rate)
         );
-        this.rate.rates[this.rate.profile].mode = val;
+        this.profile.rate.rates[this.profile.rate.profile].mode = val;
 
         const copy = [...(this.rateBackup[val] || this.rateDefaults[val])];
-        this.rate.rates[this.rate.profile].rate = copy;
+        this.profile.rate.rates[this.profile.rate.profile].rate = copy as vec3_t[];
       },
     },
     currentModeText() {
       return this.rateModes[this.currentProfile.mode].text;
-    },
-    rateMap() {
-      return this.rateMappings[this.currentProfile.mode];
     },
     rateLabel() {
       return this.rateLabels[this.currentProfile.mode];
@@ -265,8 +265,8 @@ export default defineComponent({
         { value: 2, text: "Actual" },
       ],
       plot: {
-        axis: [],
-        label: [],
+        axis: [] as any[],
+        labels: [] as any[],
       },
 
       SILVERWARE_MAX_RATE: 0,
@@ -299,7 +299,7 @@ export default defineComponent({
     },
     rcexpo(rc, expo) {
       expo = this.limitf(expo, 1.0);
-      var result = 0;
+      let result = 0;
 
       switch (this.currentProfile.mode) {
         case this.MODE_SILVERWARE:
@@ -327,32 +327,28 @@ export default defineComponent({
       const expo = this.currentProfile.rate[this.BETAFLIGHT_EXPO][axis];
       val = this.rcexpo(val, expo);
 
-      var rcRate = this.currentProfile.rate[this.BETAFLIGHT_RC_RATE][axis];
+      let rcRate = this.currentProfile.rate[this.BETAFLIGHT_RC_RATE][axis];
       if (rcRate > 2.0) {
         rcRate += RC_RATE_INCREMENTAL * (rcRate - 2.0);
       }
       const rcCommandfAbs = val > 0 ? val : -val;
-      var angleRate = 200.0 * rcRate * val;
+      let angleRate = 200.0 * rcRate * val;
 
-      const superExpo =
-        this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
+      const superExpo = this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
       if (superExpo) {
         const rcSuperfactor =
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
         angleRate *= rcSuperfactor;
       }
-      return this.constrainf(
-        angleRate,
-        -SETPOINT_RATE_LIMIT,
-        SETPOINT_RATE_LIMIT
-      );
+      return this.constrainf(angleRate, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
     },
     calcActual(axis, val) {
       const expo = this.currentProfile.rate[this.ACTUAL_EXPO][axis];
       const rate_expo = this.rcexpo(val, expo);
 
-      const center_sensitivity =
-        this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][axis];
+      const center_sensitivity = this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][
+        axis
+      ];
       const max_rate = this.currentProfile.rate[this.ACTUAL_MAX_RATE][axis];
 
       let stick_movement = max_rate - center_sensitivity;
@@ -366,24 +362,24 @@ export default defineComponent({
       const axis = [
         {
           label: "Roll",
-          data: [],
+          data: [] as any[],
         },
         {
           label: "Pitch",
-          data: [],
+          data: [] as any[],
         },
         {
           label: "Yaw",
-          data: [],
+          data: [] as any[],
         },
       ];
 
-      const labels = [];
+      const labels = [] as string[];
 
       for (let i = -100; i <= 100; i++) {
         const input = i / 100.0;
 
-        labels.push("" + i);
+        labels.push("" + i.toString());
 
         for (let j = 0; j < 3; j++) {
           switch (this.currentProfile.mode) {

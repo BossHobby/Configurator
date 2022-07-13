@@ -15,7 +15,7 @@
               <div class="control is-expanded">
                 <input-select
                   id="vtx-protocol"
-                  v-model.number="settings.protocol"
+                  v-model.number="vtx.settings.protocol"
                   :options="vtxProtocolOptions"
                 ></input-select>
               </div>
@@ -23,7 +23,7 @@
           </div>
         </div>
 
-        <template v-if="settings.detected">
+        <template v-if="vtx.settings.detected">
           <div class="field is-horizontal">
             <div class="field-label">
               <label class="label">Frequency</label>
@@ -31,7 +31,7 @@
             <div class="field-body">
               <div class="field">
                 <div class="control is-expanded">
-                  {{ frequencyTable[settings.band][settings.channel] }}
+                  {{ frequencyTable[vtx.settings.band][vtx.settings.channel] }}
                 </div>
               </div>
             </div>
@@ -46,7 +46,7 @@
                 <div class="control is-expanded">
                   <input-select
                     id="vtx-band"
-                    v-model.number="settings.band"
+                    v-model.number="vtx.settings.band"
                     :options="vtxBandOptions"
                   ></input-select>
                 </div>
@@ -63,7 +63,7 @@
                 <div class="control is-expanded">
                   <input-select
                     id="vtx-channel"
-                    v-model.number="settings.channel"
+                    v-model.number="vtx.settings.channel"
                     :options="vtxChannelOptions"
                   ></input-select>
                 </div>
@@ -71,7 +71,7 @@
             </div>
           </div>
 
-          <div class="field is-horizontal" v-if="settings.pit_mode != 2">
+          <div class="field is-horizontal" v-if="vtx.settings.pit_mode != 2">
             <div class="field-label">
               <label class="label">Pit Mode</label>
             </div>
@@ -80,7 +80,7 @@
                 <div class="control is-expanded">
                   <input-select
                     id="vtx-pit-mode"
-                    v-model.number="settings.pit_mode"
+                    v-model.number="vtx.settings.pit_mode"
                     :options="vtxPitModeOptions"
                   ></input-select>
                 </div>
@@ -97,7 +97,7 @@
                 <div class="control is-expanded">
                   <input-select
                     id="vtx-power-level"
-                    v-model.number="settings.power_level"
+                    v-model.number="vtx.settings.power_level"
                     :options="vtxPowerLevelOptions"
                   ></input-select>
                 </div>
@@ -114,7 +114,7 @@
     </div>
 
     <footer class="card-footer">
-      <spinner-btn class="card-footer-item" @click="apply_vtx_settings(settings)">
+      <spinner-btn class="card-footer-item" @click="vtx.apply_vtx_settings(vtx.settings)">
         Apply
       </spinner-btn>
     </footer>
@@ -123,8 +123,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapActions } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useVTXStore } from "@/store/vtx";
 
 export default defineComponent({
   name: "vtx",
@@ -173,11 +172,10 @@ export default defineComponent({
       ],
     };
   },
-  computed: {
-    ...mapFields("vtx", ["settings"]),
-  },
-  methods: {
-    ...mapActions(["apply_vtx_settings"]),
+  setup() {
+    return {
+      vtx: useVTXStore(),
+    };
   },
 });
 </script>

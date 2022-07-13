@@ -18,7 +18,7 @@
               <div class="control is-expanded">
                 <input-select
                   class="is-fullwidth"
-                  v-model.number="receiver_channel_mapping"
+                  v-model.number="profile.receiver.channel_mapping"
                   :options="receiverChannelMappingOptions"
                 ></input-select>
               </div>
@@ -44,7 +44,7 @@
                   :id="`limit-${channelNames[i]}-min`"
                   type="number"
                   step="0.1"
-                  v-model.number="receiver_stick_calibration_limits[i].min"
+                  v-model.number="profile.receiver.stick_calibration_limits[i].min"
                 />
               </p>
               <p class="control">
@@ -58,7 +58,7 @@
                   :id="`limit-${channelNames[i]}-max`"
                   type="number"
                   step="0.1"
-                  v-model.number="receiver_stick_calibration_limits[i].max"
+                  v-model.number="profile.receiver.stick_calibration_limits[i].max"
                 />
               </p>
               <p class="control">
@@ -69,7 +69,7 @@
           <div class="column is-6 py-0">
             <div class="channel-container">
               <div class="channel-bar" :style="style">
-                {{ Math.floor(rx[i] * (i != 3 ? 50 : 100)) }}
+                {{ Math.floor(state.rx_filtered[i] * (i != 3 ? 50 : 100)) }}
               </div>
             </div>
           </div>
@@ -77,11 +77,11 @@
         <div class="columns mt-5">
           <div class="column is-8 wizard">
             Stick Calibration Wizard <br />
-            {{ wizardStates[stick_calibration_wizard] }} <br />
+            {{ wizardStates[state.stick_calibration_wizard] }} <br />
             <span v-if="timerCount">Continuing in {{ timerCount }}s..</span>
           </div>
           <div class="column is-4">
-            <spinner-btn class="is-pulled-right is-primary" @click="cal_sticks()">
+            <spinner-btn class="is-pulled-right is-primary" @click="root.cal_sticks()">
               Calibrate
             </spinner-btn>
           </div>
@@ -94,15 +94,16 @@
 <script lang="ts">
 import { StickWizardState } from "@/store/constants";
 import { defineComponent } from "vue";
-import { mapState, mapActions } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useStateStore } from "@/store/state";
+import { useProfileStore } from "@/store/profile";
+import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "RCChannels",
   data() {
     return {
       timerCount: 0,
-      timerTimeout: null,
+      timerTimeout: 0,
       receiverChannelMappingOptions: [
         { value: 0, text: "AETR" },
         { value: 1, text: "TAER" },
@@ -120,27 +121,26 @@ export default defineComponent({
       ],
     };
   },
+  setup() {
+    return {
+      root: useRootStore(),
+      state: useStateStore(),
+      profile: useProfileStore(),
+    };
+  },
   computed: {
-    ...mapFields("profile", [
-      "receiver.channel_mapping",
-      "receiver.stick_calibration_limits",
-    ]),
-    ...mapState({
-      rx: (state) => state.state.rx_filtered,
-      stick_calibration_wizard: (state) => state.state.stick_calibration_wizard,
-    }),
     channelStyle() {
-      return this.rx.map((r, i) => {
+      return this.state.rx_filtered.map((r, i) => {
         if (i == 3) {
           // throttle
-          let value = 2 + Math.abs(r) * 98;
+          const value = 2 + Math.abs(r) * 98;
           return {
             "margin-left": "0%",
             width: value + "%",
           };
         }
 
-        let value = 2 + Math.abs(r) * 49;
+        const value = 2 + Math.abs(r) * 49;
         return {
           "margin-left": r < 0 ? 51 - value + "%" : "49%",
           width: value + "%",
@@ -154,20 +154,20 @@ export default defineComponent({
         clearTimeout(this.timerTimeout);
 
         if (value > 0) {
-          this.timerTimeout = setTimeout(() => {
+          this.timerTimeout = window.setTimeout(() => {
             this.timerCount--;
           }, 1000);
         }
       },
       immediate: true, // This ensures the watcher is triggered upon creation
     },
-    stick_calibration_wizard: {
+    "state.stick_calibration_wizard": {
       handler(val) {
         switch (val) {
           case StickWizardState.STICK_WIZARD_SUCCESS:
           case StickWizardState.STICK_WIZARD_FAILED:
             this.timerCount = 0;
-            setTimeout(() => this.fetch_profile(), 500);
+            setTimeout(() => this.profile.fetch_profile(), 500);
             break;
 
           case StickWizardState.STICK_WIZARD_CAPTURE_STICKS:
@@ -181,9 +181,6 @@ export default defineComponent({
       },
       immediate: true,
     },
-  },
-  methods: {
-    ...mapActions(["cal_sticks", "fetch_profile"]),
   },
 });
 </script>

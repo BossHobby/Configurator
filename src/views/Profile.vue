@@ -8,7 +8,8 @@
         Current profile can be exported and loaded.
       </div>
       <div class="notification is-danger" v-show="state.failloop > 0">
-        Faillop {{ failloopMessage }} ({{ state.failloop }}) Detected! <br />
+        Faillop {{ state.failloopMessage }} ({{ state.failloop }}) Detected!
+        <br />
         Please fix the issue to be able to change settings. <br />
       </div>
     </div>
@@ -23,21 +24,24 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState, mapGetters } from "vuex";
 import ProfileMetadata from "@/panel/ProfileMetadata.vue";
 import Info from "@/panel/Info.vue";
 import SerialPassthrough from "@/panel/SerialPassthrough.vue";
+import { useInfoStore } from "@/store/info";
+import { useStateStore } from "@/store/state";
 
 export default defineComponent({
   name: "Profile",
   components: {
-    ProfileMetadata,
     Info,
+    ProfileMetadata,
     SerialPassthrough,
   },
-  computed: {
-    ...mapState(["info", "state"]),
-    ...mapGetters(["failloopMessage"]),
+  setup() {
+    return {
+      info: useInfoStore(),
+      state: useStateStore(),
+    };
   },
 });
 </script>

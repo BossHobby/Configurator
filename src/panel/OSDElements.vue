@@ -138,21 +138,21 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState } from "vuex";
-import { mapFields } from "@/store/helper.js";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "OSDElements",
-  data() {
-    return {};
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
   },
   computed: {
-    ...mapFields("profile", ["osd"]),
-    ...mapState({
-      is_hd: (state) => state.profile.serial.hdzero,
-    }),
+    is_hd() {
+      return this.profile.serial.hdzero;
+    },
     currentElements() {
-      return this.is_hd ? this.osd.elements_hd : this.osd.elements;
+      return this.is_hd ? this.profile.osd.elements_hd : this.profile.osd.elements;
     },
     screen() {
       return {
@@ -173,7 +173,7 @@ export default defineComponent({
     },
     element_options() {
       return [
-        { name: "CALLSIGN", enabled: true, text: this.osd.callsign },
+        { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
         { name: "CELL COUNT", enabled: true, text: "1S" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3V" },
         { name: "FILTERED VOLTS", enabled: true, text: " 4.3V" },
@@ -209,19 +209,27 @@ export default defineComponent({
         for (let i = val.length; i < 36; i++) {
           str += "\0";
         }
-        this.osd.callsign = str;
+        this.profile.osd.callsign = str;
       },
       get() {
-        return this.osd.callsign.replace(/\0/g, "");
+        return this.profile.osd.callsign.replace(/\0/g, "");
       },
     },
   },
   methods: {
     osd_set(i, attr, val) {
-      const elements = this.is_hd ? this.osd.elements_hd : this.osd.elements;
+      const elements = this.is_hd
+        ? this.profile.osd.elements_hd
+        : this.profile.osd.elements;
+
       const copy = [...elements];
       copy[i] = this.osd_encode(elements[i], attr, val);
-      this.$store.commit(this.is_hd ? "set_osd_elements_hd" : "set_osd_elements", copy);
+
+      if (this.is_hd) {
+        this.profile.set_osd_elements_hd(copy);
+      } else {
+        this.profile.set_osd_elements(copy);
+      }
     },
     osd_decode(element, attr) {
       switch (attr) {
@@ -233,6 +241,8 @@ export default defineComponent({
           return (element >> 2) & 0xff;
         case "pos_y":
           return (element >> 10) & 0xff;
+        default:
+          return 0;
       }
     },
     osd_encode(element, attr, val) {
@@ -253,6 +263,8 @@ export default defineComponent({
           return (element & ~(0xff << 2)) | ((val & 0xff) << 2);
         case "pos_y":
           return (element & ~(0xff << 10)) | ((val & 0xff) << 10);
+        default:
+          return element;
       }
     },
   },

@@ -21,7 +21,7 @@
                     <input-select
                       id="invert-yaw"
                       class="is-fullwidth"
-                      v-model.number="motor.invert_yaw"
+                      v-model.number="profile.motor.invert_yaw"
                       :options="invertYawModes"
                     />
                   </div>
@@ -44,7 +44,7 @@
                       id="digital-idle"
                       type="number"
                       step="0.1"
-                      v-model.number="motor.digital_idle"
+                      v-model.number="profile.motor.digital_idle"
                     />
                   </div>
                 </div>
@@ -55,7 +55,7 @@
               class="field is-horizontal"
               v-if="
                 info.quic_protocol_version > 1 &&
-                has_feature(Features.BRUSHLESS)
+                info.has_feature(constants.Features.BRUSHLESS)
               "
             >
               <div class="field-label">
@@ -70,7 +70,7 @@
                     <input-select
                       id="dshot-time"
                       class="is-fullwidth"
-                      v-model="motor.dshot_time"
+                      v-model="profile.motor.dshot_time"
                       :options="dshotTimes"
                     ></input-select>
                   </div>
@@ -89,11 +89,7 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <label class="checkbox">
-                      <input
-                        type="checkbox"
-                        id="gyro-flip"
-                        v-model="gyroFlip"
-                      />
+                      <input type="checkbox" id="gyro-flip" v-model="gyroFlip" />
                       Enable
                     </label>
                   </div>
@@ -138,7 +134,7 @@
                       id="torque-boost"
                       type="number"
                       step="0.1"
-                      v-model.number="motor.torque_boost"
+                      v-model.number="profile.motor.torque_boost"
                     />
                   </div>
                 </div>
@@ -160,7 +156,7 @@
                       id="throttle-boost"
                       type="number"
                       step="0.1"
-                      v-model.number="motor.throttle_boost"
+                      v-model.number="profile.motor.throttle_boost"
                     />
                   </div>
                 </div>
@@ -182,14 +178,14 @@
                       id="turtle-throttle-percent"
                       type="number"
                       step="1"
-                      v-model.number="motor.turtle_throttle_percent"
+                      v-model.number="profile.motor.turtle_throttle_percent"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="field is-horizontal" v-if="profileVersionGt('0.2.0')">
+            <div class="field is-horizontal" v-if="profile.profileVersionGt('0.2.0')">
               <div class="field-label">
                 <label class="label">
                   Motor Limit Percent
@@ -204,7 +200,7 @@
                       id="motor-limit-percent"
                       type="number"
                       step="1"
-                      v-model.number="motor.motor_limit"
+                      v-model.number="profile.motor.motor_limit"
                     />
                   </div>
                 </div>
@@ -219,11 +215,19 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapFields } from "@/store/helper.js";
-import { mapGetters, mapState } from "vuex";
+import { useProfileStore } from "@/store/profile";
+import { useInfoStore } from "@/store/info";
+import { useConstantStore } from "@/store/constants";
 
 export default defineComponent({
   name: "Motor",
+  setup() {
+    return {
+      profile: useProfileStore(),
+      info: useInfoStore(),
+      constants: useConstantStore(),
+    };
+  },
   data() {
     return {
       invertYawModes: [
@@ -239,46 +243,58 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapFields("profile", ["motor"]),
-    ...mapGetters(["has_feature", "profileVersionGt"]),
-    ...mapState(["info"]),
-    ...mapState("constants", ["Features", "GyroRotation"]),
     gyroOrientation: {
       get() {
-        return this.motor.gyro_orientation & 0x1f;
+        return this.profile.motor.gyro_orientation & 0x1f;
       },
       set(value) {
-        this.motor.gyro_orientation =
-          value | (this.gyroFlip ? this.GyroRotation.FLIP_180 : 0x0);
+        this.profile.motor.gyro_orientation =
+          value | (this.gyroFlip ? this.constants.GyroRotation.FLIP_180 : 0x0);
       },
     },
     gyroOrientations() {
       return [
-        { value: this.GyroRotation.ROTATE_NONE, text: "ROTATE_NONE" },
-        { value: this.GyroRotation.ROTATE_45_CCW, text: "ROTATE_45_CCW" },
-        { value: this.GyroRotation.ROTATE_45_CW, text: "ROTATE_45_CW" },
-        { value: this.GyroRotation.ROTATE_90_CW, text: "ROTATE_90_CW" },
-        { value: this.GyroRotation.ROTATE_90_CCW, text: "ROTATE_90_CCW" },
+        { value: this.constants.GyroRotation.ROTATE_NONE, text: "ROTATE_NONE" },
+        {
+          value: this.constants.GyroRotation.ROTATE_45_CCW,
+          text: "ROTATE_45_CCW",
+        },
+        {
+          value: this.constants.GyroRotation.ROTATE_45_CW,
+          text: "ROTATE_45_CW",
+        },
+        {
+          value: this.constants.GyroRotation.ROTATE_90_CW,
+          text: "ROTATE_90_CW",
+        },
+        {
+          value: this.constants.GyroRotation.ROTATE_90_CCW,
+          text: "ROTATE_90_CCW",
+        },
         {
           value:
-            this.GyroRotation.ROTATE_90_CCW | this.GyroRotation.ROTATE_45_CCW,
+            this.constants.GyroRotation.ROTATE_90_CCW |
+            this.constants.GyroRotation.ROTATE_45_CCW,
           text: "ROTATE_135_CW",
         },
         {
           value:
-            this.GyroRotation.ROTATE_90_CW | this.GyroRotation.ROTATE_45_CW,
+            this.constants.GyroRotation.ROTATE_90_CW |
+            this.constants.GyroRotation.ROTATE_45_CW,
           text: "ROTATE_135_CCW",
         },
-        { value: this.GyroRotation.ROTATE_180, text: "ROTATE_180" },
+        { value: this.constants.GyroRotation.ROTATE_180, text: "ROTATE_180" },
       ];
     },
     gyroFlip: {
       get() {
-        return (this.motor.gyro_orientation & this.GyroRotation.FLIP_180) > 0;
+        return (
+          (this.profile.motor.gyro_orientation & this.constants.GyroRotation.FLIP_180) > 0
+        );
       },
       set(value) {
-        this.motor.gyro_orientation =
-          this.gyroOrientation | (value ? this.GyroRotation.FLIP_180 : 0x0);
+        this.profile.motor.gyro_orientation =
+          this.gyroOrientation | (value ? this.constants.GyroRotation.FLIP_180 : 0x0);
       },
     },
   },

@@ -17,7 +17,6 @@ import { defineComponent } from "vue";
 import StickRates from "@/panel/StickRates.vue";
 import PIDRates from "@/panel/PIDRates.vue";
 import FilterSettings from "@/panel/FilterSettings.vue";
-import { mapGetters } from "vuex";
 
 export default defineComponent({
   name: "Rate",
@@ -25,9 +24,6 @@ export default defineComponent({
     StickRates,
     PIDRates,
     FilterSettings,
-  },
-  computed: {
-    ...mapGetters(["has_legacy_stickrates"]),
   },
 });
 </script>
