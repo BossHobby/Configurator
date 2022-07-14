@@ -93,6 +93,7 @@ export const useProfileStore = defineStore("profile", {
       mode: 0,
       silverware: {},
       betaflight: {},
+      low_rate_mulitplier: 0,
     },
     voltage: {},
     receiver: {

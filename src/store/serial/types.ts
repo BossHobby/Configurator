@@ -42,6 +42,7 @@ export interface profile_rate_t {
   sticks_deadband: number;
   throttle_mid: number;
   throttle_expo: number;
+  low_rate_mulitplier?: number;
 }
 
 export interface pid_rate_t {
