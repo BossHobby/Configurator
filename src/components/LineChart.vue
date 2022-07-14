@@ -36,10 +36,7 @@ export default defineComponent({
       return {
         responsive: true,
         maintainAspectRatio: false,
-        title: {
-          display: true,
-          text: this.title,
-        },
+
         animation: {
           duration: 0,
         },
@@ -64,6 +61,10 @@ export default defineComponent({
           },
         },
         plugins: {
+          title: {
+            display: true,
+            text: this.title,
+          },
           tooltip: {
             enabled: true,
             position: "average",
