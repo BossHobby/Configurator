@@ -1,4 +1,3 @@
-import type { profile_t } from "./serial/types";
 import { defineStore } from "pinia";
 import semver from "semver";
 import { QuicVal } from "./serial/quic";
@@ -6,7 +5,7 @@ import { serial } from "./serial/serial";
 import { decodeSemver } from "./util";
 
 export const useDefaultProfileStore = defineStore("default_profile", {
-  state: (): profile_t => ({
+  state: () => ({
     serial: {
       rx: 0,
       smart_audio: 0,

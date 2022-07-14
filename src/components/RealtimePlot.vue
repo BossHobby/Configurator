@@ -19,8 +19,8 @@ export default defineComponent({
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
       lastUpdate: 0,
-      chartData: null,
-      datasets: [],
+      chartData: undefined as any,
+      datasets: [] as any[],
     };
   },
   computed: {
@@ -59,7 +59,7 @@ export default defineComponent({
             intersect: false,
             callbacks: {
               label: (item) => {
-                var label = item.dataset.label || "";
+                let label = item.dataset.label || "";
                 if (label) {
                   label += ": ";
                 }
@@ -74,7 +74,7 @@ export default defineComponent({
   },
   methods: {
     updateChartData() {
-      var datasets = [];
+      let datasets = [] as any[];
 
       if (Array.isArray(this.axis)) {
         datasets = this.axis.map((l, i) => {

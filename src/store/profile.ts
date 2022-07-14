@@ -1,4 +1,3 @@
-import type { profile_t } from "./serial/types";
 import { useDefaultProfileStore } from "./default_profile";
 import { defineStore } from "pinia";
 import { serial } from "./serial/serial";
@@ -61,12 +60,8 @@ function migrateProfile(profile, version) {
   return profile;
 }
 
-export interface local_profile_t extends profile_t {
-  semver: string;
-}
-
 export const useProfileStore = defineStore("profile", {
-  state: (): local_profile_t => ({
+  state: () => ({
     semver: "v0.0.0",
     serial: {
       rx: 0,
@@ -87,19 +82,25 @@ export const useProfileStore = defineStore("profile", {
       datetime: 0,
     },
     motor: {
+      gyro_orientation: 0,
       invert_yaw: 1,
     },
     rate: {
       mode: 0,
-      silverware: {},
-      betaflight: {},
+      profile: 0,
+      silverware: {} as any,
+      betaflight: {} as any,
       low_rate_mulitplier: 0,
+      level_max_angle: 0,
+      sticks_deadband: 0,
+      rates: [] as any[],
     },
     voltage: {},
     receiver: {
       lqi_source: -1,
       channel_mapping: 0,
       aux: [],
+      protocol: 0,
     },
     pid: {
       pid_profile: 0,

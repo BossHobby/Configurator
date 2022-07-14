@@ -153,7 +153,7 @@ export interface profile_receiver_t {
   aux: number[];
   channel_mapping: number;
   lqi_source: number;
-  stick_calibration_limits: profile_stick_calibration_limits_t[4];
+  stick_calibration_limits: profile_stick_calibration_limits_t[];
 }
 
 export interface profile_serial_t {

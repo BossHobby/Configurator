@@ -265,7 +265,7 @@ export default defineComponent({
   computed: {
     ...mapState(useConstantStore, {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
-      RXProtocol: (state) => state.RXProtocol,
+      RXProtocol: (state) => state.RXProtocol as any,
     }),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
@@ -340,6 +340,12 @@ export default defineComponent({
     elrsSwitchMode() {
       return this.bind?.info?.raw[8] ? "Hybrid Switches" : "1Bit Switches";
     },
+    downloadAnchor() {
+      return this.$refs.downloadAnchor as HTMLAnchorElement;
+    },
+    fileRef() {
+      return this.$refs.file as HTMLInputElement;
+    },
   },
   watch: {
     "profile.receiver.protocol"() {
@@ -379,33 +385,32 @@ export default defineComponent({
       const json = "data:application/octet-stream;charset=utf-8," + encoded;
 
       const date = this.date.toISOString().substring(0, 10);
-      const name = this.meta.name.replace(/\0/g, "");
+      const name = this.profile.meta.name.replace(/\0/g, "");
       const filename = `BindData_${name}_${date}.base64`;
 
-      this.$refs.downloadAnchor.setAttribute("href", json);
-      this.$refs.downloadAnchor.setAttribute("download", filename);
-      this.$refs.downloadAnchor.click();
+      this.downloadAnchor.setAttribute("href", json);
+      this.downloadAnchor.setAttribute("download", filename);
+      this.downloadAnchor.click();
     },
     uploadBindData() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {
         const info = { ...this.bind?.info };
         info.bind_saved = 1;
-        info.raw = Uint8Array.from(window.atob(event?.target?.result), (c) =>
+        info.raw = Uint8Array.from(window.atob(event?.target?.result as string), (c) =>
           c.charCodeAt(0)
         );
 
-        this.apply_bind_info(info);
+        this.bind.apply_bind_info(info);
       });
 
-      this.$refs.file.oninput = () => {
-        if (!this.$refs.file.files.length) {
-          return;
+      this.fileRef.oninput = () => {
+        if (this.fileRef?.files?.length) {
+          reader.readAsText(this.fileRef.files[0]);
         }
-        reader.readAsText(this.$refs.file.files[0]);
       };
 
-      this.$refs.file.click();
+      this.fileRef.click();
     },
     reset() {
       const info = { ...this.bind?.info };

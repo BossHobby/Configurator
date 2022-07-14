@@ -219,7 +219,7 @@ export default defineComponent({
       ],
       plot: {
         axis: [] as any[],
-        label: [] as any[],
+        labels: [] as any[],
       },
     };
   },
