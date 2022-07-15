@@ -74,7 +74,7 @@ export default defineComponent({
       });
       this.renderer.setClearColor(0x000000, 0);
       this.renderer.setSize(container.clientWidth, container.clientHeight);
-      container.appendChild(this.renderer.domElement);
+      container.replaceChildren(this.renderer.domElement);
 
       this.animate();
     },
