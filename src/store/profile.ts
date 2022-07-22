@@ -94,6 +94,8 @@ export const useProfileStore = defineStore("profile", {
       level_max_angle: 0,
       sticks_deadband: 0,
       rates: [] as any[],
+      throttle_expo: 0,
+      throttle_mid: 0,
     },
     voltage: {},
     receiver: {
