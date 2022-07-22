@@ -51,7 +51,7 @@
                         type="checkbox"
                         class="switch"
                         :checked="el.active == 1"
-                        @input="osd_set(i, 'active', $event?.target?.value ? 1 : 0)"
+                        @input="osd_set(i, 'active', !el.active)"
                       />
                       <label
                         class="py-0"
@@ -68,7 +68,7 @@
                         type="checkbox"
                         class="switch"
                         :checked="el.invert == 1"
-                        @input="osd_set(i, 'invert', $event?.target?.value ? 1 : 0)"
+                        @input="osd_set(i, 'invert', !el.invert)"
                       />
                       <label
                         class="py-0"
