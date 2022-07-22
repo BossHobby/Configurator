@@ -11,7 +11,7 @@
       <div class="content field-is-2">
         <div
           class="field is-horizontal"
-          v-if="info.rx_protocol != null && profile.receiver.protocol == null"
+          v-if="info.rx_protocol && !profile.receiver.protocol"
         >
           <div class="field-label">
             <label class="label">
@@ -28,7 +28,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="profile.receiver.protocol != null">
+        <div class="field is-horizontal" v-if="profile.receiver.protocol">
           <div class="field-label">
             <label class="label">
               Protocol
