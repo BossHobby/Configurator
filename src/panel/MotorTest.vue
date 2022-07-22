@@ -31,7 +31,7 @@
                         min="0"
                         max="50"
                         v-model.number="value[m.index]"
-                        @update="update()"
+                        @input="update()"
                       />
                     </div>
                     <div class="control">
