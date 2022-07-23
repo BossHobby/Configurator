@@ -47,9 +47,9 @@ export default defineComponent({
       this.camera.position.y = 40;
       this.camera.lookAt(0, 0, 0);
 
-      const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 10);
+      const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 5);
       const mainLight = new THREE.DirectionalLight(0xffffff, 10);
-      mainLight.position.set(0, 500, 0);
+      mainLight.position.set(0, 1000, 0);
 
       this.scene = new THREE.Scene();
       this.scene.add(ambientLight, mainLight);
@@ -64,7 +64,7 @@ export default defineComponent({
       this.scene.add(cube);
 
       const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync("gt20.gltf");
+      const gltf = await loader.loadAsync("gt20.glb");
       this.model = gltf.scene.children[0];
       this.scene.add(this.model);
 
@@ -88,7 +88,7 @@ export default defineComponent({
         );
         GYRO.normalize();
 
-        const q = new THREE.Quaternion(); // create one and reuse it
+        const q = new THREE.Quaternion();
         q.setFromUnitVectors(UP, GYRO);
 
         this.model.rotation.setFromQuaternion(q);
