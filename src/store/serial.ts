@@ -57,7 +57,7 @@ export const useSerialStore = defineStore("serial", {
           await perf.fetch_perf_counters();
         }
         if (router.currentRoute.value.fullPath == "/setup") {
-          await vtx.fetch_vtx_settings();
+          await vtx.update_vtx_settings();
         }
       }
     },
@@ -158,7 +158,7 @@ export const useSerialStore = defineStore("serial", {
           default_profile.fetch_default_profile();
           root.fetch_pid_rate_presets();
           profile.fetch_profile();
-          vtx.fetch_vtx_settings();
+          vtx.update_vtx_settings();
 
           startInterval((c) => this.poll_serial(c));
 

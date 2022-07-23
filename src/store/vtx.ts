@@ -13,9 +13,6 @@ export const useVTXStore = defineStore("vtx", {
     },
   }),
   actions: {
-    fetch_vtx_settings() {
-      return serial.get(QuicVal.VtxSettings).then((v) => (this.settings = v));
-    },
     apply_vtx_settings(vtx_settings) {
       const root = useRootStore();
 
