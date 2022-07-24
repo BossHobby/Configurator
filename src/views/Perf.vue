@@ -1,5 +1,5 @@
 <template>
-  <div class="columns">
+  <div class="columns is-multiline">
     <div
       class="column is-6 my-3"
       v-for="(counter, index) in perf.counters"
