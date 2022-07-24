@@ -22,6 +22,8 @@ export const useStateStore = defineStore("state", {
     failloop: 0,
     pidoutput: null,
     accel_raw: null,
+    gyro: null,
+    gyro_raw: null,
   }),
   getters: {
     vbat(state) {
