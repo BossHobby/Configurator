@@ -1,5 +1,5 @@
 import { useSerialStore } from "./store/serial";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 
 import Setup from "./views/Setup.vue";
 import Rates from "./views/Rates.vue";
@@ -16,7 +16,7 @@ import Log from "./views/Log.vue";
 import Templates from "./views/Templates.vue";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
