@@ -17,7 +17,7 @@
   </div>
   <div class="columns">
     <div class="column is-6">
-      <VTX v-if="profile.serial.smart_audio != 0"></VTX>
+      <VTX v-if="profile.serial.smart_audio != 0 || profile.serial.hdzero != 0"></VTX>
     </div>
   </div>
 </template>

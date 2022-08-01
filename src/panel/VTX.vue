@@ -129,11 +129,12 @@ export default defineComponent({
   name: "vtx",
   data() {
     return {
-      protocolNames: ["INVALID", "TRAMP", "SMARTAUDIO"],
+      protocolNames: ["INVALID", "TRAMP", "SMARTAUDIO", "MSP_VTX"],
       vtxProtocolOptions: [
         { value: 0, text: "AUTO" },
         { value: 1, text: "TRAMP" },
         { value: 2, text: "SMARTAUDIO" },
+        { value: 3, text: "MSP_VTX" },
       ],
       vtxBandOptions: [
         { value: 0, text: "VTX_BAND_A" },
@@ -141,6 +142,7 @@ export default defineComponent({
         { value: 2, text: "VTX_BAND_E" },
         { value: 3, text: "VTX_BAND_F" },
         { value: 4, text: "VTX_BAND_R" },
+        { value: 5, text: "VTX_BAND_L" },
       ],
       vtxChannelOptions: [
         { value: 0, text: "VTX_CHANNEL_1" },
@@ -162,6 +164,7 @@ export default defineComponent({
         { value: 1, text: "VTX_POWER_LEVEL_2" },
         { value: 2, text: "VTX_POWER_LEVEL_3" },
         { value: 3, text: "VTX_POWER_LEVEL_4" },
+        { value: 4, text: "VTX_POWER_LEVEL_5" },
       ],
       frequencyTable: [
         [5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725],
