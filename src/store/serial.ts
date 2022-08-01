@@ -150,7 +150,11 @@ export const useSerialStore = defineStore("serial", {
           }
         })
         .then((i) => {
+          info.$reset();
           motor.$reset();
+          vtx.$reset();
+          default_profile.$reset();
+          profile.$reset();
 
           this.is_connected = true;
           info.set_info(i);
