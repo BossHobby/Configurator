@@ -1,6 +1,10 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-one-third" v-for="tmpl of templates.index" :key="tmpl.name">
+    <div
+      class="column is-one-third"
+      v-for="tmpl of templates.index"
+      :key="tmpl.name"
+    >
       <div class="card template-card">
         <div class="card-image">
           <figure class="image is-square">
@@ -20,7 +24,10 @@
         </div>
         <footer class="card-footer">
           <span class="card-footer-item"></span>
-          <spinner-btn class="card-footer-item is-white" @click="applyProfile(tmpl)">
+          <spinner-btn
+            class="card-footer-item is-white"
+            @click="applyProfile(tmpl)"
+          >
             Apply
           </spinner-btn>
         </footer>
@@ -31,8 +38,6 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { serial } from "../store/serial/serial";
-import { QuicVal } from "@/store/serial/quic";
 import YAML from "yaml";
 import { useTemplatesStore } from "@/store/templates";
 import { useProfileStore } from "@/store/profile";
@@ -47,18 +52,12 @@ export default defineComponent({
   },
   methods: {
     applyProfile(p) {
-      return Promise.all([
-        fetch(p.profile)
-          .then((res) => res.text())
-          .then((t) => YAML.parse(t)),
-        serial.get(QuicVal.Profile),
-      ]).then(([patch, profile]) => {
-        const p = {
-          ...profile,
-          ...patch,
-        };
-        return this.profile.apply_profile(p);
-      });
+      return fetch(p.profile)
+        .then((res) => res.text())
+        .then((t) => YAML.parse(t))
+        .then((patch) => {
+          return this.profile.merge_profile(patch);
+        });
     },
   },
   created() {

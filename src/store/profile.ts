@@ -7,6 +7,21 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 
+function mergeDeep(target, source) {
+  for (const [key, val] of Object.entries(source)) {
+    if (val !== null && typeof val === `object`) {
+      if (target[key] === undefined) {
+        target[key] = new (val as any).__proto__.constructor();
+      }
+      mergeDeep(target[key], val);
+    } else {
+      target[key] = val;
+    }
+  }
+  // we're replacing in-situ, so this is more for chaining than anything else
+  return target;
+}
+
 function makeSemver(major, minor, patch) {
   return (major << 16) | (minor << 8) | patch;
 }
@@ -19,45 +34,60 @@ function ensureMinVersion(version) {
   return version;
 }
 
-function migrateProfile(profile, version) {
+function migrateProfileVersion(profile, version) {
   switch (version) {
-    case makeSemver(0, 1, 0):
-      profile.osd = {};
+    case makeSemver(0, 1, 0): {
+      const silverware = {
+        mode: 0,
+        rate: [
+          profile.rate.silverware?.max_rate || [860, 860, 500],
+          profile.rate.silverware?.acro_expo || [0.8, 0.8, 0.6],
+          profile.rate.silverware?.angle_expo || [0.55, 0, 0.55],
+        ],
+      };
+      const betaflight = {
+        mode: 1,
+        rate: [
+          profile.rate.betaflight?.rc_rate || [1.3, 1.3, 1.3],
+          profile.rate.betaflight?.super_rate || [0.7, 0.7, 0.7],
+          profile.rate.betaflight?.expo || [0.4, 0.4, 0.4],
+        ],
+      };
 
       profile.rate.profile = 0;
-      profile.rate.rates = [
-        {
-          mode: profile.rate.mode,
-          rate: [
-            profile.rate.mode == 1
-              ? profile.rate.betaflight.rc_rate
-              : profile.rate.silverware.max_rate,
-            profile.rate.mode == 1
-              ? profile.rate.betaflight.super_rate
-              : profile.rate.silverware.acro_expo,
-            profile.rate.mode == 1
-              ? profile.rate.betaflight.expo
-              : profile.rate.silverware.angle_expo,
-          ],
-        },
-        {
-          mode: profile.rate.mode == 1 ? 0 : 1,
-          rate: [
-            profile.rate.mode == 0
-              ? profile.rate.betaflight.rc_rate
-              : profile.rate.silverware.max_rate,
-            profile.rate.mode == 0
-              ? profile.rate.betaflight.super_rate
-              : profile.rate.silverware.acro_expo,
-            profile.rate.mode == 0
-              ? profile.rate.betaflight.expo
-              : profile.rate.silverware.angle_expo,
-          ],
-        },
-      ];
+
+      if (profile.rate.mode == 0) {
+        profile.rate.rates = [silverware, betaflight];
+      } else {
+        profile.rate.rates = [betaflight, silverware];
+      }
+
       break;
+    }
   }
+
+  profile.meta.name = profile.meta.name.replace(/\0/g, "");
+  if (profile.osd?.callsign) {
+    profile.osd.callsign = profile.osd.callsign.replace(/\0/g, "");
+  }
+
   return profile;
+}
+
+function migrateProfile(profile) {
+  const default_profile = useDefaultProfileStore();
+
+  const firmwareVersion = ensureMinVersion(default_profile.meta.version);
+  const profileVersion = ensureMinVersion(profile.meta.version);
+
+  let p = JSON.parse(JSON.stringify(profile));
+  if (firmwareVersion != profileVersion) {
+    p = migrateProfileVersion(p, profileVersion);
+  }
+
+  p.meta.datetime = Math.floor(Date.now() / 1000);
+
+  return p;
 }
 
 export const useProfileStore = defineStore("profile", {
@@ -170,19 +200,18 @@ export const useProfileStore = defineStore("profile", {
     fetch_profile() {
       return serial.get(QuicVal.Profile).then((p) => this.set_profile(p));
     },
+    async merge_profile(profile) {
+      const lhs = migrateProfile(await serial.get(QuicVal.Profile));
+      const rhs = migrateProfile(profile);
+
+      const p = mergeDeep(lhs, rhs);
+
+      return this.apply_profile(p);
+    },
     apply_profile(profile) {
       const root = useRootStore();
-      const default_profile = useDefaultProfileStore();
 
-      const firmwareVersion = ensureMinVersion(default_profile.meta.version);
-      const profileVersion = ensureMinVersion(profile.meta.version);
-
-      let p = profile;
-      if (firmwareVersion != profileVersion) {
-        p = migrateProfile(p, profileVersion);
-      }
-
-      p.meta.datetime = Math.floor(Date.now() / 1000);
+      const p = migrateProfile(profile);
 
       return serial
         .set(QuicVal.Profile, p)

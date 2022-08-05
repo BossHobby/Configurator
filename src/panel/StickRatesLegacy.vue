@@ -56,7 +56,9 @@
                   </div>
                   <div
                     class="columns is-multiline"
-                    v-for="(val, key) in profile.rate[currentMode.text.toLowerCase()]"
+                    v-for="(val, key) in profile.rate[
+                      currentMode.text.toLowerCase()
+                    ]"
                     :key="key"
                   >
                     <div class="column is-4">
@@ -75,7 +77,9 @@
                                 type="number"
                                 step="10"
                                 v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][key][0]
+                                  profile.rate[currentMode.text.toLowerCase()][
+                                    key
+                                  ][0]
                                 "
                               />
                             </div>
@@ -86,7 +90,9 @@
                                 type="number"
                                 step="10"
                                 v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][key][1]
+                                  profile.rate[currentMode.text.toLowerCase()][
+                                    key
+                                  ][1]
                                 "
                               />
                             </div>
@@ -97,7 +103,9 @@
                                 type="number"
                                 step="10"
                                 v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][key][2]
+                                  profile.rate[currentMode.text.toLowerCase()][
+                                    key
+                                  ][2]
                                 "
                               />
                             </div>
@@ -156,7 +164,9 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="sticks-deadband">SticksDeadband</label>
+                <label class="label" for="sticks-deadband"
+                  >SticksDeadband</label
+                >
               </div>
               <div class="field-body">
                 <div class="field">
@@ -233,7 +243,6 @@ export default defineComponent({
   watch: {
     "profile.rate": {
       handler(val) {
-        console.log(val);
         this.update();
       },
       deep: true,
@@ -285,7 +294,11 @@ export default defineComponent({
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
         angleRate *= rcSuperfactor;
       }
-      return this.constrainf(angleRate, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
+      return this.constrainf(
+        angleRate,
+        -SETPOINT_RATE_LIMIT,
+        SETPOINT_RATE_LIMIT
+      );
     },
     update() {
       const axis = [
@@ -305,7 +318,9 @@ export default defineComponent({
 
       const labels = [] as string[];
 
-      const rateMulit = this.plotLowRates ? this.profile.rate.low_rate_mulitplier : 1.0;
+      const rateMulit = this.plotLowRates
+        ? this.profile.rate.low_rate_mulitplier
+        : 1.0;
       for (let i = -100; i <= 100; i++) {
         const input = i / 100.0;
 
