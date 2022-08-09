@@ -58,14 +58,14 @@
 
         <div class="field is-horizontal" v-if="info.gyro_id != null">
           <div class="field-label">
-            <label class="label">Gyro ID</label>
+            <label class="label">Gyro Type</label>
           </div>
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
                 <input
                   class="input is-static"
-                  :value="'0x' + info.gyro_id.toString(16)"
+                  :value="gyroNames[info.gyro_id]"
                   readonly
                 />
               </div>
@@ -132,6 +132,7 @@ export default defineComponent({
       serial: useSerialStore(),
 
       Features: computed(() => constants.Features),
+      GyroType: computed(() => constants.GyroType),
     };
   },
   computed: {
@@ -145,6 +146,9 @@ export default defineComponent({
           return this.info.features & (1 << (i + 1));
         })
         .join(", ");
+    },
+    gyroNames() {
+      return $enum(this.GyroType).getKeys();
     },
     fileRef(): HTMLInputElement {
       return this.$refs.file as HTMLInputElement;

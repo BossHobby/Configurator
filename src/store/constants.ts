@@ -19,6 +19,24 @@ enum GyroRotation {
   FLIP_180 = 0x20,
 }
 
+enum GyroType {
+  INVALID,
+
+  MPU6000,
+  MPU6500,
+
+  ICM20601,
+  ICM20602,
+  ICM20608,
+  ICM20649,
+  ICM20689,
+
+  ICM42605,
+  ICM42688P,
+
+  BMI270,
+}
+
 enum AuxChannels {
   CHANNEL_5,
   CHANNEL_6,
@@ -174,6 +192,7 @@ export const FailloopMessages = {
 export const useConstantStore = defineStore("constant", {
   state: () => ({
     Features,
+    GyroType,
     GyroRotation,
     AuxChannels,
     RXSerialProtocol,
