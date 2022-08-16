@@ -66,7 +66,9 @@ function migrateProfileVersion(profile, version) {
     }
   }
 
-  profile.meta.name = profile.meta.name.replace(/\0/g, "");
+  if (profile.meta.name) {
+    profile.meta.name = profile.meta.name.replace(/\0/g, "");
+  }
   if (profile.osd?.callsign) {
     profile.osd.callsign = profile.osd.callsign.replace(/\0/g, "");
   }
@@ -77,8 +79,8 @@ function migrateProfileVersion(profile, version) {
 function migrateProfile(profile) {
   const default_profile = useDefaultProfileStore();
 
-  const firmwareVersion = ensureMinVersion(default_profile.meta.version);
-  const profileVersion = ensureMinVersion(profile.meta.version);
+  const firmwareVersion = ensureMinVersion(default_profile?.meta?.version);
+  const profileVersion = ensureMinVersion(profile?.meta?.version);
 
   let p = JSON.parse(JSON.stringify(profile));
   if (firmwareVersion != profileVersion) {
