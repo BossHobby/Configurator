@@ -219,8 +219,10 @@
         <div class="columns mt-4">
           <div class="column is-12 has-text-centered">
             <small>
-              Save Bind by moving your right transmitter stick UP-UP-UP followed by
-              DOWN-DOWN-DOWN
+              When binding via your transmitter, save bind by moving your right
+              transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle the Bind
+              Saved flag above. When binding via passphrase or bind data this is not
+              required.
             </small>
           </div>
         </div>
