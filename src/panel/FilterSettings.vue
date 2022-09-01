@@ -2,6 +2,7 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Filter</p>
+      <tooltip class="card-header-icon" entry="filter.settings" size="lg" />
     </header>
 
     <div class="card-content">

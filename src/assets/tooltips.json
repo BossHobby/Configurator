@@ -39,6 +39,13 @@
     "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
   },
+  "channel.aux_prearm": {
+    "text": "Allows for a separate AUX channel to be set as a safety for arming, the set AUX should be ON before the ARM switch is activated. If not used leave this as ON"
+  },
+  "filter.settings": {
+    "text": "The default filter setting are designed to be safe, before making adjustments refer to the wiki",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#filters"
+  },
   "filter.dterm_1_freq": {
     "disabled": true
   },
@@ -84,10 +91,10 @@
     "link": "https://discord.gg/qzyvewaCnP"
   },
   "flash.reset": {
-    "text": "Should force the fc into DFU mode for flashing, if it doesn't work use the button on the fc while connecting USB"
+    "text": "Pressing the `Reset To Bootloader` button should force the fc into DFU mode for flashing, if it doesn't work use the button on the fc while connecting USB"
   },
   "flash.source": {
-    "text": "If you compile your own hex select `local` and choose it in the next box"
+    "text": "If you compile your own hex or downloaded a `nightly build` select `local` and choose it in the next box"
   },
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
@@ -124,6 +131,9 @@
   "motor_settings": {
     "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
   },
+  "motor.motor_limit": {
+    "text": "Set a cap on the maximum throttle"
+  },
   "osd.elements": {
     "text": "Select and position OSD elements, callsign must use upper case",
     "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#osd"
@@ -155,7 +165,7 @@
     "text": "Percentage reduction of D-term at max throttle"
   },
   "rate.level_max_angle": {
-    "disabled": true
+    "text": "Increase to give a higher velocity for racing, combined with high camera angle, to a max of 90"
   },
   "rate.low_rate_mulitplier": {
     "disabled": true
@@ -167,7 +177,13 @@
     "text": "2 slots available for different profiles"
   },
   "rate.sticks_deadband": {
-    "disabled": true
+    "text": "If your radio has `jitter` on Pitch/Roll stick center raising this a little can help"
+  },
+  "rate.throttle_mid": {
+    "text": "Can be set to about where your `hover point` is giving improved resolution on the stick"
+  },
+  "rate.throttle_expo": {
+    "text": "Adding some expo will soften the stick feel around the set `Throttle Mid`"
   },
   "receiver.bind_saved": {
     "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
@@ -178,7 +194,9 @@
   "receiver.protocol": {
     "text": "Serial or spi connected rx will be detected automatically here"
   },
-  "serial.hdzero": {},
+  "receiver.channel_mapping": {
+    "text": "Quicksilver default is AETR the other option is TAER"
+  },
   "serial.rx": {
     "text": "Enter the UART number the serial RX is connected to (for spi RX leave as NONE)"
   },
@@ -187,6 +205,9 @@
   },
   "serial_passthrough": {
     "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
+  },
+  "serial.hdzero": {
+    "text": "HDZero requires TX and RX connected to use msp, define the UART here"
   },
   "voltage.actual_battery_voltage": {
     "text": "Default is 4.2V for normal lipo packs, set to 4.35V for HV packs"
