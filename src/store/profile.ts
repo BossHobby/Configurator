@@ -116,6 +116,7 @@ export const useProfileStore = defineStore("profile", {
     motor: {
       gyro_orientation: 0,
       invert_yaw: 1,
+      motor_pins: [] as number[],
     },
     rate: {
       mode: 0,

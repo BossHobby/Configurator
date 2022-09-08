@@ -18,11 +18,11 @@
                 <h6>{{ m.label }}</h6>
               </div>
               <div class="column is-8">
-                {{ trim(motor.settings[m.index].LAYOUT) }}
+                {{ trim(motor.settings[m.pin].LAYOUT) }}
                 -
-                {{ trim(motor.settings[m.index].NAME) }},
-                {{ motor.settings[m.index].MAIN_REVISION }}.{{
-                  motor.settings[m.index].SUB_REVISION
+                {{ trim(motor.settings[m.pin].NAME) }},
+                {{ motor.settings[m.pin].MAIN_REVISION }}.{{
+                  motor.settings[m.pin].SUB_REVISION
                 }}
               </div>
 
@@ -31,8 +31,8 @@
               </div>
               <div class="column is-8 pt-0 mt-0">
                 <input-select
-                  id="direction"
-                  v-model.number="motor.settings[m.index].MOTOR_DIRECTION"
+                  :id="'motor-direction-' + m.index"
+                  v-model.number="motor.settings[m.pin].MOTOR_DIRECTION"
                   :options="motor_direction_options"
                 ></input-select>
               </div>

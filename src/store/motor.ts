@@ -3,6 +3,7 @@ import { serial } from "./serial/serial";
 import { Log } from "@/log";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
+import { useProfileStore } from "./profile";
 
 export const useMotorStore = defineStore("motor", {
   state: () => ({
@@ -11,8 +12,8 @@ export const useMotorStore = defineStore("motor", {
       active: 0,
       value: new Array<number>(),
     },
-    settings: null,
-    pins: [
+    settings: null as any,
+    _pins: [
       {
         index: 1,
         id: "MOTOR_FL",
@@ -35,6 +36,17 @@ export const useMotorStore = defineStore("motor", {
       },
     ],
   }),
+  getters: {
+    pins(state) {
+      const profile = useProfileStore();
+      return state._pins.map((p) => {
+        return {
+          ...p,
+          pin: profile.motor.motor_pins[p.index],
+        };
+      });
+    },
+  },
   actions: {
     fetch_motor_test() {
       return serial.command(QuicCmd.Motor, QuicMotor.TestStatus).then((p) => {
