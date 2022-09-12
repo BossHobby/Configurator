@@ -8,7 +8,11 @@
     </div>
   </div>
 
-  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+  <nav
+    class="navbar is-fixed-top"
+    role="navigation"
+    aria-label="main navigation"
+  >
     <div class="navbar-brand">
       <a class="navbar-item px-1">
         <img
@@ -38,7 +42,10 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
-        <router-link active-class="is-active" class="navbar-item" to="/templates"
+        <router-link
+          active-class="is-active"
+          class="navbar-item"
+          to="/templates"
           >Templates</router-link
         >
         <router-link active-class="is-active" class="navbar-item" to="/profile"
@@ -65,7 +72,10 @@
         >
         <router-link
           active-class="is-active"
-          v-if="info.has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1"
+          v-if="
+            info.has_feature(Features.BLACKBOX) &&
+            info.quic_protocol_version > 1
+          "
           class="navbar-item"
           to="/blackbox"
           >Blackbox</router-link
@@ -75,7 +85,9 @@
         >
         <router-link
           active-class="is-active"
-          v-if="info.has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
+          v-if="
+            info.has_feature(Features.DEBUG) && info.quic_protocol_version > 1
+          "
           class="navbar-item"
           to="/perf"
           >Perf</router-link
@@ -214,7 +226,7 @@ export default defineComponent({
       return "Connect";
     },
     canConnect() {
-      return !this.serial.is_connecting;
+      return !this.serial.is_connecting && this.$route.name != "flash";
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
