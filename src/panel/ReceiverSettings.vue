@@ -109,7 +109,8 @@
         <div
           class="field is-horizontal"
           v-if="
-            info.quic_protocol_version > 2 && rx_protocol == RXProtocol.UNIFIED_SERIAL
+            info.quic_protocol_version > 2 &&
+            rx_protocol == RXProtocol.UNIFIED_SERIAL
           "
         >
           <div class="field-label">
@@ -220,9 +221,9 @@
           <div class="column is-12 has-text-centered">
             <small>
               When binding via your transmitter, save bind by moving your right
-              transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle the Bind
-              Saved flag above. When binding via passphrase or bind data this is not
-              required.
+              transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle
+              the Bind Saved flag above. When binding via passphrase or bind
+              data this is not required.
             </small>
           </div>
         </div>
@@ -309,7 +310,11 @@ export default defineComponent({
         this.RXProtocol.EXPRESS_LRS,
       ];
       if (spi.includes(this.rx_protocol)) {
-        const status = ["RX_STATUS_NONE", "RX_STATUS_BINDING", "RX_STATUS_BOUND"];
+        const status = [
+          "RX_STATUS_NONE",
+          "RX_STATUS_BINDING",
+          "RX_STATUS_BOUND",
+        ];
         return status[this.state.rx_status];
       }
       if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
@@ -340,7 +345,7 @@ export default defineComponent({
       return this.bind?.info?.raw?.slice(1, 7).join(", ");
     },
     elrsSwitchMode() {
-      return this.bind?.info?.raw[8] ? "Hybrid Switches" : "1Bit Switches";
+      return this.bind?.info?.raw[8] ? "Hybrid Switches" : "Wide Switches";
     },
     downloadAnchor() {
       return this.$refs.downloadAnchor as HTMLAnchorElement;
@@ -399,8 +404,9 @@ export default defineComponent({
       reader.addEventListener("load", (event) => {
         const info = { ...this.bind?.info };
         info.bind_saved = 1;
-        info.raw = Uint8Array.from(window.atob(event?.target?.result as string), (c) =>
-          c.charCodeAt(0)
+        info.raw = Uint8Array.from(
+          window.atob(event?.target?.result as string),
+          (c) => c.charCodeAt(0)
         );
 
         this.bind.apply_bind_info(info);
