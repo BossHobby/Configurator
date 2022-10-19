@@ -139,6 +139,8 @@ enum RXProtocolV011 {
   FRSKY_D16_LBT,
   REDPINE,
   EXPRESS_LRS,
+  FLYSKY_AFHDS,
+  FLYSKY_AFHDS2A,
 }
 
 enum RXSerialProtocol {
