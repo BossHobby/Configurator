@@ -298,6 +298,8 @@ export default defineComponent({
         this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_FCC,
         this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_LBT,
         this.RXProtocol.REDPINE,
+        this.RXProtocol.FLYSKY_AFHDS,
+        this.RXProtocol.FLYSKY_AFHDS2A,
       ];
       return spi.includes(this.rx_protocol);
     },
@@ -308,6 +310,8 @@ export default defineComponent({
         this.RXProtocol.FRSKY_D16 || this.RXProtocol.FRSKY_D16_LBT,
         this.RXProtocol.REDPINE,
         this.RXProtocol.EXPRESS_LRS,
+        this.RXProtocol.FLYSKY_AFHDS,
+        this.RXProtocol.FLYSKY_AFHDS2A,
       ];
       if (spi.includes(this.rx_protocol)) {
         const status = [
