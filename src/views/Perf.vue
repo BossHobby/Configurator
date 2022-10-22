@@ -6,8 +6,8 @@
       :key="'counter' + index"
     >
       <RealtimePlot
-        :title="counters[index]"
-        :axis="['min', 'max', 'current']"
+        :title="counter.name"
+        :axis="Object.keys(counter).slice(1)"
         :input="counter"
       ></RealtimePlot>
     </div>
@@ -27,20 +27,6 @@ export default defineComponent({
   setup() {
     return {
       perf: usePerfStore(),
-    };
-  },
-  data() {
-    return {
-      counters: [
-        "PERF_COUNTER_TOTAL",
-        "PERF_COUNTER_GYRO",
-        "PERF_COUNTER_CONTROL",
-        "PERF_COUNTER_RX",
-        "PERF_COUNTER_OSD",
-        "PERF_COUNTER_MISC",
-        "PERF_COUNTER_BLACKBOX",
-        "PERF_COUNTER_DEBUG",
-      ],
     };
   },
 });

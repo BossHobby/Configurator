@@ -4,7 +4,7 @@ import { defineStore } from "pinia";
 
 export const usePerfStore = defineStore("perf", {
   state: () => ({
-    counters: [],
+    counters: [] as any[],
   }),
   actions: {
     fetch_perf_counters() {
