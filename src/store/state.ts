@@ -8,6 +8,7 @@ export const useStateStore = defineStore("state", {
   state: () => ({
     looptime_autodetect: 0,
     cpu_load: 0.0,
+    cpu_temp: 0.0,
     vbat_filtered: 0.0,
     vbattfilt: null,
     ibat_filtered: 0.0,
