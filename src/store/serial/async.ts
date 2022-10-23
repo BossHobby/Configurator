@@ -26,7 +26,7 @@ export class AsyncSemaphore {
   }
 }
 
-const QUEUE_BUFFER_SIZE = 32 * 1024;
+const QUEUE_BUFFER_SIZE = 4 * 1024 * 1024;
 
 export class AsyncQueue {
   private _promises: Promise<void>[] = [];
