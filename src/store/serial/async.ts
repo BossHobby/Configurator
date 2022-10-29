@@ -41,6 +41,14 @@ export class AsyncQueue {
   private _done?: Promise<void>;
   private _abort = new AbortController();
 
+  private get _read_len() {
+    return (this._head + QUEUE_BUFFER_SIZE - this._tail) % QUEUE_BUFFER_SIZE;
+  }
+
+  private get _write_len() {
+    return QUEUE_BUFFER_SIZE - this._read_len;
+  }
+
   constructor(private readable: ReadableStream, errorCallback: any) {
     this._done = readable
       .pipeTo(
@@ -62,27 +70,26 @@ export class AsyncQueue {
     this.readable.cancel();
   }
 
-  private push(v: number, controller?: WritableStreamDefaultController) {
-    const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
-    if (next == this._tail) {
-      controller?.error("queue full");
-      throw new Error("queue full");
-    }
-
-    this._buffer[next] = v;
-    this._head = next;
-
-    const fn = this._resolvers.shift();
-    if (fn) fn();
-  }
-
   private async write(
     array: Uint8Array,
     controller?: WritableStreamDefaultController
   ) {
-    for (const v of array) {
-      this.push(v, controller);
+    if (
+      (this._head + 1) % QUEUE_BUFFER_SIZE == this._tail ||
+      array.length > this._write_len
+    ) {
+      controller?.error("queue full");
+      throw new Error("queue full");
     }
+
+    for (const v of array) {
+      const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
+      this._buffer[next] = v;
+      this._head = next;
+    }
+
+    const fn = this._resolvers.shift();
+    if (fn) fn();
   }
 
   private _add(): Promise<void> {
@@ -97,20 +104,20 @@ export class AsyncQueue {
   }
 
   async pop(): Promise<number> {
-    if (this._head == this._tail) {
-      return this._add().then(() => this.pop());
-    }
-
-    const tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
-    const val = this._buffer[tail];
-    this._tail = tail;
-    return val;
+    const res = await this.read(1);
+    return res[0];
   }
 
-  async read(size: number): Promise<number[]> {
-    const buffer: number[] = [];
+  async read(size: number): Promise<Uint8Array> {
+    if (this._head == this._tail || this._read_len < size) {
+      return this._add().then(() => this.read(size));
+    }
+
+    const buffer = new Uint8Array(size);
     for (let i = 0; i < size; i++) {
-      buffer.push(await this.pop());
+      const tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
+      buffer[i] = this._buffer[tail];
+      this._tail = tail;
     }
     return buffer;
   }
