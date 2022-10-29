@@ -138,6 +138,7 @@ export const useSerialStore = defineStore("serial", {
       return serial
         .connect((err) => {
           Log.error("serial", err);
+          serial.close();
 
           stopInterval();
 
