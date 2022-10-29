@@ -81,7 +81,11 @@ export class Log {
     Log.log(LogLevel.Error, prefix, ...data);
   }
 
-  public static log(level: LogLevel, prefix?: string, ...data: any[]) {
+  private static logFmtStr(
+    level: LogLevel,
+    prefix?: string,
+    ...data: any[]
+  ): string {
     let str = "[" + LevelNames[level] + "]";
     if (prefix && prefix.length) {
       str += "[" + prefix + "]";
@@ -91,27 +95,43 @@ export class Log {
     }
     str += " ";
 
-    const line = util.format(str, ...data);
-    if (Log.file) {
-      Log.file.write(line);
-    }
+    return str;
+  }
 
+  private static logToFile(fmt: string, ...data: any[]) {
     const root = useRootStore();
 
+    for (const d of data) {
+      fmt += JSON.stringify(d);
+    }
+
+    if (Log.file) {
+      Log.file.write(fmt);
+    }
+    root.append_log(fmt);
+  }
+
+  public static log(level: LogLevel, prefix?: string, ...data: any[]) {
     switch (level) {
       case LogLevel.Debug:
-      case LogLevel.Info:
+      case LogLevel.Info: {
+        const str = this.logFmtStr(level, prefix, data);
         console.log(str, ...data);
-        root.append_log(line);
+        this.logToFile(str, data);
         break;
-      case LogLevel.Warning:
+      }
+      case LogLevel.Warning: {
+        const str = this.logFmtStr(level, prefix, data);
         console.warn(str, ...data);
-        root.append_log(line);
+        this.logToFile(str, data);
         break;
-      case LogLevel.Error:
+      }
+      case LogLevel.Error: {
+        const str = this.logFmtStr(level, prefix, data);
         console.error(str, ...data);
-        root.append_log(line);
+        this.logToFile(str, data);
         break;
+      }
       default:
         break;
     }
