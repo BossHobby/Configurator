@@ -41,7 +41,7 @@ export class AsyncQueue {
   private _done?: Promise<void>;
   private _abort = new AbortController();
 
-  constructor(private readable: ReadableStream) {
+  constructor(private readable: ReadableStream, errorCallback: any) {
     this._done = readable
       .pipeTo(
         new WritableStream({
@@ -51,7 +51,7 @@ export class AsyncQueue {
       )
       .catch((err) => {
         if (err != "close") {
-          throw err;
+          errorCallback(err);
         }
       });
   }

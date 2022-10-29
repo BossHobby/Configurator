@@ -36,9 +36,11 @@ export class Serial {
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: AsyncQueue;
 
-  async connect(): Promise<any> {
+  private onErrorCallback?: (err: any) => void;
+
+  async connect(errorCallback: any = console.warn): Promise<any> {
     try {
-      await this._connectPort();
+      await this._connectPort(errorCallback);
       return await this.get(QuicVal.Info);
     } catch (err) {
       await this.close();
@@ -46,11 +48,12 @@ export class Serial {
     }
   }
 
-  private async _connectPort() {
+  private async _connectPort(errorCallback: any) {
     this.port = await WebSerial.requestPort({
       filters: SERIAL_FILTERS,
     });
     this.waitingCommands = new AsyncSemaphore(1);
+    this.onErrorCallback = errorCallback;
 
     await this.port.open({
       baudRate: settings.serial.baudRate,
@@ -59,7 +62,7 @@ export class Serial {
     });
 
     this.writer = await this.port.writable.getWriter();
-    this.reader = new AsyncQueue(this.port.readable);
+    this.reader = new AsyncQueue(this.port.readable, errorCallback);
     this.shouldRun = true;
   }
 
@@ -252,7 +255,6 @@ export class Serial {
     writer.writeUint8s(await this.reader!.read(hdr.len));
     Log.trace("serial", "[quic] recv stream chunk", writer.length);
 
-    let counter = 0;
     while (writer) {
       const nexthdr = await this.readHeader();
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
