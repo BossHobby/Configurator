@@ -29,21 +29,16 @@ export class Serial {
   private shouldRun = true;
   private reSync = true;
 
-  private queue = new AsyncQueue();
   private waitingCommands = new AsyncSemaphore(1);
 
   private port?: any;
 
   private writer?: WritableStreamDefaultWriter<any>;
-  private reader?: ReadableStreamDefaultReader<any>;
+  private reader?: AsyncQueue;
 
-  private onErrorCallback?: (err: any) => void;
-
-  constructor() {}
-
-  async connect(errorCallback: any = undefined): Promise<any> {
+  async connect(): Promise<any> {
     try {
-      await this._connectPort(errorCallback);
+      await this._connectPort();
       return await this.get(QuicVal.Info);
     } catch (err) {
       await this.close();
@@ -51,13 +46,11 @@ export class Serial {
     }
   }
 
-  private async _connectPort(errorCallback: any = undefined) {
+  private async _connectPort() {
     this.port = await WebSerial.requestPort({
       filters: SERIAL_FILTERS,
     });
-    this.queue = new AsyncQueue();
     this.waitingCommands = new AsyncSemaphore(1);
-    this.onErrorCallback = errorCallback;
 
     await this.port.open({
       baudRate: settings.serial.baudRate,
@@ -66,10 +59,8 @@ export class Serial {
     });
 
     this.writer = await this.port.writable.getWriter();
-    this.reader = await this.port.readable.getReader();
-
+    this.reader = new AsyncQueue(this.port.readable);
     this.shouldRun = true;
-    this.startReading();
   }
 
   async softReboot() {
@@ -127,13 +118,12 @@ export class Serial {
   }
 
   async close() {
-    this.queue.close();
+    this.reSync = true;
     this.shouldRun = false;
 
     if (this.reader) {
       try {
-        this.reader.cancel();
-        await this.reader.releaseLock();
+        await this.reader?.close();
       } catch (err) {
         Log.warn("serial", err);
       }
@@ -157,7 +147,6 @@ export class Serial {
     this.writer = undefined;
 
     this.port = undefined;
-    this.onErrorCallback = undefined;
   }
 
   private async send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
@@ -221,18 +210,19 @@ export class Serial {
 
   private async readHeader(): Promise<QuicHeader> {
     while (this.shouldRun) {
-      const magic = await this.queue.pop();
+      const magic = await this.reader!.pop();
       if (magic === QUIC_MAGIC) {
         this.reSync = false;
         break;
       }
       if (!this.reSync) {
         this.reSync = true;
+        console.log("invalid magic " + magic);
         throw new Error("invalid magic " + magic);
       }
     }
 
-    const header = await this.queue.read(QUIC_HEADER_LEN - 1);
+    const header = await this.reader!.read(QUIC_HEADER_LEN - 1);
     return {
       cmd: header[0] & (0xff >> 3),
       flag: header[0] >> 5,
@@ -247,7 +237,7 @@ export class Serial {
     }
 
     if ((hdr.flag & QuicFlag.Streaming) == 0) {
-      const buffer = Uint8Array.from(await this.queue.read(hdr.len));
+      const buffer = Uint8Array.from(await this.reader!.read(hdr.len));
       let payload: any = [];
       if (hdr.len) {
         payload = this.cbor.decodeMultiple(buffer);
@@ -259,9 +249,10 @@ export class Serial {
     }
 
     const writer = new ArrayWriter();
-    writer.writeUint8s(await this.queue.read(hdr.len));
+    writer.writeUint8s(await this.reader!.read(hdr.len));
     Log.trace("serial", "[quic] recv stream chunk", writer.length);
 
+    let counter = 0;
     while (writer) {
       const nexthdr = await this.readHeader();
       if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
@@ -271,7 +262,7 @@ export class Serial {
         break;
       }
 
-      const buf = await this.queue.read(nexthdr.len);
+      const buf = await this.reader!.read(nexthdr.len);
       writer.writeUint8s(buf);
       Log.trace("serial", "[quic] recv stream chunk", writer.length);
     }
@@ -281,26 +272,6 @@ export class Serial {
       ...hdr,
       payload,
     };
-  }
-
-  private async startReading() {
-    while (this.shouldRun) {
-      try {
-        const { value, done } = await this.reader!.read();
-        if (done) {
-          break;
-        }
-        if (value.length) {
-          this.queue.write(value);
-        }
-      } catch (e) {
-        Log.warning("serial", e);
-        this.close();
-        if (this.onErrorCallback) {
-          this.onErrorCallback(e);
-        }
-      }
-    }
   }
 }
 

@@ -8,7 +8,7 @@ const androidSerialSettings = {
 
 const desktopSerialSettings = {
   baudRate: 921600,
-  bufferSize: 8192,
+  bufferSize: 4 * 1024 * 1024,
   updateInterval: 250,
 };
 

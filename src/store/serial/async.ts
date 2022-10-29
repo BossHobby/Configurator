@@ -1,3 +1,5 @@
+import { settings } from "./settings";
+
 export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<T>((resolve, reject) => {
     const id = setTimeout(() => {
@@ -26,7 +28,7 @@ export class AsyncSemaphore {
   }
 }
 
-const QUEUE_BUFFER_SIZE = 4 * 1024 * 1024;
+const QUEUE_BUFFER_SIZE = settings.serial.bufferSize * 2;
 
 export class AsyncQueue {
   private _promises: Promise<void>[] = [];
@@ -36,48 +38,73 @@ export class AsyncQueue {
   private _head = 0;
   private _tail = 0;
 
-  constructor() {}
+  private _done?: Promise<void>;
+  private _abort = new AbortController();
 
-  close() {}
-
-  private _add() {
-    this._promises.push(
-      new Promise((resolve) => {
-        this._resolvers.push(resolve);
-      })
-    );
+  constructor(private readable: ReadableStream) {
+    this._done = readable
+      .pipeTo(
+        new WritableStream({
+          write: this.write.bind(this),
+        }),
+        { signal: this._abort.signal }
+      )
+      .catch((err) => {
+        if (err != "close") {
+          throw err;
+        }
+      });
   }
 
-  push(v: number) {
+  async close() {
+    this._abort.abort("close");
+    await this._done;
+    this.readable.cancel();
+  }
+
+  private push(v: number, controller?: WritableStreamDefaultController) {
     const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
     if (next == this._tail) {
+      controller?.error("queue full");
       throw new Error("queue full");
     }
 
     this._buffer[next] = v;
     this._head = next;
 
-    if (this._resolvers.length) {
-      this._resolvers.shift()!();
-    }
+    const fn = this._resolvers.shift();
+    if (fn) fn();
   }
 
-  pop(): Promise<number> {
-    return Promise.resolve().then(() => {
-      if (this._head != this._tail) {
-        this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
-        return this._buffer[this._tail];
-      }
-      if (!this._promises.length) this._add();
-
-      return this._promises.shift()!.then(() => this.pop());
-    });
-  }
-
-  write(array: Uint8Array) {
+  private async write(
+    array: Uint8Array,
+    controller?: WritableStreamDefaultController
+  ) {
     for (const v of array) {
-      this.push(v);
+      this.push(v, controller);
     }
+  }
+
+  private _add(): Promise<void> {
+    if (!this._promises.length) {
+      this._promises.push(
+        new Promise((resolve) => {
+          this._resolvers.push(resolve);
+        })
+      );
+    }
+    return this._promises.shift() || Promise.resolve();
+  }
+
+  async pop(): Promise<number> {
+    if (this._head == this._tail) {
+      return this._add().then(() => this.pop());
+    }
+
+    const tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
+    const val = this._buffer[tail];
+    this._tail = tail;
+    return val;
   }
 
   async read(size: number): Promise<number[]> {
