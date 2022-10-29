@@ -23,6 +23,8 @@ const SERIAL_FILTERS = [
   { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
 ];
 
+export type ProgressCallbackType = (number) => void;
+
 export class Serial {
   private cbor = new CBOR();
 
@@ -48,7 +50,7 @@ export class Serial {
     }
   }
 
-  private async _connectPort(errorCallback: any) {
+  private async _connectPort(errorCallback: any = console.warn) {
     this.port = await WebSerial.requestPort({
       filters: SERIAL_FILTERS,
     });
@@ -109,7 +111,15 @@ export class Serial {
   }
 
   async command(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
-    const packet = await this.send(cmd, ...values);
+    return this.commandProgress(cmd, () => {}, ...values);
+  }
+
+  async commandProgress(
+    cmd: QuicCmd,
+    progress: ProgressCallbackType,
+    ...values: any[]
+  ): Promise<QuicPacket> {
+    const packet = await this.send(cmd, progress, ...values);
     if (packet.cmd != cmd) {
       throw new Error("invalid command");
     }
@@ -152,16 +162,24 @@ export class Serial {
     this.port = undefined;
   }
 
-  private async send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
+  private async send(
+    cmd: QuicCmd,
+    progress: ProgressCallbackType,
+    ...values: any[]
+  ): Promise<QuicPacket> {
     await this.waitingCommands.wait();
     try {
-      return await this._send(cmd, ...values);
+      return await this._send(cmd, progress, ...values);
     } finally {
       this.waitingCommands.signal();
     }
   }
 
-  private async _send(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
+  private async _send(
+    cmd: QuicCmd,
+    progress: ProgressCallbackType,
+    ...values: any[]
+  ): Promise<QuicPacket> {
     const payload = this.encodeValues(values);
 
     const request = Uint8Array.from([
@@ -180,10 +198,10 @@ export class Serial {
     );
     await this.write(concatUint8Array(request, payload));
 
-    let packet = await this.readPacket();
+    let packet = await this.readPacket(progress);
     while (packet.cmd == QuicCmd.Log) {
       Log.info("serial", "[quic] " + packet.payload[0]);
-      packet = await this.readPacket();
+      packet = await this.readPacket(progress);
     }
     Log.trace(
       "serial",
@@ -233,7 +251,9 @@ export class Serial {
     };
   }
 
-  private async readPacket(): Promise<QuicPacket> {
+  private async readPacket(
+    progress: ProgressCallbackType
+  ): Promise<QuicPacket> {
     const hdr = await this.readHeader();
     if (hdr.cmd >= QuicCmd.Max || hdr.cmd == QuicCmd.Invalid) {
       throw new Error("invalid command");
@@ -241,6 +261,8 @@ export class Serial {
 
     if ((hdr.flag & QuicFlag.Streaming) == 0) {
       const buffer = Uint8Array.from(await this.reader!.read(hdr.len));
+      progress(buffer.length);
+
       let payload: any = [];
       if (hdr.len) {
         payload = this.cbor.decodeMultiple(buffer);
@@ -254,6 +276,7 @@ export class Serial {
     const writer = new ArrayWriter();
     writer.writeUint8s(await this.reader!.read(hdr.len));
     Log.trace("serial", "[quic] recv stream chunk", writer.length);
+    progress(writer.length);
 
     while (writer) {
       const nexthdr = await this.readHeader();
@@ -267,6 +290,7 @@ export class Serial {
       const buf = await this.reader!.read(nexthdr.len);
       writer.writeUint8s(buf);
       Log.trace("serial", "[quic] recv stream chunk", writer.length);
+      progress(writer.length);
     }
 
     const payload: any[] = this.cbor.decodeMultiple(writer.array())!;

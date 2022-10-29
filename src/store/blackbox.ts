@@ -7,7 +7,8 @@ import { Blackbox } from "./util/blackbox";
 export const useBlackboxStore = defineStore("blackbox", {
   state: () => ({
     busy: false,
-    list: { files: [] },
+    progress: undefined as number | undefined,
+    list: { flash_size: 0, files: [] as { size: number }[] },
   }),
   actions: {
     reset_blackbox() {
@@ -39,14 +40,23 @@ export const useBlackboxStore = defineStore("blackbox", {
         });
     },
     download_blackbox(index) {
+      const file = this.list.files[index];
       return serial
-        .command(QuicCmd.Blackbox, QuicBlackbox.Get, index)
+        .commandProgress(
+          QuicCmd.Blackbox,
+          (v: number) => {
+            this.progress = v / file.size;
+          },
+          QuicBlackbox.Get,
+          index
+        )
         .then((p) => {
-          const writer = new Blackbox(this.list.files[index]);
+          const writer = new Blackbox(file);
           writer.writeHeaders();
           for (const v of p.payload) {
             writer.writeValue(v);
           }
+          this.progress = undefined;
           return writer.toUrl();
         });
     },

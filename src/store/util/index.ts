@@ -32,11 +32,11 @@ export class ArrayWriter {
     this.offset++;
   }
 
-  public writeUint8s(values: number[]) {
+  public writeUint8s(values: ArrayLike<number>) {
     this.grow(values.length);
 
-    for (const v of values) {
-      this.view.setUint8(this.offset, v);
+    for (let i = 0; i < values.length; i++) {
+      this.view.setUint8(this.offset, values[i]);
       this.offset++;
     }
   }
