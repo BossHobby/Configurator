@@ -43,9 +43,7 @@
             </div>
             <div class="field-body">
               <div class="field has-addons">
-                <p class="control is-expanded">
-                  <input class="file-input" accept=".png" type="file" ref="file" />
-                </p>
+                <p class="control is-expanded"></p>
                 <p class="control">
                   <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
                 </p>
@@ -190,24 +188,22 @@ export default defineComponent({
         });
       };
 
-      const selectFile = () => {
-        return new Promise((resovle, reject) => {
-          const checkForFile = () => {
-            document.body.onfocus = null;
+      const selectFile = async () => {
+        const pickerOpts = {
+          types: [
+            {
+              description: "Images",
+              accept: {
+                "image/*": [".png"],
+              },
+            },
+          ],
+          excludeAcceptAllOption: true,
+          multiple: false,
+        };
 
-            if (!this.$refs.file.files.length) {
-              reject(new Error("no file selected"));
-              return;
-            }
-            resovle(this.$refs.file.files[0]);
-          };
-
-          this.$refs.file.oninvalid = reject;
-          this.$refs.file.onchange = checkForFile;
-          setTimeout(() => (document.body.onfocus = () => checkForFile()), 1000);
-
-          this.$refs.file.click();
-        });
+        const [fileHandle] = await (window as any).showOpenFilePicker(pickerOpts);
+        return await fileHandle.getFile();
       };
 
       return selectFile()
