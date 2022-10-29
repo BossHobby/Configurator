@@ -8,7 +8,7 @@
             <progress
               class="progress my-0"
               :value="usedSize"
-              :max="blackbox.list.flash_size * 1024"
+              :max="(blackbox.list.flash_size || 1) * 1024"
             ></progress>
             <h6>
               Used:
