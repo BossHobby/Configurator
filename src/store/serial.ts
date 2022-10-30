@@ -13,6 +13,7 @@ import { settings } from "./serial/settings";
 import { useInfoStore } from "./info";
 import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
+import { useBlackboxStore } from "./blackbox";
 
 let interval: any = null;
 let intervalCounter = 0;
@@ -115,6 +116,7 @@ export const useSerialStore = defineStore("serial", {
       const root = useRootStore();
       const info = useInfoStore();
       const motor = useMotorStore();
+      const bb = useBlackboxStore();
       const vtx = useVTXStore();
       const default_profile = useDefaultProfileStore();
       const profile = useProfileStore();
@@ -154,6 +156,7 @@ export const useSerialStore = defineStore("serial", {
           info.$reset();
           motor.$reset();
           vtx.$reset();
+          bb.$reset();
           default_profile.$reset();
           profile.$reset();
 

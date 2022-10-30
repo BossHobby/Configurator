@@ -40,6 +40,7 @@ export const useBlackboxStore = defineStore("blackbox", {
         });
     },
     download_blackbox(index) {
+      const root = useRootStore();
       const file = this.list.files[index];
       return serial
         .commandProgress(
@@ -56,8 +57,24 @@ export const useBlackboxStore = defineStore("blackbox", {
           for (const v of p.payload) {
             writer.writeValue(v);
           }
-          this.progress = undefined;
           return writer.toUrl();
+        })
+        .then((url) => {
+          root.append_alert({
+            type: "success",
+            msg: "Blackbox successfully downloaded!",
+          });
+          return url;
+        })
+        .catch((err) => {
+          root.append_alert({
+            type: "danger",
+            msg: "Blackbox download failed",
+          });
+          throw err;
+        })
+        .finally(() => {
+          this.progress = undefined;
         });
     },
   },

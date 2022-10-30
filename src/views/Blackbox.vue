@@ -22,17 +22,19 @@
           <div class="content">
             <div v-for="(file, index) in blackbox.list.files" :key="index">
               File {{ index + 1 }}: {{ humanFileSize(file.size) }}
-              <progress
-                v-if="blackbox.progress"
-                class="progress my-0"
-                :value="blackbox.progress"
-                max="1"
-              ></progress>
               <spinner-btn class="is-small my-2 mx-2" @click="download(index)">
                 Download
               </spinner-btn>
             </div>
             <a ref="downloadAnchor" target="_blank"></a>
+            <div v-if="blackbox.progress">
+              Downloading...
+              <progress
+                class="progress is-success my-0"
+                :value="blackbox.progress"
+                max="1"
+              ></progress>
+            </div>
           </div>
         </div>
 
