@@ -52,9 +52,12 @@ export class AsyncQueue {
   constructor(private readable: ReadableStream, errorCallback: any) {
     this._done = readable
       .pipeTo(
-        new WritableStream({
-          write: this.write.bind(this),
-        }),
+        new WritableStream(
+          {
+            write: this.write.bind(this),
+          },
+          new ByteLengthQueuingStrategy({ highWaterMark: 1024 })
+        ),
         { signal: this._abort.signal }
       )
       .catch((err) => {
@@ -109,6 +112,9 @@ export class AsyncQueue {
   }
 
   async read(size: number): Promise<Uint8Array> {
+    if (size == 0) {
+      return new Uint8Array(size);
+    }
     if (this._head == this._tail || this._read_len < size) {
       return this._add().then(() => this.read(size));
     }
