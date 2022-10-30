@@ -300,7 +300,7 @@ class Decoder {
       val |= v << (i * 8);
     }
 
-    return val;
+    return val >>> 0;
   }
 
   private decodeType(): { type: MajorType; max: SizeType } {

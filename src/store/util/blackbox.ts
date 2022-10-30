@@ -296,7 +296,7 @@ export class Blackbox {
   private writeUnsigned(val: number) {
     while (val > 127) {
       this.buffer.writeUint8(((val & 0xff) | 0x80) & 0xff);
-      val >>= 7;
+      val >>>= 7;
     }
     this.buffer.writeUint8(val);
   }
