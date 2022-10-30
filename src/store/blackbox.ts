@@ -7,6 +7,7 @@ import { Blackbox } from "./util/blackbox";
 export const useBlackboxStore = defineStore("blackbox", {
   state: () => ({
     busy: false,
+    speed: undefined as number | undefined,
     progress: undefined as number | undefined,
     list: { flash_size: 0, files: [] as { size: number }[] },
   }),
@@ -42,11 +43,15 @@ export const useBlackboxStore = defineStore("blackbox", {
     download_blackbox(index) {
       const root = useRootStore();
       const file = this.list.files[index];
+
+      const start = performance.now();
       return serial
         .commandProgress(
           QuicCmd.Blackbox,
           (v: number) => {
+            const delta = (performance.now() - start) / 1000;
             this.progress = v / file.size;
+            this.speed = v / delta;
           },
           QuicBlackbox.Get,
           index
@@ -75,6 +80,7 @@ export const useBlackboxStore = defineStore("blackbox", {
         })
         .finally(() => {
           this.progress = undefined;
+          this.speed = undefined;
         });
     },
   },
