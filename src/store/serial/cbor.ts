@@ -325,7 +325,13 @@ export class CBOR {
 
     const dec = new Decoder(buf);
     while (!dec.isEOF()) {
-      res.push(dec.decode());
+      try {
+        res.push(dec.decode());
+      } catch (err: any) {
+        if (err.message != "EOF") {
+          throw err;
+        }
+      }
     }
 
     return res;
