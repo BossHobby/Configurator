@@ -114,10 +114,7 @@
     </div>
 
     <footer class="card-footer">
-      <spinner-btn
-        class="card-footer-item"
-        @click="vtx.apply_vtx_settings(vtx.settings)"
-      >
+      <spinner-btn class="card-footer-item" @click="vtx.apply_vtx_settings(vtx.settings)">
         Apply
       </spinner-btn>
     </footer>
@@ -206,6 +203,9 @@ export default defineComponent({
         // { value: 2, text: "NO SUPPORT" }
       ];
     },
+  },
+  created() {
+    this.vtx.update_vtx_settings(true);
   },
 });
 </script>

@@ -26,8 +26,8 @@ export const useVTXStore = defineStore("vtx", {
           root.append_alert({ type: "danger", msg: "Apply failed" });
         });
     },
-    update_vtx_settings() {
-      if (this.settings.detected == 0) {
+    update_vtx_settings(force = false) {
+      if (this.settings.detected == 0 || force) {
         return serial.get(QuicVal.VtxSettings).then((settings) => {
           const protocol =
             settings.detected == 0 ? this.settings.protocol : settings.protocol;
