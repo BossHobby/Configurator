@@ -152,7 +152,8 @@
     "text": "You can have 2 different sets of pids loaded in 2 profiles"
   },
   "pid.stick_profile": {
-    "disabled": true
+    "text": "Allows for adjustment to stick feel",
+    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#stick-boost" 
   },
   "pid.tda_active": {
     "text": "As higher throttle levels are reached D-term gain is reduced allowing the D-term notch filter to work safely",
