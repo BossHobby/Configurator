@@ -120,11 +120,12 @@ export default defineComponent({
 
     visibility: hidden;
 
-    font-size: 0.85rem;
+    font-size: 0.85em;
+    font-weight: 700;
     text-align: center;
     padding: 6px;
     border-radius: 6px;
-    z-index: 1;
+    z-index: 1001;
 
     &::after {
       content: " ";
