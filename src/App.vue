@@ -8,7 +8,11 @@
     </div>
   </div>
 
-  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+  <nav
+    class="navbar is-fixed-top"
+    role="navigation"
+    aria-label="main navigation"
+  >
     <div class="navbar-brand">
       <a class="navbar-item px-1">
         <img
@@ -17,6 +21,18 @@
           class="image"
         />
         <img
+          v-if="branch == 'develop'"
+          src="./assets/Logo_Develop_Text.svg"
+          style="
+            display: inline-block;
+            margin-left: -2px;
+            max-width: 175px;
+            max-height: 2.5em;
+          "
+          class="image"
+        />
+        <img
+          v-else
           src="./assets/Logo_Text.svg"
           style="display: inline-block; margin-left: -2px; max-width: 175px"
           class="image"
@@ -38,7 +54,10 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
-        <router-link active-class="is-active" class="navbar-item" to="/templates"
+        <router-link
+          active-class="is-active"
+          class="navbar-item"
+          to="/templates"
           >Templates</router-link
         >
         <router-link active-class="is-active" class="navbar-item" to="/profile"
@@ -65,7 +84,10 @@
         >
         <router-link
           active-class="is-active"
-          v-if="info.has_feature(Features.BLACKBOX) && info.quic_protocol_version > 1"
+          v-if="
+            info.has_feature(Features.BLACKBOX) &&
+            info.quic_protocol_version > 1
+          "
           class="navbar-item"
           to="/blackbox"
           >Blackbox</router-link
@@ -75,7 +97,9 @@
         >
         <router-link
           active-class="is-active"
-          v-if="info.has_feature(Features.DEBUG) && info.quic_protocol_version > 1"
+          v-if="
+            info.has_feature(Features.DEBUG) && info.quic_protocol_version > 1
+          "
           class="navbar-item"
           to="/perf"
           >Perf</router-link
@@ -193,6 +217,11 @@ export default defineComponent({
       root: useRootStore(),
 
       Features: computed(() => constants.Features),
+    };
+  },
+  data() {
+    return {
+      branch: import.meta.env.VITE_BRANCH_NAME,
     };
   },
   computed: {

@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import vue from "@vitejs/plugin-vue";
+import { execSync } from "child_process";
 
 let base = "/";
 
@@ -16,6 +17,10 @@ if (process.env.NODE_ENV === "production") {
     base = "/dist/";
   }
 }
+
+process.env.VITE_BRANCH_NAME = execSync("git rev-parse --abbrev-ref HEAD")
+  .toString()
+  .trimEnd();
 
 process.env.VITE_APP_VERSION = require("./package.json").version;
 
