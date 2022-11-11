@@ -5,6 +5,8 @@ import { VitePWA } from "vite-plugin-pwa";
 import vue from "@vitejs/plugin-vue";
 import { execSync } from "child_process";
 
+const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd();
+
 let base = "/";
 
 if (process.env.NODE_ENV === "production") {
@@ -12,16 +14,17 @@ if (process.env.NODE_ENV === "production") {
     process.env.DEPLOYMENT === "gh-pages" ||
     process.env.DEPLOYMENT === "local"
   ) {
-    base = "/";
+    if (branch == "develop") {
+      base = "/develop/";
+    } else {
+      base = "/";
+    }
   } else {
     base = "/dist/";
   }
 }
 
-process.env.VITE_BRANCH_NAME = execSync("git rev-parse --abbrev-ref HEAD")
-  .toString()
-  .trimEnd();
-
+process.env.VITE_BRANCH_NAME = branch;
 process.env.VITE_APP_VERSION = require("./package.json").version;
 
 // https://vitejs.dev/config/
