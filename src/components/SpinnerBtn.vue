@@ -39,7 +39,7 @@ export default defineComponent({
 
       this.loading = true;
       Promise.resolve()
-        .then(() => click(event))
+        .then(() => (click ? click(event) : null))
         .finally(() => (this.loading = false));
     },
   },
