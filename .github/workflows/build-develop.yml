@@ -1,0 +1,60 @@
+name: build
+on:
+  push:
+    branches:
+      - 'develop'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-develop-node_modules
+
+      - name: install npm packages
+        run: npm install
+
+      - name: build gh-pages
+        run: |
+          npm run build:gh-pages
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: gh-pages
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: checkout gh-pages
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git pull
+          git checkout gh-pages
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: gh-pages
+          path: develop
+
+      - name: update develop gh-pages
+        run: |
+          git add .
+          git commit -m "GitHub Pages $GITHUB_SHA" || exit 0
+          git remote set-url --push origin https://actions:$GITHUB_TOKEN@github.com/BossHobby/Configurator
+          git push -f
