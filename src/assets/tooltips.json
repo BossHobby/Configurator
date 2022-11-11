@@ -37,14 +37,14 @@
   },
   "channel.aux_turtle": {
     "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#turtle-mode"
   },
   "channel.aux_prearm": {
     "text": "Allows for a separate AUX channel to be set as a safety for arming, the set AUX should be ON before the ARM switch is activated. If not used leave this as ON"
   },
   "filter.settings": {
     "text": "The default filter setting are designed to be safe, before making adjustments refer to the wiki",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#filters"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#filters"
   },
   "filter.dterm_1_freq": {
     "disabled": true
@@ -60,7 +60,7 @@
   },
   "filter.dterm_dynamic_enable": {
     "text": "Enable a dynamic D-term filtercut, you almost always want to leave this ON",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#dynamic-d-term"
   },
   "filter.dterm_dynamic_max": {
     "disabled": true
@@ -119,11 +119,11 @@
   },
   "motor.torque_boost": {
     "text": "A very experimental feature for more advanced use",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#torque-boost"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#torque-boost"
   },
   "motor.turtle_throttle_percent": {
     "text": "For whoops set to 100% larger craft start at 10% and increase by 10 to suit needs",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#turtle-mode"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#turtle-mode"
   },
   "motor_pins": {
     "text": "Use this section to change motor positions, useful when using an fc in non standard configuration"
@@ -136,14 +136,14 @@
   },
   "osd.elements": {
     "text": "Select and position OSD elements, callsign must use upper case",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#osd"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#osd"
   },
   "osd.font": {
     "text": "A choice of fonts are available, select and upload. You can also upload your own custom boot logo as long as it a 288x72 Black/White/Transparent PNG"
   },
   "pid.angle_strength": {
     "text": "Angle Strength adjusts how your craft responds to external forces from bumps to stick inputs",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#angle-strength"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#angle-strength"
   },
   "pid.preset": {
     "text": "Select by thrust to weight ratio or props size, these presets give a safe starting point to further tune if needed"
@@ -153,11 +153,11 @@
   },
   "pid.stick_profile": {
     "text": "Allows for adjustment to stick feel",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#stick-boost" 
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#stick-boost" 
   },
   "pid.tda_active": {
     "text": "As higher throttle levels are reached D-term gain is reduced allowing the D-term notch filter to work safely",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#throttle-d-term-attenuation-tda"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#throttle-d-term-attenuation-tda"
   },
   "pid.tda_breakpoint": {
     "text": "Throttle percentage before TDA starts to act"
@@ -227,6 +227,6 @@
   },
   "voltage.vbattlow": {
     "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V (uses Fuel gauge volts)",
-    "link": "https://github.com/BossHobby/QUICKSILVER/wiki/4.-FEATURES#voltage"
+    "link": "https://docs.bosshobby.com/4.-FEATURES/#voltage"
   }
 }

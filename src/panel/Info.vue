@@ -7,7 +7,7 @@
       </p>
       <p class="subtitle">
         Checkout our
-        <a target="_blank" href="https://github.com/BossHobby/QUICKSILVER/wiki"> wiki </a>
+        <a target="_blank" href="https://docs.bosshobby.com/"> Docs </a>
         for help on getting started.
       </p>
       <p class="subtitle" v-if="updateAvailable">New Version available!</p>
