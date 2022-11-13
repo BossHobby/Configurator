@@ -7,7 +7,7 @@
       </p>
       <p class="subtitle">
         Checkout our
-        <a target="_blank" href="https://docs.bosshobby.com/"> Docs </a>
+        <a target="_blank" href="https://docs.bosshobby.com/" style="font-weight: bold"> Docs</a>
         for help on getting started.
       </p>
       <p class="subtitle" v-if="updateAvailable">New Version available!</p>
