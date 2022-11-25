@@ -42,6 +42,14 @@ $navbar-box-shadow-color: rgb(8 8 8 / 30%);
 @import "node_modules/bulma/bulma.sass";
 @import "node_modules/bulma-switch/src/sass/index.sass";
 
+body {
+  font-family: "Roboto", sans-serif;
+  font-feature-settings: "kern", "liga";
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .column-narrow {
   .column {
     padding-top: 8px;
