@@ -14,30 +14,14 @@
     aria-label="main navigation"
   >
     <div class="navbar-brand">
-      <a class="navbar-item px-1">
-        <img
-          src="./assets/Logo_Clean.svg"
-          style="display: inline-block; max-height: 55px"
-          class="image"
-        />
-        <img
+      <router-link class="navbar-item py-1" to="/profile">
+        <LogoTextDevelop
           v-if="branch == 'develop'"
-          src="./assets/Logo_Develop_Text.svg"
-          style="
-            display: inline-block;
-            margin-left: -2px;
-            max-width: 175px;
-            max-height: 2.5em;
-          "
-          class="image"
+          viewBox="0 0 512 130"
+          class="text"
         />
-        <img
-          v-else
-          src="./assets/Logo_Text.svg"
-          style="display: inline-block; margin-left: -2px; max-width: 175px"
-          class="image"
-        />
-      </a>
+        <LogoText v-else viewBox="0 0 512 82" class="text" />
+      </router-link>
 
       <a
         role="button"
@@ -199,9 +183,16 @@ import { useRootStore } from "./store/root";
 import { useConstantStore } from "./store/constants";
 import { computed } from "vue";
 
+import LogoClean from "./assets/Logo_Clean.svg?component";
+import LogoText from "./assets/Logo_Text.svg?component";
+import LogoTextDevelop from "./assets/Logo_Develop_Text.svg?component";
+
 export default defineComponent({
   name: "app",
   components: {
+    LogoClean,
+    LogoText,
+    LogoTextDevelop,
     RouterLink,
     RouterView,
     AlertPortal,
@@ -267,6 +258,9 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+.navbar.is-primary .navbar-brand > a.navbar-item:focus {
+  background-color: unset !important;
+}
 .navbar-item .notification {
   padding: 15px !important;
   margin-bottom: 0 !important;
@@ -274,5 +268,20 @@ export default defineComponent({
 .router-outlet-container {
   margin-top: 6rem !important;
   margin-bottom: 6rem !important;
+}
+</style>
+
+<style lang="scss" scoped>
+.logo {
+  display: inline-block;
+  height: 100%;
+  width: 76px;
+  transform: scale(0.99);
+}
+.text {
+  display: inline-block;
+  width: 175px;
+  height: 100%;
+  margin-left: -8px;
 }
 </style>

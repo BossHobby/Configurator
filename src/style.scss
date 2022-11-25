@@ -85,3 +85,70 @@ $navbar-box-shadow-color: rgb(8 8 8 / 30%);
   border-radius: 0;
   height: unset;
 }
+
+.logo-animation {
+  @keyframes logo-wiggle {
+    0% {
+      transform: translateY(-70%) rotate(20deg);
+      transform-origin: center;
+    }
+    4% {
+      transform: translateY(0%) rotate(16deg) scaleY(0.999);
+      transform-origin: center;
+    }
+    6% {
+      transform: translateY(-2%) rotate(14deg) scaleY(1);
+      transform-origin: center;
+    }
+    8% {
+      transform: translateY(0) rotate(12deg);
+      transform-origin: center;
+    }
+    18% {
+      transform: rotate(-5deg);
+    }
+    28% {
+      transform: rotate(5deg);
+    }
+    38% {
+      transform: rotate(-1.5deg);
+    }
+    44% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  .avocado {
+    transform-origin: bottom center;
+    animation: logo-wiggle 10s cubic-bezier(0.45, 0.2, 0.45, 1) 1;
+  }
+}
+
+.text-animation {
+  @keyframes text-wiggle {
+    0% {
+      transform: translateY(-70%);
+      transform-origin: center;
+    }
+    4% {
+      transform: translateY(0%) scaleY(0.999);
+      transform-origin: center;
+    }
+    6% {
+      transform: translateY(-2%) scaleY(1);
+      transform-origin: center;
+    }
+    8% {
+      transform: translateY(0);
+      transform-origin: center;
+    }
+  }
+
+  .tagline {
+    transform-origin: bottom center;
+    animation: text-wiggle 10s cubic-bezier(0.45, 0.2, 0.45, 1) 1;
+  }
+}

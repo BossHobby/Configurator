@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import vue from "@vitejs/plugin-vue";
 import { execSync } from "child_process";
+import svgLoader from "vite-svg-loader";
 
 const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd();
 
@@ -32,6 +33,7 @@ export default defineConfig({
   base: base,
   plugins: [
     vue(),
+    svgLoader(),
     VitePWA({
       includeAssets: [
         "favicon.svg",
