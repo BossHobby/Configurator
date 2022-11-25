@@ -74,7 +74,9 @@ export default defineComponent({
   methods: {
     humanFileSize,
     reset() {
-      return this.blackbox.reset_blackbox().then(() => this.blackbox.list_blackbox());
+      return this.blackbox
+        .reset_blackbox()
+        .then(() => this.blackbox.list_blackbox());
     },
     download(index) {
       return this.blackbox.download_blackbox(index).then((url) => {

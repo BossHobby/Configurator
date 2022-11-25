@@ -1,7 +1,7 @@
 <template>
   <div class="columns is-multiline">
     <div
-      class="column is-one-third"
+      class="column mb-3 is-one-third"
       v-for="tmpl of templates.index"
       :key="tmpl.name"
     >
@@ -25,7 +25,7 @@
         <footer class="card-footer">
           <span class="card-footer-item"></span>
           <spinner-btn
-            class="card-footer-item is-white"
+            class="card-footer-item is-primary"
             @click="applyProfile(tmpl)"
           >
             Apply

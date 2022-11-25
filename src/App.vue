@@ -9,7 +9,7 @@
   </div>
 
   <nav
-    class="navbar is-fixed-top"
+    class="navbar is-fixed-top is-primary"
     role="navigation"
     aria-label="main navigation"
   >
@@ -122,7 +122,7 @@
 
       <div class="navbar-end">
         <spinner-btn
-          class="navbar-item button my-2 mr-2 is-primary"
+          class="navbar-item button my-auto mr-2 is-primary"
           @click="serial.toggle_connection"
           :disabled="!canConnect"
         >
@@ -138,7 +138,7 @@
     <router-view></router-view>
   </div>
 
-  <div v-if="serial.is_connected" class="navbar is-fixed-bottom">
+  <div v-if="serial.is_connected" class="navbar is-fixed-bottom has-shadow">
     <div class="navbar-brand">
       <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
@@ -272,7 +272,7 @@ export default defineComponent({
   margin-bottom: 0 !important;
 }
 .router-outlet-container {
-  margin-top: 5rem !important;
-  margin-bottom: 4rem !important;
+  margin-top: 6rem !important;
+  margin-bottom: 6rem !important;
 }
 </style>

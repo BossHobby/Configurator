@@ -1,8 +1,46 @@
-$primary: hsl(96deg 56% 43%);
-$link: hsl(96deg 81% 37%);
+$green: #4cae4f;
+$green-light: #68bb6c;
+$green-dark: #398e3d;
 
-@import 'node_modules/bulma/bulma.sass';
-@import 'node_modules/bulma-switch/src/sass/index.sass';
+$gray: #303030;
+$gray-ligth: #4b4b4b;
+$gray-ligther: #bbbbbb;
+$gray-darker: #282828;
+$gray-darkest: #080808;
+
+$white: rgb(255, 255, 255);
+$white-off: rgb(233, 235, 252);
+
+$primary: $green;
+
+$text: $white-off;
+$text-strong: $white;
+
+$link: $white-off;
+$link-hover: $gray-ligther;
+$link-invert: $gray-ligther;
+
+$scheme-main: $gray-darker;
+$scheme-main-bis: $gray;
+$scheme-main-ter: $gray;
+$scheme-invert: $white-off;
+
+$background: $gray;
+$body-background-color: $gray;
+
+$shadow: 0 0.5em 1em -0.125em rgba($gray-darkest, 0.5),
+  0 0px 0 1px rgba($gray-darkest, 0.2);
+$card-header-shadow: 0 0.125em 0.25em rgba($gray-darkest, 0.5);
+
+$border: $gray-ligth;
+$border-hover: $gray-ligther;
+$border-light: $gray-ligth;
+
+$navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
+$navbar-box-shadow-color: rgb(8 8 8 / 30%);
+
+@import "node_modules/bulma/bulma.sass";
+@import "node_modules/bulma-switch/src/sass/index.sass";
 
 .column-narrow {
   .column {
