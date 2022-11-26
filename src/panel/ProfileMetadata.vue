@@ -24,7 +24,11 @@
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
-                <input class="input is-static" :value="timeAgo(date)" readonly />
+                <input
+                  class="input is-static"
+                  :value="timeAgo(date)"
+                  readonly
+                />
               </div>
             </div>
           </div>
@@ -37,7 +41,11 @@
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
-                <input class="input is-static" :value="info.target_name" readonly />
+                <input
+                  class="input is-static"
+                  :value="info.target_name"
+                  readonly
+                />
               </div>
             </div>
           </div>
@@ -80,7 +88,15 @@
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
-                <input class="input is-static" :value="info.git_version" readonly />
+                <a
+                  :href="
+                    'https://github.com/BossHobby/QUICKSILVER/commit/' +
+                    info.git_version
+                  "
+                  target="_blank"
+                >
+                  {{ info.git_version }}
+                </a>
               </div>
             </div>
           </div>
