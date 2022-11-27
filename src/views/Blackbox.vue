@@ -6,7 +6,7 @@
           <p class="card-header-title">Blackbox</p>
           <div class="blackbox-progress has-text-right">
             <progress
-              class="progress my-0"
+              class="progress my-0 is-danger"
               :value="usedSize"
               :max="(blackbox.list.flash_size || 1) * 1024"
             ></progress>
@@ -30,7 +30,7 @@
             <div v-if="blackbox.progress">
               Downloading {{ humanFileSize(blackbox.speed || 0) }}/s...
               <progress
-                class="progress is-success my-0"
+                class="progress is-info my-0"
                 :value="blackbox.progress"
                 max="1"
               ></progress>
