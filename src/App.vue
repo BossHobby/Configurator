@@ -284,7 +284,12 @@ export default defineComponent({
         return localStorage.getItem("dark-mode") == "true";
       }
 
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const mediaQuerry = window.matchMedia("(prefers-color-scheme: light)");
+      if (mediaQuerry.matches) {
+        return false;
+      }
+
+      return true;
     },
     setDarkMode(val: boolean) {
       localStorage.setItem("dark-mode", val ? "true" : "false");
@@ -292,7 +297,6 @@ export default defineComponent({
     },
   },
   created() {
-    console.log("darkMode", this.darkMode);
     this.darkMode = this.getDarkMode();
     if (updater.updatePending()) {
       updater.finishUpdate();
