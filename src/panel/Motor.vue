@@ -88,10 +88,17 @@
               <div class="field-body">
                 <div class="field">
                   <div class="control is-expanded">
-                    <label class="checkbox">
-                      <input type="checkbox" id="gyro-flip" v-model="gyroFlip" />
-                      Enable
-                    </label>
+                    <input
+                      type="checkbox"
+                      class="switch"
+                      id="gyro-flip"
+                      v-model="gyroFlip"
+                    />
+                    <label
+                      class="py-0"
+                      style="height: 2em"
+                      for="gyro-flip"
+                    ></label>
                   </div>
                 </div>
               </div>
@@ -185,7 +192,10 @@
               </div>
             </div>
 
-            <div class="field is-horizontal" v-if="profile.profileVersionGt('0.2.0')">
+            <div
+              class="field is-horizontal"
+              v-if="profile.profileVersionGt('0.2.0')"
+            >
               <div class="field-label">
                 <label class="label">
                   Motor Limit Percent
@@ -289,12 +299,15 @@ export default defineComponent({
     gyroFlip: {
       get() {
         return (
-          (this.profile.motor.gyro_orientation & this.constants.GyroRotation.FLIP_180) > 0
+          (this.profile.motor.gyro_orientation &
+            this.constants.GyroRotation.FLIP_180) >
+          0
         );
       },
       set(value) {
         this.profile.motor.gyro_orientation =
-          this.gyroOrientation | (value ? this.constants.GyroRotation.FLIP_180 : 0x0);
+          this.gyroOrientation |
+          (value ? this.constants.GyroRotation.FLIP_180 : 0x0);
       },
     },
   },
