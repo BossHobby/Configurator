@@ -248,6 +248,11 @@ export class Blackbox {
   }
 
   public writeValue(val: any[]) {
+    if (!val[0]) {
+      console.warn("skipping blackbox entry");
+      return;
+    }
+
     this.buffer.writeUint8("I".charCodeAt(0));
     for (const d of this.defs) {
       let v = val[d.index];
