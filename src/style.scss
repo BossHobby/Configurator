@@ -3,45 +3,55 @@ $green-light: hsl(96deg 53% 48%);
 $green-dark: hsl(96deg 53% 40%);
 
 $gray: hsl(0, 0%, 19%);
-$gray-ligth: hsl(0, 0%, 29%);
-$gray-ligther: hsl(0, 0%, 73%);
+$gray-light: hsl(0, 0%, 29%);
+$gray-lighter: hsl(0, 0%, 73%);
 $gray-darker: hsl(0, 0%, 16%);
 $gray-darkest: hsl(0, 0%, 3%);
 
 $white: rgb(255, 255, 255);
 $white-off: rgb(233, 235, 252);
+$white-offer: rgb(210, 212, 225);
 
 $primary: $green;
 
-$text: $white-off;
-$text-strong: $white;
+@use "../node_modules/@bulvar/bulma/bulma.sass" with (
+  $primary: $primary,
+  $link: $green,
+  $link-visited: $green
+);
+@use "../node_modules/@bulvar/bulma/themes/light.sass";
+@import "../node_modules/bulma/sass/utilities/_all.sass";
+@import "../node_modules/bulma-switch/src/sass/index.sass";
 
-$link: $white-off;
-$link-hover: $gray-ligther;
-$link-invert: $gray-ligther;
-$link-focus: $gray-ligther;
+.theme-dark {
+  --text: #{$white-off};
+  --text-strong: #{$white};
+  --text-light: #{$white-offer};
 
-$scheme-main: $gray-darker;
-$scheme-main-bis: $gray;
-$scheme-main-ter: $gray;
-$scheme-invert: $white-off;
+  --link: #{$green};
+  --link-visited: #{$green};
+  --link-hover: #{$gray-lighter};
+  --link-invert: #{$gray-lighter};
+  --link-focus: #{$gray-lighter};
 
-$background: $gray;
-$body-background-color: $gray;
+  --scheme-main: #{$gray-darker};
+  --scheme-main-bis: #{$gray};
+  --scheme-main-ter: #{$gray};
+  --scheme-invert: #{$white-off};
 
-$shadow: 0 0.5em 1em -0.125em rgba($gray-darkest, 0.5),
-  0 0px 0 1px rgba($gray-darkest, 0.2);
-$card-header-shadow: 0 0.125em 0.25em rgba($gray-darkest, 0.5);
+  --background: #{$gray};
+  --body-background-color: #{$gray};
 
-$border: $gray-ligth;
-$border-hover: $gray-ligther;
-$border-light: $gray-ligth;
+  --border: #{$gray-light};
+  --border-hover: #{$gray-lighter};
+  --border-light: #{$gray-light};
 
-$navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
-$navbar-box-shadow-color: rgb(8 8 8 / 30%);
-
-@import "node_modules/bulma/bulma.sass";
-@import "node_modules/bulma-switch/src/sass/index.sass";
+  --shadow: #{0 0.5em 1em -0.125em rgba($gray-darkest, 0.5)},
+    #{0 0px 0 1px rgba($gray-darkest, 0.2)};
+  --card-header-shadow: 0 0.125em 0.25em #{rgba($gray-darkest, 0.5)};
+  --navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
+  --navbar-box-shadow-color: rgb(8 8 8 / 30%);
+}
 
 body {
   font-family: "Roboto", sans-serif;

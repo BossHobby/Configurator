@@ -5,8 +5,16 @@ import {
   faCircleQuestion,
   faTriangleExclamation,
   faUpload,
+  faCloudMoon,
+  faCloudSun,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faCircleQuestion, faTriangleExclamation, faUpload);
+library.add(
+  faCircleQuestion,
+  faTriangleExclamation,
+  faUpload,
+  faCloudMoon,
+  faCloudSun
+);
 
 export default FontAwesomeIcon;

@@ -105,13 +105,31 @@
       </div>
 
       <div class="navbar-end">
-        <spinner-btn
-          class="navbar-item button my-auto mr-2 is-primary"
-          @click="serial.toggle_connection"
-          :disabled="!canConnect"
-        >
-          {{ connectButtonText }}
-        </spinner-btn>
+        <div class="navbar-item">
+          <div class="buttons">
+            <button class="button is-primary" @click="setDarkMode(!darkMode)">
+              <font-awesome-icon
+                v-if="!darkMode"
+                icon="fa-solid fa-cloud-moon"
+                size="lg"
+                fixed-width
+              />
+              <font-awesome-icon
+                v-else
+                icon="fa-solid fa-cloud-sun"
+                size="lg"
+                fixed-width
+              />
+            </button>
+            <spinner-btn
+              class="button is-primary"
+              @click="serial.toggle_connection"
+              :disabled="!canConnect"
+            >
+              {{ connectButtonText }}
+            </spinner-btn>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -212,8 +230,24 @@ export default defineComponent({
   },
   data() {
     return {
+      darkMode: true,
       branch: import.meta.env.VITE_BRANCH_NAME,
     };
+  },
+  watch: {
+    darkMode(newVal, oldVal) {
+      if (newVal == oldVal) {
+        return;
+      }
+      if (!document.firstElementChild) {
+        return;
+      }
+      if (newVal) {
+        document.firstElementChild.className = "theme-dark";
+      } else {
+        document.firstElementChild.className = "";
+      }
+    },
   },
   computed: {
     availablePortOptions() {
@@ -245,8 +279,21 @@ export default defineComponent({
   },
   methods: {
     timeAgo,
+    getDarkMode() {
+      if (localStorage.getItem("dark-mode")) {
+        return localStorage.getItem("dark-mode") == "true";
+      }
+
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    },
+    setDarkMode(val: boolean) {
+      localStorage.setItem("dark-mode", val ? "true" : "false");
+      this.darkMode = val;
+    },
   },
   created() {
+    console.log("darkMode", this.darkMode);
+    this.darkMode = this.getDarkMode();
     if (updater.updatePending()) {
       updater.finishUpdate();
     }
