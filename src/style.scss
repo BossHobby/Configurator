@@ -17,7 +17,8 @@ $primary: $green;
 @use "../node_modules/@bulvar/bulma/bulma.sass" with (
   $primary: $primary,
   $link: $green,
-  $link-visited: $green
+  $link-visited: $green,
+  $success: $green-light
 );
 @use "../node_modules/@bulvar/bulma/themes/light.sass";
 @import "../node_modules/bulma/sass/utilities/_all.sass";

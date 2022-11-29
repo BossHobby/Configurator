@@ -7,6 +7,7 @@ import {
   faUpload,
   faCloudMoon,
   faCloudSun,
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -14,7 +15,8 @@ library.add(
   faTriangleExclamation,
   faUpload,
   faCloudMoon,
-  faCloudSun
+  faCloudSun,
+  faDownload
 );
 
 export default FontAwesomeIcon;
