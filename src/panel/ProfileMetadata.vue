@@ -118,7 +118,7 @@
         Reset Profile
       </spinner-btn>
     </footer>
-    <input accept=".json, .yaml" type="file" ref="file" style="display: none" />
+    <input accept=".yaml" type="file" ref="file" style="display: none" />
     <a ref="downloadAnchor" target="_blank"></a>
   </div>
 </template>
