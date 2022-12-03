@@ -173,10 +173,10 @@ export const DefaultFields: FieldDefinition[] = [
 
   { name: "cpuload", index: 12, signed: false },
 
-  { name: "debug[0]", index: 13, signed: true },
-  { name: "debug[1]", index: 14, signed: true },
-  { name: "debug[2]", index: 15, signed: true },
-  { name: "debug[3]", index: 16, signed: true },
+  { name: "debug[0]", array_index: 0, index: 13, signed: true },
+  { name: "debug[1]", array_index: 1, index: 13, signed: true },
+  { name: "debug[2]", array_index: 2, index: 13, signed: true },
+  { name: "debug[3]", array_index: 3, index: 13, signed: true },
 ];
 
 export class Blackbox {

@@ -18,6 +18,7 @@ export enum BlackboxField {
   GYRO_FILTER,
   MOTOR,
   CPU_LOAD,
+  DEBUG,
 }
 
 export enum BlackboxFieldUnit {
@@ -127,6 +128,13 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     title: "CPU Load",
     scale: 1,
     unit: BlackboxFieldUnit.US,
+  },
+  [BlackboxField.DEBUG]: {
+    name: "debug",
+    title: "Debug",
+    axis: AxisIndex(4),
+    scale: 1,
+    unit: BlackboxFieldUnit.NONE,
   },
 };
 
