@@ -97,7 +97,7 @@
                                 type="number"
                                 :step="rateStep[currentMode][index]"
                                 v-model.number="currentProfile.rate[index][0]"
-                                @update="update()"
+                                @input="update()"
                               />
                             </div>
                             <div class="column is-4">
@@ -107,7 +107,7 @@
                                 type="number"
                                 :step="rateStep[currentMode][index]"
                                 v-model.number="currentProfile.rate[index][1]"
-                                @update="update()"
+                                @input="update()"
                               />
                             </div>
                             <div class="column is-4">
@@ -117,7 +117,7 @@
                                 type="number"
                                 :step="rateStep[currentMode][index]"
                                 v-model.number="currentProfile.rate[index][2]"
-                                @update="update()"
+                                @input="update()"
                               />
                             </div>
                           </div>
@@ -153,7 +153,9 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="sticks-deadband">SticksDeadband</label>
+                <label class="label" for="sticks-deadband"
+                  >SticksDeadband</label
+                >
               </div>
               <div class="field-body">
                 <div class="field">
@@ -211,12 +213,15 @@ export default defineComponent({
       set(val) {
         const oldMode = this.profile.rate.rates[this.profile.rate.profile].mode;
         this.rateBackup[oldMode] = JSON.parse(
-          JSON.stringify(this.profile.rate.rates[this.profile.rate.profile].rate)
+          JSON.stringify(
+            this.profile.rate.rates[this.profile.rate.profile].rate
+          )
         );
         this.profile.rate.rates[this.profile.rate.profile].mode = val;
 
         const copy = [...(this.rateBackup[val] || this.rateDefaults[val])];
-        this.profile.rate.rates[this.profile.rate.profile].rate = copy as vec3_t[];
+        this.profile.rate.rates[this.profile.rate.profile].rate =
+          copy as vec3_t[];
       },
     },
     currentModeText() {
@@ -336,21 +341,25 @@ export default defineComponent({
       const rcCommandfAbs = val > 0 ? val : -val;
       let angleRate = 200.0 * rcRate * val;
 
-      const superExpo = this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
+      const superExpo =
+        this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
       if (superExpo) {
         const rcSuperfactor =
           1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
         angleRate *= rcSuperfactor;
       }
-      return this.constrainf(angleRate, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
+      return this.constrainf(
+        angleRate,
+        -SETPOINT_RATE_LIMIT,
+        SETPOINT_RATE_LIMIT
+      );
     },
     calcActual(axis, val) {
       const expo = this.currentProfile.rate[this.ACTUAL_EXPO][axis];
       const rate_expo = this.rcexpo(val, expo);
 
-      const center_sensitivity = this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][
-        axis
-      ];
+      const center_sensitivity =
+        this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][axis];
       const max_rate = this.currentProfile.rate[this.ACTUAL_MAX_RATE][axis];
 
       let stick_movement = max_rate - center_sensitivity;
