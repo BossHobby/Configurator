@@ -88,13 +88,7 @@
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
-                <a
-                  :href="
-                    'https://github.com/BossHobby/QUICKSILVER/commit/' +
-                    info.git_version
-                  "
-                  target="_blank"
-                >
+                <a :href="versionLink" target="_blank">
                   {{ info.git_version }}
                 </a>
               </div>
@@ -171,6 +165,18 @@ export default defineComponent({
     },
     downloadAnchorRef(): HTMLAnchorElement {
       return this.$refs.downloadAnchor as HTMLAnchorElement;
+    },
+    versionLink() {
+      if (/^(v\d\..*)/.test(this.info.git_version)) {
+        return (
+          "https://github.com/BossHobby/QUICKSILVER/releases/tag/" +
+          this.info.git_version
+        );
+      }
+      return (
+        "https://github.com/BossHobby/QUICKSILVER/commit/" +
+        this.info.git_version
+      );
     },
   },
   methods: {
