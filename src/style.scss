@@ -3,14 +3,14 @@ $green-light: hsl(96deg 53% 48%);
 $green-dark: hsl(96deg 53% 40%);
 
 $gray: hsl(0, 0%, 19%);
-$gray-light: hsl(0, 0%, 29%);
-$gray-lighter: hsl(0, 0%, 73%);
 $gray-darker: hsl(0, 0%, 16%);
 $gray-darkest: hsl(0, 0%, 3%);
+$gray-light: hsl(0, 0%, 29%);
+$gray-lighter: hsl(0, 0%, 73%);
 
 $white: rgb(255, 255, 255);
-$white-off: rgb(233, 235, 252);
-$white-offer: rgb(210, 212, 225);
+$white-off: hsl(0, 0%, 95%);
+$white-offer: hsl(0, 0%, 75%);
 
 $primary: $green;
 
