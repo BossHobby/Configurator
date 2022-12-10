@@ -5,6 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import vue from "@vitejs/plugin-vue";
 import { execSync } from "child_process";
 import svgLoader from "vite-svg-loader";
+import webfontDownload from "vite-plugin-webfont-dl";
 
 const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd();
 
@@ -34,6 +35,10 @@ export default defineConfig({
   plugins: [
     vue(),
     svgLoader(),
+    webfontDownload([
+      "https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap",
+      "https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap",
+    ]),
     VitePWA({
       includeAssets: [
         "favicon.svg",
