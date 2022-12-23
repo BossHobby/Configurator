@@ -30,7 +30,7 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
-              Smart Audio
+              VTX
               <tooltip entry="serial.smart_audio" />
             </label>
           </div>
