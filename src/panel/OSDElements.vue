@@ -84,6 +84,8 @@
                         type="number"
                         step="1"
                         :value="el.pos_x"
+                        min="0"
+                        :max="screen.width-1"
                         @input="osd_set(i, 'pos_x', $event?.target?.value)"
                       />
                     </div>
@@ -95,6 +97,8 @@
                         type="number"
                         step="1"
                         :value="el.pos_y"
+                        min="0"
+                        :max="screen.height-1"
                         @input="osd_set(i, 'pos_y', $event?.target?.value)"
                       />
                     </div>
