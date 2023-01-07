@@ -18,7 +18,9 @@
         <div class="card-content field-is-3">
           <div class="field is-horizontal">
             <div class="field-label is-normal">
-              <label class="label"> Source <tooltip entry="flash.source" /> </label>
+              <label class="label">
+                Source <tooltip entry="flash.source" />
+              </label>
             </div>
             <div class="field-body">
               <div class="field is-narrow">
@@ -41,13 +43,17 @@
             </div>
             <div class="field-body">
               <div class="field">
-                <div class="file is-boxed is-medium" :class="{ 'has-name': file }">
+                <div
+                  class="file is-boxed is-medium"
+                  :class="{ 'has-name': file }"
+                >
                   <label class="file-label">
                     <input
                       class="file-input"
                       type="file"
                       @change="updateFile()"
                       ref="file"
+                      accept=".hex"
                     />
                     <span class="file-cta">
                       <span class="file-icon">
@@ -113,7 +119,11 @@
           </div>
         </div>
         <footer class="card-footer">
-          <spinner-btn class="card-footer-item" :disabled="!canFlash" type="submit">
+          <spinner-btn
+            class="card-footer-item"
+            :disabled="!canFlash"
+            type="submit"
+          >
             Flash
           </spinner-btn>
         </footer>
