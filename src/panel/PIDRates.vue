@@ -26,7 +26,9 @@
                     ></input-select>
                   </div>
                   <div class="control">
-                    <spinner-btn @click="load_preset(current_preset)"> Load </spinner-btn>
+                    <spinner-btn @click="load_preset(current_preset)">
+                      Load
+                    </spinner-btn>
                   </div>
                 </div>
               </div>
@@ -85,6 +87,7 @@
                       :id="`pid-${key}-roll`"
                       type="number"
                       step="1.0"
+                      min="0"
                       v-model.number="pid_rates[key][0]"
                     />
                   </p>
@@ -96,6 +99,7 @@
                       :id="`pid-${key}-pitch`"
                       type="number"
                       step="1.0"
+                      min="0"
                       v-model.number="pid_rates[key][1]"
                     />
                   </p>
@@ -107,6 +111,7 @@
                       :id="`pid-${key}-yaw`"
                       type="number"
                       step="1.0"
+                      min="0"
                       v-model.number="pid_rates[key][2]"
                     />
                   </p>
@@ -127,7 +132,9 @@
                     <input-select
                       id="throttle_dterm_attenuation-enable"
                       class="is-fullwidth"
-                      v-model.number="profile.pid.throttle_dterm_attenuation.tda_active"
+                      v-model.number="
+                        profile.pid.throttle_dterm_attenuation.tda_active
+                      "
                       :options="tdaOptions"
                     ></input-select>
                   </div>
@@ -137,7 +144,10 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="throttle_dterm_attenuation-breakpoint">
+                <label
+                  class="label"
+                  for="throttle_dterm_attenuation-breakpoint"
+                >
                   TDA Breakpoint
                   <tooltip entry="pid.tda_breakpoint" />
                 </label>
@@ -150,6 +160,7 @@
                       id="throttle_dterm_attenuation-breakpoint"
                       type="number"
                       step="0.05"
+                      min="0"
                       v-model.number="
                         profile.pid.throttle_dterm_attenuation.tda_breakpoint
                       "
@@ -174,7 +185,10 @@
                       id="throttle_dterm_attenuation-percent"
                       type="number"
                       step="0.05"
-                      v-model.number="profile.pid.throttle_dterm_attenuation.tda_percent"
+                      min="0"
+                      v-model.number="
+                        profile.pid.throttle_dterm_attenuation.tda_percent
+                      "
                     />
                   </div>
                 </div>

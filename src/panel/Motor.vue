@@ -44,6 +44,8 @@
                       id="digital-idle"
                       type="number"
                       step="0.1"
+                      min="0"
+                      max="1"
                       v-model.number="profile.motor.digital_idle"
                     />
                   </div>
@@ -141,6 +143,7 @@
                       id="torque-boost"
                       type="number"
                       step="0.1"
+                      min="0"
                       v-model.number="profile.motor.torque_boost"
                     />
                   </div>
@@ -163,6 +166,7 @@
                       id="throttle-boost"
                       type="number"
                       step="0.1"
+                      min="0"
                       v-model.number="profile.motor.throttle_boost"
                     />
                   </div>
@@ -185,6 +189,8 @@
                       id="turtle-throttle-percent"
                       type="number"
                       step="1"
+                      min="0"
+                      max="100"
                       v-model.number="profile.motor.turtle_throttle_percent"
                     />
                   </div>
@@ -210,6 +216,8 @@
                       id="motor-limit-percent"
                       type="number"
                       step="1"
+                      min="0"
+                      max="100"
                       v-model.number="profile.motor.motor_limit"
                     />
                   </div>

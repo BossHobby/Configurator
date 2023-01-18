@@ -24,6 +24,7 @@
                   id="lipo-cell-count"
                   type="number"
                   step="1"
+                  min="0"
                   v-model.number="profile.voltage.lipo_cell_count"
                 />
               </div>
@@ -66,6 +67,7 @@
                   id="vbattlow"
                   type="number"
                   step="0.1"
+                  min="0"
                   v-model.number="profile.voltage.vbattlow"
                 />
               </div>
@@ -88,6 +90,7 @@
                   id="actual-battery-voltage"
                   type="number"
                   step="0.1"
+                  min="0"
                   v-model.number="profile.voltage.actual_battery_voltage"
                 />
               </div>
@@ -110,6 +113,7 @@
                   id="reported-telemetry-voltage"
                   type="number"
                   step="0.1"
+                  min="0"
                   v-model.number="profile.voltage.reported_telemetry_voltage"
                 />
               </div>
@@ -132,6 +136,7 @@
                   id="ibat_scale"
                   type="number"
                   step="1"
+                  min="0"
                   v-model.number="profile.voltage.ibat_scale"
                 />
               </div>

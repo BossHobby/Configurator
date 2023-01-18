@@ -45,6 +45,7 @@
                       id="gyro-1-freq"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.gyro[0].cutoff_freq"
                     />
                   </div>
@@ -88,6 +89,7 @@
                       id="gyro-2-freq"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.gyro[1].cutoff_freq"
                     />
                   </div>
@@ -133,6 +135,7 @@
                       id="dterm-1-freq"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.dterm[0].cutoff_freq"
                     />
                   </div>
@@ -176,6 +179,7 @@
                       id="dterm-2-freq"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.dterm[1].cutoff_freq"
                     />
                   </div>
@@ -219,6 +223,7 @@
                       id="dterm-dynamic-min"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.dterm_dynamic_min"
                     />
                   </div>
@@ -241,6 +246,7 @@
                       id="dterm-dynamic-max"
                       type="number"
                       step="5"
+                      min="0"
                       v-model.number="profile.filter.dterm_dynamic_max"
                     />
                   </div>
