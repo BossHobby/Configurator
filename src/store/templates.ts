@@ -1,7 +1,11 @@
 import { defineStore } from "pinia";
 
-const TEMPLATE_URL =
-  "https://raw.githubusercontent.com/BossHobby/Templates/master/";
+const isDevelop = import.meta.env.VITE_BRANCH_NAME;
+
+const DEVELOP_TEMPLATE_URL =
+  "https://raw.githubusercontent.com/BossHobby/Templates/develop-deploy/";
+const MASTER_TEMPLATE_URL =
+  "https://raw.githubusercontent.com/BossHobby/Templates/master-deploy/";
 
 export const useTemplatesStore = defineStore("templates", {
   state: () => ({
@@ -9,14 +13,16 @@ export const useTemplatesStore = defineStore("templates", {
   }),
   actions: {
     fetch_templates() {
-      return fetch(TEMPLATE_URL + "index.json")
+      const url = isDevelop ? DEVELOP_TEMPLATE_URL : MASTER_TEMPLATE_URL;
+
+      return fetch(url + "index.json")
         .then((res) => res.json())
         .then((index) => {
           this.index = index.map((e) => {
             if (e.image) {
-              e.image = TEMPLATE_URL + e.image;
+              e.image = url + e.image;
             }
-            e.profile = TEMPLATE_URL + e.profile;
+            e.profile = url + e.profile;
             return e;
           });
         });
