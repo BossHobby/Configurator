@@ -38,14 +38,14 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
+        <router-link active-class="is-active" class="navbar-item" to="/profile"
+          >Profile</router-link
+        >
         <router-link
           active-class="is-active"
           class="navbar-item"
           to="/templates"
           >Templates</router-link
-        >
-        <router-link active-class="is-active" class="navbar-item" to="/profile"
-          >Profile</router-link
         >
         <router-link active-class="is-active" class="navbar-item" to="/setup"
           >Setup</router-link
@@ -135,6 +135,7 @@
   </nav>
 
   <AlertPortal />
+  <ModalPortal />
 
   <div class="container router-outlet-container">
     <router-view></router-view>
@@ -193,6 +194,7 @@ import { updater } from "@/store/util/updater";
 import { RouterLink, RouterView } from "vue-router";
 import { timeAgo } from "@/mixin/filters";
 import AlertPortal from "@/components/AlertPortal.vue";
+import ModalPortal from "@/components/ModalPortal.vue";
 import { useInfoStore } from "./store/info";
 import { useProfileStore } from "./store/profile";
 import { useStateStore } from "./store/state";
@@ -214,6 +216,7 @@ export default defineComponent({
     RouterLink,
     RouterView,
     AlertPortal,
+    ModalPortal,
   },
   setup() {
     const constants = useConstantStore();

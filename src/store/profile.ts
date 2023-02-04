@@ -7,7 +7,7 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 
-function mergeDeep(target, source) {
+export function mergeDeep(target, source) {
   for (const [key, val] of Object.entries(source)) {
     if (val !== null && typeof val === `object`) {
       if (target[key] === undefined) {
@@ -83,6 +83,9 @@ function migrateProfile(profile) {
   const profileVersion = ensureMinVersion(profile?.meta?.version);
 
   let p = JSON.parse(JSON.stringify(profile));
+  if (!p.meta) {
+    p.meta = {};
+  }
   if (firmwareVersion != profileVersion) {
     p = migrateProfileVersion(p, profileVersion);
   }

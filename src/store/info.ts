@@ -3,10 +3,13 @@ import semver from "semver";
 import { decodeSemver } from "@/store/util";
 import { defineStore } from "pinia";
 import type { target_info_t } from "./serial/types";
+import { $enum } from "ts-enum-util";
+import { useConstantStore } from "./constants";
 
 export interface local_target_info_t extends target_info_t {
   quic_protocol_semver: string;
   rx_protocol?: number;
+  gyro_name: string;
 }
 
 export const useInfoStore = defineStore("info", {
@@ -21,6 +24,7 @@ export const useInfoStore = defineStore("info", {
     quic_protocol_semver: "v0.0.0",
 
     gyro_id: 0,
+    gyro_name: "",
     rx_protocol: 0,
     rx_protocols: [],
     features: 0,
@@ -50,6 +54,9 @@ export const useInfoStore = defineStore("info", {
       if (this.quic_protocol_version) {
         this.quic_protocol_semver = decodeSemver(this.quic_protocol_version);
       }
+
+      const constants = useConstantStore();
+      this.gyro_name = $enum(constants.GyroType).getKeys()[this.gyro_id];
     },
   },
 });

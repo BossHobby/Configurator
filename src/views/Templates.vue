@@ -1,5 +1,4 @@
 <template>
-  <TemplateModal :template="template"></TemplateModal>
   <div class="columns is-multiline">
     <div
       class="column mb-3 is-one-third"
@@ -39,38 +38,21 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import YAML from "yaml";
 import { useTemplatesStore } from "@/store/templates";
 import { useProfileStore } from "@/store/profile";
 import TemplateModal from "@/components/TemplateModal.vue";
 
 export default defineComponent({
   name: "Templates",
-  components: {
-    TemplateModal,
-  },
   setup() {
     return {
       templates: useTemplatesStore(),
       profile: useProfileStore(),
     };
   },
-  data() {
-    return {
-      template: null,
-    };
-  },
   methods: {
     applyProfile(p) {
-      this.template = p;
-      /*
-      return fetch(p.profile)
-        .then((res) => res.text())
-        .then((t) => YAML.parse(t))
-        .then((patch) => {
-          return this.profile.merge_profile(patch);
-        });
-        */
+      this.$modal.show(TemplateModal, { template: p });
     },
   },
   created() {
@@ -84,7 +66,6 @@ export default defineComponent({
   max-width: 18em;
 
   .card-content {
-    height: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
   }

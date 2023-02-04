@@ -73,7 +73,7 @@
               <div class="control is-expanded">
                 <input
                   class="input is-static"
-                  :value="gyroNames[info.gyro_id]"
+                  :value="info.gyro_name"
                   readonly
                 />
               </div>
@@ -156,9 +156,6 @@ export default defineComponent({
           return this.info.features & (1 << (i + 1));
         })
         .join(", ");
-    },
-    gyroNames() {
-      return $enum(this.GyroType).getKeys();
     },
     fileRef(): HTMLInputElement {
       return this.$refs.file as HTMLInputElement;
