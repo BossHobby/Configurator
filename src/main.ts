@@ -8,6 +8,7 @@ import SpinnerBtn from "./components/SpinnerBtn.vue";
 import Tooltip from "./components/Tooltip.vue";
 import InputSelect from "./components/InputSelect.vue";
 import FontAwesomeIcon from "./mixin/icons";
+import { ModalPlugin } from "./mixin/modal";
 
 import "./style.scss";
 import "./mixin/chart.ts";
@@ -21,5 +22,6 @@ app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 app.use(pinia);
 app.use(router);
+app.use(ModalPlugin);
 
 app.mount("#app");
