@@ -211,7 +211,7 @@
     "text": "HDZero requires TX and RX connected to use msp, define the UART here"
   },
   "voltage.actual_battery_voltage": {
-    "text": "Default is 4.2V for normal lipo packs, set to 4.35V for HV packs"
+    "text": "Default is 4.2V, set to whatever value you get from a multimeter or lipo tester for a full lipo."
   },
   "voltage.ibat_scale": {
     "text": "Use the value provided by the FC manufacturer"
@@ -223,7 +223,7 @@
     "text": "Adjusts the pids to compensate for lipo voltage drop, default ON"
   },
   "voltage.reported_telemetry_voltage": {
-    "disabled": true
+    "text": "Set to the value received by your tx or in the OSD view with a full lipo"
   },
   "voltage.vbattlow": {
     "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V (uses Fuel gauge volts)",
