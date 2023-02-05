@@ -178,7 +178,7 @@
         Reboot
       </spinner-btn>
       <spinner-btn
-        class="navbar-item is-info my-auto mx-2"
+        class="navbar-item is-primary my-auto mx-2"
         @click="profile.apply_profile(profile.$state)"
         :disabled="info.is_read_only"
       >
