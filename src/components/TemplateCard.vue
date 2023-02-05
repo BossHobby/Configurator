@@ -1,8 +1,17 @@
 <template>
   <div v-if="tmpl" class="card my-5">
     <div class="card-content">
-      <p class="title is-3">
-        {{ tmpl.name }}
+      <p class="title">
+        <span class="is-3">
+          {{ tmpl.name }}
+        </span>
+
+        <span
+          class="is-size-5 has-text-weight-normal has-text-grey-lighter is-pulled-right"
+        >
+          <font-awesome-icon icon="fa-regular fa-pen-to-square" fixed-width />
+          by {{ tmpl.author }}
+        </span>
       </p>
 
       <article class="media">
@@ -16,7 +25,7 @@
           <hr />
 
           <div v-for="o of tmpl.options" class="field is-horizontal">
-            <div class="field-label is-medium is-align-self-flex-start pt-0">
+            <div class="field-label is-medium is-align-self-flex-start">
               <label class="label">
                 <span class="is-size-5">{{ o.title }}</span>
                 <tooltip :text="o.desc" />
