@@ -26,6 +26,7 @@ export interface TemplateOption {
 export interface TemplateEntry {
   name: string;
   desc: string;
+  author: string;
   options: TemplateOption[];
   category: string;
   profile: string;
