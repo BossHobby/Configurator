@@ -5,116 +5,177 @@
     </header>
 
     <div class="card-content">
-      <div class="content column-narrow field-is-3">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Protocol</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="vtx-protocol"
-                  v-model.number="vtx.settings.protocol"
-                  :options="vtxProtocolOptions"
-                ></input-select>
+      <div class="content columns">
+        <div class="column field-is-3">
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Protocol</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input-select
+                    id="vtx-protocol"
+                    v-model.number="vtx.settings.protocol"
+                    :options="vtxProtocolOptions"
+                  ></input-select>
+                </div>
               </div>
             </div>
           </div>
+
+          <template v-if="vtx.settings.detected">
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Frequency</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    {{
+                      frequencyTable[vtx.settings.band][vtx.settings.channel]
+                    }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Band</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="vtx-band"
+                      v-model.number="vtx.settings.band"
+                      :options="vtxBandOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Channel</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="vtx-channel"
+                      v-model.number="vtx.settings.channel"
+                      :options="vtxChannelOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal" v-if="vtx.settings.pit_mode != 2">
+              <div class="field-label">
+                <label class="label">Pit Mode</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="vtx-pit-mode"
+                      v-model.number="vtx.settings.pit_mode"
+                      :options="vtxPitModeOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Power</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="vtx-power-level"
+                      v-model.number="vtx.settings.power_level"
+                      :options="vtxPowerLevelOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="is-size-5 has-text-centered has-text-weight-semibold">
+              Not detected
+            </div>
+          </template>
         </div>
-
-        <template v-if="vtx.settings.detected">
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Frequency</label>
+        <div class="column field-is-3">
+          <template v-if="vtx.settings.detected && vtx.settings.power_table">
+            <div class="columns">
+              <div class="column is-4" style="margin-left: 30%">
+                <h6 class="mb-1 ml-2">Label</h6>
+              </div>
+              <div class="column is-4" v-if="vtx.settings.protocol != 3">
+                <h6 class="mb-1 ml-3">Value</h6>
+              </div>
             </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  {{ frequencyTable[vtx.settings.band][vtx.settings.channel] }}
+            <div
+              v-for="(label, index) in vtx.settings.power_table.labels"
+              class="field field-is-2 is-horizontal"
+            >
+              <div class="field-label">
+                <label class="label">Level {{ index + 1 }}</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <input
+                          class="input"
+                          :class="{ 'is-static': vtx.settings.protocol == 3 }"
+                          :id="'power-level-value-' + index"
+                          :readonly="vtx.settings.protocol == 3"
+                          type="text"
+                          v-model.text="vtx.settings.power_table.labels[index]"
+                        />
+                      </div>
+                      <div
+                        class="column is-6"
+                        v-if="vtx.settings.protocol != 3"
+                      >
+                        <input
+                          class="input"
+                          :id="'power-level-value-' + index"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          v-model.number="
+                            vtx.settings.power_table.values[index]
+                          "
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Band</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <input-select
-                    id="vtx-band"
-                    v-model.number="vtx.settings.band"
-                    :options="vtxBandOptions"
-                  ></input-select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Channel</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <input-select
-                    id="vtx-channel"
-                    v-model.number="vtx.settings.channel"
-                    :options="vtxChannelOptions"
-                  ></input-select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal" v-if="vtx.settings.pit_mode != 2">
-            <div class="field-label">
-              <label class="label">Pit Mode</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <input-select
-                    id="vtx-pit-mode"
-                    v-model.number="vtx.settings.pit_mode"
-                    :options="vtxPitModeOptions"
-                  ></input-select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Power Level</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <input-select
-                    id="vtx-power-level"
-                    v-model.number="vtx.settings.power_level"
-                    :options="vtxPowerLevelOptions"
-                  ></input-select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="is-size-5 has-text-centered has-text-weight-semibold">
-            Not detected
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
     </div>
 
     <footer class="card-footer">
-      <spinner-btn class="card-footer-item" @click="vtx.apply_vtx_settings(vtx.settings)">
+      <span class="card-footer-item"></span>
+      <spinner-btn
+        class="card-footer-item is-primary"
+        @click="vtx.apply_vtx_settings(vtx.settings)"
+      >
         Apply
       </spinner-btn>
     </footer>
@@ -173,6 +234,11 @@ export default defineComponent({
       return data;
     },
     vtxPowerLevelOptions() {
+      if (this.vtx.settings.power_table) {
+        return this.vtx.settings.power_table.labels.map((label, index) => {
+          return { value: index, text: label };
+        });
+      }
       const data = [
         { value: 0, text: "VTX_POWER_LEVEL_1" },
         { value: 1, text: "VTX_POWER_LEVEL_2" },

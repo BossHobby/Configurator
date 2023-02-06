@@ -10,6 +10,11 @@ export const useVTXStore = defineStore("vtx", {
       detected: 0,
       channel: 0,
       band: 0,
+      power_table: {
+        levels: 0,
+        labels: [],
+        values: [],
+      },
     },
   }),
   actions: {
