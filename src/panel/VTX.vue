@@ -120,7 +120,7 @@
               <div class="column is-4" style="margin-left: 30%">
                 <h6 class="mb-1 ml-2">Label</h6>
               </div>
-              <div class="column is-4" v-if="vtx.settings.protocol != 3">
+              <div class="column is-4" v-if="displayValueEdit">
                 <h6 class="mb-1 ml-3">Value</h6>
               </div>
             </div>
@@ -129,7 +129,7 @@
               class="field field-is-2 is-horizontal"
             >
               <div class="field-label">
-                <label class="label">Level {{ index + 1 }}</label>
+                <label class="label">Power Level {{ index + 1 }}</label>
               </div>
               <div class="field-body">
                 <div class="field">
@@ -142,13 +142,11 @@
                           :id="'power-level-value-' + index"
                           :readonly="vtx.settings.protocol == 3"
                           type="text"
+                          maxlength="3"
                           v-model.text="vtx.settings.power_table.labels[index]"
                         />
                       </div>
-                      <div
-                        class="column is-6"
-                        v-if="vtx.settings.protocol != 3"
-                      >
+                      <div class="column is-6" v-if="displayValueEdit">
                         <input
                           class="input"
                           :id="'power-level-value-' + index"
@@ -209,6 +207,9 @@ export default defineComponent({
     };
   },
   computed: {
+    displayValueEdit() {
+      return this.vtx.settings.protocol == 1;
+    },
     vtxProtocolOptions() {
       const data = [
         { value: 0, text: "AUTO" },
