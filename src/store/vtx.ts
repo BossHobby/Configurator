@@ -21,6 +21,14 @@ export const useVTXStore = defineStore("vtx", {
     apply_vtx_settings(vtx_settings) {
       const root = useRootStore();
 
+      if (vtx_settings.power_table) {
+        for (let i = 0; i < vtx_settings.power_table.labels.length; i++) {
+          while (vtx_settings.power_table.labels[i].length < 3) {
+            vtx_settings.power_table.labels[i] += " ";
+          }
+        }
+      }
+
       return serial
         .set(QuicVal.VtxSettings, vtx_settings)
         .then((v) => (this.settings = v))
