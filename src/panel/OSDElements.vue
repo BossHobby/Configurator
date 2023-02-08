@@ -132,6 +132,14 @@
               </header>
               <div class="card-content">
                 <div class="content">
+                  <canvas
+                    :width="svg_width"
+                    :height="svg_height"
+                    ref="canvas"
+                    style="width: 100%"
+                    class="osd-canvas"
+                  ></canvas>
+
                   <svg
                     :viewBox="viewBox"
                     xmlns="http://www.w3.org/2000/svg"
@@ -173,12 +181,14 @@
 import { defineComponent } from "vue";
 import { OSD } from "@/store/util/osd";
 import { useProfileStore } from "@/store/profile";
+import { useOSDStore } from "@/store/osd";
 
 export default defineComponent({
   name: "OSDElements",
   setup() {
     return {
       profile: useProfileStore(),
+      osd: useOSDStore(),
       dragInfo: {
         element: null,
         grabOffset: { x: 0, y: 0 },
@@ -197,10 +207,13 @@ export default defineComponent({
     screen() {
       return {
         width: this.is_hd ? 50 : 30,
-        height: this.is_hd ? 18 : 16 - 2,
+        height: this.is_hd ? 18 : 15,
         char_width: 12,
         char_height: 18,
       };
+    },
+    canvas() {
+      return this.$refs.canvas as HTMLCanvasElement;
     },
     svg_width() {
       return this.screen.width * this.screen.char_width;
@@ -217,14 +230,14 @@ export default defineComponent({
         { name: "CELL COUNT", enabled: true, text: "1S" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3V" },
         { name: "FILTERED VOLTS", enabled: true, text: " 4.3V" },
-        { name: "GYRO TEMP", enabled: true, text: "  40C" },
-        { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
-        { name: "RSSI", enabled: true, text: "   90" },
+        { name: "GYRO TEMP", enabled: true, text: "  40\x0e" },
+        { name: "FLIGHT MODE", enabled: true, text: "   ACRO   " },
+        { name: "RSSI", enabled: true, text: "  90\x01" },
         { name: "STOPWATCH", enabled: true, text: "01:20" },
-        { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
-        { name: "THROTTLE", enabled: true, text: "  50%" },
+        { name: "SYSTEM STATUS", enabled: true, text: "  **ARMED**    " },
+        { name: "THROTTLE", enabled: true, text: "  50\x04" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
-        { name: "CURRENT", enabled: true, text: "0.00A" },
+        { name: "CURRENT", enabled: true, text: "0.00\x9a" },
       ];
     },
     elements() {
@@ -254,6 +267,11 @@ export default defineComponent({
       get() {
         return this.profile.osd.callsign.replace(/\0/g, "");
       },
+    },
+  },
+  watch: {
+    elements() {
+      this.draw_canvas();
     },
   },
   methods: {
@@ -328,7 +346,7 @@ export default defineComponent({
         ? this.profile.osd.elements_hd
         : this.profile.osd.elements;
 
-      const copy = [...elements];
+      const copy: any[] = [...elements];
       copy[i] = this.osd_encode(elements[i], attr, val);
 
       if (this.is_hd) {
@@ -373,6 +391,62 @@ export default defineComponent({
           return element;
       }
     },
+    draw_canvas_char(
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      char: number,
+      inverted: boolean
+    ) {
+      const charX = OSD.pixelsWidth(Math.floor(char % 16));
+      const charY = OSD.pixelsHeight(Math.floor(char / 16));
+
+      ctx.drawImage(
+        inverted ? this.osd.font_bitmap_inverted : this.osd.font_bitmap,
+        charX,
+        charY,
+        OSD.CHAR_WIDTH,
+        OSD.CHAR_HEIGHT,
+        x,
+        y,
+        OSD.CHAR_WIDTH,
+        OSD.CHAR_HEIGHT
+      );
+    },
+    draw_canvas() {
+      const ctx = this.canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      for (const el of this.elements) {
+        if (!el.enabled || !el.active) {
+          continue;
+        }
+
+        const x = el.pos_x * OSD.CHAR_WIDTH;
+        // simulate almost cut-off 0-th line
+        const y = OSD.CHAR_HEIGHT - 2 + (el.pos_y - 1) * OSD.CHAR_HEIGHT;
+
+        for (let i = 0; i < el.text.length; i++) {
+          const element = el.text.charCodeAt(i);
+          if (element == 0) {
+            break;
+          }
+          this.draw_canvas_char(
+            ctx,
+            x + i * OSD.CHAR_WIDTH,
+            y,
+            element,
+            el.invert == 1
+          );
+        }
+      }
+    },
+  },
+  mounted() {
+    this.osd.fetch_osd_font().then((_) => this.draw_canvas());
   },
 });
 </script>
@@ -409,5 +483,10 @@ svg {
     pointer-events: bounding-box;
     cursor: grab;
   }
+}
+.osd-canvas {
+  background-image: url("@/assets/osd_background.jpg");
+  background-attachment: local;
+  background-size: cover;
 }
 </style>

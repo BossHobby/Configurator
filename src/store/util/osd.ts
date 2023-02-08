@@ -1,85 +1,97 @@
-const CHAR_WIDTH = 12;
-const CHAR_HEIGHT = 18;
-const BORDER = 1;
-
-function pixelsWidth(v: number, border = BORDER): number {
-  return v * (CHAR_WIDTH + border) + border;
-}
-
-function pixelsHeight(v: number, border = BORDER): number {
-  return v * (CHAR_HEIGHT + border) + border;
-}
-
-const FONT_WIDTH = 16;
-const FONT_HEIGHT = 16;
-
-const FULL_WIDTH = pixelsWidth(FONT_WIDTH);
-const FULL_HEIGHT = pixelsHeight(FONT_HEIGHT);
-
-const LOGO_HEIGHT = 4;
-const LOGO_WIDTH = 24;
-
-const LOGO_FULL_WIDTH = pixelsWidth(LOGO_WIDTH, 0);
-const LOGO_FULL_HEIGHT = pixelsHeight(LOGO_HEIGHT, 0);
-
 export class OSD {
+  public static CHAR_WIDTH = 12;
+  public static CHAR_HEIGHT = 18;
+  public static BORDER = 1;
+
+  public static FONT_WIDTH = 16;
+  public static FONT_HEIGHT = 16;
+
+  public static FULL_WIDTH = OSD.pixelsWidth(OSD.FONT_WIDTH);
+  public static FULL_HEIGHT = OSD.pixelsHeight(OSD.FONT_HEIGHT);
+
+  public static LOGO_HEIGHT = 4;
+  public static LOGO_WIDTH = 24;
+
+  public static LOGO_FULL_WIDTH = OSD.pixelsWidth(OSD.LOGO_WIDTH, 0);
+  public static LOGO_FULL_HEIGHT = OSD.pixelsHeight(OSD.LOGO_HEIGHT, 0);
+
+  public static pixelsWidth(v: number, border = OSD.BORDER): number {
+    return v * (OSD.CHAR_WIDTH + border) + border;
+  }
+
+  public static pixelsHeight(v: number, border = OSD.BORDER): number {
+    return v * (OSD.CHAR_HEIGHT + border) + border;
+  }
 
   public static svgPointerCoords(svg: SVGElement, event: Event) {
     const CTM = svg.getScreenCTM();
-    return { 
-      x: (event.clientX - CTM.e) / CTM.a, 
-      y: (event.clientY - CTM.f) / CTM.d 
-    }
+    return {
+      x: (event.clientX - CTM.e) / CTM.a,
+      y: (event.clientY - CTM.f) / CTM.d,
+    };
   }
 
   public static svgTranslate(element: SVGElement) {
-    const matrix = element.transform.baseVal.consolidate().matrix
+    const matrix = element.transform.baseVal.consolidate().matrix;
     return {
       x: matrix.e,
-      y: matrix.f
-    }
+      y: matrix.f,
+    };
   }
 
   public static unpackFont(canvas: HTMLCanvasElement, font: number[][]) {
+    OSD.unpackFontCanvas(canvas, font);
+    return canvas.toDataURL();
+  }
+
+  public static unpackFontBitmap(font: number[][], inverted = false) {
+    const canvas = new global.OffscreenCanvas(209, 305);
+    OSD.unpackFontCanvas(canvas, font, inverted);
+    return canvas.transferToImageBitmap();
+  }
+
+  private static unpackFontCanvas(
+    canvas: HTMLCanvasElement,
+    font: number[][],
+    inverted = false
+  ) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "red";
-    ctx.fillRect(0, 0, FULL_WIDTH, FULL_HEIGHT);
+    ctx.fillRect(0, 0, OSD.FULL_WIDTH, OSD.FULL_HEIGHT);
 
-    const char = new Uint8ClampedArray(CHAR_WIDTH * CHAR_HEIGHT * 4);
-    for (let cy = 0; cy < FONT_HEIGHT; cy++) {
-      for (let cx = 0; cx < FONT_WIDTH; cx++) {
+    const char = new Uint8ClampedArray(OSD.CHAR_WIDTH * OSD.CHAR_HEIGHT * 4);
+    for (let cy = 0; cy < OSD.FONT_HEIGHT; cy++) {
+      for (let cx = 0; cx < OSD.FONT_WIDTH; cx++) {
         const buf = font[cy * 16 + cx];
 
         let x = 0;
         let y = 0;
         for (const b of buf) {
-          OSD.setPixel(char, x + 0, y, (b >> 6) & 0x3);
-          OSD.setPixel(char, x + 1, y, (b >> 4) & 0x3);
-          OSD.setPixel(char, x + 2, y, (b >> 2) & 0x3);
-          OSD.setPixel(char, x + 3, y, (b >> 0) & 0x3);
+          OSD.setPixel(char, x + 0, y, (b >> 6) & 0x3, inverted);
+          OSD.setPixel(char, x + 1, y, (b >> 4) & 0x3, inverted);
+          OSD.setPixel(char, x + 2, y, (b >> 2) & 0x3, inverted);
+          OSD.setPixel(char, x + 3, y, (b >> 0) & 0x3, inverted);
 
           x += 4;
-          if (x == CHAR_WIDTH) {
+          if (x == OSD.CHAR_WIDTH) {
             x = 0;
             y++;
           }
         }
 
-        const img = new ImageData(char, CHAR_WIDTH, CHAR_HEIGHT);
-        ctx.putImageData(img, pixelsWidth(cx), pixelsHeight(cy));
+        const img = new ImageData(char, OSD.CHAR_WIDTH, OSD.CHAR_HEIGHT);
+        ctx.putImageData(img, OSD.pixelsWidth(cx), OSD.pixelsHeight(cy));
       }
     }
-
-    return canvas.toDataURL();
   }
 
   private static packCanvas(ctx: CanvasRenderingContext2D) {
-    const img = ctx.getImageData(0, 0, FULL_WIDTH, FULL_HEIGHT);
+    const img = ctx.getImageData(0, 0, OSD.FULL_WIDTH, OSD.FULL_HEIGHT);
     const font: Uint8Array[] = [];
-    for (let cy = 0; cy < FONT_HEIGHT; cy++) {
-      for (let cx = 0; cx < FONT_WIDTH; cx++) {
-        const char = new Uint8Array((CHAR_WIDTH * CHAR_HEIGHT) / 4);
+    for (let cy = 0; cy < OSD.FONT_HEIGHT; cy++) {
+      for (let cx = 0; cx < OSD.FONT_WIDTH; cx++) {
+        const char = new Uint8Array((OSD.CHAR_WIDTH * OSD.CHAR_HEIGHT) / 4);
 
         let x = 0;
         let y = 0;
@@ -87,35 +99,35 @@ export class OSD {
           char[j] =
             ((OSD.getPixel(
               img.data,
-              x + 0 + pixelsWidth(cx),
-              y + pixelsHeight(cy)
+              x + 0 + OSD.pixelsWidth(cx),
+              y + OSD.pixelsHeight(cy)
             ) &
               0x3) <<
               6) |
             ((OSD.getPixel(
               img.data,
-              x + 1 + pixelsWidth(cx),
-              y + pixelsHeight(cy)
+              x + 1 + OSD.pixelsWidth(cx),
+              y + OSD.pixelsHeight(cy)
             ) &
               0x3) <<
               4) |
             ((OSD.getPixel(
               img.data,
-              x + 2 + pixelsWidth(cx),
-              y + pixelsHeight(cy)
+              x + 2 + OSD.pixelsWidth(cx),
+              y + OSD.pixelsHeight(cy)
             ) &
               0x3) <<
               2) |
             ((OSD.getPixel(
               img.data,
-              x + 3 + pixelsWidth(cx),
-              y + pixelsHeight(cy)
+              x + 3 + OSD.pixelsWidth(cx),
+              y + OSD.pixelsHeight(cy)
             ) &
               0x3) <<
               0);
 
           x += 4;
-          if (x == CHAR_WIDTH) {
+          if (x == OSD.CHAR_WIDTH) {
             x = 0;
             y++;
           }
@@ -152,20 +164,26 @@ export class OSD {
       logo.width as number,
       logo.height as number
     );
-    for (let cy = 0; cy < LOGO_HEIGHT; cy++) {
-      for (let cx = 0; cx < LOGO_WIDTH; cx++) {
-        const char = new Uint8ClampedArray(CHAR_WIDTH * CHAR_HEIGHT * 4);
+    for (let cy = 0; cy < OSD.LOGO_HEIGHT; cy++) {
+      for (let cx = 0; cx < OSD.LOGO_WIDTH; cx++) {
+        const char = new Uint8ClampedArray(
+          OSD.CHAR_WIDTH * OSD.CHAR_HEIGHT * 4
+        );
 
-        for (let y = 0; y < CHAR_HEIGHT; y++) {
-          for (let x = 0; x < CHAR_WIDTH; x++) {
+        for (let y = 0; y < OSD.CHAR_HEIGHT; y++) {
+          for (let x = 0; x < OSD.CHAR_WIDTH; x++) {
             const logoOffset =
-              (y + pixelsHeight(cy, 0)) * LOGO_FULL_WIDTH +
+              (y + OSD.pixelsHeight(cy, 0)) * OSD.LOGO_FULL_WIDTH +
               x +
-              pixelsWidth(cx, 0);
-            char[(y * CHAR_WIDTH + x) * 4 + 0] = img.data[logoOffset * 4 + 0];
-            char[(y * CHAR_WIDTH + x) * 4 + 1] = img.data[logoOffset * 4 + 1];
-            char[(y * CHAR_WIDTH + x) * 4 + 2] = img.data[logoOffset * 4 + 2];
-            char[(y * CHAR_WIDTH + x) * 4 + 3] = img.data[logoOffset * 4 + 3];
+              OSD.pixelsWidth(cx, 0);
+            char[(y * OSD.CHAR_WIDTH + x) * 4 + 0] =
+              img.data[logoOffset * 4 + 0];
+            char[(y * OSD.CHAR_WIDTH + x) * 4 + 1] =
+              img.data[logoOffset * 4 + 1];
+            char[(y * OSD.CHAR_WIDTH + x) * 4 + 2] =
+              img.data[logoOffset * 4 + 2];
+            char[(y * OSD.CHAR_WIDTH + x) * 4 + 3] =
+              img.data[logoOffset * 4 + 3];
           }
         }
 
@@ -174,12 +192,12 @@ export class OSD {
     }
 
     const ctx = fontCanvas.getContext("2d")!;
-    for (let cy = 10; cy < FONT_HEIGHT; cy++) {
-      for (let cx = 0; cx < FONT_WIDTH; cx++) {
+    for (let cy = 10; cy < OSD.FONT_HEIGHT; cy++) {
+      for (let cx = 0; cx < OSD.FONT_WIDTH; cx++) {
         const char = logoChars.shift()!;
 
-        const img = new ImageData(char, CHAR_WIDTH, CHAR_HEIGHT);
-        ctx.putImageData(img, pixelsWidth(cx), pixelsHeight(cy));
+        const img = new ImageData(char, OSD.CHAR_WIDTH, OSD.CHAR_HEIGHT);
+        ctx.putImageData(img, OSD.pixelsWidth(cx), OSD.pixelsHeight(cy));
       }
     }
 
@@ -190,26 +208,35 @@ export class OSD {
     data: Uint8ClampedArray,
     x: number,
     y: number,
-    v: number
+    v: number,
+    inverted = false
   ) {
+    let WHITE = 2;
+    let BLACK = 0;
+
+    if (inverted) {
+      WHITE = 0;
+      BLACK = 2;
+    }
+
     switch (v) {
-      case 0:
-        data[(y * CHAR_WIDTH + x) * 4 + 0] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 1] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 2] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 3] = 255;
+      case BLACK:
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 0] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 1] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 2] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 3] = 255;
         break;
-      case 2:
-        data[(y * CHAR_WIDTH + x) * 4 + 0] = 255;
-        data[(y * CHAR_WIDTH + x) * 4 + 1] = 255;
-        data[(y * CHAR_WIDTH + x) * 4 + 2] = 255;
-        data[(y * CHAR_WIDTH + x) * 4 + 3] = 255;
+      case WHITE:
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 0] = 255;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 1] = 255;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 2] = 255;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 3] = 255;
         break;
       default:
-        data[(y * CHAR_WIDTH + x) * 4 + 0] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 1] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 2] = 0;
-        data[(y * CHAR_WIDTH + x) * 4 + 3] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 0] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 1] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 2] = 0;
+        data[(y * OSD.CHAR_WIDTH + x) * 4 + 3] = 0;
         break;
     }
   }
@@ -221,12 +248,12 @@ export class OSD {
   ): number {
     let value = 0;
 
-    const white = data[(vy * FULL_WIDTH + vx) * 4 + 0];
+    const white = data[(vy * OSD.FULL_WIDTH + vx) * 4 + 0];
     if (white > 0) {
       value |= 0x2;
     }
 
-    const alpha = data[(vy * FULL_WIDTH + vx) * 4 + 3];
+    const alpha = data[(vy * OSD.FULL_WIDTH + vx) * 4 + 3];
     if (alpha < 255) {
       value |= 0x1;
     }

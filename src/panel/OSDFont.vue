@@ -107,6 +107,7 @@ import { QuicVal } from "@/store/serial/quic";
 import { OSD } from "@/store/util/osd";
 import { useRootStore } from "@/store/root";
 import { useProfileStore } from "@/store/profile";
+import { useOSDStore } from "@/store/osd";
 
 const loadImage = (url) => {
   return new Promise((r, e) => {
@@ -141,6 +142,7 @@ export default defineComponent({
     return {
       root: useRootStore(),
       profile: useProfileStore(),
+      osd: useOSDStore(),
     };
   },
   methods: {
@@ -164,10 +166,9 @@ export default defineComponent({
           });
         });
     },
-    get_osd_font() {
-      return serial.get(QuicVal.OSDFont).then((font) => {
-        this.imageSource = OSD.unpackFont(this.$refs.canvas, font);
-      });
+    async get_osd_font() {
+      await this.osd.fetch_osd_font();
+      this.imageSource = OSD.unpackFont(this.$refs.canvas, this.osd.font_raw);
     },
     uploadLogo() {
       const readImage = (file) => {
@@ -202,7 +203,9 @@ export default defineComponent({
           multiple: false,
         };
 
-        const [fileHandle] = await (window as any).showOpenFilePicker(pickerOpts);
+        const [fileHandle] = await (window as any).showOpenFilePicker(
+          pickerOpts
+        );
         return await fileHandle.getFile();
       };
 
@@ -213,7 +216,11 @@ export default defineComponent({
             throw new Error("Invalid logo dimensions");
           }
 
-          const font = OSD.packLogo(this.$refs.canvas, this.$refs.logoCanvas, img);
+          const font = OSD.packLogo(
+            this.$refs.canvas,
+            this.$refs.logoCanvas,
+            img
+          );
           return serial.set(QuicVal.OSDFont, ...font);
         })
         .then(() => this.get_osd_font())
