@@ -23,6 +23,23 @@ const LOGO_FULL_WIDTH = pixelsWidth(LOGO_WIDTH, 0);
 const LOGO_FULL_HEIGHT = pixelsHeight(LOGO_HEIGHT, 0);
 
 export class OSD {
+
+  public static svgPointerCoords(svg: SVGElement, event: Event) {
+    const CTM = svg.getScreenCTM();
+    return { 
+      x: (event.clientX - CTM.e) / CTM.a, 
+      y: (event.clientY - CTM.f) / CTM.d 
+    }
+  }
+
+  public static svgTranslate(element: SVGElement) {
+    const matrix = element.transform.baseVal.consolidate().matrix
+    return {
+      x: matrix.e,
+      y: matrix.f
+    }
+  }
+
   public static unpackFont(canvas: HTMLCanvasElement, font: number[][]) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
