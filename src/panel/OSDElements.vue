@@ -115,17 +115,18 @@
               </header>
               <div class="card-content">
                 <div class="content">
-                  <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
+                  <svg 
+                    :viewBox="viewBox"
+                    xmlns="http://www.w3.org/2000/svg"
+                    ref="svg_scene" 
+                    @mousedown="drag_start" @mousemove="drag_move" @mouseup="drag_drop" @mouseleave="drag_drop">
                     <g v-for="(el, i) of elements" :key="i">
-                      <g v-if="el.enabled && el.active">
+                      <g class="text-group" v-if="el.enabled && el.active" :index="i" :transform="svg_group_transform(el)">
                         <text
                           v-for="(c, ci) of el.text"
                           :class="{ 'text-invert': el.invert }"
                           :key="'el-' + i + '-' + ci"
-                          :x="(el.pos_x + ci) * screen.char_width"
-                          :y="el.pos_y * (screen.char_height - 1)"
-                        >
-                          {{ c }}
+                          :x="ci * screen.char_width">{{ c }}
                         </text>
                       </g>
                     </g>
@@ -142,6 +143,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { OSD } from "@/store/util/osd";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
@@ -149,6 +151,10 @@ export default defineComponent({
   setup() {
     return {
       profile: useProfileStore(),
+      dragInfo: {
+        element: null,
+        grabOffset: { x: 0, y: 0 }
+      }
     };
   },
   computed: {
@@ -221,6 +227,54 @@ export default defineComponent({
     },
   },
   methods: {
+    svg_group_transform(el) {
+      return this.grid_translate(el.pos_x, el.pos_y);
+    },
+    grid_translate(gridX, gridY) {
+      return `translate(${gridX*this.screen.char_width} ${gridY*(this.screen.char_height-1)})`;
+    },
+    drag_start(evt) {
+      if (evt.target.classList.contains('text-group')) {
+        const pointer = OSD.svgPointerCoords(this.$refs.svg_scene, evt);
+        const translate = OSD.svgTranslate(evt.target);
+        this.dragInfo = {
+          element: evt.target,
+          grabOffset: { 
+            x: pointer.x - translate.x, 
+            y: pointer.y - translate.y 
+          }
+        }
+      }
+    },
+    drag_move(evt) {
+      if (this.dragInfo.element) {
+        const pointer = OSD.svgPointerCoords(this.$refs.svg_scene, evt);
+        var tx = pointer.x - this.dragInfo.grabOffset.x;
+        var ty = pointer.y - this.dragInfo.grabOffset.y;
+        const tx_max = this.svg_width - this.screen.char_width;
+        if (tx < 0) { tx = 0; } else if (tx > tx_max) { tx = tx_max; }
+        if (ty < 0) { ty = 0; } else if (ty > this.svg_height) { ty = this.svg_height; }
+        this.dragInfo.element.setAttributeNS(null, 'transform', `translate(${tx} ${ty})`);
+      }
+    },
+    drag_drop(evt) {
+      if (this.dragInfo.element) {
+        const translate = OSD.svgTranslate(this.dragInfo.element);
+        const dropX = Math.min( 
+          this.screen.width-1, 
+          Math.round(translate.x/this.screen.char_width)
+        );
+        const dropY = Math.min(
+          this.screen.height-1,
+          Math.round(translate.y/(this.screen.char_height-1))
+        );
+        this.dragInfo.element.setAttributeNS(null, 'transform', this.grid_translate(dropX, dropY));
+        const index = this.dragInfo.element.getAttributeNS(null, "index");
+        this.osd_set(index, 'pos_x', dropX);
+        this.osd_set(index, 'pos_y', dropY);
+        this.dragInfo.element = null;
+      }
+    },
     osd_set(i, attr, val) {
       const elements = this.is_hd
         ? this.profile.osd.elements_hd
@@ -290,6 +344,8 @@ svg {
 
   text {
     fill: #fff;
+    user-select: none;
+    pointer-events: none;
   }
 
   .text-invert {
@@ -299,6 +355,11 @@ svg {
     stroke-width: 3px;
     stroke-linecap: butt;
     stroke-linejoin: miter;
+  }
+
+  .text-group {
+    pointer-events: bounding-box;
+    cursor: grab;
   }
 }
 </style>
