@@ -308,8 +308,14 @@ export default defineComponent({
     },
     normalizeCoords(coord: Coord2D, colOffset: number = 0): Coord2D {
       return {
-        x: Math.floor((coord.x - colOffset) / OSD.CHAR_WIDTH),
-        y: Math.floor(coord.y / OSD.CHAR_HEIGHT),
+        x: Math.min(
+          Math.max(Math.floor((coord.x - colOffset) / OSD.CHAR_WIDTH), 0),
+          this.limits.width - 1
+        ),
+        y: Math.min(
+          Math.max(Math.floor(coord.y / OSD.CHAR_HEIGHT), 0),
+          this.limits.height - 1
+        ),
       };
     },
     drag_start(evt: MouseEvent) {
