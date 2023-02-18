@@ -100,7 +100,7 @@
                         class="input"
                         type="number"
                         step="1"
-                        :value="el.pos_x"
+                        :value="el.pos.x"
                         min="0"
                         :max="screen.width - 1"
                         @input="osd_set(i, 'pos_x', $event?.target?.value)"
@@ -113,7 +113,7 @@
                         class="input"
                         type="number"
                         step="1"
-                        :value="el.pos_y"
+                        :value="el.pos.y"
                         min="0"
                         :max="screen.height - 1"
                         @input="osd_set(i, 'pos_y', $event?.target?.value)"
@@ -133,40 +133,15 @@
               <div class="card-content">
                 <div class="content">
                   <canvas
-                    :width="svg_width"
-                    :height="svg_height"
+                    :width="canvasWidth"
+                    :height="canvasHeight"
                     ref="canvas"
-                    style="width: 100%"
                     class="osd-canvas"
-                  ></canvas>
-
-                  <svg
-                    :viewBox="viewBox"
-                    xmlns="http://www.w3.org/2000/svg"
-                    ref="svg_scene"
                     @mousedown="drag_start"
                     @mousemove="drag_move"
                     @mouseup="drag_drop"
                     @mouseleave="drag_drop"
-                  >
-                    <g v-for="(el, i) of elements" :key="i">
-                      <g
-                        class="text-group"
-                        v-if="el.enabled && el.active"
-                        :index="i"
-                        :transform="svg_group_transform(el)"
-                      >
-                        <text
-                          v-for="(c, ci) of el.text"
-                          :class="{ 'text-invert': el.invert }"
-                          :key="'el-' + i + '-' + ci"
-                          :x="ci * screen.char_width"
-                        >
-                          {{ c }}
-                        </text>
-                      </g>
-                    </g>
-                  </svg>
+                  ></canvas>
                 </div>
               </div>
             </div>
@@ -183,15 +158,25 @@ import { OSD } from "@/store/util/osd";
 import { useProfileStore } from "@/store/profile";
 import { useOSDStore } from "@/store/osd";
 
+interface Coord2D {
+  x: number;
+  y: number;
+}
+
 export default defineComponent({
   name: "OSDElements",
   setup() {
     return {
       profile: useProfileStore(),
       osd: useOSDStore(),
-      dragInfo: {
-        element: null,
-        grabOffset: { x: 0, y: 0 },
+    };
+  },
+  data() {
+    return {
+      drag: {
+        element: -1,
+        colOffset: 0,
+        coord: { x: 0, y: 0 } as Coord2D,
       },
     };
   },
@@ -208,23 +193,18 @@ export default defineComponent({
       return {
         width: this.is_hd ? 50 : 30,
         height: this.is_hd ? 18 : 15,
-        char_width: 12,
-        char_height: 18,
       };
     },
     canvas() {
       return this.$refs.canvas as HTMLCanvasElement;
     },
-    svg_width() {
-      return this.screen.width * this.screen.char_width;
+    canvasWidth() {
+      return this.screen.width * OSD.CHAR_WIDTH;
     },
-    svg_height() {
-      return this.screen.height * this.screen.char_height;
+    canvasHeight() {
+      return this.screen.height * OSD.CHAR_HEIGHT;
     },
-    viewBox() {
-      return `0 0 ${this.svg_width} ${this.svg_height}`;
-    },
-    element_options() {
+    elementOptions() {
       return [
         { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
         { name: "CELL COUNT", enabled: true, text: "1S" },
@@ -243,15 +223,18 @@ export default defineComponent({
     elements() {
       return this.currentElements
         .filter((el, i) => {
-          return this.element_options[i];
+          return this.elementOptions[i];
         })
         .map((el, i) => {
           return {
-            ...this.element_options[i],
-            active: this.osd_decode(el, "active"),
-            invert: this.osd_decode(el, "invert"),
-            pos_x: this.osd_decode(el, "pos_x"),
-            pos_y: this.osd_decode(el, "pos_y"),
+            index: i,
+            ...this.elementOptions[i],
+            active: OSD.elementDecode(el, "active"),
+            invert: OSD.elementDecode(el, "invert"),
+            pos: {
+              x: OSD.elementDecode(el, "pos_x"),
+              y: OSD.elementDecode(el, "pos_y"),
+            } as Coord2D,
             value: el,
           };
         });
@@ -273,73 +256,83 @@ export default defineComponent({
     elements() {
       this.draw_canvas();
     },
+    drag() {
+      console.log("drag");
+      this.draw_canvas();
+    },
   },
   methods: {
-    svg_group_transform(el) {
-      return this.grid_translate(el.pos_x, el.pos_y);
+    translateMouse(evt: MouseEvent): Coord2D {
+      return {
+        x: evt.offsetX * (this.canvasWidth / this.canvas.clientWidth),
+        y: evt.offsetY * (this.canvasHeight / this.canvas.clientHeight),
+      };
     },
-    grid_translate(gridX, gridY) {
-      return `translate(${gridX * this.screen.char_width} ${
-        gridY * (this.screen.char_height - 1)
-      })`;
+    translateElemement(coord: Coord2D): Coord2D {
+      return {
+        x: coord.x * OSD.CHAR_WIDTH,
+        // simulate almost cut-off 0-th line
+        y: OSD.CHAR_HEIGHT - 2 + (coord.y - 1) * OSD.CHAR_HEIGHT,
+      };
     },
-    drag_start(evt) {
-      if (evt.target.classList.contains("text-group")) {
-        const pointer = OSD.svgPointerCoords(this.$refs.svg_scene, evt);
-        const translate = OSD.svgTranslate(evt.target);
-        this.dragInfo = {
-          element: evt.target,
-          grabOffset: {
-            x: pointer.x - translate.x,
-            y: pointer.y - translate.y,
-          },
+    normalizeCoords(coord: Coord2D, colOffset: number = 0): Coord2D {
+      return {
+        x: Math.floor((coord.x - colOffset) / OSD.CHAR_WIDTH),
+        y: Math.floor(coord.y / OSD.CHAR_HEIGHT),
+      };
+    },
+    drag_start(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+
+      const el = this.findElement(mouse);
+      if (el != null) {
+        const coord = this.translateElemement(el.pos);
+        const colOffset = mouse.x - coord.x;
+        this.drag = {
+          element: el.index,
+          colOffset,
+          coord: this.normalizeCoords(mouse, colOffset),
         };
+        this.canvas.style.cursor = "grab";
       }
     },
-    drag_move(evt) {
-      if (this.dragInfo.element) {
-        const pointer = OSD.svgPointerCoords(this.$refs.svg_scene, evt);
-        var tx = pointer.x - this.dragInfo.grabOffset.x;
-        var ty = pointer.y - this.dragInfo.grabOffset.y;
-        const tx_max = this.svg_width - this.screen.char_width;
-        if (tx < 0) {
-          tx = 0;
-        } else if (tx > tx_max) {
-          tx = tx_max;
-        }
-        if (ty < 0) {
-          ty = 0;
-        } else if (ty > this.svg_height) {
-          ty = this.svg_height;
-        }
-        this.dragInfo.element.setAttributeNS(
-          null,
-          "transform",
-          `translate(${tx} ${ty})`
-        );
+    drag_move(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+      if (this.drag.element == -1) {
+        const el = this.findElement(mouse);
+        this.canvas.style.cursor = el != null ? "pointer" : "initial";
+        return;
       }
+
+      this.drag = {
+        ...this.drag,
+        coord: this.normalizeCoords(mouse, this.drag.colOffset),
+      };
     },
-    drag_drop(evt) {
-      if (this.dragInfo.element) {
-        const translate = OSD.svgTranslate(this.dragInfo.element);
-        const dropX = Math.min(
-          this.screen.width - 1,
-          Math.round(translate.x / this.screen.char_width)
-        );
-        const dropY = Math.min(
-          this.screen.height - 1,
-          Math.round(translate.y / (this.screen.char_height - 1))
-        );
-        this.dragInfo.element.setAttributeNS(
-          null,
-          "transform",
-          this.grid_translate(dropX, dropY)
-        );
-        const index = this.dragInfo.element.getAttributeNS(null, "index");
-        this.osd_set(index, "pos_x", dropX);
-        this.osd_set(index, "pos_y", dropY);
-        this.dragInfo.element = null;
+    drag_drop(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+      if (this.drag.element == -1) {
+        return;
       }
+
+      const coord = this.normalizeCoords(mouse, this.drag.colOffset);
+      this.osd_set(this.drag.element, "pos_x", coord.x);
+      this.osd_set(this.drag.element, "pos_y", coord.y);
+      this.canvas.style.cursor = "initial";
+      this.drag = {
+        element: -1,
+        colOffset: 0,
+        coord: { x: 0, y: 0 } as Coord2D,
+      };
     },
     osd_set(i, attr, val) {
       const elements = this.is_hd
@@ -347,7 +340,7 @@ export default defineComponent({
         : this.profile.osd.elements;
 
       const copy: any[] = [...elements];
-      copy[i] = this.osd_encode(elements[i], attr, val);
+      copy[i] = OSD.elementEncode(elements[i], attr, val);
 
       if (this.is_hd) {
         this.profile.set_osd_elements_hd(copy);
@@ -355,63 +348,48 @@ export default defineComponent({
         this.profile.set_osd_elements(copy);
       }
     },
-    osd_decode(element, attr) {
-      switch (attr) {
-        case "active":
-          return element & 0x01;
-        case "invert":
-          return (element >> 1) & 0x01;
-        case "pos_x":
-          return (element >> 2) & 0xff;
-        case "pos_y":
-          return (element >> 10) & 0xff;
-        default:
-          return 0;
-      }
-    },
-    osd_encode(element, attr, val) {
-      switch (attr) {
-        case "active":
-          if (val) {
-            return element | 0x01;
-          } else {
-            return element & ~0x01;
-          }
-        case "invert":
-          if (val) {
-            return element | (0x01 << 1);
-          } else {
-            return element & ~(0x01 << 1);
-          }
-        case "pos_x":
-          return (element & ~(0xff << 2)) | ((val & 0xff) << 2);
-        case "pos_y":
-          return (element & ~(0xff << 10)) | ((val & 0xff) << 10);
-        default:
-          return element;
-      }
-    },
-    draw_canvas_char(
+    draw_canvas_text(
       ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      char: number,
+      coord: Coord2D,
+      text: string,
       inverted: boolean
     ) {
-      const charX = OSD.pixelsWidth(Math.floor(char % 16));
-      const charY = OSD.pixelsHeight(Math.floor(char / 16));
+      let length = 0;
+      for (let i = 0; i < text.length; i++) {
+        const char = text.charCodeAt(i);
+        if (char == 0) {
+          break;
+        }
 
-      ctx.drawImage(
-        inverted ? this.osd.font_bitmap_inverted : this.osd.font_bitmap,
-        charX,
-        charY,
-        OSD.CHAR_WIDTH,
+        const charX = OSD.pixelsWidth(Math.floor(char % 16));
+        const charY = OSD.pixelsHeight(Math.floor(char / 16));
+
+        ctx.drawImage(
+          inverted ? this.osd.font_bitmap_inverted : this.osd.font_bitmap,
+          charX,
+          charY,
+          OSD.CHAR_WIDTH,
+          OSD.CHAR_HEIGHT,
+          coord.x + i * OSD.CHAR_WIDTH,
+          coord.y,
+          OSD.CHAR_WIDTH,
+          OSD.CHAR_HEIGHT
+        );
+
+        length++;
+      }
+
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(
+        coord.x + 0.5,
+        coord.y + 0.5,
+        length * OSD.CHAR_WIDTH,
         OSD.CHAR_HEIGHT,
-        x,
-        y,
-        OSD.CHAR_WIDTH,
-        OSD.CHAR_HEIGHT
+        1.5
       );
+      ctx.stroke();
     },
     draw_canvas() {
       const ctx = this.canvas.getContext("2d");
@@ -420,29 +398,46 @@ export default defineComponent({
       }
 
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      for (const [index, el] of this.elements.entries()) {
+        if (!el.enabled || !el.active) {
+          continue;
+        }
+
+        let coord = { x: 0, y: 0 };
+        if (index == this.drag.element) {
+          coord = this.translateElemement(this.drag.coord);
+          console.log(this.drag.coord, coord);
+        } else {
+          coord = this.translateElemement(el.pos);
+        }
+
+        this.draw_canvas_text(ctx, coord, el.text, el.invert == 1);
+      }
+    },
+    findElement(mouse: Coord2D) {
       for (const el of this.elements) {
         if (!el.enabled || !el.active) {
           continue;
         }
 
-        const x = el.pos_x * OSD.CHAR_WIDTH;
-        // simulate almost cut-off 0-th line
-        const y = OSD.CHAR_HEIGHT - 2 + (el.pos_y - 1) * OSD.CHAR_HEIGHT;
-
-        for (let i = 0; i < el.text.length; i++) {
-          const element = el.text.charCodeAt(i);
-          if (element == 0) {
-            break;
-          }
-          this.draw_canvas_char(
-            ctx,
-            x + i * OSD.CHAR_WIDTH,
-            y,
-            element,
-            el.invert == 1
-          );
+        const coord = this.translateElemement(el.pos);
+        if (mouse.y < coord.y || mouse.y > coord.y + OSD.CHAR_HEIGHT) {
+          continue;
         }
+
+        let length = el.text.indexOf("\0");
+        if (length == -1) {
+          length = el.text.length;
+        }
+        if (mouse.x < coord.x || mouse.x > coord.x + length * OSD.CHAR_WIDTH) {
+          continue;
+        }
+
+        return el;
       }
+
+      return null;
     },
   },
   mounted() {
@@ -452,39 +447,9 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-svg {
-  display: block;
-
-  background-image: url("@/assets/osd_background.jpg");
-  background-attachment: local;
-  background-size: cover;
-
-  font-family: monospace;
-  font-size: 18px;
-  border: 1px solid #3333334d;
-  margin: auto;
-
-  text {
-    fill: #fff;
-    user-select: none;
-    pointer-events: none;
-  }
-
-  .text-invert {
-    paint-order: stroke;
-    fill: #000;
-    stroke: #fff;
-    stroke-width: 3px;
-    stroke-linecap: butt;
-    stroke-linejoin: miter;
-  }
-
-  .text-group {
-    pointer-events: bounding-box;
-    cursor: grab;
-  }
-}
 .osd-canvas {
+  width: 100%;
+  image-rendering: crisp-edges;
   background-image: url("@/assets/osd_background.jpg");
   background-attachment: local;
   background-size: cover;

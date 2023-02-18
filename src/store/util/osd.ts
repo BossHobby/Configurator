@@ -23,20 +23,42 @@ export class OSD {
     return v * (OSD.CHAR_HEIGHT + border) + border;
   }
 
-  public static svgPointerCoords(svg: SVGElement, event: Event) {
-    const CTM = svg.getScreenCTM();
-    return {
-      x: (event.clientX - CTM.e) / CTM.a,
-      y: (event.clientY - CTM.f) / CTM.d,
-    };
+  public static elementDecode(element, attr) {
+    switch (attr) {
+      case "active":
+        return element & 0x01;
+      case "invert":
+        return (element >> 1) & 0x01;
+      case "pos_x":
+        return (element >> 2) & 0xff;
+      case "pos_y":
+        return (element >> 10) & 0xff;
+      default:
+        return 0;
+    }
   }
 
-  public static svgTranslate(element: SVGElement) {
-    const matrix = element.transform.baseVal.consolidate().matrix;
-    return {
-      x: matrix.e,
-      y: matrix.f,
-    };
+  public static elementEncode(element, attr, val) {
+    switch (attr) {
+      case "active":
+        if (val) {
+          return element | 0x01;
+        } else {
+          return element & ~0x01;
+        }
+      case "invert":
+        if (val) {
+          return element | (0x01 << 1);
+        } else {
+          return element & ~(0x01 << 1);
+        }
+      case "pos_x":
+        return (element & ~(0xff << 2)) | ((val & 0xff) << 2);
+      case "pos_y":
+        return (element & ~(0xff << 10)) | ((val & 0xff) << 10);
+      default:
+        return element;
+    }
   }
 
   public static unpackFont(canvas: HTMLCanvasElement, font: number[][]) {
