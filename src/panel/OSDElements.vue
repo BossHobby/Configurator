@@ -102,7 +102,7 @@
                         step="1"
                         :value="el.pos.x"
                         min="0"
-                        :max="screen.width - 1"
+                        :max="limits.width - 1"
                         @input="osd_set(i, 'pos_x', $event?.target?.value)"
                       />
                     </div>
@@ -115,7 +115,7 @@
                         step="1"
                         :value="el.pos.y"
                         min="0"
-                        :max="screen.height - 1"
+                        :max="limits.height - 1"
                         @input="osd_set(i, 'pos_y', $event?.target?.value)"
                       />
                     </div>
@@ -128,7 +128,15 @@
           <div class="column is-6">
             <div class="card">
               <header class="card-header">
-                <p class="card-header-title">Preview</p>
+                <div class="card-header-title">
+                  Preview
+                  <div v-if="!is_hd" class="select ml-4">
+                    <select v-model="preview">
+                      <option>NTSC</option>
+                      <option>PAL</option>
+                    </select>
+                  </div>
+                </div>
               </header>
               <div class="card-content">
                 <div class="content">
@@ -173,6 +181,7 @@ export default defineComponent({
   },
   data() {
     return {
+      preview: "NTSC",
       drag: {
         element: -1,
         colOffset: 0,
@@ -189,11 +198,19 @@ export default defineComponent({
         ? this.profile.osd.elements_hd
         : this.profile.osd.elements;
     },
-    screen() {
+    limits() {
       return {
         width: this.is_hd ? 50 : 30,
         height: this.is_hd ? 18 : 15,
       };
+    },
+    screen() {
+      const screen = { ...this.limits };
+      if (!this.is_hd && this.preview == "NTSC") {
+        // NTSC has less lines
+        screen.height -= 2;
+      }
+      return screen;
     },
     canvas() {
       return this.$refs.canvas as HTMLCanvasElement;
@@ -259,6 +276,16 @@ export default defineComponent({
     drag() {
       this.draw_canvas();
     },
+    canvasWidth() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
+    canvasHeight() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
   },
   methods: {
     translateMouse(evt: MouseEvent): Coord2D {
@@ -268,6 +295,11 @@ export default defineComponent({
       };
     },
     translateElemement(coord: Coord2D): Coord2D {
+      if (!this.is_hd && this.preview == "NTSC") {
+        if (coord.y > 12) {
+          coord.y -= 2;
+        }
+      }
       return {
         x: coord.x * OSD.CHAR_WIDTH,
         // simulate almost cut-off 0-th line
@@ -423,14 +455,17 @@ export default defineComponent({
           continue;
         }
 
-        let coord = { x: 0, y: 0 };
+        let pos = { ...el.pos };
         if (index == this.drag.element) {
-          coord = this.translateElemement(this.drag.coord);
-        } else {
-          coord = this.translateElemement(el.pos);
+          pos = { ...this.drag.coord };
         }
 
-        this.draw_canvas_text(ctx, coord, el.text, el.invert == 1);
+        this.draw_canvas_text(
+          ctx,
+          this.translateElemement(pos),
+          el.text,
+          el.invert == 1
+        );
       }
     },
     findElement(mouse: Coord2D) {
@@ -474,7 +509,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 .osd-canvas {
   width: 100%;
-  image-rendering: crisp-edges;
   background-image: url("@/assets/osd_background.jpg");
   background-attachment: local;
   background-size: cover;
