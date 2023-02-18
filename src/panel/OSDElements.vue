@@ -286,6 +286,11 @@ export default defineComponent({
         this.draw_canvas();
       });
     },
+    "osd.font_bitmap"() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
   },
   methods: {
     translateMouse(evt: MouseEvent): Coord2D {
@@ -505,7 +510,6 @@ export default defineComponent({
         if (this.is_hd) {
           return this.osd.fetch_hd_osd_font();
         }
-        return this.osd.fetch_sd_osd_font();
       })
       .then((_) => this.draw_canvas());
   },
