@@ -22,21 +22,38 @@
             </div>
 
             <div class="columns mt-4 mb-0">
-              <div class="column has-text-centered has-text-weight-semibold px-0 is-4">
+              <div
+                class="column has-text-centered has-text-weight-semibold px-0 is-4"
+              >
                 Element
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
                 Active
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
                 Invert
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">X</div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">Y</div>
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
+                X
+              </div>
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
+                Y
+              </div>
             </div>
 
             <template v-for="(el, i) of elements" :key="i">
-              <div v-if="el.enabled" class="field mb-2 field-is-2 is-horizontal">
+              <div
+                v-if="el.enabled"
+                class="field mb-2 field-is-2 is-horizontal"
+              >
                 <div class="field-label">
                   <label class="label" for="pid-preset">
                     {{ el.name }}
@@ -85,7 +102,7 @@
                         step="1"
                         :value="el.pos_x"
                         min="0"
-                        :max="screen.width-1"
+                        :max="screen.width - 1"
                         @input="osd_set(i, 'pos_x', $event?.target?.value)"
                       />
                     </div>
@@ -98,7 +115,7 @@
                         step="1"
                         :value="el.pos_y"
                         min="0"
-                        :max="screen.height-1"
+                        :max="screen.height - 1"
                         @input="osd_set(i, 'pos_y', $event?.target?.value)"
                       />
                     </div>
@@ -115,18 +132,29 @@
               </header>
               <div class="card-content">
                 <div class="content">
-                  <svg 
+                  <svg
                     :viewBox="viewBox"
                     xmlns="http://www.w3.org/2000/svg"
-                    ref="svg_scene" 
-                    @mousedown="drag_start" @mousemove="drag_move" @mouseup="drag_drop" @mouseleave="drag_drop">
+                    ref="svg_scene"
+                    @mousedown="drag_start"
+                    @mousemove="drag_move"
+                    @mouseup="drag_drop"
+                    @mouseleave="drag_drop"
+                  >
                     <g v-for="(el, i) of elements" :key="i">
-                      <g class="text-group" v-if="el.enabled && el.active" :index="i" :transform="svg_group_transform(el)">
+                      <g
+                        class="text-group"
+                        v-if="el.enabled && el.active"
+                        :index="i"
+                        :transform="svg_group_transform(el)"
+                      >
                         <text
                           v-for="(c, ci) of el.text"
                           :class="{ 'text-invert': el.invert }"
                           :key="'el-' + i + '-' + ci"
-                          :x="ci * screen.char_width">{{ c }}
+                          :x="ci * screen.char_width"
+                        >
+                          {{ c }}
                         </text>
                       </g>
                     </g>
@@ -153,8 +181,8 @@ export default defineComponent({
       profile: useProfileStore(),
       dragInfo: {
         element: null,
-        grabOffset: { x: 0, y: 0 }
-      }
+        grabOffset: { x: 0, y: 0 },
+      },
     };
   },
   computed: {
@@ -162,7 +190,9 @@ export default defineComponent({
       return this.profile.serial.hdzero;
     },
     currentElements() {
-      return this.is_hd ? this.profile.osd.elements_hd : this.profile.osd.elements;
+      return this.is_hd
+        ? this.profile.osd.elements_hd
+        : this.profile.osd.elements;
     },
     screen() {
       return {
@@ -231,19 +261,21 @@ export default defineComponent({
       return this.grid_translate(el.pos_x, el.pos_y);
     },
     grid_translate(gridX, gridY) {
-      return `translate(${gridX*this.screen.char_width} ${gridY*(this.screen.char_height-1)})`;
+      return `translate(${gridX * this.screen.char_width} ${
+        gridY * (this.screen.char_height - 1)
+      })`;
     },
     drag_start(evt) {
-      if (evt.target.classList.contains('text-group')) {
+      if (evt.target.classList.contains("text-group")) {
         const pointer = OSD.svgPointerCoords(this.$refs.svg_scene, evt);
         const translate = OSD.svgTranslate(evt.target);
         this.dragInfo = {
           element: evt.target,
-          grabOffset: { 
-            x: pointer.x - translate.x, 
-            y: pointer.y - translate.y 
-          }
-        }
+          grabOffset: {
+            x: pointer.x - translate.x,
+            y: pointer.y - translate.y,
+          },
+        };
       }
     },
     drag_move(evt) {
@@ -252,26 +284,42 @@ export default defineComponent({
         var tx = pointer.x - this.dragInfo.grabOffset.x;
         var ty = pointer.y - this.dragInfo.grabOffset.y;
         const tx_max = this.svg_width - this.screen.char_width;
-        if (tx < 0) { tx = 0; } else if (tx > tx_max) { tx = tx_max; }
-        if (ty < 0) { ty = 0; } else if (ty > this.svg_height) { ty = this.svg_height; }
-        this.dragInfo.element.setAttributeNS(null, 'transform', `translate(${tx} ${ty})`);
+        if (tx < 0) {
+          tx = 0;
+        } else if (tx > tx_max) {
+          tx = tx_max;
+        }
+        if (ty < 0) {
+          ty = 0;
+        } else if (ty > this.svg_height) {
+          ty = this.svg_height;
+        }
+        this.dragInfo.element.setAttributeNS(
+          null,
+          "transform",
+          `translate(${tx} ${ty})`
+        );
       }
     },
     drag_drop(evt) {
       if (this.dragInfo.element) {
         const translate = OSD.svgTranslate(this.dragInfo.element);
-        const dropX = Math.min( 
-          this.screen.width-1, 
-          Math.round(translate.x/this.screen.char_width)
+        const dropX = Math.min(
+          this.screen.width - 1,
+          Math.round(translate.x / this.screen.char_width)
         );
         const dropY = Math.min(
-          this.screen.height-1,
-          Math.round(translate.y/(this.screen.char_height-1))
+          this.screen.height - 1,
+          Math.round(translate.y / (this.screen.char_height - 1))
         );
-        this.dragInfo.element.setAttributeNS(null, 'transform', this.grid_translate(dropX, dropY));
+        this.dragInfo.element.setAttributeNS(
+          null,
+          "transform",
+          this.grid_translate(dropX, dropY)
+        );
         const index = this.dragInfo.element.getAttributeNS(null, "index");
-        this.osd_set(index, 'pos_x', dropX);
-        this.osd_set(index, 'pos_y', dropY);
+        this.osd_set(index, "pos_x", dropX);
+        this.osd_set(index, "pos_y", dropY);
         this.dragInfo.element = null;
       }
     },
