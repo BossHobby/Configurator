@@ -15,12 +15,26 @@ export class OSD {
   public static LOGO_FULL_WIDTH = OSD.pixelsWidth(OSD.LOGO_WIDTH, 0);
   public static LOGO_FULL_HEIGHT = OSD.pixelsHeight(OSD.LOGO_HEIGHT, 0);
 
-  public static pixelsWidth(v: number, border = OSD.BORDER): number {
-    return v * (OSD.CHAR_WIDTH + border) + border;
+  public static pixelsWidth(
+    v: number,
+    border = OSD.BORDER,
+    is_hd = false
+  ): number {
+    if (is_hd) {
+      border = 0;
+    }
+    return v * (OSD.CHAR_WIDTH * (is_hd ? 2 : 1) + border) + border;
   }
 
-  public static pixelsHeight(v: number, border = OSD.BORDER): number {
-    return v * (OSD.CHAR_HEIGHT + border) + border;
+  public static pixelsHeight(
+    v: number,
+    border = OSD.BORDER,
+    is_hd = false
+  ): number {
+    if (is_hd) {
+      border = 0;
+    }
+    return v * (OSD.CHAR_HEIGHT * (is_hd ? 2 : 1) + border) + border;
   }
 
   public static elementDecode(element, attr) {

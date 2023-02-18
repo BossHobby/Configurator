@@ -167,7 +167,7 @@ export default defineComponent({
         });
     },
     async get_osd_font() {
-      await this.osd.fetch_osd_font();
+      await this.osd.fetch_sd_osd_font();
       this.imageSource = OSD.unpackFont(this.$refs.canvas, this.osd.font_raw);
     },
     uploadLogo() {

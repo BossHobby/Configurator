@@ -182,7 +182,7 @@ export default defineComponent({
   },
   computed: {
     is_hd() {
-      return this.profile.serial.hdzero;
+      return this.profile.serial.hdzero > 0;
     },
     currentElements() {
       return this.is_hd
@@ -257,7 +257,6 @@ export default defineComponent({
       this.draw_canvas();
     },
     drag() {
-      console.log("drag");
       this.draw_canvas();
     },
   },
@@ -356,25 +355,45 @@ export default defineComponent({
     ) {
       let length = 0;
       for (let i = 0; i < text.length; i++) {
-        const char = text.charCodeAt(i);
+        let char = text.charCodeAt(i);
         if (char == 0) {
           break;
         }
 
-        const charX = OSD.pixelsWidth(Math.floor(char % 16));
-        const charY = OSD.pixelsHeight(Math.floor(char / 16));
-
-        ctx.drawImage(
-          inverted ? this.osd.font_bitmap_inverted : this.osd.font_bitmap,
-          charX,
-          charY,
-          OSD.CHAR_WIDTH,
-          OSD.CHAR_HEIGHT,
-          coord.x + i * OSD.CHAR_WIDTH,
-          coord.y,
-          OSD.CHAR_WIDTH,
-          OSD.CHAR_HEIGHT
+        const charX = OSD.pixelsWidth(
+          Math.floor(char % 16),
+          OSD.BORDER,
+          this.is_hd
         );
+        const charY = OSD.pixelsHeight(
+          Math.floor(char / 16),
+          OSD.BORDER,
+          this.is_hd
+        );
+
+        let bitmap: any = undefined;
+        if (this.is_hd) {
+          bitmap = this.osd.font_bitmap;
+          char += 256;
+        } else {
+          bitmap = inverted
+            ? this.osd.font_bitmap_inverted
+            : this.osd.font_bitmap;
+        }
+
+        if (bitmap) {
+          ctx.drawImage(
+            bitmap,
+            charX,
+            charY,
+            OSD.CHAR_WIDTH * (this.is_hd ? 2 : 1),
+            OSD.CHAR_HEIGHT * (this.is_hd ? 2 : 1),
+            coord.x + i * OSD.CHAR_WIDTH,
+            coord.y,
+            OSD.CHAR_WIDTH,
+            OSD.CHAR_HEIGHT
+          );
+        }
 
         length++;
       }
@@ -407,7 +426,6 @@ export default defineComponent({
         let coord = { x: 0, y: 0 };
         if (index == this.drag.element) {
           coord = this.translateElemement(this.drag.coord);
-          console.log(this.drag.coord, coord);
         } else {
           coord = this.translateElemement(el.pos);
         }
@@ -441,7 +459,14 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.osd.fetch_osd_font().then((_) => this.draw_canvas());
+    Promise.resolve()
+      .then(() => {
+        if (this.is_hd) {
+          return this.osd.fetch_hd_osd_font();
+        }
+        return this.osd.fetch_sd_osd_font();
+      })
+      .then((_) => this.draw_canvas());
   },
 });
 </script>
