@@ -353,7 +353,6 @@ export default defineComponent({
       tdaOptions: [
         { value: 0, text: "None" },
         { value: 1, text: "Active" },
-        { value: 2, text: "Max" },
       ],
       current_preset: 0,
     };
