@@ -96,6 +96,30 @@
                 </div>
               </div>
             </div>
+
+            <div
+              class="field is-horizontal mt-6"
+              v-if="profile.profileVersionGt('0.2.1')"
+            >
+              <div class="field-label">
+                <label class="label" for="gyro-dynamic-enable">
+                  Gyro Dynamic Notch
+                  <tooltip entry="filter.gyro_dynamic_notch_enable" />
+                </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      class="is-fullwidth"
+                      id="gyro-dynamic-enable"
+                      v-model.number="profile.filter.gyro_dynamic_notch_enable"
+                      :options="toggleOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="column is-6" v-if="profile.filter.dterm">
