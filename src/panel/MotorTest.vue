@@ -3,8 +3,8 @@
     <header class="card-header">
       <p class="card-header-title">Motor Test</p>
       <small class="card-header-icon">
-        {{ state.vbat.toPrecision(3) }}V <br />
-        {{ state.ibat_filtered }}mAh
+        {{ state.vbat.toFixed(2) }}V <br />
+        {{ state.ibat_filtered.toFixed(2) }}mAh
       </small>
       <tooltip class="card-header-icon" entry="motor.test" size="lg" />
     </header>
