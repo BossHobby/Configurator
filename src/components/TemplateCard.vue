@@ -78,6 +78,7 @@ import YAML from "yaml";
 import { templateUrl, type TemplateEntry } from "@/store/templates";
 import { defineComponent } from "vue";
 import { mergeDeep, useProfileStore } from "@/store/profile";
+import { Log } from "@/log";
 
 export default defineComponent({
   name: "TemplateModal",
@@ -112,7 +113,7 @@ export default defineComponent({
       const values = {};
 
       for (const key of Object.keys(this.selected)) {
-        const option = this.tmpl?.options.find((e) => e.name == key);
+        const option = this.tmpl?.options?.find((e) => e.name == key);
         if (!option) {
           continue;
         }
@@ -129,7 +130,7 @@ export default defineComponent({
         return;
       }
 
-      const tmpl = val;
+      const tmpl = JSON.parse(JSON.stringify(val));
       const selected = {};
 
       for (const option of tmpl.options || []) {
@@ -177,7 +178,23 @@ export default defineComponent({
           .then((res) => res.text())
           .then((t) => YAML.parse(t));
 
+        Log.info("template", "applying option", entry.name);
         mergeDeep(patch, fragment);
+      }
+
+      if (this.tmpl?.mutations) {
+        for (const mut of this.tmpl.mutations) {
+          const match = mut.options.find((o) => {
+            return Object.entries(o.selector).every(([key, values]) => {
+              return values.includes(this.selected[key]);
+            });
+          });
+          if (!match) {
+            continue;
+          }
+          Log.info("template", "applying mutation", match.name);
+          mergeDeep(patch, match.profile);
+        }
       }
 
       return this.profile.merge_profile(patch);

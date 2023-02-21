@@ -23,11 +23,23 @@ export interface TemplateOption {
   entries: TemplateOptionEntry[];
 }
 
+export interface TemplateMutation {
+  name: string;
+  options: TemplateMutationOption[];
+}
+
+export interface TemplateMutationOption {
+  name: string;
+  selector: { [key: string]: string[] };
+  profile: any;
+}
+
 export interface TemplateEntry {
   name: string;
   desc: string;
   author: string;
-  options: TemplateOption[];
+  options?: TemplateOption[];
+  mutations?: TemplateMutation[];
   category: string;
   profile: string;
   image: string;
