@@ -179,7 +179,7 @@ export default defineComponent({
           .then((t) => YAML.parse(t));
 
         Log.info("template", "applying option", entry.name);
-        mergeDeep(patch, fragment);
+        mergeDeep(patch, fragment.profile);
       }
 
       if (this.tmpl?.mutations) {
