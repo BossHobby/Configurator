@@ -140,7 +140,7 @@ export default defineComponent({
               continue;
             }
 
-            entry.title += " (auto-detected)";
+            entry.title += " (auto-selected)";
             selected[option.name] = entry.name;
             break;
           }
@@ -149,7 +149,7 @@ export default defineComponent({
           const entry = option.entries.find((e) => e.name == option.default);
           if (entry) {
             selected[option.name] = option.default;
-            entry.title += " (auto-detected)";
+            entry.title += " (auto-selected)";
           }
         }
       }
