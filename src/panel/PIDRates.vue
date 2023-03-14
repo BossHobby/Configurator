@@ -26,7 +26,10 @@
                     ></input-select>
                   </div>
                   <div class="control">
-                    <spinner-btn @click="load_preset(current_preset)">
+                    <spinner-btn
+                      @click="load_preset(current_preset)"
+                      :disabled="current_preset == -1"
+                    >
                       Load
                     </spinner-btn>
                   </div>
@@ -354,7 +357,7 @@ export default defineComponent({
         { value: 0, text: "None" },
         { value: 1, text: "Active" },
       ],
-      current_preset: 0,
+      current_preset: -1,
     };
   },
   setup() {
@@ -381,7 +384,10 @@ export default defineComponent({
       },
     },
     presets() {
-      return this.root.pid_rate_presets.map((p) => {
+      return [
+        { index: -1, name: "Choose..." },
+        ...this.root.pid_rate_presets,
+      ].map((p) => {
         return {
           value: p.index,
           text: p.name,
