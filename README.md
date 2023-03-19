@@ -1,7 +1,5 @@
 <img src="https://github.com/BossHobby/QUICKSILVER/blob/master/misc/Logo_Clean.svg?raw=true" width="256"></img>
 
-[![Build Status](https://ci.bkleiner.codes/api/badges/BossHobby/QUICKSILVER/status.svg)](https://ci.bkleiner.codes/BossHobby/QUICKSILVER)
-
 # QUICKSILVER Configurator
 
 Configurator for the [QUICKSILVER Flight Controller Firmware](https://github.com/BossHobby/QUICKSILVER).  
