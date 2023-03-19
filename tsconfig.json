@@ -1,23 +1,27 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue"
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "types": [
       "node",
       "dom-serial",
       "w3c-web-usb",
-      "nw.js",
       "semver",
       "vite-plugin-pwa/client",
     ],
     "allowJs": true,
     "noImplicitAny": false
   },
-
   "references": [
     {
       "path": "./tsconfig.vite-config.json"
