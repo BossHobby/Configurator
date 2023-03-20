@@ -1,8 +1,10 @@
-import { app, shell, BrowserWindow } from "electron";
+import { app, shell, BrowserWindow, ipcMain } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 
 import icon from "../../public/Logo.png?asset";
+
+const USB_DEVICE_FILTER = { vendorId: 0x0483, productId: 0xdf11 };
 
 function createWindow(): void {
   // Create the browser window.
@@ -31,19 +33,39 @@ function createWindow(): void {
     "select-serial-port",
     (event, portList, webContents, callback) => {
       event.preventDefault();
+      mainWindow.webContents.send("select-serial", portList);
+      ipcMain.once("serial", (_event, port) => {
+        callback(port ? port : "");
+      });
+    }
+  );
 
-      console.log("select-serial-port", portList);
-      if (portList && portList.length > 0) {
-        callback(portList[0].portId);
-      } else {
-        callback(""); //Could not find any matching devices
-      }
+  mainWindow.webContents.session.on(
+    "select-usb-device",
+    (event, details, callback) => {
+      event.preventDefault();
+
+      const devices = details.deviceList.filter((d) => {
+        return (
+          d.productId == USB_DEVICE_FILTER.productId &&
+          d.vendorId == USB_DEVICE_FILTER.vendorId
+        );
+      });
+
+      mainWindow.webContents.send("select-usb-device", devices);
+      ipcMain.once("usb-device", (_event, dev) => {
+        if (dev) {
+          callback(dev);
+        } else {
+          callback();
+        }
+      });
     }
   );
 
   mainWindow.webContents.session.setPermissionCheckHandler(
     (webContents, permission, requestingOrigin, details) => {
-      if (permission === "serial") {
+      if (permission === "serial" || permission === "usb") {
         return true;
       }
 
@@ -52,7 +74,7 @@ function createWindow(): void {
   );
 
   mainWindow.webContents.session.setDevicePermissionHandler((details) => {
-    if (details.deviceType === "serial") {
+    if (details.deviceType === "serial" || details.deviceType === "usb") {
       return true;
     }
 

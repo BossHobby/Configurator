@@ -6,7 +6,7 @@
       <component
         :is="$modal.component"
         v-bind="$modal.props"
-        @close="$modal.close()"
+        @close="$modal.close($event)"
       ></component>
     </div>
   </div>

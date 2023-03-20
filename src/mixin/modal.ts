@@ -1,7 +1,6 @@
 import type { App } from "vue";
 import { shallowRef } from "vue";
 import { reactive } from "vue";
-import { ref } from "vue";
 
 declare module "vue" {
   interface ComponentCustomProperties {
@@ -12,7 +11,8 @@ declare module "vue" {
 class ModalService {
   private state = reactive({
     isShown: false,
-    component: null,
+    resolve: undefined as any,
+    component: undefined,
     props: {},
   });
 
@@ -32,11 +32,18 @@ class ModalService {
     this.state.props = props || {};
     this.state.component = shallowRef(component);
     this.state.isShown = true;
+    return new Promise((resolve) => {
+      this.state.resolve = resolve;
+    });
   }
 
-  public close() {
+  public close(data: any) {
+    if (this.state.resolve) {
+      this.state.resolve(data);
+    }
     this.state.isShown = false;
-    this.state.component = null;
+    this.state.component = undefined;
+    this.state.resolve = undefined;
     this.state.props = {};
   }
 }

@@ -195,6 +195,7 @@ import { RouterLink, RouterView } from "vue-router";
 import { timeAgo } from "@/mixin/filters";
 import AlertPortal from "@/components/AlertPortal.vue";
 import ModalPortal from "@/components/ModalPortal.vue";
+import SelectModal from "@/components/SelectModal.vue";
 import { useInfoStore } from "./store/info";
 import { useProfileStore } from "./store/profile";
 import { useStateStore } from "./store/state";
@@ -298,15 +299,50 @@ export default defineComponent({
       localStorage.setItem("dark-mode", val ? "true" : "false");
       this.darkMode = val;
     },
+    selectSerial(event, ports) {
+      this.$modal
+        .show(SelectModal, {
+          title: "Serial",
+          options: ports.map((p) => {
+            return {
+              text: p.displayName + " " + p.portName,
+              value: p.portId,
+            };
+          }),
+        })
+        .then((value) => {
+          return event.sender.send("serial", value);
+        });
+    },
+    selectUSBDevice(event, devices) {
+      this.$modal
+        .show(SelectModal, {
+          title: "USB Device",
+          options: devices.map((d) => {
+            return {
+              text: d.productName,
+              value: d.deviceId,
+            };
+          }),
+        })
+        .then((value) => {
+          return event.sender.send("usb-device", value);
+        });
+    },
   },
   created() {
     this.darkMode = this.getDarkMode();
     if (updater.updatePending()) {
       updater.finishUpdate();
     }
+
+    window.electron?.ipcRenderer.on("select-serial", this.selectSerial);
+    window.electron?.ipcRenderer.on("select-usb-device", this.selectUSBDevice);
   },
   unmounted() {
     clearInterval(this.interval);
+    window.electron?.ipcRenderer.removeAllListeners("select-serial");
+    window.electron?.ipcRenderer.removeAllListeners("select-usb-device");
   },
 });
 </script>
