@@ -10,6 +10,10 @@ files:
   - README.md
 win:
   target: portable
+  artifactName: ${name}-${version}.${ext}
+dmg:
+  artifactName: ${name}-${version}.${ext}
 linux:
   target:
     - AppImage
+  artifactName: ${name}-${version}.${ext}
