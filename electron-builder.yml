@@ -1,0 +1,15 @@
+appId: com.bosshobby.config
+productName: quic-config
+directories:
+  output: build
+  buildResources: public
+files:
+  - 'out/**/*'
+  - package-lock.json
+  - package.json
+  - README.md
+win:
+  target: portable
+linux:
+  target:
+    - AppImage
