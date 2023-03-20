@@ -18,32 +18,14 @@ export const LevelNames = {
 };
 
 function getFileWriter() {
-  try {
-    if (nw?.App === undefined) {
-      return undefined;
-    }
-  } catch (e) {
-    return undefined;
-  }
-
-  const fs = nw.require("fs");
-  const os = nw.require("os");
-  const path = nw.require("path");
+  // TODO: electron
+  return undefined;
 
   class FileWriter {
-    private path = path.join(os.tmpdir(), nw.App.manifest.name + ".log");
-    private file = fs.createWriteStream(this.path, { flags: "w" });
-
-    constructor() {
-      console.log("Logging to " + this.path);
-    }
-
-    public write(str: string) {
-      this.file.write(str + "\n");
-    }
+    public write(str: string) {}
 
     public getPath() {
-      return this.path;
+      return undefined;
     }
   }
 
