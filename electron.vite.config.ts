@@ -30,6 +30,7 @@ export default defineConfig({
         },
       },
     },
+    envPrefix: "VITE_",
     ...VueConfig,
   },
 });
