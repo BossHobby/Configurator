@@ -224,3 +224,21 @@ export const useConstantStore = defineStore("constant", {
   },
   actions: {},
 });
+
+// These should align with 'blackbox_t' and 'blackbox_field_t' in Quicksilver source 'blackbox.h'
+export enum BlackboxField {
+  LOOP,
+  TIME,
+  PID_P_TERM,
+  PID_I_TERM,
+  PID_D_TERM,
+  RX,
+  SETPOINT,
+  ACCEL_RAW,
+  ACCEL_FILTER,
+  GYRO_RAW,
+  GYRO_FILTER,
+  MOTOR,
+  CPU_LOAD,
+  DEBUG,
+}
