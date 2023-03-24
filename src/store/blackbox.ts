@@ -3,23 +3,7 @@ import { useRootStore } from "./root";
 import { QuicBlackbox, QuicCmd } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { Blackbox } from "./util/blackbox";
-
-export enum BlackboxField {
-  LOOP,
-  TIME,
-  PID_P_TERM,
-  PID_I_TERM,
-  PID_D_TERM,
-  RX,
-  SETPOINT,
-  ACCEL_RAW,
-  ACCEL_FILTER,
-  GYRO_RAW,
-  GYRO_FILTER,
-  MOTOR,
-  CPU_LOAD,
-  DEBUG,
-}
+import { BlackboxField } from "./constants";
 
 export enum BlackboxFieldUnit {
   NONE = "none",
