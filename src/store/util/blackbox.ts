@@ -1,9 +1,11 @@
 import { ArrayWriter } from ".";
+import { BlackboxField } from "../constants";
 
 export interface FieldDefinition {
   name: string;
   array_index?: number;
-  index: number;
+  blackbox_field: BlackboxField;
+  advance: number;
   signed: boolean;
   convert?: (v: number) => number;
 }
@@ -27,26 +29,28 @@ function convertOffset(offset: number): (v: number) => number {
 export const DefaultFields: FieldDefinition[] = [
   {
     name: "loopIteration",
-    index: 0,
+    blackbox_field: BlackboxField.LOOP,
+    advance: 1,
     signed: false,
   },
   {
     name: "time",
-    index: 1,
+    blackbox_field: BlackboxField.TIME,
+    advance: 1,
     signed: false,
   },
 
-  { name: "axisP", array_index: 0, index: 2, signed: true },
-  { name: "axisP", array_index: 1, index: 2, signed: true },
-  { name: "axisP", array_index: 2, index: 2, signed: true },
+  { name: "axisP", array_index: 0, blackbox_field: BlackboxField.PID_P_TERM, advance: 0, signed: true },
+  { name: "axisP", array_index: 1, blackbox_field: BlackboxField.PID_P_TERM, advance: 0, signed: true },
+  { name: "axisP", array_index: 2, blackbox_field: BlackboxField.PID_P_TERM, advance: 1, signed: true },
 
-  { name: "axisI", array_index: 0, index: 3, signed: true },
-  { name: "axisI", array_index: 1, index: 3, signed: true },
-  { name: "axisI", array_index: 2, index: 3, signed: true },
+  { name: "axisI", array_index: 0, blackbox_field: BlackboxField.PID_I_TERM, advance: 0, signed: true },
+  { name: "axisI", array_index: 1, blackbox_field: BlackboxField.PID_I_TERM, advance: 0, signed: true },
+  { name: "axisI", array_index: 2, blackbox_field: BlackboxField.PID_I_TERM, advance: 1, signed: true },
 
-  { name: "axisD", array_index: 0, index: 4, signed: true },
-  { name: "axisD", array_index: 1, index: 4, signed: true },
-  { name: "axisD", array_index: 2, index: 4, signed: true },
+  { name: "axisD", array_index: 0, blackbox_field: BlackboxField.PID_D_TERM, advance: 0, signed: true },
+  { name: "axisD", array_index: 1, blackbox_field: BlackboxField.PID_D_TERM, advance: 0, signed: true },
+  { name: "axisD", array_index: 2, blackbox_field: BlackboxField.PID_D_TERM, advance: 1, signed: true },
 
   //"axisF[0]"
   //"axisF[1]"
@@ -56,7 +60,8 @@ export const DefaultFields: FieldDefinition[] = [
     name: "rcCommand",
     array_index: 0,
     signed: true,
-    index: 5,
+    blackbox_field: BlackboxField.RX,
+    advance: 0,
     convert: (val: number) => {
       return val / 2;
     },
@@ -65,7 +70,8 @@ export const DefaultFields: FieldDefinition[] = [
     name: "rcCommand",
     array_index: 1,
     signed: true,
-    index: 5,
+    blackbox_field: BlackboxField.RX,
+    advance: 0,
     convert: (val: number) => {
       return val / 2;
     },
@@ -74,7 +80,8 @@ export const DefaultFields: FieldDefinition[] = [
     name: "rcCommand",
     array_index: 2,
     signed: true,
-    index: 5,
+    blackbox_field: BlackboxField.RX,
+    advance: 0,
     convert: (val: number) => {
       return -val / 2;
     },
@@ -83,41 +90,45 @@ export const DefaultFields: FieldDefinition[] = [
     name: "rcCommand",
     array_index: 3,
     signed: true,
-    index: 5,
+    blackbox_field: BlackboxField.RX,
+    advance: 1,
     convert: convertOffset(1000),
   },
 
-  { name: "setpoint", array_index: 0, index: 6, signed: true },
-  { name: "setpoint", array_index: 1, index: 6, signed: true },
+  { name: "setpoint", array_index: 0, blackbox_field: BlackboxField.SETPOINT, advance: 0, signed: true },
+  { name: "setpoint", array_index: 1, blackbox_field: BlackboxField.SETPOINT, advance: 0, signed: true },
   {
     name: "setpoint",
     array_index: 2,
-    index: 6,
+    blackbox_field: BlackboxField.SETPOINT,
+    advance: 0,
     signed: true,
     convert: convertFlip,
   },
-  { name: "setpoint", array_index: 3, index: 6, signed: true },
+  { name: "setpoint", array_index: 3, blackbox_field: BlackboxField.SETPOINT, advance: 1, signed: true },
 
   //"vbatLatest",
   //"amperageLatest",
   //"rssi",
 
-  { name: "accRaw", array_index: 0, index: 7, signed: true },
-  { name: "accRaw", array_index: 1, index: 7, signed: true },
+  { name: "accRaw", array_index: 0, blackbox_field: BlackboxField.ACCEL_RAW, advance: 0, signed: true },
+  { name: "accRaw", array_index: 1, blackbox_field: BlackboxField.ACCEL_RAW, advance: 0, signed: true },
   {
     name: "accRaw",
     array_index: 2,
-    index: 7,
+    blackbox_field: BlackboxField.ACCEL_RAW,
+    advance: 1,
     signed: true,
     convert: convertOffset(1000),
   },
 
-  { name: "accSmooth", array_index: 0, index: 8, signed: true },
-  { name: "accSmooth", array_index: 1, index: 8, signed: true },
+  { name: "accSmooth", array_index: 0, blackbox_field: BlackboxField.ACCEL_FILTER, advance: 0, signed: true },
+  { name: "accSmooth", array_index: 1, blackbox_field: BlackboxField.ACCEL_FILTER, advance: 0, signed: true },
   {
     name: "accSmooth",
     array_index: 2,
-    index: 8,
+    blackbox_field: BlackboxField.ACCEL_FILTER,
+    advance: 1,
     signed: true,
     convert: convertOffset(1000),
   },
@@ -125,21 +136,24 @@ export const DefaultFields: FieldDefinition[] = [
   {
     name: "gyroRaw",
     array_index: 0,
-    index: 9,
+    blackbox_field: BlackboxField.GYRO_RAW,
+    advance: 0,
     signed: true,
     convert: convertGyro(1),
   },
   {
     name: "gyroRaw",
     array_index: 1,
-    index: 9,
+    blackbox_field: BlackboxField.GYRO_RAW,
+    advance: 0,
     signed: true,
     convert: convertGyro(1),
   },
   {
     name: "gyroRaw",
     array_index: 2,
-    index: 9,
+    blackbox_field: BlackboxField.GYRO_RAW,
+    advance: 1,
     signed: true,
     convert: convertGyro(-1),
   },
@@ -147,36 +161,39 @@ export const DefaultFields: FieldDefinition[] = [
   {
     name: "gyroADC",
     array_index: 0,
-    index: 10,
+    blackbox_field: BlackboxField.GYRO_FILTER,
+    advance: 0,
     signed: true,
     convert: convertGyro(1),
   },
   {
     name: "gyroADC",
     array_index: 1,
-    index: 10,
+    blackbox_field: BlackboxField.GYRO_FILTER,
+    advance: 0,
     signed: true,
     convert: convertGyro(1),
   },
   {
     name: "gyroADC",
     array_index: 2,
-    index: 10,
+    blackbox_field: BlackboxField.GYRO_FILTER,
+    advance: 1,
     signed: true,
     convert: convertGyro(-1),
   },
 
-  { name: "motor", array_index: 0, index: 11, signed: true },
-  { name: "motor", array_index: 1, index: 11, signed: true },
-  { name: "motor", array_index: 2, index: 11, signed: true },
-  { name: "motor", array_index: 3, index: 11, signed: true },
+  { name: "motor", array_index: 0, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
+  { name: "motor", array_index: 1, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
+  { name: "motor", array_index: 2, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
+  { name: "motor", array_index: 3, blackbox_field: BlackboxField.MOTOR, advance: 1, signed: true },
 
-  { name: "cpuload", index: 12, signed: false },
+  { name: "cpuload", blackbox_field: BlackboxField.CPU_LOAD, advance: 1, signed: false },
 
-  { name: "debug[0]", array_index: 0, index: 13, signed: true },
-  { name: "debug[1]", array_index: 1, index: 13, signed: true },
-  { name: "debug[2]", array_index: 2, index: 13, signed: true },
-  { name: "debug[3]", array_index: 3, index: 13, signed: true },
+  { name: "debug[0]", array_index: 0, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
+  { name: "debug[1]", array_index: 1, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
+  { name: "debug[2]", array_index: 2, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
+  { name: "debug[3]", array_index: 3, blackbox_field: BlackboxField.DEBUG, advance: 1, signed: true },
 ];
 
 export class Blackbox {
@@ -247,6 +264,15 @@ export class Blackbox {
     this.writeHeaderRaw("rates_type", "3");
   }
 
+  private getBlackboxFieldFlags() {
+    // Quicksilver versions 0.96 and below don't provide the field flags
+    let blackbox_fieldflags = this.file.blackbox_fieldflags;
+    if (blackbox_fieldflags == undefined) {
+      blackbox_fieldflags = -1;
+    }
+    return blackbox_fieldflags | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
+  }
+
   public writeValue(val: any[]) {
     if (!val[0]) {
       console.warn("skipping blackbox entry");
@@ -254,20 +280,31 @@ export class Blackbox {
     }
 
     this.buffer.writeUint8("I".charCodeAt(0));
+
+    const blackbox_fieldflags = this.getBlackboxFieldFlags();
+    let bit = 1;
+    let index = 0;
     for (const d of this.defs) {
-      let v = val[d.index];
-      if (d.array_index != undefined) {
-        v = v[d.array_index];
-      }
-      if (d.convert) {
-        v = d.convert(v);
+      const test = bit & blackbox_fieldflags;
+      if (test & (1 << d.blackbox_field)) {
+        let v = val[index];
+        if (d.array_index != undefined) {
+          v = v[d.array_index];
+        }
+        if (d.convert) {
+          v = d.convert(v);
+        }
+        if (d.signed) {
+          this.writeSigned(v);
+        } else {
+          this.writeUnsigned(v);
+        }
+        // Adjust index only if field was written and field descriptor says we should
+        index += d.advance;
       }
 
-      if (d.signed) {
-        this.writeSigned(v);
-      } else {
-        this.writeUnsigned(v);
-      }
+      // Adjust bit flag only if field descriptor says to
+      bit <<= d.advance;
     }
   }
 
@@ -280,12 +317,18 @@ export class Blackbox {
   private writeHeaderJoin(key: string, fn: (d: FieldDefinition) => string) {
     let val = "";
 
-    for (let i = 0; i < this.defs.length; i++) {
-      const d = this.defs[i];
-      val += fn(d);
-      if (i != this.defs.length - 1) {
-        val += ",";
+    const blackbox_fieldflags = this.getBlackboxFieldFlags();
+    let bit = 1 << 0;
+    let num_emitted = 0;
+    for (const d of this.defs) {
+      const test = bit & blackbox_fieldflags;
+      if (test & (1 << d.blackbox_field)) {
+        if (num_emitted++ != 0) {
+          val += ",";
+        }
+        val += fn(d);
       }
+      bit <<= d.advance;
     }
 
     return this.writeHeaderRaw(key, val);
