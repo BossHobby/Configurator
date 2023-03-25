@@ -26,6 +26,7 @@ export enum QuicVal {
   BLHeliSettings,
   BindInfo,
   PerfCounters,
+  BlackboxPresets,
 }
 
 export enum QuicBlackbox {

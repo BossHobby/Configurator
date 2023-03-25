@@ -1,4 +1,5 @@
 import { ArrayWriter } from ".";
+import { transformBlackboxFieldFlags } from "../blackbox";
 import { BlackboxField } from "../constants";
 
 export interface FieldDefinition {
@@ -40,17 +41,71 @@ export const DefaultFields: FieldDefinition[] = [
     signed: false,
   },
 
-  { name: "axisP", array_index: 0, blackbox_field: BlackboxField.PID_P_TERM, advance: 0, signed: true },
-  { name: "axisP", array_index: 1, blackbox_field: BlackboxField.PID_P_TERM, advance: 0, signed: true },
-  { name: "axisP", array_index: 2, blackbox_field: BlackboxField.PID_P_TERM, advance: 1, signed: true },
+  {
+    name: "axisP",
+    array_index: 0,
+    blackbox_field: BlackboxField.PID_P_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisP",
+    array_index: 1,
+    blackbox_field: BlackboxField.PID_P_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisP",
+    array_index: 2,
+    blackbox_field: BlackboxField.PID_P_TERM,
+    advance: 1,
+    signed: true,
+  },
 
-  { name: "axisI", array_index: 0, blackbox_field: BlackboxField.PID_I_TERM, advance: 0, signed: true },
-  { name: "axisI", array_index: 1, blackbox_field: BlackboxField.PID_I_TERM, advance: 0, signed: true },
-  { name: "axisI", array_index: 2, blackbox_field: BlackboxField.PID_I_TERM, advance: 1, signed: true },
+  {
+    name: "axisI",
+    array_index: 0,
+    blackbox_field: BlackboxField.PID_I_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisI",
+    array_index: 1,
+    blackbox_field: BlackboxField.PID_I_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisI",
+    array_index: 2,
+    blackbox_field: BlackboxField.PID_I_TERM,
+    advance: 1,
+    signed: true,
+  },
 
-  { name: "axisD", array_index: 0, blackbox_field: BlackboxField.PID_D_TERM, advance: 0, signed: true },
-  { name: "axisD", array_index: 1, blackbox_field: BlackboxField.PID_D_TERM, advance: 0, signed: true },
-  { name: "axisD", array_index: 2, blackbox_field: BlackboxField.PID_D_TERM, advance: 1, signed: true },
+  {
+    name: "axisD",
+    array_index: 0,
+    blackbox_field: BlackboxField.PID_D_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisD",
+    array_index: 1,
+    blackbox_field: BlackboxField.PID_D_TERM,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "axisD",
+    array_index: 2,
+    blackbox_field: BlackboxField.PID_D_TERM,
+    advance: 1,
+    signed: true,
+  },
 
   //"axisF[0]"
   //"axisF[1]"
@@ -95,8 +150,20 @@ export const DefaultFields: FieldDefinition[] = [
     convert: convertOffset(1000),
   },
 
-  { name: "setpoint", array_index: 0, blackbox_field: BlackboxField.SETPOINT, advance: 0, signed: true },
-  { name: "setpoint", array_index: 1, blackbox_field: BlackboxField.SETPOINT, advance: 0, signed: true },
+  {
+    name: "setpoint",
+    array_index: 0,
+    blackbox_field: BlackboxField.SETPOINT,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "setpoint",
+    array_index: 1,
+    blackbox_field: BlackboxField.SETPOINT,
+    advance: 0,
+    signed: true,
+  },
   {
     name: "setpoint",
     array_index: 2,
@@ -105,14 +172,32 @@ export const DefaultFields: FieldDefinition[] = [
     signed: true,
     convert: convertFlip,
   },
-  { name: "setpoint", array_index: 3, blackbox_field: BlackboxField.SETPOINT, advance: 1, signed: true },
+  {
+    name: "setpoint",
+    array_index: 3,
+    blackbox_field: BlackboxField.SETPOINT,
+    advance: 1,
+    signed: true,
+  },
 
   //"vbatLatest",
   //"amperageLatest",
   //"rssi",
 
-  { name: "accRaw", array_index: 0, blackbox_field: BlackboxField.ACCEL_RAW, advance: 0, signed: true },
-  { name: "accRaw", array_index: 1, blackbox_field: BlackboxField.ACCEL_RAW, advance: 0, signed: true },
+  {
+    name: "accRaw",
+    array_index: 0,
+    blackbox_field: BlackboxField.ACCEL_RAW,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "accRaw",
+    array_index: 1,
+    blackbox_field: BlackboxField.ACCEL_RAW,
+    advance: 0,
+    signed: true,
+  },
   {
     name: "accRaw",
     array_index: 2,
@@ -122,8 +207,20 @@ export const DefaultFields: FieldDefinition[] = [
     convert: convertOffset(1000),
   },
 
-  { name: "accSmooth", array_index: 0, blackbox_field: BlackboxField.ACCEL_FILTER, advance: 0, signed: true },
-  { name: "accSmooth", array_index: 1, blackbox_field: BlackboxField.ACCEL_FILTER, advance: 0, signed: true },
+  {
+    name: "accSmooth",
+    array_index: 0,
+    blackbox_field: BlackboxField.ACCEL_FILTER,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "accSmooth",
+    array_index: 1,
+    blackbox_field: BlackboxField.ACCEL_FILTER,
+    advance: 0,
+    signed: true,
+  },
   {
     name: "accSmooth",
     array_index: 2,
@@ -183,25 +280,81 @@ export const DefaultFields: FieldDefinition[] = [
     convert: convertGyro(-1),
   },
 
-  { name: "motor", array_index: 0, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
-  { name: "motor", array_index: 1, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
-  { name: "motor", array_index: 2, blackbox_field: BlackboxField.MOTOR, advance: 0, signed: true },
-  { name: "motor", array_index: 3, blackbox_field: BlackboxField.MOTOR, advance: 1, signed: true },
+  {
+    name: "motor",
+    array_index: 0,
+    blackbox_field: BlackboxField.MOTOR,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "motor",
+    array_index: 1,
+    blackbox_field: BlackboxField.MOTOR,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "motor",
+    array_index: 2,
+    blackbox_field: BlackboxField.MOTOR,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "motor",
+    array_index: 3,
+    blackbox_field: BlackboxField.MOTOR,
+    advance: 1,
+    signed: true,
+  },
 
-  { name: "cpuload", blackbox_field: BlackboxField.CPU_LOAD, advance: 1, signed: false },
+  {
+    name: "cpuload",
+    blackbox_field: BlackboxField.CPU_LOAD,
+    advance: 1,
+    signed: false,
+  },
 
-  { name: "debug[0]", array_index: 0, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
-  { name: "debug[1]", array_index: 1, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
-  { name: "debug[2]", array_index: 2, blackbox_field: BlackboxField.DEBUG, advance: 0, signed: true },
-  { name: "debug[3]", array_index: 3, blackbox_field: BlackboxField.DEBUG, advance: 1, signed: true },
+  {
+    name: "debug[0]",
+    array_index: 0,
+    blackbox_field: BlackboxField.DEBUG,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "debug[1]",
+    array_index: 1,
+    blackbox_field: BlackboxField.DEBUG,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "debug[2]",
+    array_index: 2,
+    blackbox_field: BlackboxField.DEBUG,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "debug[3]",
+    array_index: 3,
+    blackbox_field: BlackboxField.DEBUG,
+    advance: 1,
+    signed: true,
+  },
 ];
 
 export class Blackbox {
   private buffer = new ArrayWriter();
 
   private defs = DefaultFields;
+  private fieldflags: number;
 
-  constructor(private file) {}
+  constructor(private file) {
+    this.fieldflags = transformBlackboxFieldFlags(file.blackbox_fieldflags);
+  }
 
   public writeHeaders() {
     this.writeHeaderRaw(
@@ -264,15 +417,6 @@ export class Blackbox {
     this.writeHeaderRaw("rates_type", "3");
   }
 
-  private getBlackboxFieldFlags() {
-    // Quicksilver versions 0.96 and below don't provide the field flags
-    let blackbox_fieldflags = this.file.blackbox_fieldflags;
-    if (blackbox_fieldflags == undefined) {
-      blackbox_fieldflags = -1;
-    }
-    return blackbox_fieldflags | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
-  }
-
   public writeValue(val: any[]) {
     if (!val[0]) {
       console.warn("skipping blackbox entry");
@@ -281,11 +425,10 @@ export class Blackbox {
 
     this.buffer.writeUint8("I".charCodeAt(0));
 
-    const blackbox_fieldflags = this.getBlackboxFieldFlags();
     let bit = 1;
     let index = 0;
     for (const d of this.defs) {
-      const test = bit & blackbox_fieldflags;
+      const test = bit & this.fieldflags;
       if (test & (1 << d.blackbox_field)) {
         let v = val[index];
         if (d.array_index != undefined) {
@@ -317,11 +460,10 @@ export class Blackbox {
   private writeHeaderJoin(key: string, fn: (d: FieldDefinition) => string) {
     let val = "";
 
-    const blackbox_fieldflags = this.getBlackboxFieldFlags();
     let bit = 1 << 0;
     let num_emitted = 0;
     for (const d of this.defs) {
-      const test = bit & blackbox_fieldflags;
+      const test = bit & this.fieldflags;
       if (test & (1 << d.blackbox_field)) {
         if (num_emitted++ != 0) {
           val += ",";
