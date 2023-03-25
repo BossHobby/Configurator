@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
-import { QuicBlackbox, QuicCmd } from "./serial/quic";
+import { QuicBlackbox, QuicCmd, QuicVal } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { Blackbox } from "./util/blackbox";
 import { BlackboxField } from "./constants";
@@ -17,6 +17,13 @@ export interface BlackboxFieldDef {
   scale: number;
   axis?: string[];
   unit: BlackboxFieldUnit;
+}
+
+export interface BlackboxPreset {
+  blackbox_fieldflags: number;
+  name: string;
+  name_osd: string;
+  rate_divisor: number;
 }
 
 const AxisRPY = ["Roll", "Pitch", "Yaw"];
@@ -122,12 +129,19 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
   },
 };
 
+export function transformBlackboxFieldFlags(flags: number) {
+  // Quicksilver versions 0.96 and below don't provide the field flags
+  const res = flags == undefined ? -1 : flags;
+  return res | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
+}
+
 export const useBlackboxStore = defineStore("blackbox", {
   state: () => ({
     busy: false,
     speed: undefined as number | undefined,
     progress: undefined as number | undefined,
     list: { flash_size: 0, files: [] as { size: number }[] },
+    presets: [] as BlackboxPreset[],
   }),
   actions: {
     reset_blackbox() {
@@ -149,6 +163,11 @@ export const useBlackboxStore = defineStore("blackbox", {
       return serial
         .command(QuicCmd.Blackbox, QuicBlackbox.List)
         .then((p) => (this.list = p.payload[0]));
+    },
+    fetch_presets() {
+      return serial
+        .get(QuicVal.BlackboxPresets)
+        .then((val) => (this.presets = val));
     },
     download_blackbox_quic(index) {
       const root = useRootStore();

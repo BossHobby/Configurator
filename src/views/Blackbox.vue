@@ -1,9 +1,81 @@
 <template>
-  <div class="columns">
+  <div class="columns is-multiline">
+    <div class="column is-12">
+      <div class="card" v-if="info.quicVersionGt('0.1.2')">
+        <div class="card-header">
+          <p class="card-header-title">Blackbox Settings</p>
+        </div>
+        <div class="card-content">
+          <div class="content column-narrow">
+            <div class="field field-is-2 is-horizontal">
+              <div class="field-label">
+                <label class="label" for="pid-preset"> Preset </label>
+              </div>
+              <div class="field-body">
+                <div class="field has-addons">
+                  <div class="control">
+                    <input-select
+                      id="blackbox-preset"
+                      v-model.number="current_preset"
+                      :options="blackboxPresets"
+                    ></input-select>
+                  </div>
+                  <div class="control">
+                    <spinner-btn
+                      @click="load_preset(current_preset)"
+                      :disabled="current_preset == -1"
+                    >
+                      Load
+                    </spinner-btn>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field field-is-2 is-horizontal">
+              <div class="field-label">
+                <label class="label">Log Rate</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      class="input is-static"
+                      :value="blackboxRate"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field field-is-2 is-horizontal">
+              <div class="field-label is-align-self-flex-start pt-2">
+                <label class="label">Fields</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      v-for="f of blackboxFields"
+                      :key="f"
+                      class="input is-static"
+                      :value="f"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="column is-12">
       <div class="card" v-if="blackbox.list">
         <div class="card-header">
-          <p class="card-header-title">Blackbox</p>
+          <p class="card-header-title">Blackbox Files</p>
           <div class="blackbox-progress has-text-right">
             <progress
               class="progress my-0 is-danger"
@@ -81,8 +153,16 @@
 
 <script lang="ts">
 import { humanFileSize } from "@/mixin/filters";
-import { useBlackboxStore } from "@/store/blackbox";
+import {
+  useBlackboxStore,
+  BlackboxFields,
+  transformBlackboxFieldFlags,
+} from "@/store/blackbox";
+import { BlackboxField } from "@/store/constants";
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
+import { useStateStore } from "@/store/state";
+import { $enum } from "ts-enum-util";
 import { defineComponent } from "vue";
 
 export default defineComponent({
@@ -91,11 +171,56 @@ export default defineComponent({
     return {
       blackbox: useBlackboxStore(),
       profile: useProfileStore(),
+      state: useStateStore(),
+      info: useInfoStore(),
+    };
+  },
+  data() {
+    return {
+      current_preset: -1,
     };
   },
   computed: {
     usedSize() {
       return (this.blackbox?.list?.files || []).reduce((p, c) => p + c.size, 0);
+    },
+    blackboxRate() {
+      return (
+        (
+          1e6 /
+          this.state.looptime_autodetect /
+          this.profile.blackbox.rate_divisor
+        ).toString() + " Hz"
+      );
+    },
+    blackboxFields() {
+      const fieldflags = transformBlackboxFieldFlags(
+        this.profile.blackbox.blackbox_fieldflags
+      );
+      const fields = $enum(BlackboxField)
+        .getEntries()
+        .map((key, val) => {
+          return {
+            val: val,
+            title: BlackboxFields[val].title,
+            active: (fieldflags & (1 << val)) > 0,
+          };
+        });
+      if (fields.every((p) => p.active)) {
+        return ["All"];
+      }
+      return fields.filter((p) => p.active).map((p) => p.title);
+    },
+    blackboxPresets() {
+      return [
+        { value: -1, text: "Choose..." },
+        ...this.blackbox.presets.map((p, i) => {
+          return {
+            value: i,
+            text: p.name,
+          };
+        }),
+      ];
     },
   },
   methods: {
@@ -127,9 +252,19 @@ export default defineComponent({
         this.$refs.downloadAnchor.click();
       });
     },
+    load_preset(i: number) {
+      this.profile.blackbox.blackbox_fieldflags =
+        this.blackbox.presets[i].blackbox_fieldflags;
+      this.profile.blackbox.rate_divisor =
+        this.blackbox.presets[i].rate_divisor;
+      this.current_preset = -1;
+    },
   },
   created() {
     this.blackbox.list_blackbox();
+    if (this.info.quicVersionGt("0.1.2")) {
+      this.blackbox.fetch_presets();
+    }
   },
 });
 </script>

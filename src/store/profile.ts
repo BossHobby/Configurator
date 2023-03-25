@@ -149,6 +149,10 @@ export const useProfileStore = defineStore("profile", {
       small_angle: {},
       throttle_dterm_attenuation: {},
     },
+    blackbox: {
+      blackbox_fieldflags: 0,
+      rate_divisor: 0,
+    },
   }),
   getters: {
     current_pid_rate: (state) => {

@@ -178,6 +178,24 @@ enum Failloop {
   FAILLOOP_SPI_MAIN = 8, // - spi error main loop  - triggered by hardware spi driver only
 }
 
+// These should align with 'blackbox_t' and 'blackbox_field_t' in Quicksilver source 'blackbox.h'
+export enum BlackboxField {
+  LOOP,
+  TIME,
+  PID_P_TERM,
+  PID_I_TERM,
+  PID_D_TERM,
+  RX,
+  SETPOINT,
+  ACCEL_RAW,
+  ACCEL_FILTER,
+  GYRO_RAW,
+  GYRO_FILTER,
+  MOTOR,
+  CPU_LOAD,
+  DEBUG,
+}
+
 export const FailloopMessages = {
   [Failloop.FAILLOOP_NONE]: "",
   [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - currently unused",
@@ -224,21 +242,3 @@ export const useConstantStore = defineStore("constant", {
   },
   actions: {},
 });
-
-// These should align with 'blackbox_t' and 'blackbox_field_t' in Quicksilver source 'blackbox.h'
-export enum BlackboxField {
-  LOOP,
-  TIME,
-  PID_P_TERM,
-  PID_I_TERM,
-  PID_D_TERM,
-  RX,
-  SETPOINT,
-  ACCEL_RAW,
-  ACCEL_FILTER,
-  GYRO_RAW,
-  GYRO_FILTER,
-  MOTOR,
-  CPU_LOAD,
-  DEBUG,
-}
