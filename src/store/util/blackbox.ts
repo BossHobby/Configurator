@@ -1,5 +1,5 @@
 import { ArrayWriter } from ".";
-import { transformBlackboxFieldFlags } from "../blackbox";
+import { transformBlackboxFieldFlags, type BlackboxFile } from "../blackbox";
 import { BlackboxField } from "../constants";
 
 export interface FieldDefinition {
@@ -352,8 +352,8 @@ export class Blackbox {
   private defs = DefaultFields;
   private fieldflags: number;
 
-  constructor(private file) {
-    this.fieldflags = transformBlackboxFieldFlags(file.blackbox_fieldflags);
+  constructor(private file: BlackboxFile) {
+    this.fieldflags = transformBlackboxFieldFlags(file.field_flags);
   }
 
   public writeHeaders() {
