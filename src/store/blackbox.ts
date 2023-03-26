@@ -180,6 +180,7 @@ export const useBlackboxStore = defineStore("blackbox", {
     download_blackbox_quic(index) {
       const root = useRootStore();
       const file = this.list.files[index];
+      const fieldflags = transformBlackboxFieldFlags(file.field_flags);
 
       const start = performance.now();
       return serial
@@ -194,9 +195,15 @@ export const useBlackboxStore = defineStore("blackbox", {
           index
         )
         .then((p) => {
+          const fields = Object.keys(BlackboxFields)
+            .filter((val, key) => {
+              return (fieldflags & (1 << key)) > 0;
+            })
+            .map((i) => BlackboxFields[i]);
+
           const f = {
             ...file,
-            fields: Object.keys(BlackboxFields).map((i) => BlackboxFields[i]),
+            fields,
             entries: p.payload,
           };
 
