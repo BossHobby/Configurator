@@ -185,17 +185,11 @@ export default defineComponent({
       return (this.blackbox?.list?.files || []).reduce((p, c) => p + c.size, 0);
     },
     blackboxRate() {
-      return (
-        (
-          1e6 /
-          this.state.looptime_autodetect /
-          this.profile.blackbox.rate_divisor
-        ).toString() + " Hz"
-      );
+      return this.profile.blackbox.sample_rate_hz.toString() + " Hz";
     },
     blackboxFields() {
       const fieldflags = transformBlackboxFieldFlags(
-        this.profile.blackbox.blackbox_fieldflags
+        this.profile.blackbox.field_flags
       );
       const fields = $enum(BlackboxField)
         .getEntries()
@@ -253,10 +247,9 @@ export default defineComponent({
       });
     },
     load_preset(i: number) {
-      this.profile.blackbox.blackbox_fieldflags =
-        this.blackbox.presets[i].blackbox_fieldflags;
-      this.profile.blackbox.rate_divisor =
-        this.blackbox.presets[i].rate_divisor;
+      this.profile.blackbox.field_flags = this.blackbox.presets[i].field_flags;
+      this.profile.blackbox.sample_rate_hz =
+        this.blackbox.presets[i].sample_rate_hz;
       this.current_preset = -1;
     },
   },

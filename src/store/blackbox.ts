@@ -20,10 +20,18 @@ export interface BlackboxFieldDef {
 }
 
 export interface BlackboxPreset {
-  blackbox_fieldflags: number;
+  field_flags: number;
   name: string;
   name_osd: string;
-  rate_divisor: number;
+  sample_rate_hz: number;
+}
+
+export interface BlackboxFile {
+  field_flags: number;
+  looptime: number;
+  blackbox_rate: number;
+  start: number;
+  size: number;
 }
 
 const AxisRPY = ["Roll", "Pitch", "Yaw"];
@@ -140,7 +148,7 @@ export const useBlackboxStore = defineStore("blackbox", {
     busy: false,
     speed: undefined as number | undefined,
     progress: undefined as number | undefined,
-    list: { flash_size: 0, files: [] as { size: number }[] },
+    list: { flash_size: 0, files: [] as BlackboxFile[] },
     presets: [] as BlackboxPreset[],
   }),
   actions: {
