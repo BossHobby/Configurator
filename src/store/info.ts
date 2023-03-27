@@ -28,6 +28,7 @@ export const useInfoStore = defineStore("info", {
     rx_protocol: 0,
     rx_protocols: [],
     features: 0,
+    blackbox_type: 0,
   }),
   getters: {
     has_feature(state) {

@@ -68,6 +68,27 @@
             </div>
           </div>
         </div>
+
+        <div class="field is-horizontal" v-if="info.quicVersionGt('0.1.2')">
+          <div class="field-label">
+            <label class="label">
+              Blackbox
+              <tooltip entry="serial.blackbox" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  class="is-fullwidth"
+                  id="hdzero"
+                  v-model.number="profile.serial.blackbox"
+                  :options="serialPorts"
+                ></input-select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

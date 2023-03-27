@@ -68,10 +68,7 @@
         >
         <router-link
           active-class="is-active"
-          v-if="
-            info.has_feature(Features.BLACKBOX) &&
-            info.quic_protocol_version > 1
-          "
+          v-if="hasBlackbox"
           class="navbar-item"
           to="/blackbox"
           >Blackbox</router-link
@@ -279,6 +276,18 @@ export default defineComponent({
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
+    },
+    hasBlackbox() {
+      if (this.info.quicVersionGt("0.1.2")) {
+        return (
+          this.info.has_feature(this.Features.BLACKBOX) &&
+          this.info.blackbox_type > 0
+        );
+      }
+      if (this.info.quic_protocol_version > 1) {
+        return this.info.has_feature(this.Features.BLACKBOX);
+      }
+      return false;
     },
   },
   methods: {

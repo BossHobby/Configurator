@@ -210,6 +210,9 @@
   "serial.hdzero": {
     "text": "HDZero requires TX and RX connected to use msp, define the UART here"
   },
+  "serial.blackbox": {
+    "text": "Enter the UART the serial blackbox logger is connected to"
+  },
   "voltage.actual_battery_voltage": {
     "text": "Default is 4.2V, set to whatever value you get from a multimeter or lipo tester for a full lipo."
   },

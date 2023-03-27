@@ -218,4 +218,5 @@ export interface target_info_t {
   usart_ports: string[];
 
   gyro_id: number;
+  blackbox_type: number;
 }
