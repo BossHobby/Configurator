@@ -4,7 +4,7 @@
       <p class="card-header-title">Motor Test</p>
       <small class="card-header-icon">
         {{ state.vbat.toFixed(2) }}V <br />
-        {{ state.ibat_filtered.toFixed(2) }}mAh
+        {{ state.ibat_filtered.toFixed(2) }}mA
       </small>
       <tooltip class="card-header-icon" entry="motor.test" size="lg" />
     </header>

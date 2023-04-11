@@ -3,7 +3,7 @@
     <header class="card-header">
       <p class="card-header-title">Voltage</p>
       <small class="card-header-icon">
-        {{ state.vbat.toFixed(2) }}V {{ state.ibat_filtered.toFixed(2) }}mAh
+        {{ state.vbat.toFixed(2) }}V {{ state.ibat_filtered.toFixed(2) }}mA
       </small>
     </header>
 
