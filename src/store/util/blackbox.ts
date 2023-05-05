@@ -11,11 +11,7 @@ export interface FieldDefinition {
   convert?: (v: number) => number;
 }
 
-function convertFlip(val: number): number {
-  return -val;
-}
-
-function convertGyro(flip: number): (v: number) => number {
+function convertToDeg(flip: number): (v: number) => number {
   return (val) => {
     return (((flip * val * 1) / 1000) * 180) / Math.PI;
   };
@@ -156,6 +152,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.SETPOINT,
     advance: 0,
     signed: true,
+    convert: convertToDeg(1),
   },
   {
     name: "setpoint",
@@ -163,6 +160,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.SETPOINT,
     advance: 0,
     signed: true,
+    convert: convertToDeg(1),
   },
   {
     name: "setpoint",
@@ -170,7 +168,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.SETPOINT,
     advance: 0,
     signed: true,
-    convert: convertFlip,
+    convert: convertToDeg(-1),
   },
   {
     name: "setpoint",
@@ -236,7 +234,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_RAW,
     advance: 0,
     signed: true,
-    convert: convertGyro(1),
+    convert: convertToDeg(1),
   },
   {
     name: "gyroRaw",
@@ -244,7 +242,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_RAW,
     advance: 0,
     signed: true,
-    convert: convertGyro(1),
+    convert: convertToDeg(1),
   },
   {
     name: "gyroRaw",
@@ -252,7 +250,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_RAW,
     advance: 1,
     signed: true,
-    convert: convertGyro(-1),
+    convert: convertToDeg(-1),
   },
 
   {
@@ -261,7 +259,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_FILTER,
     advance: 0,
     signed: true,
-    convert: convertGyro(1),
+    convert: convertToDeg(1),
   },
   {
     name: "gyroADC",
@@ -269,7 +267,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_FILTER,
     advance: 0,
     signed: true,
-    convert: convertGyro(1),
+    convert: convertToDeg(1),
   },
   {
     name: "gyroADC",
@@ -277,7 +275,7 @@ export const DefaultFields: FieldDefinition[] = [
     blackbox_field: BlackboxField.GYRO_FILTER,
     advance: 1,
     signed: true,
-    convert: convertGyro(-1),
+    convert: convertToDeg(-1),
   },
 
   {
