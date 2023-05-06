@@ -381,6 +381,9 @@ export class Blackbox {
     this.writeHeaderRaw("minthrottle", "1000");
     this.writeHeaderRaw("maxthrottle", "2000");
 
+    this.writeHeaderRaw("gyro_notch_hz", "0,0");
+    this.writeHeaderRaw("gyro_notch_cutoff", "0,0");
+
     this.writeHeaderRaw("Craft name", profile.meta.name.replace(/\0/g, ""));
 
     this.writeHeaderRaw(
