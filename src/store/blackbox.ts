@@ -4,6 +4,8 @@ import { QuicBlackbox, QuicCmd, QuicVal } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { Blackbox } from "./util/blackbox";
 import { BlackboxField } from "./constants";
+import { useProfileStore } from "./profile";
+import type { profile_t } from "./types";
 
 export enum BlackboxFieldUnit {
   NONE = "none",
@@ -246,8 +248,9 @@ export const useBlackboxStore = defineStore("blackbox", {
           index
         )
         .then((p) => {
+          const profile = useProfileStore();
           const writer = new Blackbox(file);
-          writer.writeHeaders();
+          writer.writeHeaders(profile as unknown as profile_t);
           for (const v of p.payload) {
             writer.writeValue(v);
           }

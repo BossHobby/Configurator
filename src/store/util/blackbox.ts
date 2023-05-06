@@ -1,6 +1,7 @@
 import { ArrayWriter } from ".";
 import { transformBlackboxFieldFlags, type BlackboxFile } from "../blackbox";
 import { BlackboxField } from "../constants";
+import type { profile_t } from "../types";
 
 export interface FieldDefinition {
   name: string;
@@ -354,12 +355,119 @@ export class Blackbox {
     this.fieldflags = transformBlackboxFieldFlags(file.field_flags);
   }
 
-  public writeHeaders() {
+  public writeHeaders(profile: profile_t) {
     this.writeHeaderRaw(
       "Product",
       "Blackbox flight data recorder by Nicholas Sherlock"
     );
     this.writeHeaderRaw("Data version", "2");
+
+    this.writeHeaderRaw("Firmware type", "Cleanflight");
+    this.writeHeaderRaw("Firmware revision", "Betaflight 4.3.0");
+
+    this.writeHeaderRaw("gyro_scale", "0x3f800000");
+    this.writeHeaderRaw("acc_1G", "1000");
+    this.writeHeaderRaw("motorOutput", "0,1000");
+
+    this.writeHeaderRaw("looptime", this.file.looptime.toString()); // for FFT Hz scaling
+    this.writeHeaderRaw("gyro_sync_denom", "1"); // for FFT Hz scaling
+    this.writeHeaderRaw("pid_process_denom", "1"); // for FFT Hz scaling
+
+    // this.writeHeaderRaw("debug_mode", "3")
+
+    this.writeHeaderRaw("rates", "78,78,78");
+    this.writeHeaderRaw("rates_type", "3");
+
+    this.writeHeaderRaw("minthrottle", "1000");
+    this.writeHeaderRaw("maxthrottle", "2000");
+
+    this.writeHeaderRaw("Craft name", profile.meta.name.replace(/\0/g, ""));
+
+    this.writeHeaderRaw(
+      "rollPID",
+      [
+        profile.pid.pid_rates[profile.pid.pid_profile].kp[0],
+        profile.pid.pid_rates[profile.pid.pid_profile].ki[0],
+        profile.pid.pid_rates[profile.pid.pid_profile].kd[0],
+      ].join(",")
+    );
+
+    this.writeHeaderRaw(
+      "pitchPID",
+      [
+        profile.pid.pid_rates[profile.pid.pid_profile].kp[1],
+        profile.pid.pid_rates[profile.pid.pid_profile].ki[1],
+        profile.pid.pid_rates[profile.pid.pid_profile].kd[1],
+      ].join(",")
+    );
+
+    this.writeHeaderRaw(
+      "yawPID",
+      [
+        profile.pid.pid_rates[profile.pid.pid_profile].kp[2],
+        profile.pid.pid_rates[profile.pid.pid_profile].ki[2],
+        profile.pid.pid_rates[profile.pid.pid_profile].kd[2],
+      ].join(",")
+    );
+
+    // BT: PT1, BIQUAD, PT2, PT3
+    const filterMap = {
+      1: 0,
+      2: 2,
+      3: 3,
+    };
+
+    if (profile.filter.gyro[0].type > 0) {
+      this.writeHeaderRaw(
+        "gyro_lpf1_type",
+        filterMap[profile.filter.gyro[0].type].toString()
+      );
+      this.writeHeaderRaw(
+        "gyro_lpf1_static_hz",
+        profile.filter.gyro[0].cutoff_freq.toString()
+      );
+    }
+    if (profile.filter.gyro[1].type > 0) {
+      this.writeHeaderRaw(
+        "gyro_lpf2_type",
+        filterMap[profile.filter.gyro[1].type].toString()
+      );
+      this.writeHeaderRaw(
+        "gyro_lpf2_static_hz",
+        profile.filter.gyro[1].cutoff_freq.toString()
+      );
+    }
+
+    if (profile.filter.dterm[0].type > 0) {
+      this.writeHeaderRaw(
+        "dterm_lpf1_type",
+        filterMap[profile.filter.dterm[0].type].toString()
+      );
+      this.writeHeaderRaw(
+        "dterm_lpf1_static_hz",
+        profile.filter.dterm[0].cutoff_freq.toString()
+      );
+    }
+    if (profile.filter.dterm_dynamic_enable) {
+      this.writeHeaderRaw(
+        "dterm_lpf1_dyn_hz",
+        [
+          profile.filter.dterm_dynamic_min,
+          profile.filter.dterm_dynamic_max,
+        ].join(",")
+      );
+    }
+
+    if (profile.filter.dterm[1].type > 0) {
+      this.writeHeaderRaw(
+        "dterm_lpf2_type",
+        filterMap[profile.filter.dterm[1].type].toString()
+      );
+      this.writeHeaderRaw(
+        "dterm_lpf2_static_hz",
+        profile.filter.dterm[1].cutoff_freq.toString()
+      );
+    }
 
     this.writeHeaderRaw("I interval", "" + this.file.blackbox_rate);
     this.writeHeaderRaw("P interval", "1/" + this.file.blackbox_rate);
@@ -397,22 +505,6 @@ export class Blackbox {
       }
       return "1";
     });
-
-    this.writeHeaderRaw("Firmware type", "Cleanflight");
-    this.writeHeaderRaw("Firmware revision", "Betaflight 4.3.0");
-
-    this.writeHeaderRaw("gyro_scale", "0x3f800000");
-    this.writeHeaderRaw("acc_1G", "1000");
-    this.writeHeaderRaw("motorOutput", "0,1000");
-
-    // todo: fetch real value
-    this.writeHeaderRaw("looptime", "" + this.file.looptime); // for FFT Hz scaling
-    this.writeHeaderRaw("pid_process_denom", "1"); // for FFT Hz scaling
-
-    // this.writeHeaderRaw("debug_mode", "3")
-
-    this.writeHeaderRaw("rates", "78,78,78");
-    this.writeHeaderRaw("rates_type", "3");
   }
 
   public writeValue(val: any[]) {
