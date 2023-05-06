@@ -2,7 +2,7 @@ import { useStateStore } from "./state";
 import semver from "semver";
 import { decodeSemver } from "@/store/util";
 import { defineStore } from "pinia";
-import type { target_info_t } from "./serial/types";
+import type { target_info_t } from "./types";
 import { $enum } from "ts-enum-util";
 import { useConstantStore } from "./constants";
 

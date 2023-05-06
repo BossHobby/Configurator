@@ -1,4 +1,4 @@
-import type { pid_rate_preset_t } from "./serial/types";
+import type { pid_rate_preset_t } from "./types";
 import { defineStore } from "pinia";
 import { serial } from "./serial/serial";
 import { QuicCmd, QuicVal } from "./serial/quic";
