@@ -51,8 +51,8 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
-              HDZero
-              <tooltip entry="serial.hdzero" />
+              Digital VTX
+              <tooltip entry="serial.digital_vtx" />
             </label>
           </div>
           <div class="field-body">
@@ -60,7 +60,7 @@
               <div class="control is-expanded">
                 <input-select
                   class="is-fullwidth"
-                  id="hdzero"
+                  id="digital_vtx"
                   v-model.number="profile.serial.hdzero"
                   :options="serialPorts"
                 ></input-select>

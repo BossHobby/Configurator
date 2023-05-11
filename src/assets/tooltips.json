@@ -207,8 +207,8 @@
   "serial_passthrough": {
     "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
   },
-  "serial.hdzero": {
-    "text": "HDZero requires TX and RX connected to use msp, define the UART here"
+  "serial.digital_vtx": {
+    "text": "MSP serial port for digital systems like HDZero, DJI WTF and Walksnail. HDZero requires TX and RX connected to use msp, define the UART here"
   },
   "voltage.actual_battery_voltage": {
     "text": "Default is 4.2V, set to whatever value you get from a multimeter or lipo tester for a full lipo."
