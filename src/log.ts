@@ -65,15 +65,15 @@ export class Log {
 
   private static logFmtStr(
     level: LogLevel,
-    prefix?: string,
-    ...data: any[]
+    prefix: string | undefined,
+    data: any[]
   ): string {
     let str = "[" + LevelNames[level] + "]";
     if (prefix && prefix.length) {
       str += "[" + prefix + "]";
     }
-    if (typeof data[0] == "string") {
-      str += " " + data.shift();
+    while (typeof data[0] == "string") {
+      str += data.shift();
     }
     str += " ";
 
@@ -95,6 +95,12 @@ export class Log {
 
   public static log(level: LogLevel, prefix?: string, ...data: any[]) {
     switch (level) {
+      case LogLevel.Trace: {
+        const str = this.logFmtStr(level, prefix, data);
+        console.debug(str, ...data);
+        this.logToFile(str, data);
+        break;
+      }
       case LogLevel.Debug:
       case LogLevel.Info: {
         const str = this.logFmtStr(level, prefix, data);
