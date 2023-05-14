@@ -19,7 +19,8 @@
             >
               Docs</a
             >
-            for help on getting started.
+            for help on getting started. 
+            First time users should start on the FLASH tab.
           </p>
           <p class="subtitle" v-if="updateAvailable">New Version available!</p>
           <spinner-btn v-if="updateAvailable" @click="doUpdate">
