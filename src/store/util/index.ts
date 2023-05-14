@@ -92,8 +92,16 @@ export class ArrayReader {
     return this.view.getUint8(this.offset);
   }
 
+  public peekUint16(): number {
+    return this.view.getUint16(this.offset);
+  }
+
   public peekFloat32(): number {
     return this.view.getFloat32(this.offset);
+  }
+
+  public peekFloat64(): number {
+    return this.view.getFloat64(this.offset);
   }
 }
 

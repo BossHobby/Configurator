@@ -265,22 +265,73 @@ class Decoder {
     };
   }
 
-  private decodeFloat(max: number): number {
-    if (max != SizeType.WORD) {
-      throw new Error("wrong size on float");
+  private decodeSimpleValue(max: number): number | boolean | null | undefined {
+    switch (max) {
+      case 20:
+        return false;
+      case 21:
+        return false;
+      case 22:
+        return null;
+      case 23:
+        return undefined;
+      default:
+        return max;
     }
+  }
 
-    const bytes = [
-      this.buf.peekUint8(),
-      this.buf.peekUint8(),
-      this.buf.peekUint8(),
-      this.buf.peekUint8(),
-    ];
-    const value = this.buf.peekFloat32();
-    this.buf.advance(4);
+  private decodeFloat16(raw: number) {
+    const exponent = (raw & 0x7c00) >> 10;
+    const fraction = raw & 0x03ff;
+    return (
+      (raw >> 15 ? -1 : 1) *
+      (exponent
+        ? exponent === 0x1f
+          ? fraction
+            ? NaN
+            : Infinity
+          : Math.pow(2, exponent - 15) * (1 + fraction / 0x400)
+        : 6.103515625e-5 * (fraction / 0x400))
+    );
+  }
 
-    const multiplier = mult10[((bytes[0] & 0x7f) << 1) | (bytes[1] >> 7)];
-    return ((multiplier * value + (value > 0 ? 0.5 : -0.5)) >> 0) / multiplier;
+  private decodeFloat(max: number): number | boolean | null | undefined {
+    switch (max) {
+      case SizeType.BYTE: {
+        const val = this.decodeSimpleValue(this.buf.peekUint8());
+        this.buf.advance(1);
+        return val;
+      }
+      case SizeType.SHORT: {
+        const raw = this.buf.peekUint16();
+        this.buf.advance(2);
+        return this.decodeFloat16(raw);
+      }
+      case SizeType.WORD: {
+        const bytes = [
+          this.buf.peekUint8(),
+          this.buf.peekUint8(),
+          this.buf.peekUint8(),
+          this.buf.peekUint8(),
+        ];
+        const value = this.buf.peekFloat32();
+        this.buf.advance(4);
+
+        const mul = mult10[((bytes[0] & 0x7f) << 1) | (bytes[1] >> 7)];
+        return ((mul * value + (value > 0 ? 0.5 : -0.5)) >> 0) / mul;
+      }
+      case SizeType.LONG: {
+        const value = this.buf.peekFloat64();
+        this.buf.advance(8);
+        return value;
+      }
+      default: {
+        if (max < SizeType.BYTE) {
+          return this.decodeSimpleValue(max);
+        }
+        throw new Error("wrong size " + max + " on float");
+      }
+    }
   }
 
   private decodeRaw(max: number): number {
