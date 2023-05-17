@@ -27,6 +27,7 @@ export enum QuicVal {
   BindInfo,
   PerfCounters,
   BlackboxPresets,
+  Target,
 }
 
 export enum QuicBlackbox {

@@ -14,6 +14,7 @@ import { useInfoStore } from "./info";
 import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
 import { useBlackboxStore } from "./blackbox";
+import { useTargetStore } from "./target";
 
 let interval: any = null;
 let intervalCounter = 0;
@@ -120,6 +121,7 @@ export const useSerialStore = defineStore("serial", {
       const vtx = useVTXStore();
       const default_profile = useDefaultProfileStore();
       const profile = useProfileStore();
+      const target = useTargetStore();
 
       if (this.is_connected) {
         stopInterval();
@@ -162,6 +164,10 @@ export const useSerialStore = defineStore("serial", {
 
           this.is_connected = true;
           info.set_info(i);
+
+          if (info.quicVersionGte("0.2.0")) {
+            target.fetch();
+          }
 
           default_profile.fetch_default_profile();
           root.fetch_pid_rate_presets();

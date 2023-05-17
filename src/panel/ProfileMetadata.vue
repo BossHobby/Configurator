@@ -1,25 +1,26 @@
 <template>
   <div class="card">
     <header class="card-header">
-      <p class="card-header-title">Metadata</p>
+      <p class="card-header-title">Profile</p>
     </header>
     <div class="card-content">
       <div class="content column-narrow field-is-2">
         <div class="field is-horizontal">
           <div class="field-label">
-            <label class="label" for="name">Profile Name</label>
+            <label class="label" for="name">Name</label>
           </div>
           <div class="field-body">
             <div class="field">
-              <div class="control is-expanded"></div>
+              <div class="control is-expanded">
+                <input class="input" type="text" v-model="profile.meta.name" />
+              </div>
             </div>
-            <input class="input" type="text" v-model="profile.meta.name" />
           </div>
         </div>
 
         <div class="field is-horizontal">
           <div class="field-label">
-            <label class="label">Profile Last Modified</label>
+            <label class="label">Last Modified</label>
           </div>
           <div class="field-body">
             <div class="field">
@@ -27,53 +28,6 @@
                 <input
                   class="input is-static"
                   :value="timeAgo(date)"
-                  readonly
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Target Name</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input is-static"
-                  :value="info.target_name"
-                  readonly
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="info.features != null">
-          <div class="field-label">
-            <label class="label">Features</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input is-static" :value="features" readonly />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="info.gyro_id != null">
-          <div class="field-label">
-            <label class="label">Gyro Type</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input is-static"
-                  :value="info.gyro_name"
                   readonly
                 />
               </div>
@@ -118,9 +72,8 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { defineComponent } from "vue";
 import YAML from "yaml";
-import { $enum } from "ts-enum-util";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import { timeAgo } from "@/mixin/filters";
@@ -128,35 +81,22 @@ import { useInfoStore } from "@/store/info";
 import { useStateStore } from "@/store/state";
 import { useProfileStore } from "@/store/profile";
 import { useSerialStore } from "@/store/serial";
-import { useConstantStore } from "@/store/constants";
 
 export default defineComponent({
   name: "ProlfileMetadata",
   setup() {
-    const constants = useConstantStore();
-
     return {
-      info: useInfoStore(),
       state: useStateStore(),
+      info: useInfoStore(),
       profile: useProfileStore(),
       serial: useSerialStore(),
-
-      Features: computed(() => constants.Features),
-      GyroType: computed(() => constants.GyroType),
     };
   },
   computed: {
     date() {
       return new Date(this.profile.meta.datetime * 1000);
     },
-    features() {
-      return $enum(this.Features)
-        .getKeys()
-        .filter((f, i) => {
-          return this.info.features & (1 << (i + 1));
-        })
-        .join(", ");
-    },
+
     fileRef(): HTMLInputElement {
       return this.$refs.file as HTMLInputElement;
     },

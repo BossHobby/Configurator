@@ -75,24 +75,24 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useRootStore } from "@/store/root";
+import { useTargetStore } from "@/store/target";
 
 export default defineComponent({
   name: "serial",
   setup() {
     return {
-      info: useInfoStore(),
       root: useRootStore(),
+      target: useTargetStore(),
       profile: useProfileStore(),
     };
   },
   computed: {
     serialPorts() {
       const ports = [{ value: 0, text: "None" }];
-      for (let i = 1; i < this.info.usart_ports.length; i++) {
-        ports.push({ value: i, text: this.info.usart_ports[i] });
+      for (const [key, val] of Object.entries(this.target.serial_port_names)) {
+        ports.push({ value: val, text: key });
       }
       return ports;
     },

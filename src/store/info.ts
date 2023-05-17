@@ -17,6 +17,7 @@ export const useInfoStore = defineStore("info", {
     usart_ports: [],
     motor_pins: [],
 
+    mcu: "",
     target_name: "",
     git_version: "",
 
@@ -41,6 +42,11 @@ export const useInfoStore = defineStore("info", {
     quicVersionGt(state) {
       return (version) => {
         return semver.gt(state.quic_protocol_semver, version);
+      };
+    },
+    quicVersionGte(state) {
+      return (version) => {
+        return semver.gte(state.quic_protocol_semver, version);
       };
     },
     is_read_only(state) {

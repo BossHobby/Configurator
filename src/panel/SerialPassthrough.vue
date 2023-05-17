@@ -52,15 +52,15 @@
 </template>
 
 <script lang="ts">
-import { useInfoStore } from "@/store/info";
 import { useSerialStore } from "@/store/serial";
+import { useTargetStore } from "@/store/target";
 import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "SerialPassthrough",
   setup() {
     return {
-      info: useInfoStore(),
+      target: useTargetStore(),
       serial: useSerialStore(),
     };
   },
@@ -91,9 +91,9 @@ export default defineComponent({
   },
   computed: {
     serialPorts() {
-      const ports = [{ value: 0, text: "UART_INVALID" }];
-      for (let i = 1; i < this.info.usart_ports.length; i++) {
-        ports.push({ value: i, text: this.info.usart_ports[i] });
+      const ports = [{ value: 0, text: "SERIAL_PORT_INVALID" }];
+      for (const [key, val] of Object.entries(this.target.serial_port_names)) {
+        ports.push({ value: val, text: key });
       }
       return ports;
     },
