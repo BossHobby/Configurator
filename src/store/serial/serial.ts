@@ -38,8 +38,6 @@ export class Serial {
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: AsyncQueue;
 
-  private onErrorCallback?: (err: any) => void;
-
   async connect(errorCallback: any = console.warn): Promise<any> {
     try {
       await this._connectPort(errorCallback);
@@ -55,7 +53,6 @@ export class Serial {
       filters: SERIAL_FILTERS,
     });
     this.waitingCommands = new AsyncSemaphore(1);
-    this.onErrorCallback = errorCallback;
 
     await this.port.open({
       baudRate: settings.serial.baudRate,

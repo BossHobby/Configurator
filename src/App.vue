@@ -207,6 +207,7 @@ import { computed } from "vue";
 import LogoClean from "./assets/Logo_Clean.svg?component";
 import LogoText from "./assets/Logo_Text.svg?component";
 import LogoTextDevelop from "./assets/Logo_Develop_Text.svg?component";
+import { github } from "./store/util/github";
 
 export default defineComponent({
   name: "app",

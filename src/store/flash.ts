@@ -3,11 +3,15 @@ import { github } from "./util/github";
 
 export const useFlashStore = defineStore("flash", {
   state: () => ({
-    firmware_releases: {},
+    releases: {},
+    branches: {},
   }),
   actions: {
-    fetch_firmware_releases() {
-      return github.fetchReleases().then((r) => (this.firmware_releases = r));
+    fetch() {
+      return Promise.all([
+        github.fetchReleases().then((r) => (this.releases = r)),
+        github.fetchBranches().then((b) => (this.branches = b)),
+      ]);
     },
   },
 });

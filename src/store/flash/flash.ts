@@ -14,20 +14,27 @@ export interface FlashProgress {
 export type FlashProgressCallback = (p: FlashProgress) => void;
 
 export class Flasher {
+  private device?: USBDevice;
   private progressCallback?: FlashProgressCallback;
 
   public onProgress(cb: FlashProgressCallback) {
     this.progressCallback = cb;
   }
 
-  public async flash(hexStr: string) {
-    const device = await navigator.usb.requestDevice({
+  public async connect() {
+    this.device = await navigator.usb.requestDevice({
       filters: USB_DEVICE_FILTER,
     });
+  }
+
+  public async flash(hexStr: string) {
+    if (!this.device) {
+      return;
+    }
 
     const hex = IntelHEX.parse(hexStr);
 
-    const dfu = new DFU(device);
+    const dfu = new DFU(this.device);
     dfu.onProgress((p) => {
       if (this.progressCallback) {
         this.progressCallback(p);

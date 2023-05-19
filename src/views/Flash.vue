@@ -70,7 +70,25 @@
             </div>
           </div>
 
-          <div class="field is-horizontal" v-if="source != 'local'">
+          <div class="field is-horizontal" v-if="source == 'branch'">
+            <div class="field-label is-normal">
+              <label class="label">
+                Branch
+                <tooltip entry="flash.file-branch" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <input-select v-model="branch" :options="branchOptions" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field is-horizontal" v-if="source == 'release'">
             <div class="field-label is-normal">
               <label class="label">
                 Release
@@ -134,52 +152,55 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { Flasher } from "@/store/flash/flash";
+import { Flasher, type FlashProgress } from "@/store/flash/flash";
 import { github } from "@/store/util/github";
 import { Log } from "@/log";
-import SpinnerBtn from "@/components/SpinnerBtn.vue";
 import { useFlashStore } from "@/store/flash";
 import { useSerialStore } from "@/store/serial";
 import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "Flash",
-  components: { SpinnerBtn },
   setup() {
     return {
+      root: useRootStore(),
       flash: useFlashStore(),
       serial: useSerialStore(),
-      root: useRootStore(),
     };
   },
   data() {
     return {
       loading: false,
       sourceOptions: [
-        { value: "bosshobby", text: "BossHobby/QUICKSILVER" },
+        { value: "release", text: "Release" },
+        { value: "branch", text: "Development Branch" },
         { value: "local", text: "Local" },
       ],
-      source: "bosshobby",
-      release: undefined as string | undefined,
-      target: undefined,
-      file: undefined as File | undefined,
       progress: {},
+      source: "release",
+      release: undefined as string | undefined,
+      branch: undefined as string | undefined,
+      target: undefined as string | undefined,
+      file: undefined as File | undefined,
     };
   },
   computed: {
+    branchOptions() {
+      return Object.keys(this.flash.branches);
+    },
     releaseOptions() {
-      return Object.keys(this.flash.firmware_releases);
+      return Object.keys(this.flash.releases);
     },
     targetOptions() {
-      if (!this.release) {
-        return [];
+      let releases = [] as any[];
+      if (this.source == "release" && this.release) {
+        releases = this.flash.releases[this.release] || [];
+      }
+      if (this.source == "branch" && this.branch) {
+        releases = this.flash.branches[this.branch].artifacts || [];
       }
 
-      const release = this.flash.firmware_releases[this.release];
-      if (!release) {
-        return [];
-      }
-      return release.map((r) => {
+      return releases.map((r) => {
         return { value: r, text: r.name.replace("quicksilver.", "") };
       });
     },
@@ -202,44 +223,53 @@ export default defineComponent({
         this.file = undefined;
       }
     },
+    fetchFirmware(): Promise<string | undefined> {
+      switch (this.source) {
+        case "local":
+          return new Promise((resolve, reject) => {
+            if (!this.file) {
+              return reject();
+            }
+
+            const reader = new FileReader();
+            reader.addEventListener("load", (event) => {
+              if (event?.target?.result) {
+                resolve(event.target.result as string);
+              } else {
+                reject();
+              }
+            });
+            reader.readAsText(this.file);
+          });
+
+        case "release":
+          return github.fetchAsset(this.target).then((res) => res.text());
+
+        case "branch":
+          return github.fetchArtifact(this.target);
+
+        default:
+          return Promise.resolve(undefined);
+      }
+    },
+    updateProgress(p: FlashProgress) {
+      const u = { ...this.progress };
+      u[p.task] = p;
+      this.progress = u;
+    },
     onSubmit(evt) {
       evt.preventDefault();
 
-      let promise = undefined as Promise<string> | undefined;
-      if (this.source == "local") {
-        promise = new Promise((resolve, reject) => {
-          if (!this.file) {
-            return reject();
-          }
-
-          const reader = new FileReader();
-          reader.addEventListener("load", (event) => {
-            if (event?.target?.result) {
-              resolve(event.target.result as string);
-            } else {
-              reject();
-            }
-          });
-          reader.readAsText(this.file);
-        });
-      } else if (this.target) {
-        promise = github.fetchAsset(this.target).then((res) => res.text());
-      }
-
-      if (!promise) {
-        return;
-      }
-
       const flasher = new Flasher();
+      flasher.onProgress((p) => this.updateProgress(p));
 
-      flasher.onProgress((p) => {
-        const u = { ...this.progress };
-        u[p.task] = p;
-        this.progress = u;
-      });
-
-      return promise
-        .then((hex) => flasher.flash(hex))
+      return Promise.all([this.fetchFirmware(), flasher.connect()])
+        .then(([hex]) => {
+          if (!hex) {
+            throw new Error("firmware not found");
+          }
+          return flasher.flash(hex);
+        })
         .then(() =>
           this.root.append_alert({
             type: "success",
@@ -259,8 +289,9 @@ export default defineComponent({
     },
   },
   created() {
-    this.flash.fetch_firmware_releases().then(() => {
+    this.flash.fetch().then(() => {
       this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
+      this.branch = this.branchOptions[0];
     });
   },
 });

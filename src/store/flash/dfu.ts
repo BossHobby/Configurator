@@ -66,7 +66,11 @@ export class DFU {
   }
 
   async close() {
-    await this.device.close();
+    try {
+      await this.device.close();
+    } catch (err) {
+      Log.warn("flash", "Close failed", err);
+    }
   }
 
   private progress(task: string, current: number, total: number) {
@@ -564,7 +568,7 @@ export class DFU {
   }
 
   private async upload(hex: IntelHEX, transferSize: number) {
-    Log.info("flash", "Writing data ...");
+    Log.info("flash", "Writing data...");
 
     const bytes_total = hex.segment_bytes_total;
     let bytes_flashed_total = 0;
@@ -634,7 +638,7 @@ export class DFU {
   }
 
   private async verify(hex: IntelHEX, transferSize: number) {
-    Log.info("flash", "Verifying data ...");
+    Log.info("flash", "Verifying data...");
 
     const bytes_total = hex.segment_bytes_total;
     let bytes_verified_total = 0;
@@ -677,6 +681,7 @@ export class DFU {
   }
 
   private async leave(hex?: IntelHEX) {
+    Log.info("flash", "Leaving dfu...");
     const address = hex?.segments[0]?.address || 0x08000000;
 
     await this.clearStatus();
