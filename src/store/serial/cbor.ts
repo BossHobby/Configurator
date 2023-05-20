@@ -367,11 +367,11 @@ class Decoder {
 }
 
 export class CBOR {
-  encode(val: any): Uint8Array {
+  public static encode(val: any): Uint8Array {
     return new Encoder().encode(val);
   }
 
-  decodeMultiple(buf: Uint8Array): any[] {
+  public static decodeMultiple(buf: Uint8Array): any[] {
     const res: any[] = [];
 
     const dec = new Decoder(buf);

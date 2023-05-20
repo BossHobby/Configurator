@@ -26,8 +26,6 @@ const SERIAL_FILTERS = [
 export type ProgressCallbackType = (number) => void;
 
 export class Serial {
-  private cbor = new CBOR();
-
   private shouldRun = true;
   private reSync = true;
 
@@ -220,7 +218,7 @@ export class Serial {
   private encodeValues(values: any[]): Uint8Array {
     let result = new Uint8Array();
     for (const v of values) {
-      const encoded = this.cbor.encode(v);
+      const encoded = CBOR.encode(v);
       result = concatUint8Array(result, encoded);
     }
     return result;
@@ -262,7 +260,7 @@ export class Serial {
 
       let payload: any = [];
       if (hdr.len) {
-        payload = this.cbor.decodeMultiple(buffer);
+        payload = CBOR.decodeMultiple(buffer);
       }
       return {
         ...hdr,
@@ -290,7 +288,7 @@ export class Serial {
       progress(writer.length);
     }
 
-    const payload: any[] = this.cbor.decodeMultiple(writer.array())!;
+    const payload: any[] = CBOR.decodeMultiple(writer.array())!;
     return {
       ...hdr,
       payload,
