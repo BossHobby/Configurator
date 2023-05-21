@@ -1,21 +1,44 @@
 import { serial } from "./serial/serial";
-import { QuicVal } from "./serial/quic";
+import { QuicCmd, QuicOSD, QuicVal } from "./serial/quic";
 import { defineStore } from "pinia";
 import { OSD } from "./util/osd";
+import { useInfoStore } from "./info";
 
 export const useOSDStore = defineStore("osd", {
   state: () => ({
-    font_raw: undefined as Uint8Array | undefined,
+    font_raw: undefined as number[][] | undefined,
     font_bitmap: undefined as ImageBitmap | undefined,
     font_bitmap_inverted: undefined as ImageBitmap | undefined,
   }),
   actions: {
-    fetch_sd_osd_font() {
-      return serial.get(QuicVal.OSDFont).then((font) => {
-        this.font_raw = font;
-        this.font_bitmap = OSD.unpackFontBitmap(font);
-        this.font_bitmap_inverted = OSD.unpackFontBitmap(font, true);
-      });
+    async fetch_sd_osd_font() {
+      const info = useInfoStore();
+      if (!info.quicVersionGte("0.2.0")) {
+        return serial.get(QuicVal.OSDFont).then((font) => {
+          this.font_raw = font;
+          this.font_bitmap = OSD.unpackFontBitmap(font);
+          this.font_bitmap_inverted = OSD.unpackFontBitmap(font, true);
+        });
+      }
+
+      const font: number[][] = [];
+      for (let i = 0; i < 256; i++) {
+        const res = await serial.command(QuicCmd.OSD, QuicOSD.ReadChar, i);
+        font[i] = res.payload[0];
+      }
+      this.font_raw = font;
+      this.font_bitmap = OSD.unpackFontBitmap(font);
+      this.font_bitmap_inverted = OSD.unpackFontBitmap(font, true);
+    },
+    async apply_font(font: Uint8Array[]) {
+      const info = useInfoStore();
+      if (!info.quicVersionGte("0.2.0")) {
+        return serial.set(QuicVal.OSDFont, ...font);
+      }
+
+      for (let i = 0; i < 256; i++) {
+        await serial.command(QuicCmd.OSD, QuicOSD.WriteChar, i, font[i]);
+      }
     },
     fetch_hd_osd_font() {
       return new Promise((resolve, reject) => {

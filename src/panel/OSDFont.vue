@@ -150,7 +150,7 @@ export default defineComponent({
       return loadImage("osd/" + name)
         .then((src) => {
           const font = OSD.packFont(this.$refs.canvas, src);
-          return serial.set(QuicVal.OSDFont, ...font);
+          return this.osd.apply_font(font);
         })
         .then(() => this.get_osd_font())
         .then(() =>
@@ -221,7 +221,7 @@ export default defineComponent({
             this.$refs.logoCanvas,
             img
           );
-          return serial.set(QuicVal.OSDFont, ...font);
+          return this.osd.apply_font(font);
         })
         .then(() => this.get_osd_font())
         .then(() =>

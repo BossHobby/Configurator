@@ -11,6 +11,7 @@ export enum QuicCmd {
   Motor,
   CalSticks,
   Serial,
+  OSD,
   Max,
 }
 
@@ -42,6 +43,11 @@ export enum QuicMotor {
   TestDisable,
   TestSetValue,
   Esc4WayIf,
+}
+
+export enum QuicOSD {
+  ReadChar,
+  WriteChar,
 }
 
 export enum QuicFlag {
