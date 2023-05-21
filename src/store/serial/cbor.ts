@@ -76,6 +76,14 @@ class Encoder {
         this.encodeString(val);
         break;
 
+      case "boolean":
+        this.encodeHeader(MajorType.FLOAT, val ? 21 : 20);
+        break;
+
+      case "undefined":
+        this.encodeHeader(MajorType.FLOAT, 23);
+        break;
+
       default:
         Log.error("unhandled type", typ);
         break;
@@ -270,7 +278,7 @@ class Decoder {
       case 20:
         return false;
       case 21:
-        return false;
+        return true;
       case 22:
         return null;
       case 23:
