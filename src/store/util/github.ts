@@ -71,13 +71,15 @@ class Github {
     return releases;
   }
 
-  private async fetchArtifacts(commit: string) {
+  private async fetchArtifacts(branch: string) {
     const octokit = await this.kit();
     return octokit.rest.actions
       .listWorkflowRunsForRepo({
         ...FIRMWARE_REPO,
-        head_sha: commit,
+        branch: branch,
         per_page: 1,
+        status: "success",
+        exclude_pull_requests: true,
       })
       .then((runs) => {
         if (runs.data.total_count == 0) {
@@ -122,12 +124,11 @@ class Github {
       .filter((b) => b.name != "master")
       .map((b) => {
         return Promise.all([
-          this.fetchArtifacts(b.commit.sha),
+          this.fetchArtifacts(b.name),
           this.fetchVersion(b.name),
         ]).then(([artifacts, version]) => {
           return {
             name: b.name,
-            commit: b.commit.sha,
             version,
             artifacts,
           };
