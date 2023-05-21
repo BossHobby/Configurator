@@ -71,39 +71,67 @@ class Github {
     return releases;
   }
 
+  private async fetchArtifacts(commit: string) {
+    const octokit = await this.kit();
+    return octokit.rest.actions
+      .listWorkflowRunsForRepo({
+        ...FIRMWARE_REPO,
+        head_sha: commit,
+        per_page: 1,
+      })
+      .then((runs) => {
+        if (runs.data.total_count == 0) {
+          return [];
+        }
+        return octokit.rest.actions
+          .listWorkflowRunArtifacts({
+            ...FIRMWARE_REPO,
+            run_id: runs.data.workflow_runs[0].id,
+            per_page: 100,
+          })
+          .then((res) => {
+            return res.data.artifacts;
+          });
+      });
+  }
+
+  private async fetchVersion(branch: string) {
+    const octokit = await this.kit();
+    return octokit.rest.repos
+      .getContent({
+        ...FIRMWARE_REPO,
+        path: "VERSION",
+        ref: branch,
+      })
+      .then((file: any) => {
+        if (file?.data?.content) {
+          return atob(file.data?.content).trim();
+        }
+        return "v0.0.0";
+      })
+      .catch(() => {
+        return "v0.0.0";
+      });
+  }
+
   public async fetchBranches() {
     const octokit = await this.kit();
     const resp = await octokit.rest.repos.listBranches(FIRMWARE_REPO);
+
     const promises = resp.data
       .filter((b) => b.name != "master")
       .map((b) => {
-        return octokit.rest.actions
-          .listWorkflowRunsForRepo({
-            ...FIRMWARE_REPO,
-            head_sha: b.commit.sha,
-            per_page: 1,
-          })
-          .then((runs) => {
-            if (runs.data.total_count == 0) {
-              return [];
-            }
-            return octokit.rest.actions
-              .listWorkflowRunArtifacts({
-                ...FIRMWARE_REPO,
-                run_id: runs.data.workflow_runs[0].id,
-                per_page: 100,
-              })
-              .then((res) => {
-                return res.data.artifacts;
-              });
-          })
-          .then((artifacts) => {
-            return {
-              name: b.name,
-              commit: b.commit.sha,
-              artifacts,
-            };
-          });
+        return Promise.all([
+          this.fetchArtifacts(b.commit.sha),
+          this.fetchVersion(b.name),
+        ]).then(([artifacts, version]) => {
+          return {
+            name: b.name,
+            commit: b.commit.sha,
+            version,
+            artifacts,
+          };
+        });
       });
 
     const branches = {};

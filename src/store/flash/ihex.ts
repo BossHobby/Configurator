@@ -9,6 +9,17 @@ enum Record {
   START_LINEAR_ADDR = 5,
 }
 
+const CONFIG_MAGIC = new Uint8Array([0x01, 0x00, 0xaa, 0x12]);
+
+export const ConfigOffsets = {
+  stm32f411: 0x0800c000,
+  stm32f765: 0x08018000,
+  stm32f745: 0x08018000,
+  stm32h743: 0x08020000,
+  stm32f405: 0x0800c000,
+  stm32f722: 0x0800c000,
+};
+
 export class IntelHEX {
   public start_linear_address: number;
   public start_segment_address: number;
@@ -36,6 +47,39 @@ export class IntelHEX {
   constructor(start_linear_address: number, start_segment_address: number) {
     this.start_linear_address = start_linear_address;
     this.start_segment_address = start_segment_address;
+  }
+
+  private findSegment(offset: number) {
+    for (let i = 0; i < this.segments.length; i++) {
+      if (
+        this.segments[i].address >= offset &&
+        offset <= this.segments[i].address + this.segments[i].data.byteLength
+      ) {
+        return this.segments[i];
+      }
+    }
+
+    this.segments.push({ address: offset, data: new Uint8Array() });
+    return this.segments[this.segments.length - 1];
+  }
+
+  public patch(offset: number, data: Uint8Array) {
+    data = concatUint8Array(CONFIG_MAGIC, data);
+
+    const seg = this.findSegment(offset);
+
+    const segOffset = seg.address - offset;
+    const segSize = segOffset + data.byteLength;
+    if (seg.data.byteLength < segSize) {
+      seg.data = concatUint8Array(
+        seg.data,
+        new Uint8Array(segSize - seg.data.byteLength)
+      );
+    }
+
+    for (let i = segOffset; i < segSize; i++) {
+      seg.data[i] = data[i - segOffset];
+    }
   }
 
   public static parse(data: string): IntelHEX {

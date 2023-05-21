@@ -158,6 +158,8 @@ import { Log } from "@/log";
 import { useFlashStore } from "@/store/flash";
 import { useSerialStore } from "@/store/serial";
 import { useRootStore } from "@/store/root";
+import * as semver from "semver";
+import { ConfigOffsets, IntelHEX } from "@/store/flash/ihex";
 
 export default defineComponent({
   name: "Flash",
@@ -180,7 +182,7 @@ export default defineComponent({
       source: "release",
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
-      target: undefined as string | undefined,
+      target: undefined as any | undefined,
       file: undefined as File | undefined,
     };
   },
@@ -191,16 +193,28 @@ export default defineComponent({
     releaseOptions() {
       return Object.keys(this.flash.releases);
     },
-    targetOptions() {
-      let releases = [] as any[];
+    isRuntimeTarget() {
       if (this.source == "release" && this.release) {
-        releases = this.flash.releases[this.release] || [];
+        return semver.satisfies(this.release, ">=0.10.0-dev");
       }
       if (this.source == "branch" && this.branch) {
-        releases = this.flash.branches[this.branch].artifacts || [];
+        const branch = this.flash.branches[this.branch];
+        return semver.satisfies(branch.version, ">=0.10.0-dev");
+      }
+      return false;
+    },
+    targetOptions() {
+      let targets = [] as any[];
+
+      if (this.isRuntimeTarget) {
+        targets = this.flash.targets;
+      } else if (this.source == "release" && this.release) {
+        targets = this.flash.releases[this.release] || [];
+      } else if (this.source == "branch" && this.branch) {
+        targets = this.flash.branches[this.branch].artifacts || [];
       }
 
-      return releases.map((r) => {
+      return targets.map((r) => {
         return { value: r, text: r.name.replace("quicksilver.", "") };
       });
     },
@@ -243,9 +257,21 @@ export default defineComponent({
           });
 
         case "release":
+          if (this.isRuntimeTarget && this.release) {
+            const release = this.flash.releases[this.release];
+            const asset = release.find((a) => a.name == this.target?.mcu);
+            return github.fetchAsset(asset).then((res) => res.text());
+          }
           return github.fetchAsset(this.target).then((res) => res.text());
 
         case "branch":
+          if (this.isRuntimeTarget && this.branch) {
+            const branch = this.flash.branches[this.branch];
+            const artifact = branch.artifacts.find(
+              (a) => a.name == this.target?.mcu
+            );
+            return github.fetchArtifact(artifact);
+          }
           return github.fetchArtifact(this.target);
 
         default:
@@ -264,10 +290,19 @@ export default defineComponent({
       flasher.onProgress((p) => this.updateProgress(p));
 
       return Promise.all([this.fetchFirmware(), flasher.connect()])
-        .then(([hex]) => {
-          if (!hex) {
+        .then(async ([hexStr]) => {
+          if (!hexStr) {
             throw new Error("firmware not found");
           }
+
+          const hex = IntelHEX.parse(hexStr);
+          if (this.isRuntimeTarget) {
+            const target = await this.flash.fetchRuntimeConfig(
+              this.target.name
+            );
+            hex.patch(ConfigOffsets[this.target.mcu], target);
+          }
+
           return flasher.flash(hex);
         })
         .then(() =>

@@ -27,12 +27,10 @@ export class Flasher {
     });
   }
 
-  public async flash(hexStr: string) {
+  public async flash(hex: IntelHEX) {
     if (!this.device) {
       return;
     }
-
-    const hex = IntelHEX.parse(hexStr);
 
     const dfu = new DFU(this.device);
     dfu.onProgress((p) => {
