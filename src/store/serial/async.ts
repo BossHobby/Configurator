@@ -1,16 +1,5 @@
 import { settings } from "./settings";
 
-export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  const timeout = new Promise<T>((resolve, reject) => {
-    const id = setTimeout(() => {
-      clearTimeout(id);
-      reject("timeout");
-    }, ms);
-  });
-
-  return Promise.race([timeout, promise]);
-}
-
 export class AsyncSemaphore {
   private promises = Array<() => void>();
 
@@ -28,11 +17,17 @@ export class AsyncSemaphore {
   }
 }
 
-const QUEUE_BUFFER_SIZE = settings.serial.bufferSize * 2;
+const QUEUE_BUFFER_SIZE = settings.serial.bufferSize;
+
+interface AsyncResolver {
+  id: number;
+  fn: (Uint8Array) => void;
+  size: number;
+}
 
 export class AsyncQueue {
-  private _promises: Promise<void>[] = [];
-  private _resolvers: (() => void)[] = [];
+  private _resolverId = 1;
+  private _resolvers: AsyncResolver[] = [];
 
   private _buffer = new Uint8Array(QUEUE_BUFFER_SIZE);
   private _head = 0;
@@ -42,11 +37,13 @@ export class AsyncQueue {
   private _abort = new AbortController();
 
   private get _read_len() {
-    return (this._head + QUEUE_BUFFER_SIZE - this._tail) % QUEUE_BUFFER_SIZE;
-  }
-
-  private get _write_len() {
-    return QUEUE_BUFFER_SIZE - this._read_len;
+    if (this._head == this._tail) {
+      return 0;
+    }
+    if (this._head > this._tail) {
+      return this._head - this._tail;
+    }
+    return QUEUE_BUFFER_SIZE - this._tail + this._head;
   }
 
   constructor(private readable: ReadableStream, errorCallback: any) {
@@ -77,53 +74,70 @@ export class AsyncQueue {
     array: Uint8Array,
     controller?: WritableStreamDefaultController
   ) {
-    if (
-      (this._head + 1) % QUEUE_BUFFER_SIZE == this._tail ||
-      array.length > this._write_len
-    ) {
-      controller?.error("queue full");
-      throw new Error("queue full");
-    }
-
     for (const v of array) {
       const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
-      this._buffer[next] = v;
+      if (next == this._tail) {
+        controller?.error("queue full");
+        throw new Error("queue full");
+      }
+      this._buffer[this._head] = v;
       this._head = next;
     }
 
-    const fn = this._resolvers.shift();
-    if (fn) fn();
+    if (this._resolvers.length) {
+      const resolver = this._resolvers[0];
+      if (this._read_len >= resolver.size) {
+        resolver.fn(this._read(resolver.size));
+        this._resolvers.shift();
+      }
+    }
   }
 
-  private _add(): Promise<void> {
-    if (!this._promises.length) {
-      this._promises.push(
-        new Promise((resolve) => {
-          this._resolvers.push(resolve);
+  private _defer(size: number, timeout?: number): Promise<Uint8Array> {
+    const id = this._resolverId++;
+    const promises = [
+      new Promise<Uint8Array>((resolve) => {
+        this._resolvers.push({
+          id,
+          fn: resolve,
+          size,
+        });
+      }),
+    ];
+    if (timeout) {
+      promises.push(
+        new Promise<Uint8Array>((resolve, reject) => {
+          const timer = setTimeout(() => {
+            this._resolvers = this._resolvers.filter((r) => r.id == id);
+            clearTimeout(timer);
+            reject("timeout");
+          }, timeout);
         })
       );
     }
-    return this._promises.shift() || Promise.resolve();
+    return Promise.race(promises);
   }
 
-  async pop(): Promise<number> {
-    const res = await this.read(1);
+  async pop(timeout: number | undefined): Promise<number> {
+    const res = await this.read(1, timeout);
     return res[0];
   }
 
-  async read(size: number): Promise<Uint8Array> {
+  async read(size: number, timeout: number | undefined): Promise<Uint8Array> {
     if (size == 0) {
       return new Uint8Array(size);
     }
-    if (this._head == this._tail || this._read_len < size) {
-      return this._add().then(() => this.read(size));
+    if (this._read_len < size) {
+      return this._defer(size, timeout);
     }
+    return this._read(size);
+  }
 
+  private _read(size: number) {
     const buffer = new Uint8Array(size);
     for (let i = 0; i < size; i++) {
-      const tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
-      buffer[i] = this._buffer[tail];
-      this._tail = tail;
+      buffer[i] = this._buffer[this._tail];
+      this._tail = (this._tail + 1) % QUEUE_BUFFER_SIZE;
     }
     return buffer;
   }

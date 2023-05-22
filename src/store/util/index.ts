@@ -14,6 +14,14 @@ export function concatArrayBuffer(a: Uint8Array, b: Uint8Array): Uint8Array {
   return res;
 }
 
+export function stringToUint8Array(str: string): Uint8Array {
+  const res = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) {
+    res[i] = str.charCodeAt(i);
+  }
+  return res;
+}
+
 export class ArrayWriter {
   private offset = 0;
   private buf = new ArrayBuffer(4);
@@ -23,13 +31,24 @@ export class ArrayWriter {
     return this.offset;
   }
 
-  constructor() {}
+  constructor(private litteEndian = true) {}
+
+  public get(index: number): number {
+    return this.view.getUint8(index);
+  }
 
   public writeUint8(v: number) {
     this.grow();
 
     this.view.setUint8(this.offset, v);
     this.offset++;
+  }
+
+  public writeUint16(v: number) {
+    this.grow(2);
+
+    this.view.setUint16(this.offset, v, this.litteEndian);
+    this.offset += 2;
   }
 
   public writeUint8s(values: ArrayLike<number>) {
