@@ -699,9 +699,7 @@ export class DFU {
 
     let available_flash_size = 0;
     if (info.internal_flash) {
-      available_flash_size =
-        flash_layout.total_size -
-        (hex.start_linear_address - flash_layout.start_address);
+      available_flash_size = flash_layout.total_size;
     } else if (info.external_flash) {
       const firmware_partition_index = 2;
       const firmware_sectors = flash_layout.sectors[firmware_partition_index];
@@ -712,9 +710,10 @@ export class DFU {
 
     if (hex.linear_bytes_total > available_flash_size) {
       throw new Error(
-        "" +
-          (hex.linear_bytes_total / 1024.0).toFixed(1) +
-          (available_flash_size / 1024.0).toFixed(1)
+        "Not Enough flash space " +
+          hex.linear_bytes_total +
+          "> " +
+          available_flash_size
       );
     }
 
