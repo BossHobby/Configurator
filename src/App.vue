@@ -38,34 +38,40 @@
 
     <div id="mainMavbar" class="navbar-menu">
       <div v-if="serial.is_connected" class="navbar-start">
-        <router-link active-class="is-active" class="navbar-item" to="/profile"
-          >Profile</router-link
-        >
         <router-link
           active-class="is-active"
           class="navbar-item"
           to="/templates"
-          >Templates</router-link
         >
-        <router-link active-class="is-active" class="navbar-item" to="/setup"
-          >Setup</router-link
+          Templates
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/profile">
+          Profile
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/setup">
+          Setup
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/rates">
+          Rates
+        </router-link>
+        <router-link
+          active-class="is-active"
+          class="navbar-item"
+          to="/receiver"
         >
-        <router-link active-class="is-active" class="navbar-item" to="/rates"
-          >Rates</router-link
-        >
-        <router-link active-class="is-active" class="navbar-item" to="/receiver"
-          >Receiver</router-link
-        >
+          Receiver
+        </router-link>
         <router-link
           active-class="is-active"
           v-if="info.has_feature(Features.OSD)"
           class="navbar-item"
           to="/osd"
-          >OSD</router-link
         >
-        <router-link active-class="is-active" class="navbar-item" to="/motor"
-          >Motor</router-link
-        >
+          OSD
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/motor">
+          Motor
+        </router-link>
         <router-link
           active-class="is-active"
           v-if="
@@ -74,11 +80,12 @@
           "
           class="navbar-item"
           to="/blackbox"
-          >Blackbox</router-link
         >
-        <router-link active-class="is-active" class="navbar-item" to="/state"
-          >State</router-link
-        >
+          Blackbox
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/state">
+          State
+        </router-link>
         <router-link
           active-class="is-active"
           v-if="
@@ -86,22 +93,23 @@
           "
           class="navbar-item"
           to="/perf"
-          >Perf</router-link
         >
-        <router-link active-class="is-active" class="navbar-item" to="/log"
-          >Log</router-link
-        >
+          Perf
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/log">
+          Log
+        </router-link>
       </div>
       <div v-else class="navbar-start">
-        <router-link active-class="is-active" class="navbar-item" to="/"
-          >Home</router-link
-        >
-        <router-link active-class="is-active" class="navbar-item" to="/flash"
-          >Flash</router-link
-        >
-        <router-link active-class="is-active" class="navbar-item" to="/log"
-          >Log</router-link
-        >
+        <router-link active-class="is-active" class="navbar-item" to="/">
+          Home
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/flash">
+          Flash
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/log">
+          Log
+        </router-link>
       </div>
 
       <div class="navbar-end">
