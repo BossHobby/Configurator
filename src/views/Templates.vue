@@ -1,4 +1,13 @@
 <template>
+  <section class="hero is-primary">
+    <div class="hero-body">
+      <h5 class="title is-5">
+        Templates provide a way to apply configurations supplied by the
+        community.
+      </h5>
+    </div>
+  </section>
+
   <TemplateCard
     v-for="tmpl of templates.index"
     :key="tmpl.name"
