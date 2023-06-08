@@ -4,7 +4,10 @@ import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 
 import icon from "../../public/icon.png?asset";
 
-const USB_DEVICE_FILTER = { vendorId: 0x0483, productId: 0xdf11 };
+const USB_DEVICE_FILTER = [
+  { vendorId: 0x0483, productId: 0xdf11 },
+  { vendorId: 0x2e3c, productId: 0xdf11 },
+];
 
 function createWindow(): void {
   // Create the browser window.
@@ -46,9 +49,8 @@ function createWindow(): void {
       event.preventDefault();
 
       const devices = details.deviceList.filter((d) => {
-        return (
-          d.productId == USB_DEVICE_FILTER.productId &&
-          d.vendorId == USB_DEVICE_FILTER.vendorId
+        return USB_DEVICE_FILTER.some(
+          (f) => f.vendorId == d.vendorId && f.productId == d.productId
         );
       });
 

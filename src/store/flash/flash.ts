@@ -3,6 +3,7 @@ import { IntelHEX } from "./ihex";
 
 const USB_DEVICE_FILTER: USBDeviceFilter[] = [
   { vendorId: 0x0483, productId: 0xdf11 },
+  { vendorId: 0x2e3c, productId: 0xdf11 },
 ];
 
 export interface FlashProgress {

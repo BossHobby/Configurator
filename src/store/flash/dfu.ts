@@ -274,6 +274,7 @@ export class DFU {
       if (str == "@External Flash /0x90000000/1001*128Kg,3*128Kg,20*128Ka") {
         str = "@External Flash /0x90000000/998*128Kg,1*128Kg,4*128Kg,21*128Ka";
       }
+      str = str.replace("@Option byte", "@Option Bytes");
 
       // split main into [location, start_addr, sectors]
 
