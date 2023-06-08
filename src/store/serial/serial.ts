@@ -20,7 +20,8 @@ const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";
 
 const SERIAL_FILTERS = [
-  { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver
+  { usbVendorId: 0x0483, usbProductId: 0x5740 }, // quicksilver@stm32
+  { usbVendorId: 0x2e3c, usbProductId: 0x5740 }, // quicksilver@at32
 ];
 
 export type ProgressCallbackType = (number) => void;
