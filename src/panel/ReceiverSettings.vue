@@ -361,10 +361,13 @@ export default defineComponent({
   watch: {
     "profile.receiver.protocol"() {
       this.reset();
-      this.root.set_needs_reboot();
     },
   },
   methods: {
+    async applyBindInfo(info: any) {
+      await this.profile.apply_profile(this.profile.$state);
+      await this.bind.apply_bind_info(info);
+    },
     parseHexString(str: string) {
       const result = [] as number[];
       while (str.length >= 2) {
@@ -386,7 +389,7 @@ export default defineComponent({
       }
       info.raw[7] = 0x37;
 
-      return this.bind.apply_bind_info(info);
+      return this.applyBindInfo(info);
     },
     downloadBindData() {
       const base64 = window.btoa(
@@ -413,7 +416,7 @@ export default defineComponent({
           (c) => c.charCodeAt(0)
         );
 
-        this.bind.apply_bind_info(info);
+        this.applyBindInfo(info);
       });
 
       this.fileRef.oninput = () => {
@@ -431,7 +434,7 @@ export default defineComponent({
         info.raw[i] = 0;
       }
 
-      return this.bind.apply_bind_info(info);
+      return this.applyBindInfo(info);
     },
   },
 });
