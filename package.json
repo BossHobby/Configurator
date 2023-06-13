@@ -36,6 +36,7 @@
     "chartjs-adapter-moment": "^1.0.0",
     "extract-zip": "^2.0.1",
     "follow-redirects": "^1.14.9",
+    "fuse.js": "^6.6.2",
     "isomorphic-fetch": "^3.0.0",
     "md5": "^2.3.0",
     "moment": "^2.29.3",

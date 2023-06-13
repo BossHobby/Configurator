@@ -117,7 +117,45 @@
               <div class="field is-narrow">
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <input-select v-model="target" :options="targetOptions" />
+                    <div
+                      class="dropdown"
+                      :class="{ 'is-active': dropdownActive || dropdownHover }"
+                    >
+                      <div class="dropdown-trigger">
+                        <div class="field">
+                          <p class="control is-expanded has-icons-right">
+                            <input
+                              class="input is-fullwidth"
+                              type="search"
+                              placeholder="Search..."
+                              v-model="targetSearch"
+                              @focus="dropdownActive = true"
+                              @blur="dropdownActive = false"
+                            />
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="dropdown-menu"
+                        style="overflow-y: auto; max-height: 50vh"
+                        role="menu"
+                        @mouseover="dropdownHover = true"
+                        @mouseleave="dropdownHover = false"
+                      >
+                        <div class="dropdown-content">
+                          <a
+                            v-for="o of targetOptions"
+                            :key="o.value"
+                            :value="o.value"
+                            class="dropdown-item"
+                            :class="{ 'is-active': target == o }"
+                            @click.prevent="selectTarget(o)"
+                          >
+                            {{ o.text }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -160,6 +198,7 @@ import { useSerialStore } from "@/store/serial";
 import { useRootStore } from "@/store/root";
 import * as semver from "semver";
 import { ConfigOffsets, IntelHEX } from "@/store/flash/ihex";
+import Fuse from "fuse.js";
 
 export default defineComponent({
   name: "Flash",
@@ -173,6 +212,8 @@ export default defineComponent({
   data() {
     return {
       loading: false,
+      dropdownHover: false,
+      dropdownActive: false,
       sourceOptions: [
         { value: "release", text: "Release" },
         { value: "branch", text: "Development Branch" },
@@ -180,6 +221,7 @@ export default defineComponent({
       ],
       progress: {},
       source: "release",
+      targetSearch: "",
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
       target: undefined as any | undefined,
@@ -204,19 +246,34 @@ export default defineComponent({
       return false;
     },
     targetOptions() {
-      let targets = [] as any[];
-
+      let options = [] as any[];
       if (this.isRuntimeTarget) {
-        targets = this.flash.targets;
-      } else if (this.source == "release" && this.release) {
-        targets = this.flash.releases[this.release] || [];
-      } else if (this.source == "branch" && this.branch) {
-        targets = this.flash.branches[this.branch].artifacts || [];
+        options = this.flash.targets.map((r) => {
+          const mgfr = this.flash.manufacturers[r.manufacturer || "CUST"];
+          return { value: r, text: `${mgfr.name} / ${r.name}` };
+        });
+      } else {
+        let targets = [] as any[];
+        if (this.source == "release" && this.release) {
+          targets = this.flash.releases[this.release] || [];
+        } else if (this.source == "branch" && this.branch) {
+          targets = this.flash.branches[this.branch].artifacts || [];
+        }
+
+        options = targets.map((r) => {
+          return { value: r, text: r.name.replace("quicksilver.", "") };
+        });
       }
 
-      return targets.map((r) => {
-        return { value: r, text: r.name.replace("quicksilver.", "") };
+      if (this.targetSearch.length == 0) {
+        return options;
+      }
+
+      const fuse = new Fuse(options, {
+        includeScore: false,
+        keys: ["text"],
       });
+      return fuse.search(this.targetSearch).map((r) => r.item);
     },
     canFlash() {
       if (this.loading) {
@@ -229,6 +286,12 @@ export default defineComponent({
     },
   },
   methods: {
+    selectTarget(target: any) {
+      this.target = target.value;
+      this.targetSearch = target.text;
+      this.dropdownHover = false;
+      this.dropdownActive = false;
+    },
     updateFile() {
       const fileInput = this.$refs.file as HTMLInputElement;
       if (fileInput.files && fileInput.files.length) {
@@ -298,7 +361,7 @@ export default defineComponent({
           const hex = IntelHEX.parse(hexStr);
           if (this.isRuntimeTarget) {
             const target = await this.flash.fetchRuntimeConfig(
-              this.target.name
+              `${this.target.manufacturer}-${this.target.name}`.toLowerCase()
             );
             hex.patch(ConfigOffsets[this.target.mcu], target);
           }
