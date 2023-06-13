@@ -177,6 +177,7 @@
         <footer class="card-footer">
           <spinner-btn
             class="card-footer-item"
+            :class="{ 'is-loading': loading }"
             :disabled="!canFlash"
             type="submit"
           >
@@ -349,14 +350,27 @@ export default defineComponent({
     onSubmit(evt) {
       evt.preventDefault();
 
+      this.loading = true;
+
       const flasher = new Flasher();
       flasher.onProgress((p) => this.updateProgress(p));
+
+      this.updateProgress({
+        task: "download",
+        current: 10,
+        total: 100,
+      });
 
       return Promise.all([this.fetchFirmware(), flasher.connect()])
         .then(async ([hexStr]) => {
           if (!hexStr) {
             throw new Error("firmware not found");
           }
+          this.updateProgress({
+            task: "download",
+            current: 90,
+            total: 100,
+          });
 
           const hex = IntelHEX.parse(hexStr);
           if (this.isRuntimeTarget) {
@@ -365,6 +379,12 @@ export default defineComponent({
             );
             hex.patch(ConfigOffsets[this.target.mcu], target);
           }
+
+          this.updateProgress({
+            task: "download",
+            current: 100,
+            total: 100,
+          });
 
           return flasher.flash(hex);
         })
@@ -382,8 +402,10 @@ export default defineComponent({
             msg: "Flash failed!",
           });
         })
-        .then(() => (this.loading = false))
-        .then(() => (this.progress = {}));
+        .finally(() => {
+          this.progress = {};
+          this.loading = false;
+        });
     },
   },
   created() {
