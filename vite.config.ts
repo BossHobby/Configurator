@@ -40,12 +40,9 @@ export default defineConfig({
       "https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap",
     ]),
     VitePWA({
-      includeAssets: [
-        "favicon.svg",
-        "favicon.ico",
-        "robots.txt",
-        "apple-touch-icon.png",
-      ],
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       manifest: {
         name: "QUICKSILVER Configurator",
         short_name: "QUICKSILVER",
@@ -73,6 +70,17 @@ export default defineConfig({
         start_url: ".",
         display: "standalone",
         background_color: "#FFFFFF",
+      },
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
+      workbox: {
+        sourcemap: process.env.NODE_ENV !== "production",
+        mode: process.env.NODE_ENV,
+      },
+      injectManifest: {
+        rollupFormat: "iife",
       },
     }),
   ],

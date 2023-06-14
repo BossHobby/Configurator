@@ -1,5 +1,5 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": [
     "env.d.ts",
     "src/**/*",
@@ -18,6 +18,12 @@
       "w3c-web-usb",
       "semver",
       "vite-plugin-pwa/client",
+    ],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
     ],
     "allowJs": true,
     "noImplicitAny": false
