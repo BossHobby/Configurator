@@ -222,12 +222,26 @@ export default defineComponent({
       ],
       progress: {},
       source: "release",
-      targetSearch: "",
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
+      targetSearch: "",
       target: undefined as any | undefined,
       file: undefined as File | undefined,
     };
+  },
+  watch: {
+    source() {
+      this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
+      this.branch = this.branchOptions[0];
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+    branch() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
   },
   computed: {
     branchOptions() {
