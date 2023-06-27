@@ -26,7 +26,11 @@
               <div class="field is-narrow">
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <input-select v-model="source" :options="sourceOptions">
+                    <input-select
+                      v-model="source"
+                      :options="sourceOptions"
+                      :disabled="loading"
+                    >
                     </input-select>
                   </div>
                 </div>
@@ -54,6 +58,7 @@
                       @change="updateFile()"
                       ref="file"
                       accept=".hex"
+                      :disabled="loading"
                     />
                     <span class="file-cta">
                       <span class="file-icon">
@@ -81,7 +86,11 @@
               <div class="field is-narrow">
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <input-select v-model="branch" :options="branchOptions" />
+                    <input-select
+                      v-model="branch"
+                      :options="branchOptions"
+                      :disabled="loading"
+                    />
                   </div>
                 </div>
               </div>
@@ -99,7 +108,11 @@
               <div class="field is-narrow">
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <input-select v-model="release" :options="releaseOptions" />
+                    <input-select
+                      v-model="release"
+                      :options="releaseOptions"
+                      :disabled="loading"
+                    />
                   </div>
                 </div>
               </div>
@@ -131,6 +144,7 @@
                               v-model="targetSearch"
                               @focus="dropdownActive = true"
                               @blur="dropdownActive = false"
+                              :disabled="loading"
                             />
                           </p>
                         </div>
@@ -423,10 +437,16 @@ export default defineComponent({
     },
   },
   created() {
-    this.flash.fetch().then(() => {
-      this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
-      this.branch = this.branchOptions[0];
-    });
+    this.loading = true;
+    this.flash
+      .fetch()
+      .then(() => {
+        this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
+        this.branch = this.branchOptions[0];
+      })
+      .finally(() => {
+        this.loading = false;
+      });
   },
 });
 </script>

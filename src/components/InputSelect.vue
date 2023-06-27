@@ -1,6 +1,6 @@
 <template>
-  <div class="select" v-bind="$attrs">
-    <select v-model="inputVal">
+  <div class="select">
+    <select v-model="inputVal" v-bind="$attrs">
       <option v-for="o of optionMap" :key="o.value" :value="o.value">
         {{ o.text }}
       </option>
