@@ -108,7 +108,7 @@ export class AsyncQueue {
       promises.push(
         new Promise<Uint8Array>((resolve, reject) => {
           const timer = setTimeout(() => {
-            this._resolvers = this._resolvers.filter((r) => r.id == id);
+            this._resolvers = this._resolvers.filter((r) => r.id != id);
             clearTimeout(timer);
             reject("timeout");
           }, timeout);
