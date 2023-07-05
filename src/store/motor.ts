@@ -97,7 +97,8 @@ export const useMotorStore = defineStore("motor", {
           this.loading = false;
         });
     },
-    motor_test_toggle() {
+    async motor_test_toggle() {
+      await this.fetch_motor_test();
       return serial
         .command(
           QuicCmd.Motor,
@@ -110,8 +111,8 @@ export const useMotorStore = defineStore("motor", {
     motor_test_set_value(value) {
       return serial
         .command(QuicCmd.Motor, QuicMotor.TestSetValue, value)
-        .then(() => {
-          this.test.value = value;
+        .then((p) => {
+          this.test.value = p.payload[0];
         });
     },
   },

@@ -85,7 +85,12 @@ export default defineComponent({
   },
   computed: {
     value() {
-      return this.motor.test.value.map((v) => v * 100);
+      return this.motor.test.value.map((v) => {
+        if (v < 0.0) {
+          v = 0;
+        }
+        return v * 100;
+      });
     },
   },
   methods: {
