@@ -354,8 +354,8 @@ export default defineComponent({
         { value: 1, text: "Stick Boost Profile AUX On" },
       ],
       tdaOptions: [
-        { value: 0, text: "None" },
-        { value: 1, text: "Active" },
+        { value: 0, text: "Off" },
+        { value: 1, text: "On" },
       ],
       current_preset: -1,
     };
