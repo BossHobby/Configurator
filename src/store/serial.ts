@@ -99,11 +99,12 @@ export const useSerialStore = defineStore("serial", {
 
       return serial
         .hardReboot()
-        .then(() => {
+        .then((target) => {
           root.append_alert({
             type: "success",
             msg: "Reset to bootloader successful!",
           });
+          return target;
         })
         .catch((err) => {
           Log.error("serial", err);
@@ -111,6 +112,7 @@ export const useSerialStore = defineStore("serial", {
             type: "danger",
             msg: "Reset to bootloader failed",
           });
+          return undefined;
         });
     },
     toggle_connection() {

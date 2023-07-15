@@ -10,12 +10,30 @@
           <spinner-btn
             class="card-header-button is-info"
             type="button"
-            @click="serial.hard_reboot()"
+            @click="resetToBootloader()"
           >
             Reset to Bootloader
           </spinner-btn>
         </div>
+
         <div class="card-content field-is-3">
+          <div v-if="currentTarget" class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label"> Current Target </label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <input
+                    class="input is-static"
+                    :value="currentTarget"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="field is-horizontal">
             <div class="field-label is-normal">
               <label class="label">
@@ -239,6 +257,7 @@ export default defineComponent({
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
       targetSearch: "",
+      currentTarget: undefined as string | undefined,
       target: undefined as any | undefined,
       file: undefined as File | undefined,
     };
@@ -315,6 +334,9 @@ export default defineComponent({
     },
   },
   methods: {
+    async resetToBootloader() {
+      this.currentTarget = await this.serial.hard_reboot();
+    },
     selectTarget(target: any) {
       this.target = target.value;
       this.targetSearch = target.text;

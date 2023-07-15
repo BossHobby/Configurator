@@ -77,9 +77,14 @@ export class Serial {
     }
 
     await this._connectPort();
+    const target = await this.get(QuicVal.Target, 500)
+      .then((p) => p.name)
+      .catch(() => undefined);
     await this.write(stringToUint8Array(HARD_REBOOT_MAGIC));
     await this.write(stringToUint8Array("\r\nbl\r\n"));
     await this.close();
+
+    return target;
   }
 
   public async get(id: QuicVal, timeout?: number): Promise<any> {
