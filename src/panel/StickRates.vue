@@ -183,6 +183,18 @@
         </div>
       </div>
     </div>
+
+    <footer class="card-footer">
+      <spinner-btn class="card-footer-item" @click="downloadRates">
+        Save Rates
+      </spinner-btn>
+      <spinner-btn class="card-footer-item" @click="uploadRates">
+        Load Rates
+      </spinner-btn>
+    </footer>
+
+    <input accept=".yaml" type="file" ref="file" style="display: none" />
+    <a ref="downloadAnchor" target="_blank"></a>
   </div>
 </template>
 
@@ -191,6 +203,7 @@ import { defineComponent } from "vue";
 import LineChart from "@/components/LineChart.vue";
 import { useProfileStore } from "@/store/profile";
 import type { vec3_t } from "@/store/serial/types";
+import YAML from "yaml";
 
 export default defineComponent({
   name: "StickRates",
@@ -203,6 +216,13 @@ export default defineComponent({
     };
   },
   computed: {
+    fileRef(): HTMLInputElement {
+      return this.$refs.file as HTMLInputElement;
+    },
+    downloadAnchorRef(): HTMLAnchorElement {
+      return this.$refs.downloadAnchor as HTMLAnchorElement;
+    },
+
     currentProfile() {
       return this.profile.rate.rates[this.profile.rate.profile];
     },
@@ -422,6 +442,37 @@ export default defineComponent({
         labels,
         axis,
       };
+    },
+    uploadRates() {
+      const reader = new FileReader();
+      reader.addEventListener("load", (event) => {
+        if (event?.target?.result) {
+          const rates = YAML.parse(event?.target?.result as string);
+          this.profile.rate.rates = [...rates];
+        }
+      });
+
+      this.fileRef.oninput = () => {
+        if (!this.fileRef?.files?.length) {
+          return;
+        }
+        reader.readAsText(this.fileRef.files[0]);
+      };
+
+      this.fileRef.click();
+    },
+    downloadRates() {
+      const rates = YAML.stringify(this.profile.rate.rates);
+      const encoded = encodeURIComponent(rates);
+      const yaml = "data:text/yaml;charset=utf-8," + encoded;
+
+      const date = new Date().toISOString().substring(0, 10);
+      const name = this.profile.meta.name.replace(/\0/g, "");
+      const filename = `Rates_${name}_${date}.yaml`;
+
+      this.downloadAnchorRef.setAttribute("href", yaml);
+      this.downloadAnchorRef.setAttribute("download", filename);
+      this.downloadAnchorRef.click();
     },
   },
   mounted() {
