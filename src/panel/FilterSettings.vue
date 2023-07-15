@@ -99,7 +99,7 @@
 
             <div
               class="field is-horizontal mt-6"
-              v-if="profile.profileVersionGt('0.2.1')"
+              v-if="profile.profileVersionGt('0.2.2')"
             >
               <div class="field-label">
                 <label class="label" for="gyro-dynamic-enable">

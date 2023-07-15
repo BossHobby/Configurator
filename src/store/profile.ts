@@ -6,6 +6,8 @@ import { Log } from "@/log";
 import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
+import type { target_t } from "./types";
+import { useTargetStore } from "./target";
 
 export function mergeDeep(target, source) {
   for (const [key, val] of Object.entries(source)) {
@@ -22,11 +24,11 @@ export function mergeDeep(target, source) {
   return target;
 }
 
-function makeSemver(major, minor, patch) {
+function makeSemver(major: number, minor: number, patch: number) {
   return (major << 16) | (minor << 8) | patch;
 }
 
-function ensureMinVersion(version) {
+function ensureMinVersion(version): number {
   version = version || makeSemver(0, 1, 0);
   if (version < makeSemver(0, 1, 0)) {
     version = makeSemver(0, 1, 0);
@@ -34,35 +36,53 @@ function ensureMinVersion(version) {
   return version;
 }
 
-function migrateProfileVersion(profile, version) {
-  switch (version) {
-    case makeSemver(0, 1, 0): {
-      const silverware = {
-        mode: 0,
-        rate: [
-          profile.rate.silverware?.max_rate || [860, 860, 500],
-          profile.rate.silverware?.acro_expo || [0.8, 0.8, 0.6],
-          profile.rate.silverware?.angle_expo || [0.55, 0, 0.55],
-        ],
-      };
-      const betaflight = {
-        mode: 1,
-        rate: [
-          profile.rate.betaflight?.rc_rate || [1.3, 1.3, 1.3],
-          profile.rate.betaflight?.super_rate || [0.7, 0.7, 0.7],
-          profile.rate.betaflight?.expo || [0.4, 0.4, 0.4],
-        ],
-      };
+function migrateProfileVersion(
+  profile,
+  target: target_t,
+  profileVersion: string,
+  firmwareVersion: string
+) {
+  if (semver.eq(profileVersion, "v0.1.0")) {
+    const silverware = {
+      mode: 0,
+      rate: [
+        profile.rate.silverware?.max_rate || [860, 860, 500],
+        profile.rate.silverware?.acro_expo || [0.8, 0.8, 0.6],
+        profile.rate.silverware?.angle_expo || [0.55, 0, 0.55],
+      ],
+    };
+    const betaflight = {
+      mode: 1,
+      rate: [
+        profile.rate.betaflight?.rc_rate || [1.3, 1.3, 1.3],
+        profile.rate.betaflight?.super_rate || [0.7, 0.7, 0.7],
+        profile.rate.betaflight?.expo || [0.4, 0.4, 0.4],
+      ],
+    };
 
-      profile.rate.profile = 0;
+    profile.rate.profile = 0;
 
-      if (profile.rate.mode == 0) {
-        profile.rate.rates = [silverware, betaflight];
-      } else {
-        profile.rate.rates = [betaflight, silverware];
+    if (profile.rate.mode == 0) {
+      profile.rate.rates = [silverware, betaflight];
+    } else {
+      profile.rate.rates = [betaflight, silverware];
+    }
+  }
+
+  if (
+    semver.lt(profileVersion, "v0.2.2") &&
+    semver.gte(firmwareVersion, "v0.2.2")
+  ) {
+    const serial_ports = target.serial_ports.filter((p) => p.index != 0);
+    for (const key of Object.keys(profile.serial)) {
+      if (profile.serial[key] == 0) {
+        continue;
       }
-
-      break;
+      if (profile.serial[key] <= serial_ports.length) {
+        profile.serial[key] = serial_ports[profile.serial[key] - 1].index;
+      } else {
+        profile.serial[key] = profile.serial[key] - serial_ports.length + 100;
+      }
     }
   }
 
@@ -77,6 +97,7 @@ function migrateProfileVersion(profile, version) {
 }
 
 function migrateProfile(profile) {
+  const target = useTargetStore();
   const default_profile = useDefaultProfileStore();
 
   const firmwareVersion = ensureMinVersion(default_profile?.meta?.version);
@@ -87,7 +108,12 @@ function migrateProfile(profile) {
     p.meta = {};
   }
   if (firmwareVersion != profileVersion) {
-    p = migrateProfileVersion(p, profileVersion);
+    p = migrateProfileVersion(
+      p,
+      target.$state,
+      decodeSemver(profileVersion),
+      decodeSemver(firmwareVersion)
+    );
   }
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
