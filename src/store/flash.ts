@@ -5,6 +5,7 @@ import { CBOR } from "./serial/cbor";
 
 export interface RuntimeTarget {
   name: string;
+  target: string;
   manufacturer: string;
   mcu: string;
 }
