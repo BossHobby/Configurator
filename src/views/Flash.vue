@@ -270,6 +270,11 @@ export default defineComponent({
       this.target = undefined;
       this.file = undefined;
     },
+    release() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
     branch() {
       this.targetSearch = "";
       this.target = undefined;
