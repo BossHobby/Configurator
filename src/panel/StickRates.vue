@@ -96,6 +96,8 @@
                                 :id="`${currentModeText}-${rateLabel[index]}-roll`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
+                                :min="rateLimits[currentMode][index].min"
+                                :max="rateLimits[currentMode][index].max"
                                 v-model.number="currentProfile.rate[index][0]"
                                 @input="update()"
                               />
@@ -106,6 +108,8 @@
                                 :id="`${currentModeText}-${rateLabel[index]}-pitch`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
+                                :min="rateLimits[currentMode][index].min"
+                                :max="rateLimits[currentMode][index].max"
                                 v-model.number="currentProfile.rate[index][1]"
                                 @input="update()"
                               />
@@ -116,6 +120,8 @@
                                 :id="`${currentModeText}-${rateLabel[index]}-yaw`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
+                                :min="rateLimits[currentMode][index].min"
+                                :max="rateLimits[currentMode][index].max"
                                 v-model.number="currentProfile.rate[index][2]"
                                 @input="update()"
                               />
@@ -285,6 +291,23 @@ export default defineComponent({
         [0.05, 0.05, 0.05],
         [5, 5, 0.05],
       ],
+      rateLimits: [
+        [
+          { min: 0, max: 1800.0 },
+          { min: 0, max: 1.0 },
+          { min: 0, max: 1.0 },
+        ],
+        [
+          { min: 0, max: 3.0 },
+          { min: 0, max: 3.0 },
+          { min: 0, max: 1.0 },
+        ],
+        [
+          { min: 0, max: 500.0 },
+          { min: 0, max: 1800.0 },
+          { min: 0, max: 1.0 },
+        ],
+      ],
 
       rateModes: [
         { value: 0, text: "Silverware" },
@@ -316,78 +339,54 @@ export default defineComponent({
     };
   },
   methods: {
-    constrainf(val, lower, upper) {
+    constrain(val, lower, upper) {
       if (val > upper) return upper;
       if (val < lower) return lower;
       return val;
     },
-    limitf(val, limit) {
-      return this.constrainf(val, -limit, limit);
-    },
-    rcexpo(rc, expo) {
-      expo = this.limitf(expo, 1.0);
-      let result = 0;
-
-      switch (this.currentProfile.mode) {
-        case this.MODE_SILVERWARE:
-          result = rc * rc * rc * expo + rc * (1 - expo);
-          break;
-        case this.MODE_BETAFLIGHT:
-          result = Math.abs(rc) * rc * rc * rc * expo + rc * (1 - expo);
-          break;
-        case this.MODE_ACTUAL:
-          result = Math.abs(rc) * (Math.pow(rc, 5) * expo + rc * (1 - expo));
-          break;
-      }
-
-      return this.limitf(result, 1.0);
-    },
-    calcSilverware(axis, val) {
+    calcSilverware(axis: number, rc: number) {
       const expo = this.currentProfile.rate[this.SILVERWARE_ACRO_EXPO][axis];
       const maxRate = this.currentProfile.rate[this.SILVERWARE_MAX_RATE][axis];
-      return this.rcexpo(val, expo) * maxRate;
+      const rate_expo = rc * rc * rc * expo + rc * (1 - expo);
+      return rate_expo * maxRate;
     },
-    calcBetatflight(axis, val) {
-      const SETPOINT_RATE_LIMIT = 1998.0;
+    calcBetatflight(axis: number, rc: number) {
       const RC_RATE_INCREMENTAL = 14.54;
-
       const expo = this.currentProfile.rate[this.BETAFLIGHT_EXPO][axis];
-      val = this.rcexpo(val, expo);
-
-      let rcRate = this.currentProfile.rate[this.BETAFLIGHT_RC_RATE][axis];
-      if (rcRate > 2.0) {
-        rcRate += RC_RATE_INCREMENTAL * (rcRate - 2.0);
+      const rc_abs = Math.abs(rc);
+      if (expo) {
+        rc = rc * Math.pow(rc_abs, 3) * expo + rc * (1 - expo);
       }
-      const rcCommandfAbs = val > 0 ? val : -val;
-      let angleRate = 200.0 * rcRate * val;
 
-      const superExpo =
+      let rc_rate = this.currentProfile.rate[this.BETAFLIGHT_RC_RATE][axis];
+      if (rc_rate > 2.0) {
+        rc_rate += RC_RATE_INCREMENTAL * (rc_rate - 2.0);
+      }
+
+      let angle_rate = 200.0 * rc_rate * rc;
+
+      const super_rate =
         this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
-      if (superExpo) {
-        const rcSuperfactor =
-          1.0 / this.constrainf(1.0 - rcCommandfAbs * superExpo, 0.01, 1.0);
-        angleRate *= rcSuperfactor;
+      if (super_rate) {
+        const super_factor =
+          1.0 / this.constrain(1.0 - rc_abs * (super_rate / 100.0), 0.01, 1.0);
+        angle_rate *= super_factor;
       }
-      return this.constrainf(
-        angleRate,
-        -SETPOINT_RATE_LIMIT,
-        SETPOINT_RATE_LIMIT
-      );
+
+      return angle_rate;
     },
-    calcActual(axis, val) {
+    calcActual(axis: number, rc: number) {
       const expo = this.currentProfile.rate[this.ACTUAL_EXPO][axis];
-      const rate_expo = this.rcexpo(val, expo);
+
+      const rc_abs = Math.abs(rc);
+      const rate_expo = rc_abs * (Math.pow(rc, 5) * expo + rc * (1 - expo));
 
       const center_sensitivity =
         this.currentProfile.rate[this.ACTUAL_CENTER_SENSITIVITY][axis];
       const max_rate = this.currentProfile.rate[this.ACTUAL_MAX_RATE][axis];
+      const stick_movement = Math.max(0, max_rate - center_sensitivity);
 
-      let stick_movement = max_rate - center_sensitivity;
-      if (stick_movement < 0) {
-        stick_movement = 0;
-      }
-
-      return val * center_sensitivity + stick_movement * rate_expo;
+      return rc * center_sensitivity + stick_movement * rate_expo;
     },
     update() {
       const axis = [
