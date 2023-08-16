@@ -29,6 +29,7 @@
         aria-label="menu"
         aria-expanded="false"
         data-target="mainMavbar"
+        @click="showMenuItem=!showMenuItem"
       >
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -36,7 +37,7 @@
       </a>
     </div>
 
-    <div id="mainMavbar" class="navbar-menu">
+    <div id="mainMavbar" class="navbar-menu" :class="{ 'is-active': showMenuItem }">
       <div v-if="serial.is_connected" class="navbar-start">
         <router-link
           active-class="is-active"
@@ -245,6 +246,7 @@ export default defineComponent({
     return {
       darkMode: true,
       branch: import.meta.env.VITE_BRANCH_NAME,
+      showMenuItem: false,
     };
   },
   watch: {
