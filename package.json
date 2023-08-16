@@ -50,7 +50,7 @@
     "vue-chartjs": "^4.1.1",
     "vue-router": "^4.0.0",
     "vuex": "^4.0.2",
-    "web-serial-polyfill": "^1.0.13",
+    "web-serial-polyfill": "github:BossHobby/web-serial-polyfill",
     "yaml": "^2.1.1"
   },
   "devDependencies": {
