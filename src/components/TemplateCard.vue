@@ -211,4 +211,9 @@ export default defineComponent({
   height: 256px;
   width: 256px;
 }
+@media screen and (max-width: 1023px) {
+  .media-left .image{
+    width: 100px !important;
+  }
+}
 </style>

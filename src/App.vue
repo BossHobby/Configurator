@@ -29,7 +29,8 @@
         aria-label="menu"
         aria-expanded="false"
         data-target="mainMavbar"
-        @click="showMenuItem=!showMenuItem"
+        :class="{ 'is-active': showNavbarMenu }"
+        @click="showNavbarMenu=!showNavbarMenu"
       >
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -37,7 +38,7 @@
       </a>
     </div>
 
-    <div id="mainMavbar" class="navbar-menu" :class="{ 'is-active': showMenuItem }">
+    <div id="mainMavbar" class="navbar-menu" :class="{ 'is-active': showNavbarMenu }" @click="showNavbarMenu=false">
       <div v-if="serial.is_connected" class="navbar-start">
         <router-link
           active-class="is-active"
@@ -151,32 +152,30 @@
   </div>
 
   <div v-if="serial.is_connected" class="navbar is-fixed-bottom has-shadow">
-    <div class="navbar-brand">
+    <div class="navbar-brand" style="width:100%;">
       <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
       </span>
-      <span class="navbar-item">Modified {{ timeAgo(date) }}</span>
-      <span class="navbar-item" style="font-size: 70%">
+      <span class="navbar-item hide-on-mobile">Modified {{ timeAgo(date) }}</span>
+      <span class="navbar-item hide-on-mobile" style="font-size: 70%">
         Looptime {{ state.looptime_autodetect }} CPU Load
         {{ state.cpu_load }}
       </span>
-      <span class="navbar-item" style="font-size: 60%">
+      <span class="navbar-item hide-on-mobile" style="font-size: 60%">
         CPU Temp {{ state.cpu_temp.toFixed(2) }}°C
       </span>
-    </div>
-
-    <div class="navbar-end">
+      <span style="display:flex;margin-left:auto;"></span>
       <span class="navbar-item">
         <div class="notification is-warning" v-show="root.needs_apply">
           <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
-          Unsaved changes
+          Unsaved<span class="hide-on-mobile"> changes</span>
         </div>
         <div
           class="notification is-warning"
           v-show="!root.needs_apply && root.needs_reboot"
         >
           <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
-          Reboot required
+          Reboot<span class="hide-on-mobile"> required</span>
         </div>
       </span>
 
@@ -194,6 +193,8 @@
         Apply
       </spinner-btn>
     </div>
+
+
   </div>
 </template>
 
@@ -246,7 +247,7 @@ export default defineComponent({
     return {
       darkMode: true,
       branch: import.meta.env.VITE_BRANCH_NAME,
-      showMenuItem: false,
+      showNavbarMenu: false,
     };
   },
   watch: {
@@ -363,7 +364,7 @@ export default defineComponent({
   background-color: unset !important;
 }
 .navbar-item .notification {
-  padding: 15px !important;
+  padding: 8px !important;
   margin-bottom: 0 !important;
 }
 .router-outlet-container {
@@ -384,5 +385,10 @@ export default defineComponent({
   width: 175px;
   height: 100%;
   margin-left: -8px;
+}
+@media screen and (max-width: 1023px) {
+  .navbar.is-fixed-bottom .hide-on-mobile {
+    display: none !important;
+  }
 }
 </style>

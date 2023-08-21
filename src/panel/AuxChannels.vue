@@ -40,7 +40,7 @@
               </header>
               <div class="card-content">
                 <div class="content">
-                  <div class="columns" v-for="(v, index) in auxChannels" :key="v.text">
+                  <div class="columns is-mobile" v-for="(v, index) in auxChannels" :key="v.text">
                     <div class="column is-6 py-1">{{ v.text }}</div>
                     <div
                       class="column is-6 py-1"

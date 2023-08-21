@@ -61,6 +61,15 @@ export default defineComponent({
   z-index: 10001;
   width: 500px;
 }
+@media screen and (max-width: 1023px) {
+  .alert-portal {
+    position: fixed;
+    left: calc( 50vw - 200px );
+    top: 85px;
+    z-index: 10001;
+    width: 400px;
+  }
+}
 .alert-enter-active,
 .alert-leave-active {
   transition: all 0.5s ease;
