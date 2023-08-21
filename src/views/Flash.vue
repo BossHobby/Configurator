@@ -290,11 +290,15 @@ export default defineComponent({
     },
     isRuntimeTarget() {
       if (this.source == "release" && this.release) {
-        return semver.satisfies(this.release, ">=0.10.0-dev");
+        return semver.satisfies(this.release, ">=0.10.0-dev", {
+          includePrerelease: true,
+        });
       }
       if (this.source == "branch" && this.branch) {
         const branch = this.flash.branches[this.branch];
-        return semver.satisfies(branch.version, ">=0.10.0-dev");
+        return semver.satisfies(branch.version, ">=0.10.0-dev", {
+          includePrerelease: true,
+        });
       }
       return false;
     },

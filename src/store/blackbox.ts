@@ -87,7 +87,7 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     title: "Setpoint",
     axis: AxisRPYT,
     scale: 1000,
-    unit: BlackboxFieldUnit.NONE,
+    unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.ACCEL_RAW]: {
     name: "accel_raw",
