@@ -264,7 +264,7 @@ export default defineComponent({
   },
   watch: {
     source() {
-      this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
+      this.release = this.pickRelease();
       this.branch = this.branchOptions[0];
       this.targetSearch = "";
       this.target = undefined;
@@ -345,6 +345,11 @@ export default defineComponent({
   methods: {
     async resetToBootloader() {
       this.currentTarget = await this.serial.hard_reboot();
+    },
+    pickRelease() {
+      return this.releaseOptions.find(
+        (v) => !v.endsWith("-dev") && !v.includes("-rc")
+      );
     },
     selectTarget(target: any) {
       this.target = target.value;
@@ -474,7 +479,7 @@ export default defineComponent({
     this.flash
       .fetch()
       .then(() => {
-        this.release = this.releaseOptions.find((v) => !v.endsWith("-dev"));
+        this.release = this.pickRelease();
         this.branch = this.branchOptions[0];
       })
       .finally(() => {
