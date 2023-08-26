@@ -436,7 +436,7 @@ export default defineComponent({
           const hex = IntelHEX.parse(hexStr);
           if (this.isRuntimeTarget) {
             const target = await this.flash.fetchRuntimeConfig(
-              `${this.target.manufacturer}-${this.target.target}`.toLowerCase()
+              this.target.target
             );
             hex.patch(ConfigOffsets[this.target.mcu], target);
           }
