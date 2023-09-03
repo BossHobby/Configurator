@@ -369,7 +369,7 @@ export default defineComponent({
         this.currentProfile.rate[this.BETAFLIGHT_SUPER_RATE][axis];
       if (super_rate) {
         const super_factor =
-          1.0 / this.constrain(1.0 - rc_abs * (super_rate / 100.0), 0.01, 1.0);
+          1.0 / this.constrain(1.0 - rc_abs * super_rate, 0.01, 1.0);
         angle_rate *= super_factor;
       }
 
