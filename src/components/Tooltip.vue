@@ -6,19 +6,21 @@
     v-if="active"
     @mouseenter="visbleHover = true"
     @mouseleave="visbleHover = false"
-    @click="visbleClick = !visbleClick"
+    @click="onClick"
   >
-    <span
-      class="tooltip-icon"
-      :class="{ 'has-text-danger': danger, 'has-text-grey': !danger }"
-      :id="'tooltip-' + entry"
-    >
-      <font-awesome-icon
-        icon="fa-solid fa-circle-question"
-        :size="size"
-        fixed-width
-      />
-    </span>
+    <slot>
+      <span
+        class="tooltip-icon"
+        :class="{ 'has-text-danger': danger, 'has-text-grey': !danger }"
+        :id="'tooltip-' + entry"
+      >
+        <font-awesome-icon
+          icon="fa-solid fa-circle-question"
+          :size="size"
+          fixed-width
+        />
+      </span>
+    </slot>
 
     <Transition name="tooltip">
       <span
@@ -96,6 +98,14 @@ export default defineComponent({
       return (
         (this.text || this.entry) && (!this.tooltip || !this.tooltip.disabled)
       );
+    },
+  },
+  methods: {
+    onClick() {
+      if (this.$slots.default) {
+        return;
+      }
+      this.visbleClick = !this.visbleClick;
     },
   },
   mounted() {

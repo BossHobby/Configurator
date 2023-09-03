@@ -16,7 +16,8 @@
     "build:mac": "electron-vite build && electron-builder --publish=never --mac --config",
     "pwa": "env DEPLOYMENT=local vite build && npx http-server ./dist",
     "start": "electron-vite preview",
-    "dev": "electron-vite dev"
+    "dev": "electron-vite dev",
+    "extract-tooltips": "node script/extract-tooltips.js"
   },
   "dependencies": {
     "@bulvar/bulma": "^0.11.13",

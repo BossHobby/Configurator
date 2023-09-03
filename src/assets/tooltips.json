@@ -23,6 +23,9 @@
   "channel.aux_motor_test": {
     "text": "Activate the motor test function, useful to check individual motors in the field"
   },
+  "channel.aux_prearm": {
+    "text": "Allows for a separate AUX channel to be set as a safety for arming, the set AUX should be ON before the ARM switch is activated. If not used leave this as ON"
+  },
   "channel.aux_racemode": {
     "text": "Uses self levelling only on the roll axis, acro on pitch, requires Level mode active"
   },
@@ -38,13 +41,6 @@
   "channel.aux_turtle": {
     "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
     "link": "https://docs.bosshobby.com/Features/#turtle-mode"
-  },
-  "channel.aux_prearm": {
-    "text": "Allows for a separate AUX channel to be set as a safety for arming, the set AUX should be ON before the ARM switch is activated. If not used leave this as ON"
-  },
-  "filter.settings": {
-    "text": "The default filter setting are designed to be safe, before making adjustments refer to the wiki",
-    "link": "https://docs.bosshobby.com/Features/#filters"
   },
   "filter.dterm_1_freq": {
     "disabled": true
@@ -80,14 +76,18 @@
   "filter.gyro_2_type": {
     "disabled": true
   },
+  "filter.settings": {
+    "text": "The default filter setting are designed to be safe, before making adjustments refer to the wiki",
+    "link": "https://docs.bosshobby.com/Features/#filters"
+  },
+  "flash.file-branch": {
+    "text": "Development branch to flash a hex from"
+  },
   "flash.file-local": {
     "text": "Choose a self built hex"
   },
   "flash.file-release": {
     "text": "The default selection is the latest `stable` release, dev versions are available as testers"
-  },
-  "flash.file-branch": {
-    "text": "Development branch to flash a hex from"
   },
   "flash.file-remote": {
     "text": "Targets are named `board_name.motor_type` choose serial if your rx is separate and attatched to a uart. If you don't see your fc listed exactly then don't flash, please ask for a target in our Discord server",
@@ -98,6 +98,9 @@
   },
   "flash.source": {
     "text": "If you compile your own hex select `local` and choose it in the next box"
+  },
+  "log.download": {
+    "text": "Download log file"
   },
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
@@ -113,6 +116,9 @@
   },
   "motor.invert_yaw": {
     "text": "Default is props out"
+  },
+  "motor.motor_limit": {
+    "text": "Set a cap on the maximum throttle"
   },
   "motor.test": {
     "text": "Connect a lipo, PROPS OFF, use sliders to confirm motor operation and direction"
@@ -133,9 +139,6 @@
   },
   "motor_settings": {
     "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
-  },
-  "motor.motor_limit": {
-    "text": "Set a cap on the maximum throttle"
   },
   "osd.elements": {
     "text": "Select and position OSD elements, callsign must use upper case",
@@ -183,14 +186,17 @@
   "rate.sticks_deadband": {
     "text": "If your radio has `jitter` on Pitch/Roll stick center raising this a little can help"
   },
-  "rate.throttle_mid": {
-    "text": "Can be set to about where your `hover point` is giving improved resolution on the stick"
-  },
   "rate.throttle_expo": {
     "text": "Adding some expo will soften the stick feel around the set `Throttle Mid`"
   },
+  "rate.throttle_mid": {
+    "text": "Can be set to about where your `hover point` is giving improved resolution on the stick"
+  },
   "receiver.bind_saved": {
     "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
+  },
+  "receiver.channel_mapping": {
+    "text": "Quicksilver default is AETR the other option is TAER"
   },
   "receiver.lqi_source": {
     "text": "Select the source for your rssi/lqi OSD display. Direct is best for ELRS, others can use Packet-Rate"
@@ -198,8 +204,8 @@
   "receiver.protocol": {
     "text": "Serial or spi connected rx will be detected automatically here"
   },
-  "receiver.channel_mapping": {
-    "text": "Quicksilver default is AETR the other option is TAER"
+  "serial.digital_vtx": {
+    "text": "MSP serial port for digital systems like HDZero, DJI WTF and Walksnail. HDZero requires TX and RX connected to use msp, define the UART here"
   },
   "serial.rx": {
     "text": "Enter the UART number the serial RX is connected to (for spi RX leave as NONE)"
@@ -209,9 +215,6 @@
   },
   "serial_passthrough": {
     "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
-  },
-  "serial.digital_vtx": {
-    "text": "MSP serial port for digital systems like HDZero, DJI WTF and Walksnail. HDZero requires TX and RX connected to use msp, define the UART here"
   },
   "voltage.actual_battery_voltage": {
     "text": "Default is 4.2V, set to whatever value you get from a multimeter or lipo tester for a full lipo."

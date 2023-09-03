@@ -115,11 +115,13 @@
         <div class="navbar-item">
           <div class="buttons">
             <button class="button is-primary" @click="downloadLog()">
-              <font-awesome-icon
-                icon="fa-solid fa-file-export"
-                size="lg"
-                fixed-width
-              />
+              <tooltip entry="log.download">
+                <font-awesome-icon
+                  icon="fa-solid fa-file-export"
+                  size="lg"
+                  fixed-width
+                />
+              </tooltip>
               <a ref="logDownloadAnchor" style="display: none"></a>
             </button>
             <button class="button is-primary" @click="setDarkMode(!darkMode)">

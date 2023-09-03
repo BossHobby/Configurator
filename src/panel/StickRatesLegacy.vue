@@ -164,9 +164,10 @@
 
             <div class="field is-horizontal">
               <div class="field-label">
-                <label class="label" for="sticks-deadband"
-                  >SticksDeadband</label
-                >
+                <label class="label" for="sticks-deadband">
+                  SticksDeadband
+                  <tooltip entry="rate.sticks_deadband" />
+                </label>
               </div>
               <div class="field-body">
                 <div class="field">
