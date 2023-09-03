@@ -12,7 +12,6 @@ import Perf from "./views/Perf.vue";
 import Profile from "./views/Profile.vue";
 import Flash from "./views/Flash.vue";
 import Home from "./views/Home.vue";
-import Log from "./views/Log.vue";
 import Templates from "./views/Templates.vue";
 
 const router = createRouter({
@@ -87,11 +86,6 @@ const router = createRouter({
       path: "/perf",
       name: "perf",
       component: Perf,
-    },
-    {
-      path: "/log",
-      name: "log",
-      component: Log,
     },
   ],
 });

@@ -8,6 +8,7 @@ import {
   faCloudMoon,
   faCloudSun,
   faDownload,
+  faFileExport,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
@@ -19,7 +20,8 @@ library.add(
   faCloudMoon,
   faCloudSun,
   faDownload,
-  faPenToSquare
+  faPenToSquare,
+  faFileExport
 );
 
 export default FontAwesomeIcon;

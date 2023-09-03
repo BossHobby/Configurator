@@ -1,3 +1,4 @@
+import { Log } from "@/log";
 import { ArrayWriter } from ".";
 import { transformBlackboxFieldFlags, type BlackboxFile } from "../blackbox";
 import { BlackboxField } from "../constants";
@@ -512,7 +513,7 @@ export class Blackbox {
 
   public writeValue(val: any[]) {
     if (!val[0]) {
-      console.warn("skipping blackbox entry");
+      Log.warn("blackbox", "skipping blackbox entry");
       return;
     }
 

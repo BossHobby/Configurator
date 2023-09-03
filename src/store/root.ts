@@ -8,14 +8,14 @@ export const useRootStore = defineStore("root", {
     needs_apply: false,
     needs_reboot: false,
 
-    log: [] as any[],
+    log: [] as string[],
     alerts: [] as any[],
 
     pid_rate_presets: [] as pid_rate_preset_t[],
   }),
   actions: {
     append_log(line) {
-      if (this.log.length < 500) {
+      if (this.log.length < 50000) {
         this.log = [...this.log, line];
       } else {
         this.log = [line];

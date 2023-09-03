@@ -207,8 +207,9 @@ export class Serial {
 
     Log.trace(
       "serial",
-      "[quic] sent cmd: %d len: %d",
+      "[quic] sent cmd:",
       cmd,
+      "len:",
       payload.length,
       values
     );
@@ -222,9 +223,11 @@ export class Serial {
     }
     Log.trace(
       "serial",
-      "[quic] recv cmd: %d flag: %d len: %d",
+      "[quic] recv cmd:",
       packet.cmd,
+      "flag:",
       packet.flag,
+      "len:",
       packet.len,
       packet.payload
     );
@@ -253,7 +256,7 @@ export class Serial {
       }
       if (!this.reSync) {
         this.reSync = true;
-        console.log("invalid magic " + magic);
+        Log.info("serial", "invalid magic " + magic);
         throw new Error("invalid magic " + magic);
       }
     }

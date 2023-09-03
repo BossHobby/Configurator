@@ -75,7 +75,6 @@ export class Log {
     while (typeof data[0] == "string") {
       str += data.shift();
     }
-    str += " ";
 
     return str;
   }
@@ -84,7 +83,13 @@ export class Log {
     const root = useRootStore();
 
     for (const d of data) {
-      fmt += JSON.stringify(d);
+      fmt += " ";
+
+      if (typeof d == "string") {
+        fmt += d;
+      } else {
+        fmt += JSON.stringify(d);
+      }
     }
 
     if (Log.file) {
@@ -98,26 +103,26 @@ export class Log {
       case LogLevel.Trace: {
         const str = this.logFmtStr(level, prefix, data);
         console.debug(str, ...data);
-        this.logToFile(str, data);
+        this.logToFile(str, ...data);
         break;
       }
       case LogLevel.Debug:
       case LogLevel.Info: {
         const str = this.logFmtStr(level, prefix, data);
         console.log(str, ...data);
-        this.logToFile(str, data);
+        this.logToFile(str, ...data);
         break;
       }
       case LogLevel.Warning: {
         const str = this.logFmtStr(level, prefix, data);
         console.warn(str, ...data);
-        this.logToFile(str, data);
+        this.logToFile(str, ...data);
         break;
       }
       case LogLevel.Error: {
         const str = this.logFmtStr(level, prefix, data);
         console.error(str, ...data);
-        this.logToFile(str, data);
+        this.logToFile(str, ...data);
         break;
       }
       default:
