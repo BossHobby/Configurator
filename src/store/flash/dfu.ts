@@ -689,8 +689,12 @@ export class DFU {
     await this.loadAddress(address);
 
     // 'downloading' 0 bytes to the program start address followed by a GETSTATUS is used to trigger DFU exit on STM32
-    await this.controlTransferOut(DFURequest.DNLOAD, 0, 0);
-    await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
+    try {
+      await this.controlTransferOut(DFURequest.DNLOAD, 0, 0);
+      await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
+    } catch (err) {
+      Log.warn("Flash", "leave failed", err);
+    }
   }
 
   async flash(hex: IntelHEX) {

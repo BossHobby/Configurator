@@ -443,6 +443,7 @@ export default defineComponent({
             const target = await this.flash.fetchRuntimeConfig(
               this.target.target
             );
+            Log.info("Flash", "injecting target ", this.target.target);
             hex.patch(ConfigOffsets[this.target.mcu], target);
           }
 
