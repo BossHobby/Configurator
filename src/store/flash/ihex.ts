@@ -19,6 +19,7 @@ export const ConfigOffsets = {
   stm32f405: 0x0800c000,
   stm32f722: 0x0800c000,
   at32f435: 0x080f0000,
+  at32f435m: 0x080f0000,
 };
 
 export class IntelHEX {
