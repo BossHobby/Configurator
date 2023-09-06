@@ -163,6 +163,7 @@ export const useSerialStore = defineStore("serial", {
           bb.$reset();
           default_profile.$reset();
           profile.$reset();
+          target.$reset();
 
           this.is_connected = true;
           info.set_info(i);
