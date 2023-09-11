@@ -222,6 +222,9 @@
   "voltage.actual_battery_voltage": {
     "text": "Default is 4.2V, set to whatever value you get from a multimeter or lipo tester for a full lipo."
   },
+  "voltage.vbat_scale": {
+    "text": "Use the value provided by the FC manufacturer"
+  },
   "voltage.ibat_scale": {
     "text": "Use the value provided by the FC manufacturer"
   },

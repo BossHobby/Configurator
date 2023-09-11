@@ -124,6 +124,29 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
+              Voltage Meter Scale
+              <tooltip entry="voltage.vbat_scale" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  id="vbat_scale"
+                  type="number"
+                  step="1"
+                  min="0"
+                  v-model.number="profile.voltage.vbat_scale"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
               Current Meter Scale
               <tooltip entry="voltage.ibat_scale" />
             </label>

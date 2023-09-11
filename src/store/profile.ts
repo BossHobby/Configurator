@@ -159,7 +159,10 @@ export const useProfileStore = defineStore("profile", {
       throttle_expo: 0,
       throttle_mid: 0,
     },
-    voltage: {},
+    voltage: {
+      vbat_scale: 0,
+      ibat_scale: 0,
+    },
     receiver: {
       lqi_source: -1,
       channel_mapping: 0,
