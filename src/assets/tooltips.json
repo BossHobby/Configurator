@@ -89,6 +89,9 @@
   "flash.file-release": {
     "text": "The default selection is the latest `stable` release, dev versions are available as testers"
   },
+  "flash.file-commit": {
+    "text": "The latest commit hash on the selected branch"
+  },
   "flash.file-remote": {
     "text": "Targets are named `board_name.motor_type` choose serial if your rx is separate and attatched to a uart. If you don't see your fc listed exactly then don't flash, please ask for a target in our Discord server",
     "link": "https://discord.gg/qzyvewaCnP"

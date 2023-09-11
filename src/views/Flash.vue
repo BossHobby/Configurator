@@ -115,6 +115,28 @@
             </div>
           </div>
 
+          <div class="field is-horizontal" v-if="source == 'branch'">
+            <div class="field-label is-normal">
+              <label class="label">
+                Commit
+                <tooltip entry="flash.file-commit" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <input
+                    class="input is-fullwidth is-static"
+                    type="text"
+                    :value="
+                      flash.branches[branch || 'develop'].commit.slice(0, 8)
+                    "
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="field is-horizontal" v-if="source == 'release'">
             <div class="field-label is-normal">
               <label class="label">

@@ -129,6 +129,7 @@ class Github {
         ]).then(([artifacts, version]) => {
           return {
             name: b.name,
+            commit: b.commit.sha,
             version,
             artifacts,
           };
