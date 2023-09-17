@@ -274,7 +274,7 @@ export default defineComponent({
         { value: "branch", text: "Development Branch" },
         { value: "local", text: "Local" },
       ],
-      progress: {},
+      progress: [] as any[],
       source: "release",
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
@@ -443,14 +443,17 @@ export default defineComponent({
       const flasher = new Flasher();
       flasher.onProgress((p) => this.updateProgress(p));
 
-      this.updateProgress({
-        task: "download",
-        current: 10,
-        total: 100,
-      });
-
-      return Promise.all([this.fetchFirmware(), flasher.connect()])
-        .then(async ([hexStr]) => {
+      return flasher
+        .connect()
+        .then(() => {
+          this.updateProgress({
+            task: "download",
+            current: 10,
+            total: 100,
+          });
+          return this.fetchFirmware();
+        })
+        .then(async (hexStr) => {
           if (!hexStr) {
             throw new Error("firmware not found");
           }
@@ -492,7 +495,7 @@ export default defineComponent({
           });
         })
         .finally(() => {
-          this.progress = {};
+          this.progress = [];
           this.loading = false;
         });
     },

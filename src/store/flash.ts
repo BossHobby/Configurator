@@ -35,7 +35,12 @@ export const useFlashStore = defineStore("flash", {
     },
     fetchRuntimeConfig(target: string) {
       return fetch(TARGET_URL + target + ".yaml")
-        .then((res) => res.text())
+        .then((res) => {
+          if (!res.ok) {
+            return Promise.reject(res);
+          }
+          return res.text();
+        })
         .then((res) => YAML.parse(res))
         .then((target) => CBOR.encode(target));
     },
