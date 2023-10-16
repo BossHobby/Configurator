@@ -37,6 +37,23 @@ enum GyroType {
   BMI270,
 }
 
+enum GyroTypeV021 {
+  INVALID,
+
+  MPU6000,
+  MPU6500,
+
+  ICM20601,
+  ICM20602,
+  ICM20608,
+  ICM20689,
+
+  ICM42605,
+  ICM42688P,
+
+  BMI270,
+}
+
 enum AuxChannels {
   CHANNEL_5,
   CHANNEL_6,
@@ -212,7 +229,6 @@ export const FailloopMessages = {
 export const useConstantStore = defineStore("constant", {
   state: () => ({
     Features,
-    GyroType,
     GyroRotation,
     AuxChannels,
     RXSerialProtocol,
@@ -238,6 +254,14 @@ export const useConstantStore = defineStore("constant", {
         return AuxFunctionsV011;
       }
       return AuxFunctionsV010;
+    },
+    GyroType() {
+      const info = useInfoStore();
+
+      if (semver.gt(info.quic_protocol_semver, "0.2.0")) {
+        return GyroTypeV021;
+      }
+      return GyroType;
     },
   },
   actions: {},
