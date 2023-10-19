@@ -7,7 +7,10 @@
 
     <div class="card-content">
       <div class="content">
-        <div class="columns is-multiline" v-if="motor.settings && motor.settings.length">
+        <div
+          class="columns is-multiline"
+          v-if="motor.settings && motor.settings.length"
+        >
           <div
             class="column is-6 px-5"
             v-for="m in motor.pins"
@@ -18,11 +21,11 @@
                 <h6>{{ m.label }}</h6>
               </div>
               <div class="column is-8">
-                {{ trim(motor.settings[m.pin].LAYOUT) }}
+                {{ trim(motor.settings[mapPin(m)].LAYOUT) }}
                 -
-                {{ trim(motor.settings[m.pin].NAME) }},
-                {{ motor.settings[m.pin].MAIN_REVISION }}.{{
-                  motor.settings[m.pin].SUB_REVISION
+                {{ trim(motor.settings[mapPin(m)].NAME) }},
+                {{ motor.settings[mapPin(m)].MAIN_REVISION }}.{{
+                  motor.settings[mapPin(m)].SUB_REVISION
                 }}
               </div>
 
@@ -32,14 +35,17 @@
               <div class="column is-8 pt-0 mt-0">
                 <input-select
                   :id="'motor-direction-' + m.index"
-                  v-model.number="motor.settings[m.pin].MOTOR_DIRECTION"
+                  v-model.number="motor.settings[mapPin(m)].MOTOR_DIRECTION"
                   :options="motor_direction_options"
                 ></input-select>
               </div>
             </div>
           </div>
         </div>
-        <div v-else class="is-size-5 has-text-centered has-text-weight-semibold">
+        <div
+          v-else
+          class="is-size-5 has-text-centered has-text-weight-semibold"
+        >
           Settings not loaded
         </div>
       </div>
@@ -71,12 +77,15 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useMotorStore } from "@/store/motor";
+import { useInfoStore } from "@/store/info";
+import semver from "semver";
 
 export default defineComponent({
   name: "ESCSettings",
   setup() {
     return {
       motor: useMotorStore(),
+      info: useInfoStore(),
     };
   },
   data() {
@@ -92,6 +101,12 @@ export default defineComponent({
   methods: {
     trim(str) {
       return str.replace(/#/g, "").replace(/\$/g, " ");
+    },
+    mapPin(m) {
+      if (semver.gt(this.info.quic_protocol_semver, "0.2.1")) {
+        return m.index;
+      }
+      return m.pin;
     },
   },
 });
