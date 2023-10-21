@@ -91,10 +91,9 @@ export class ArrayReader {
   private buf = new ArrayBuffer(0);
   private view = new DataView(this.buf);
 
-  constructor(buffer?: Uint8Array) {
-    if (buffer) {
-      this.buf = new ArrayBuffer(buffer.length);
-      new Uint8Array(this.buf).set(buffer);
+  constructor(array?: Uint8Array) {
+    if (array) {
+      this.buf = array.buffer;
       this.view = new DataView(this.buf);
     }
   }
