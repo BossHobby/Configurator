@@ -1,6 +1,3 @@
-import { useRootStore } from "./store/root";
-import util from "util";
-
 export enum LogLevel {
   Trace,
   Debug,
@@ -33,6 +30,8 @@ function getFileWriter() {
 }
 
 export class Log {
+  public static history: string[] = [];
+
   private static file = getFileWriter();
 
   public static filePath() {
@@ -80,8 +79,6 @@ export class Log {
   }
 
   private static logToFile(fmt: string, ...data: any[]) {
-    const root = useRootStore();
-
     for (const d of data) {
       fmt += " ";
 
@@ -95,7 +92,7 @@ export class Log {
     if (Log.file) {
       Log.file.write(fmt);
     }
-    root.append_log(fmt);
+    Log.history.push(fmt);
   }
 
   public static log(level: LogLevel, prefix?: string, ...data: any[]) {

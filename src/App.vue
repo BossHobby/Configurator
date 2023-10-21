@@ -224,6 +224,7 @@ import { computed } from "vue";
 import LogoClean from "./assets/Logo_Clean.svg?component";
 import LogoText from "./assets/Logo_Text.svg?component";
 import LogoTextDevelop from "./assets/Logo_Develop_Text.svg?component";
+import { Log } from "./log";
 
 export default defineComponent({
   name: "app",
@@ -351,10 +352,7 @@ export default defineComponent({
         });
     },
     downloadLog() {
-      let file = "";
-      for (const line of this.root.log) {
-        file += line + "\n";
-      }
+      const file = Log.history.join("\n");
       const encoded =
         "data:text/plain;charset=utf-8," + encodeURIComponent(file);
       const filename = `Log_${new Date().toISOString()}.txt`;

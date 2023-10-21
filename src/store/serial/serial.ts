@@ -282,7 +282,7 @@ export class Serial {
     }
 
     if ((hdr.flag & QuicFlag.Streaming) == 0) {
-      const buffer = Uint8Array.from(await this.reader.read(hdr.len, timeout));
+      const buffer = await this.reader.read(hdr.len, timeout);
       progress(buffer.length);
 
       let payload: any = [];
