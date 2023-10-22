@@ -53,11 +53,8 @@ export class ArrayWriter {
 
   public writeUint8s(values: ArrayLike<number>) {
     this.grow(values.length);
-
-    for (let i = 0; i < values.length; i++) {
-      this.view.setUint8(this.offset, values[i]);
-      this.offset++;
-    }
+    new Uint8Array(this.buf).set(Uint8Array.from(values), this.offset);
+    this.offset += values.length;
   }
 
   public writeFloat32(v: number) {
