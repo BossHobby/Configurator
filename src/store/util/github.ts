@@ -120,21 +120,19 @@ class Github {
     const octokit = await this.kit();
     const resp = await octokit.rest.repos.listBranches(FIRMWARE_REPO);
 
-    const promises = resp.data
-      .filter((b) => b.name != "master")
-      .map((b) => {
-        return Promise.all([
-          this.fetchArtifacts(b.name),
-          this.fetchVersion(b.name),
-        ]).then(([artifacts, version]) => {
-          return {
-            name: b.name,
-            commit: b.commit.sha,
-            version,
-            artifacts,
-          };
-        });
+    const promises = resp.data.map((b) => {
+      return Promise.all([
+        this.fetchArtifacts(b.name),
+        this.fetchVersion(b.name),
+      ]).then(([artifacts, version]) => {
+        return {
+          name: b.name,
+          commit: b.commit.sha,
+          version,
+          artifacts,
+        };
       });
+    });
 
     const branches = {};
     for (const b of await Promise.all(promises)) {
