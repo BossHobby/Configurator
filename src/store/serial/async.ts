@@ -53,7 +53,7 @@ export class AsyncQueue {
           {
             write: this.write.bind(this),
           },
-          new ByteLengthQueuingStrategy({ highWaterMark: 1024 })
+          new ByteLengthQueuingStrategy({ highWaterMark: 4096 })
         ),
         { signal: this._abort.signal }
       )
