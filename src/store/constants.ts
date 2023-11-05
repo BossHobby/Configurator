@@ -52,6 +52,7 @@ enum GyroTypeV021 {
   ICM42688P,
 
   BMI270,
+  BMI323,
 }
 
 enum AuxChannels {
