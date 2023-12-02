@@ -251,7 +251,11 @@ export default defineComponent({
         { name: "FLIGHT MODE", enabled: true, text: "   ACRO   " },
         { name: "RSSI", enabled: true, text: "  90\x01" },
         { name: "STOPWATCH", enabled: true, text: "01:20" },
-        { name: "SYSTEM STATUS", enabled: true, text: "  **ARMED**    " },
+        {
+          name: "SYSTEM STATUS",
+          enabled: true,
+          text: "     **FAILSAFE**     ",
+        },
         { name: "THROTTLE", enabled: true, text: "  50\x04" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
         { name: "CURRENT", enabled: true, text: "0.00\x9a" },
