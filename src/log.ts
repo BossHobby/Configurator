@@ -14,29 +14,9 @@ export const LevelNames = {
   [LogLevel.Error]: "error",
 };
 
-function getFileWriter() {
-  // TODO: electron
-  return undefined;
-
-  class FileWriter {
-    public write(str: string) {}
-
-    public getPath() {
-      return undefined;
-    }
-  }
-
-  return new FileWriter();
-}
-
 export class Log {
+  public static level = LogLevel.Debug;
   public static history: string[] = [];
-
-  private static file = getFileWriter();
-
-  public static filePath() {
-    return Log.file ? Log.file.getPath() : undefined;
-  }
 
   public static trace(prefix: string, ...data: any[]) {
     Log.log(LogLevel.Trace, prefix, ...data);
@@ -78,7 +58,11 @@ export class Log {
     return str;
   }
 
-  private static logToFile(fmt: string, ...data: any[]) {
+  private static logToFile(level: LogLevel, fmt: string, ...data: any[]) {
+    if (level < Log.level) {
+      return;
+    }
+
     for (const d of data) {
       fmt += " ";
 
@@ -88,10 +72,6 @@ export class Log {
         fmt += JSON.stringify(d);
       }
     }
-
-    if (Log.file) {
-      Log.file.write(fmt);
-    }
     Log.history.push(fmt);
   }
 
@@ -100,26 +80,26 @@ export class Log {
       case LogLevel.Trace: {
         const str = this.logFmtStr(level, prefix, data);
         console.debug(str, ...data);
-        this.logToFile(str, ...data);
+        this.logToFile(level, str, ...data);
         break;
       }
       case LogLevel.Debug:
       case LogLevel.Info: {
         const str = this.logFmtStr(level, prefix, data);
         console.log(str, ...data);
-        this.logToFile(str, ...data);
+        this.logToFile(level, str, ...data);
         break;
       }
       case LogLevel.Warning: {
         const str = this.logFmtStr(level, prefix, data);
         console.warn(str, ...data);
-        this.logToFile(str, ...data);
+        this.logToFile(level, str, ...data);
         break;
       }
       case LogLevel.Error: {
         const str = this.logFmtStr(level, prefix, data);
         console.error(str, ...data);
-        this.logToFile(str, ...data);
+        this.logToFile(level, str, ...data);
         break;
       }
       default:
