@@ -43,9 +43,9 @@
                       class="input"
                       id="digital-idle"
                       type="number"
-                      step="0.1"
+                      step="0.5"
                       min="0"
-                      max="1"
+                      max="100"
                       v-model.number="profile.motor.digital_idle"
                     />
                   </div>
