@@ -245,8 +245,8 @@ export default defineComponent({
       return [
         { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
         { name: "CELL COUNT", enabled: true, text: "1S" },
-        { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3V" },
-        { name: "FILTERED VOLTS", enabled: true, text: " 4.3V" },
+        { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3\x70" },
+        { name: "FILTERED VOLTS", enabled: true, text: " 4.3\x06" },
         { name: "GYRO TEMP", enabled: true, text: "  40\x0e" },
         { name: "FLIGHT MODE", enabled: true, text: "   ACRO   " },
         { name: "RSSI", enabled: true, text: "  90\x01" },
