@@ -287,7 +287,7 @@ export class Serial {
 
       let payload: any = [];
       if (hdr.len) {
-        payload = CBOR.decodeMultiple(buffer);
+        payload = CBOR.decode(buffer);
       }
       return {
         ...hdr,
@@ -315,7 +315,7 @@ export class Serial {
       progress(writer.length);
     }
 
-    const payload: any[] = CBOR.decodeMultiple(writer.array());
+    const payload: any[] = CBOR.decode(writer.array());
     return {
       ...hdr,
       payload,

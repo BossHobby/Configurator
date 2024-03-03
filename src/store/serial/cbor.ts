@@ -379,7 +379,7 @@ export class CBOR {
     return new Encoder().encode(val);
   }
 
-  public static decodeMultiple(buf: Uint8Array): any[] {
+  public static decode(buf: Uint8Array): any[] {
     const res: any[] = [];
 
     const dec = new Decoder(buf);

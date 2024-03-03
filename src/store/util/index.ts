@@ -83,7 +83,7 @@ export class ArrayReader {
 
   constructor(array?: Uint8Array) {
     if (array) {
-      this.buf = array.buffer;
+      this.buf = array.buffer.slice(0, array.length);
       this.view = new DataView(this.buf);
     }
   }
