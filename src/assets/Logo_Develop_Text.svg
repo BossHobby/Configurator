@@ -84,14 +84,7 @@
       transform="matrix(0.91867632,-0.41374796,0.40205342,0.93217771,2.6890174,503.32696)"
       id="text1083"
       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:1.25;font-family:'Hack Nerd Font';-inkscape-font-specification:'Hack Nerd Font';letter-spacing:-1.64499px;white-space:pre;shape-inside:url(#rect1085);shape-padding:0.0279914;display:inline;fill:#000000;fill-opacity:1;stroke:none">
-      <tspan
-        x="294.61328"
-        y="75.604297"
-        id="tspan1102">
-        <tspan
-          style="font-weight:600;font-family:'BlexMono Nerd Font Mono';-inkscape-font-specification:'BlexMono Nerd Font Mono Semi-Bold';fill:#ff0000"
-          id="tspan1100">DEVELOP</tspan>
-      </tspan>
+      <tspan x="295" y="82"><tspan style="font-weight:600;font-family: &quot;Roboto&quot;, sans-serif;-inkscape-font-specification:&quot;BlexMono Nerd Font Mono Semi-Bold&quot;;fill:red;">DEVELOP</tspan></tspan>
     </text>
   </g>
 </svg>
