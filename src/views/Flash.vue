@@ -409,9 +409,9 @@ export default defineComponent({
         case "release":
           if (this.isRuntimeTarget && this.release) {
             const release = this.flash.releases[this.release];
-            const asset = release.find((a) =>
-              a.name.includes(this.target?.mcu)
-            );
+            const asset = release
+              .sort((a, b) => a.name.length - b.name.length)
+              .find((a) => a.name.includes(this.target?.mcu));
             return github.fetchAsset(asset).then((res) => res.text());
           }
           return github.fetchAsset(this.target).then((res) => res.text());
@@ -419,9 +419,9 @@ export default defineComponent({
         case "branch":
           if (this.isRuntimeTarget && this.branch) {
             const branch = this.flash.branches[this.branch];
-            const artifact = branch.artifacts.find((a) =>
-              a.name.includes(this.target?.mcu)
-            );
+            const artifact = branch.artifacts
+              .sort((a, b) => a.name.length - b.name.length)
+              .find((a) => a.name.includes(this.target?.mcu));
             return github.fetchArtifact(artifact);
           }
           return github.fetchArtifact(this.target);
