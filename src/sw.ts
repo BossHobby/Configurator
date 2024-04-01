@@ -23,6 +23,11 @@ cleanupOutdatedCaches();
 
 registerRoute(
   ({ url }) => cacheUrls.includes(url.hostname),
-  new StaleWhileRevalidate()
+  new StaleWhileRevalidate({
+    cacheName: "github-cache",
+    matchOptions: {
+      ignoreVary: true,
+    },
+  })
 );
 precacheAndRoute(self.__WB_MANIFEST);
