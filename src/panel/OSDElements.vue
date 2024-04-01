@@ -242,7 +242,7 @@ export default defineComponent({
       return this.screen.height * OSD.CHAR_HEIGHT;
     },
     elementOptions() {
-      return [
+      const elements = [
         { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
         { name: "CELL COUNT", enabled: true, text: "1S" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3\x70" },
@@ -260,6 +260,14 @@ export default defineComponent({
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
         { name: "CURRENT", enabled: true, text: "0.00\x9a" },
       ];
+      if (this.profile.profileVersionGt("0.2.2")) {
+        elements.push({
+          name: "CROSSHAIR",
+          enabled: true,
+          text: "\x72\x73\x74",
+        });
+      }
+      return elements;
     },
     elements() {
       return this.currentElements
