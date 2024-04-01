@@ -2,14 +2,33 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Receiver</p>
-      <spinner-btn class="card-header-button is-warning" @click="reset">
-        Reset
-      </spinner-btn>
+      <spinner-btn class="card-header-button is-warning" @click="reset"
+        >Reset</spinner-btn
+      >
     </header>
 
     <div class="card-content">
       <div class="content field-is-2">
-        <div class="field is-horizontal">
+        <div
+          class="field is-horizontal"
+          v-if="info.rx_protocol && !profile.receiver.protocol"
+        >
+          <div class="field-label">
+            <label class="label">
+              Protocol
+              <tooltip entry="receiver.protocol" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                {{ protoNames[info.rx_protocol] }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal" v-if="profile.receiver.protocol">
           <div class="field-label">
             <label class="label">
               Protocol
@@ -29,7 +48,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 3">
           <div class="field-label">
             <label class="label">
               LQI Source
@@ -49,7 +68,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
           <div class="field-label">
             <label class="label">
               Bind Saved
@@ -65,7 +84,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
           <div class="field-label">
             <label class="label">RSSI</label>
           </div>
@@ -76,59 +95,32 @@
           </div>
         </div>
 
-        <div
-          class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == RXProtocol.UNIFIED_SERIAL"
-        >
-          <header class="card-header">
-            <p class="card-header-title">Serial Protocol</p>
-          </header>
-          <div class="card-content">
-            <div class="content" v-if="profile.serial.rx">
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label"> Protocol </label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input-select
-                        class="is-fullwidth"
-                        v-model.number="serialProto"
-                        :options="serialProtoOptions"
-                      ></input-select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal" v-if="serialProto == 0">
-                <div class="field-label">
-                  <label class="label">Status</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      {{ serialProtoStatus }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="content has-text-centered" v-else>
-              No rx serial port selected. Check setup tab.
+        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
+          <div class="field-label">
+            <label class="label">Status</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">{{ protoStatus }}</div>
             </div>
           </div>
+        </div>
 
-          <footer class="card-footer">
-            <span class="card-footer-item"></span>
-            <spinner-btn
-              class="card-footer-item"
-              @click="applySerialBindInfo()"
-            >
-              Apply
-            </spinner-btn>
-          </footer>
+        <div
+          class="field is-horizontal"
+          v-if="
+            info.quic_protocol_version > 2 &&
+            rx_protocol == RXProtocol.UNIFIED_SERIAL
+          "
+        >
+          <div class="field-label">
+            <label class="label">Serial Protocol</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">{{ serialProtoStatus }}</div>
+            </div>
+          </div>
         </div>
 
         <div
@@ -139,17 +131,6 @@
             <p class="card-header-title">ExpressLRS</p>
           </header>
           <div class="card-content">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Status</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">{{ protoStatus }}</div>
-                </div>
-              </div>
-            </div>
-
             <div class="content">
               <div class="field is-horizontal">
                 <div class="field-label">
@@ -197,7 +178,7 @@
             <span class="card-footer-item"></span>
             <spinner-btn
               class="card-footer-item"
-              @click="applyElrsBindPhrase(elrsBindPhraseInput)"
+              @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
               :disabled="elrsBindPhraseInput.length < 4"
             >
               Apply
@@ -211,17 +192,6 @@
           </header>
 
           <div class="card-content">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Status</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">{{ protoStatus }}</div>
-                </div>
-              </div>
-            </div>
-
             <div class="content has-text-centered">
               Save and load bind information for spi protocols.<br />
               Requires reboot after load.
@@ -246,6 +216,17 @@
           />
           <a ref="downloadAnchor" target="_blank"></a>
         </div>
+
+        <div class="columns mt-4">
+          <div class="column is-12 has-text-centered">
+            <small>
+              When binding via your transmitter, save bind by moving your right
+              transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle
+              the Bind Saved flag above. When binding via passphrase or bind
+              data this is not required.
+            </small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -264,10 +245,14 @@ import { useStateStore } from "@/store/state";
 import { useRootStore } from "@/store/root";
 
 export default defineComponent({
-  name: "ReceiverSettings",
+  name: "ReceiverSettingsLegacy",
   data() {
     return {
-      serialProto: 0,
+      lqiSourceNames: [
+        { value: 0, text: "PACKET_RATE" },
+        { value: 1, text: "CHANNEL" },
+        { value: 2, text: "DIRECT" },
+      ],
       elrsBindPhraseInput: "",
     };
   },
@@ -283,19 +268,13 @@ export default defineComponent({
   computed: {
     ...mapState(useConstantStore, {
       serialProtoNames: (state) => $enum(state.RXSerialProtocol).getKeys(),
-      serialProtoOptions: (state) =>
-        $enum(state.RXSerialProtocol)
-          .getKeys()
-          .map((v, i) => ({ value: i, text: i == 0 ? "AUTO" : v })),
       RXProtocol: (state) => state.RXProtocol as any,
-      protoNames: (state) => $enum(state.RXProtocol).getKeys(),
-      lqiSourceNames: (state) =>
-        $enum(state.LQISource)
-          .getKeys()
-          .map((v, i) => ({ value: i, text: v })),
     }),
     date() {
       return new Date(this.profile.meta.datetime * 1000);
+    },
+    protoNames() {
+      return $enum(this.RXProtocol).getKeys();
     },
     rx_protocol() {
       return this.profile.receiver.protocol || this.info.rx_protocol;
@@ -306,6 +285,12 @@ export default defineComponent({
         .map((val) => {
           return { value: val, text: this.protoNames[val] };
         });
+    },
+    serialProto() {
+      return this.serialProtoNames.reduce((m, v, i) => {
+        m[v] = i;
+        return m;
+      }, {});
     },
     isSpiProtocol() {
       const spi = [
@@ -336,20 +321,29 @@ export default defineComponent({
         ];
         return status[this.state.rx_status];
       }
+      if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
+        if (this.state.rx_status < 100) {
+          return "RX_STATUS_NONE";
+        }
+        if (this.state.rx_status >= 100 && this.state.rx_status < 200) {
+          return "RX_STATUS_DETECTING";
+        }
+        if (this.state.rx_status >= 200 && this.state.rx_status < 300) {
+          return "RX_STATUS_DETECTED";
+        }
+      }
       return "";
     },
     serialProtoStatus() {
       let index = 0;
+
       if (this.state.rx_status >= 100 && this.state.rx_status < 200) {
         index = this.state.rx_status - 100;
       } else if (this.state.rx_status >= 200 && this.state.rx_status < 300) {
         index = this.state.rx_status - 200;
       }
 
-      if (this.state.rx_status >= 200 && this.state.rx_status < 300) {
-        return this.serialProtoNames[index] + " detected";
-      }
-      return "trying " + this.serialProtoNames[index];
+      return this.serialProtoNames[index];
     },
     elrsBindPhrase() {
       return this.bind?.info?.raw?.slice(1, 7).join(", ");
@@ -382,7 +376,7 @@ export default defineComponent({
       }
       return result;
     },
-    applyElrsBindPhrase(input) {
+    apply_elrs_bind_phrase(input) {
       const hex = md5(`-DMY_BINDING_PHRASE="${input}"`);
       const bytes = this.parseHexString(hex).slice(0, 6);
 
@@ -394,21 +388,6 @@ export default defineComponent({
         info.raw[i + 1] = bytes[i];
       }
       info.raw[7] = 0x37;
-
-      return this.applyBindInfo(info);
-    },
-    applySerialBindInfo() {
-      if (this.serialProto == 0 && this.state.rx_status >= 200) {
-        this.serialProto = this.state.rx_status - 200;
-      }
-
-      const proto = this.serialProto;
-      const info = { ...this.bind?.info };
-      for (let i = 0; i < info.raw.length; i++) {
-        info.raw[i] = 0;
-      }
-      info.bind_saved = proto > 0 ? 1 : 0;
-      info.raw[0] = proto;
 
       return this.applyBindInfo(info);
     },
@@ -455,21 +434,8 @@ export default defineComponent({
         info.raw[i] = 0;
       }
 
-      this.serialProto = 0;
-      this.elrsBindPhraseInput = "";
-
       return this.applyBindInfo(info);
     },
-  },
-  async created() {
-    await this.bind.fetch_bind_info();
-
-    if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
-      this.serialProto = this.bind.info.raw[0];
-      if (this.serialProto == 0 && this.state.rx_status >= 200) {
-        this.serialProto = this.state.rx_status - 200;
-      }
-    }
   },
 });
 </script>

@@ -1,7 +1,8 @@
 <template>
   <div class="columns is-multiline">
     <div class="column is-12">
-      <ReceiverSettings></ReceiverSettings>
+      <ReceiverSettings v-if="info.quicVersionGt('0.1.0')"></ReceiverSettings>
+      <ReceiverSettingsLegacy v-else></ReceiverSettingsLegacy>
     </div>
     <div class="column is-12" v-if="info.quicVersionGt('0.1.0')">
       <RCChannels></RCChannels>
@@ -15,6 +16,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import ReceiverSettings from "@/panel/ReceiverSettings.vue";
+import ReceiverSettingsLegacy from "@/panel/ReceiverSettingsLegacy.vue";
 import RCChannels from "@/panel/RCChannels.vue";
 import AuxChannels from "@/panel/AuxChannels.vue";
 import { useInfoStore } from "@/store/info";
@@ -23,6 +25,7 @@ export default defineComponent({
   name: "Receiver",
   components: {
     ReceiverSettings,
+    ReceiverSettingsLegacy,
     RCChannels,
     AuxChannels,
   },

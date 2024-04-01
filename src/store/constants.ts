@@ -214,6 +214,12 @@ export enum BlackboxField {
   DEBUG,
 }
 
+export enum LQISource {
+  PACKET_RATE,
+  CHANNEL,
+  DIRECT,
+}
+
 export const FailloopMessages = {
   [Failloop.FAILLOOP_NONE]: "",
   [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - currently unused",
@@ -235,6 +241,7 @@ export const useConstantStore = defineStore("constant", {
     RXSerialProtocol,
     StickWizardState,
     Failloop,
+    LQISource,
   }),
   getters: {
     RXProtocol() {
