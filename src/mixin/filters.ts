@@ -4,20 +4,6 @@ export function timeAgo(time) {
   return moment(time).fromNow();
 }
 
-export function debounce(fn, delay: number) {
-  let timeout;
-
-  return (...args) => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      fn(...args);
-    }, delay);
-  };
-}
-
 export function humanFileSize(bytes: number, si = false, dp = 1): string {
   const thresh = si ? 1000 : 1024;
 
