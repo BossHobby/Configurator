@@ -11,8 +11,8 @@ import { ArrayWriter, concatUint8Array, stringToUint8Array } from "../util";
 import { AsyncQueue, AsyncSemaphore } from "./async";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
-import { settings } from "./settings";
 import { WebSerial } from "./webserial";
+import { settings } from "./settings";
 
 const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";
@@ -33,14 +33,17 @@ export class Serial {
 
   private waitingCommands = new AsyncSemaphore(1);
 
-  private port?: any;
+  private port?: SerialPort;
 
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: AsyncQueue;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
     try {
-      await this._connectPort(errorCallback);
+      const port = await WebSerial.requestPort({
+        filters: SERIAL_FILTERS,
+      });
+      await this._connectPort(port, errorCallback);
       return await this.get(QuicVal.Info, 10_000);
     } catch (err) {
       await this.close();
@@ -48,10 +51,28 @@ export class Serial {
     }
   }
 
-  private async _connectPort(errorCallback: any = console.warn) {
-    this.port = await WebSerial.requestPort({
-      filters: SERIAL_FILTERS,
-    });
+  public async connectFirstPort(
+    errorCallback: any = console.warn
+  ): Promise<any> {
+    try {
+      const ports = await WebSerial.getPorts();
+      if (!ports.length) {
+        throw new Error("no ports");
+      }
+      await this._connectPort(ports[0], errorCallback);
+      return await this.get(QuicVal.Info, 10_000);
+    } catch (err) {
+      await this.close();
+      throw err;
+    }
+  }
+
+  private async _connectPort(port: any, errorCallback: any = console.warn) {
+    this.port = port;
+    if (!this.port) {
+      return;
+    }
+
     this.waitingCommands = new AsyncSemaphore(1);
 
     await this.port.open({
@@ -67,6 +88,7 @@ export class Serial {
 
   public async softReboot() {
     await this.write(stringToUint8Array(SOFT_REBOOT_MAGIC));
+    await this.close();
   }
 
   public async hardReboot() {
@@ -74,7 +96,10 @@ export class Serial {
       throw new Error("port already connected");
     }
 
-    await this._connectPort();
+    const port = await WebSerial.requestPort({
+      filters: SERIAL_FILTERS,
+    });
+    await this._connectPort(port);
     const target = await this.get(QuicVal.Target, 500)
       .then((p) => p.name)
       .catch(() => undefined);

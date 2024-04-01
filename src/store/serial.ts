@@ -15,6 +15,8 @@ import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
 import { useBlackboxStore } from "./blackbox";
 import { useTargetStore } from "./target";
+import { asyncDelay } from "./util";
+import { WebSerial } from "./serial/webserial";
 
 let interval: any = null;
 let intervalCounter = 0;
@@ -63,8 +65,33 @@ export const useSerialStore = defineStore("serial", {
         }
       }
     },
-    soft_reboot() {
-      return serial.softReboot();
+    async soft_reboot() {
+      await this.disconnect();
+
+      this.is_connecting = true;
+      await serial.softReboot();
+      for (let i = 0; i < 10; i++) {
+        const ports = await WebSerial.getPorts();
+        if (!ports.length) {
+          break;
+        }
+        await asyncDelay(100);
+      }
+      for (let i = 0; i < 10; i++) {
+        const ports = await WebSerial.getPorts();
+        if (ports.length) {
+          break;
+        }
+        await asyncDelay(100);
+      }
+
+      await this.connect(
+        serial.connectFirstPort((err) => {
+          Log.error("serial", err);
+          this.disconnect();
+          return serial.close();
+        })
+      );
     },
     serial_passthrough({ port, baudrate, half_duplex, stop_bits }) {
       const root = useRootStore();
@@ -115,86 +142,83 @@ export const useSerialStore = defineStore("serial", {
           return undefined;
         });
     },
-    toggle_connection() {
+    disconnect() {
       const root = useRootStore();
+
+      stopInterval();
+
+      this.is_connected = false;
+      this.is_connecting = false;
+      root.reset_needs_reboot();
+
+      if (router.currentRoute.value.fullPath != "/home") {
+        router.push("/home");
+      }
+    },
+    async connect(infoPromise: Promise<any>) {
+      const bb = useBlackboxStore();
+      const default_profile = useDefaultProfileStore();
       const info = useInfoStore();
       const motor = useMotorStore();
-      const bb = useBlackboxStore();
-      const vtx = useVTXStore();
-      const default_profile = useDefaultProfileStore();
       const profile = useProfileStore();
+      const root = useRootStore();
       const target = useTargetStore();
+      const vtx = useVTXStore();
 
-      if (this.is_connected) {
-        stopInterval();
+      try {
+        const i = await infoPromise;
 
-        this.is_connected = false;
-        this.is_connecting = false;
-        root.reset_needs_reboot();
+        info.$reset();
+        motor.$reset();
+        vtx.$reset();
+        bb.$reset();
+        default_profile.$reset();
+        profile.$reset();
+        target.$reset();
 
-        if (router.currentRoute.value.fullPath != "/home") {
-          router.push("/home");
+        this.is_connected = true;
+        info.set_info(i);
+
+        if (info.quicVersionGte("0.2.0")) {
+          target.fetch();
         }
 
+        default_profile.fetch_default_profile();
+        root.fetch_pid_rate_presets();
+        profile.fetch_profile();
+        vtx.update_vtx_settings();
+
+        startInterval((c) => this.poll_serial(c));
+
+        if (router.currentRoute.value.fullPath != "/profile") {
+          router.push("/profile");
+        }
+      } catch (err) {
+        Log.error("serial", err);
+        this.is_connected = false;
+        root.reset_needs_reboot();
+        root.append_alert({
+          type: "danger",
+          msg: "Connection to the board failed",
+        });
+      } finally {
+        this.is_connecting = false;
+      }
+    },
+    async toggle_connection() {
+      if (this.is_connected) {
+        this.disconnect();
         return serial.close();
       }
 
       this.is_connecting = true;
-
-      return serial
-        .connect((err) => {
+      return this.connect(
+        serial.connect((err) => {
           Log.error("serial", err);
-          serial.close();
-
-          stopInterval();
-
-          this.is_connected = false;
-          this.is_connecting = false;
-          root.reset_needs_reboot();
-
-          if (router.currentRoute.value.fullPath != "/home") {
-            router.push("/home");
-          }
+          this.disconnect();
+          return serial.close();
         })
-        .then((i) => {
-          info.$reset();
-          motor.$reset();
-          vtx.$reset();
-          bb.$reset();
-          default_profile.$reset();
-          profile.$reset();
-          target.$reset();
-
-          this.is_connected = true;
-          info.set_info(i);
-
-          if (info.quicVersionGte("0.2.0")) {
-            target.fetch();
-          }
-
-          default_profile.fetch_default_profile();
-          root.fetch_pid_rate_presets();
-          profile.fetch_profile();
-          vtx.update_vtx_settings();
-
-          startInterval((c) => this.poll_serial(c));
-
-          if (router.currentRoute.value.fullPath != "/profile") {
-            router.push("/profile");
-          }
-        })
-        .catch((err) => {
-          Log.error("serial", err);
-          this.is_connected = false;
-          root.reset_needs_reboot();
-          root.append_alert({
-            type: "danger",
-            msg: "Connection to the board failed",
-          });
-        })
-        .finally(() => {
-          this.is_connecting = false;
-        });
+      );
     },
   },
 });

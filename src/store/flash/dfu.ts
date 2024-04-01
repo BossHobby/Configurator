@@ -1,6 +1,7 @@
 import { Log } from "@/log";
 import type { FlashProgressCallback } from "./flash";
 import type { IntelHEX } from "./ihex";
+import { asyncDelay } from "../util";
 
 enum DFURequest {
   DETACH = 0x00, // OUT, Requests the device to leave DFU mode and enter the application.
@@ -43,12 +44,6 @@ enum DFUState {
   dfuMANIFEST_WAIT_RESET = 8, // Device has programmed its memories and is waiting for a USB reset or a power on reset. (Devices that must enter this state clear bitManifestationTolerant to 0.)
   dfuUPLOAD_IDLE = 9, // The device is processing an upload operation. Expecting DFU_UPLOAD requests.
   dfuERROR = 10, // An error has occurred. Awaiting the DFU_CLRSTATUS request.
-}
-
-function asyncDelay(timeout: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout);
-  });
 }
 
 export class DFU {

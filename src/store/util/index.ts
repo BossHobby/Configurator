@@ -121,3 +121,9 @@ export function encodeSemver(version: string): number {
   const v = semver.parse(version)!;
   return (v.major << 16) | (v.minor << 8) | (v.patch & 0xff);
 }
+
+export function asyncDelay(timeout: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+}
