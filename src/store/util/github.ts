@@ -79,7 +79,6 @@ class Github {
         branch: branch,
         per_page: 1,
         status: "success",
-        exclude_pull_requests: true,
       })
       .then((runs) => {
         if (runs.data.total_count == 0) {
@@ -97,11 +96,14 @@ class Github {
       });
   }
 
-  private async fetchVersion(branch: string) {
+  private async fetchVersion(
+    repo: { owner: string; repo: string },
+    branch: string
+  ) {
     const octokit = await this.kit();
     return octokit.rest.repos
       .getContent({
-        ...FIRMWARE_REPO,
+        ...repo,
         path: "VERSION",
         ref: branch,
       })
@@ -123,7 +125,7 @@ class Github {
     const promises = resp.data.map((b) => {
       return Promise.all([
         this.fetchArtifacts(b.name),
-        this.fetchVersion(b.name),
+        this.fetchVersion(FIRMWARE_REPO, b.name),
       ]).then(([artifacts, version]) => {
         return {
           name: b.name,
@@ -136,9 +138,46 @@ class Github {
 
     const branches = {};
     for (const b of await Promise.all(promises)) {
+      if (b.artifacts.length == 0) {
+        continue;
+      }
       branches[b.name] = b;
     }
     return branches;
+  }
+
+  public async fetchPullRequests() {
+    const octokit = await this.kit();
+    const resp = await octokit.rest.pulls.list({
+      ...FIRMWARE_REPO,
+      state: "open",
+    });
+
+    const promises = resp.data.map((b) => {
+      return Promise.all([
+        this.fetchArtifacts(b.head.ref),
+        this.fetchVersion(
+          { owner: b.head.repo.owner.login, repo: b.head.repo.name },
+          b.head.ref
+        ),
+      ]).then(([artifacts, version]) => {
+        return {
+          name: b.head.label,
+          commit: b.head.sha,
+          version,
+          artifacts,
+        };
+      });
+    });
+
+    const prs = {};
+    for (const b of await Promise.all(promises)) {
+      if (b.artifacts.length == 0) {
+        continue;
+      }
+      prs[b.name] = b;
+    }
+    return prs;
   }
 
   private findNewVersion(versions, current) {

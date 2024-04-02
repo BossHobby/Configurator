@@ -115,7 +115,32 @@
             </div>
           </div>
 
-          <div class="field is-horizontal" v-if="source == 'branch'">
+          <div class="field is-horizontal" v-if="source == 'pull_request'">
+            <div class="field-label is-normal">
+              <label class="label">
+                Pull Request
+                <tooltip entry="flash.file-pull-request" />
+              </label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <input-select
+                      v-model="pullRequest"
+                      :options="pullRequestOptions"
+                      :disabled="loading"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="field is-horizontal"
+            v-if="source == 'branch' || source == 'pull_request'"
+          >
             <div class="field-label is-normal">
               <label class="label">
                 Commit
@@ -128,9 +153,7 @@
                   <input
                     class="input is-fullwidth is-static"
                     type="text"
-                    :value="
-                      flash.branches[branch || 'develop'].commit.slice(0, 8)
-                    "
+                    :value="commitHash"
                   />
                 </div>
               </div>
@@ -266,18 +289,20 @@ export default defineComponent({
   },
   data() {
     return {
-      loading: false,
+      loading: true,
       dropdownHover: false,
       dropdownActive: false,
       sourceOptions: [
         { value: "release", text: "Release" },
         { value: "branch", text: "Development Branch" },
+        { value: "pull_request", text: "Pull Request" },
         { value: "local", text: "Local" },
       ],
       progress: [] as any[],
-      source: "release",
+      source: "",
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
+      pullRequest: undefined as string | undefined,
       targetSearch: "",
       currentTarget: undefined as string | undefined,
       target: undefined as any | undefined,
@@ -285,9 +310,15 @@ export default defineComponent({
     };
   },
   watch: {
-    source() {
+    async source() {
+      this.loading = true;
+      await this.flash.fetch(this.source);
+      this.loading = false;
+
       this.release = this.pickRelease();
       this.branch = this.branchOptions[0];
+      this.pullRequest = this.pullRequestOptions[0];
+
       this.targetSearch = "";
       this.target = undefined;
       this.file = undefined;
@@ -302,13 +333,31 @@ export default defineComponent({
       this.target = undefined;
       this.file = undefined;
     },
+    pullRequest() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
   },
   computed: {
     branchOptions() {
       return Object.keys(this.flash.branches);
     },
+    pullRequestOptions() {
+      return Object.keys(this.flash.pullRequests);
+    },
     releaseOptions() {
       return Object.keys(this.flash.releases);
+    },
+    commitHash() {
+      const source =
+        this.source == "branch"
+          ? this.flash.branches[this.branch || ""]
+          : this.flash.pullRequests[this.pullRequest || ""];
+      if (!source) {
+        return "";
+      }
+      return source.commit.slice(0, 8);
     },
     isRuntimeTarget() {
       if (this.source == "release" && this.release) {
@@ -319,6 +368,12 @@ export default defineComponent({
       if (this.source == "branch" && this.branch) {
         const branch = this.flash.branches[this.branch];
         return semver.satisfies(branch.version, ">=0.10.0-dev", {
+          includePrerelease: true,
+        });
+      }
+      if (this.source == "pull_request" && this.pullRequest) {
+        const pullRequest = this.flash.pullRequests[this.pullRequest];
+        return semver.satisfies(pullRequest.version, ">=0.10.0-dev", {
           includePrerelease: true,
         });
       }
@@ -337,6 +392,8 @@ export default defineComponent({
           targets = this.flash.releases[this.release] || [];
         } else if (this.source == "branch" && this.branch) {
           targets = this.flash.branches[this.branch].artifacts || [];
+        } else if (this.source == "pull_request" && this.pullRequest) {
+          targets = this.flash.pullRequests[this.pullRequest].artifacts || [];
         }
 
         options = targets.map((r) => {
@@ -426,6 +483,16 @@ export default defineComponent({
           }
           return github.fetchArtifact(this.target);
 
+        case "pull_request":
+          if (this.isRuntimeTarget && this.pullRequest) {
+            const pullRequest = this.flash.pullRequests[this.pullRequest];
+            const artifact = pullRequest.artifacts
+              .sort((a, b) => a.name.length - b.name.length)
+              .find((a) => a.name.includes(this.target?.mcu));
+            return github.fetchArtifact(artifact);
+          }
+          return github.fetchArtifact(this.target);
+
         default:
           return Promise.resolve(undefined);
       }
@@ -500,17 +567,8 @@ export default defineComponent({
         });
     },
   },
-  created() {
-    this.loading = true;
-    this.flash
-      .fetch()
-      .then(() => {
-        this.release = this.pickRelease();
-        this.branch = this.branchOptions[0];
-      })
-      .finally(() => {
-        this.loading = false;
-      });
+  async created() {
+    this.source = "release";
   },
 });
 </script>

@@ -83,6 +83,9 @@
   "flash.file-branch": {
     "text": "Development branch to flash a hex from"
   },
+  "flash.file-pull-request": {
+    "text": "Pull request to flash a hex from"
+  },
   "flash.file-local": {
     "text": "Choose a self built hex"
   },
