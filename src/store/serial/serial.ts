@@ -11,10 +11,8 @@ import { ArrayWriter, concatUint8Array, stringToUint8Array } from "../util";
 import { AsyncQueue, AsyncSemaphore } from "./async";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
-import { getWebSerial } from "./webserial";
 import { settings } from "./settings";
-
-const WebSerial = getWebSerial();
+import { WebSerial } from "./webserial";
 
 const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";

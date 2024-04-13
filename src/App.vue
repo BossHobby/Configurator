@@ -1,10 +1,24 @@
 <template>
-  <div class="overlay" v-if="updateProcessing" no-wrap z-index="9999">
-    <div class="text-center">
-      <span class="icon">
-        <i class="fas fa-spinner fa-pulse"></i>
-      </span>
-      <h1>Updating...</h1>
+  <div class="modal is-active" v-if="updateProcessing" z-index="9999">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="text-center">
+        <h1 class="m-1">
+          <font-awesome-icon icon="fa-solid fa-spinner" size="lg" spin-pulse />
+          Updating...
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal is-active" v-if="!hasBrowserSupport" z-index="9999">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="notification is-danger">
+        <h1 class="is-size-3">Unsuported Browser!</h1>
+        Your Browser does not support the APIs necessary to use this
+        application. Please use Chrome, Chromium or Edge!
+      </div>
     </div>
   </div>
 
@@ -225,6 +239,7 @@ import LogoClean from "./assets/Logo_Clean.svg?component";
 import LogoText from "./assets/Logo_Text.svg?component";
 import LogoTextDevelop from "./assets/Logo_Develop_Text.svg?component";
 import { Log } from "./log";
+import { WebSerial } from "./store/serial/webserial";
 
 export default defineComponent({
   name: "app",
@@ -298,6 +313,9 @@ export default defineComponent({
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
+    },
+    hasBrowserSupport() {
+      return navigator.usb && WebSerial;
     },
     logDownloadAnchorRef(): HTMLAnchorElement {
       return this.$refs.logDownloadAnchor as HTMLAnchorElement;

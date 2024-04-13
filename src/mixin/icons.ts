@@ -9,6 +9,7 @@ import {
   faCloudSun,
   faDownload,
   faFileExport,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
@@ -21,7 +22,8 @@ library.add(
   faCloudSun,
   faDownload,
   faPenToSquare,
-  faFileExport
+  faFileExport,
+  faSpinner
 );
 
 export default FontAwesomeIcon;
