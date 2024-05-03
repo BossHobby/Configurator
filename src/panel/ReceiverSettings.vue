@@ -198,7 +198,7 @@
             <spinner-btn
               class="card-footer-item"
               @click="applyElrsBindPhrase(elrsBindPhraseInput)"
-              :disabled="elrsBindPhraseInput.length < 4"
+              :disabled="elrsBindPhraseInput.length < 2"
             >
               Apply
             </spinner-btn>
