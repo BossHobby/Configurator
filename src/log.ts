@@ -15,7 +15,7 @@ export const LevelNames = {
 };
 
 export class Log {
-  public static level = LogLevel.Debug;
+  public static level = import.meta.env.DEV ? LogLevel.Trace : LogLevel.Info;
   public static history: string[] = [];
 
   public static trace(prefix: string, ...data: any[]) {
@@ -59,10 +59,6 @@ export class Log {
   }
 
   private static logToFile(level: LogLevel, fmt: string, ...data: any[]) {
-    if (level < Log.level) {
-      return;
-    }
-
     for (const d of data) {
       fmt += " ";
 
@@ -76,6 +72,10 @@ export class Log {
   }
 
   public static log(level: LogLevel, prefix?: string, ...data: any[]) {
+    if (level < Log.level) {
+      return;
+    }
+
     switch (level) {
       case LogLevel.Trace: {
         const str = this.logFmtStr(level, prefix, data);
