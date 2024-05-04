@@ -56,7 +56,7 @@
               </div>
             </div>
           </div>
-          <div class="column is-6">
+          <div class="column is-6" style="height: 30vw">
             <LineChart
               :title="'Throttle'"
               :labels="plot.labels"
@@ -116,7 +116,11 @@ export default defineComponent({
       const n = throttle * 2.0 - 1.0;
       const expo = this.profile.rate.throttle_expo;
       const mid = this.profile.rate.throttle_mid;
-      return this.constrainf((n * n * n * expo + n * (1.0 - expo) + 1.0) * mid, 0.0, 1.0);
+      return this.constrainf(
+        (n * n * n * expo + n * (1.0 - expo) + 1.0) * mid,
+        0.0,
+        1.0
+      );
     },
     update() {
       const axis = [] as any[];

@@ -9,8 +9,13 @@
       v-for="plot in plots"
       :key="plot.name"
       :class="['is-' + plot.size]"
+      style="height: 35vw"
     >
-      <RealtimePlot :title="plot.title" :axis="plot.axis" :input="state[plot.name]">
+      <RealtimePlot
+        :title="plot.title"
+        :axis="plot.axis"
+        :input="state[plot.name]"
+      >
       </RealtimePlot>
     </div>
   </div>

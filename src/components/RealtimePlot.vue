@@ -1,13 +1,14 @@
 <template>
   <Scatter
     v-if="chartData"
-    :chart-data="chartData"
-    :chart-options="chartOptions"
+    :data="chartData"
+    :options="chartOptions"
     ref="chart"
   />
 </template>
 
 <script lang="ts">
+import type { ChartOptions } from "chart.js";
 import { defineComponent } from "vue";
 import { Scatter } from "vue-chartjs";
 
@@ -24,7 +25,7 @@ export default defineComponent({
     };
   },
   computed: {
-    chartOptions() {
+    chartOptions(): ChartOptions<"scatter"> {
       return {
         responsive: true,
         maintainAspectRatio: false,

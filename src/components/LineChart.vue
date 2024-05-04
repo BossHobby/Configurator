@@ -1,8 +1,9 @@
 <template>
-  <LineChart :chart-data="chartData" :chart-options="chartOptions" ref="chart" />
+  <LineChart :data="chartData" :options="chartOptions" ref="chart" />
 </template>
 
 <script lang="ts">
+import type { ChartOptions } from "chart.js";
 import { defineComponent } from "vue";
 import { Line } from "vue-chartjs";
 
@@ -32,7 +33,7 @@ export default defineComponent({
         }),
       };
     },
-    chartOptions() {
+    chartOptions(): ChartOptions<"line"> {
       return {
         responsive: true,
         maintainAspectRatio: false,
@@ -40,26 +41,13 @@ export default defineComponent({
         animation: {
           duration: 0,
         },
-        responsiveAnimationDuration: 0,
+
         scales: {
           x: {
             type: "linear",
-            gridLines: {
-              display: true,
-            },
-            ticks: {
-              step: 10,
-            },
-          },
-          y: {
-            gridLines: {
-              display: true,
-            },
-            ticks: {
-              step: 10,
-            },
           },
         },
+
         plugins: {
           title: {
             display: true,

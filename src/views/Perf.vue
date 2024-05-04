@@ -4,6 +4,7 @@
       class="column is-6 my-3"
       v-for="(counter, index) in perf.counters"
       :key="'counter' + index"
+      style="height: 35vw"
     >
       <RealtimePlot
         :title="counter.name"
