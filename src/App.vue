@@ -351,7 +351,7 @@ export default defineComponent({
           }),
         })
         .then((value) => {
-          return event.sender.send("serial", value);
+          return window.electron?.ipcRenderer.send("serial", value);
         });
     },
     selectUSBDevice(event, devices) {
@@ -366,7 +366,7 @@ export default defineComponent({
           }),
         })
         .then((value) => {
-          return event.sender.send("usb-device", value);
+          return window.electron?.ipcRenderer.send("usb-device", value);
         });
     },
     downloadLog() {
