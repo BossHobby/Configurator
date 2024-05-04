@@ -20,12 +20,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="lipo-cell-count"
+                  v-model.number="profile.voltage.lipo_cell_count"
+                  class="input"
                   type="number"
                   step="1"
                   min="0"
-                  v-model.number="profile.voltage.lipo_cell_count"
                 />
               </div>
             </div>
@@ -43,8 +43,8 @@
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   v-model.number="profile.voltage.pid_voltage_compensation"
+                  class="is-fullwidth"
                   :options="pidVoltageCompensationOptions"
                 ></input-select>
               </div>
@@ -63,12 +63,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="vbattlow"
+                  v-model.number="profile.voltage.vbattlow"
+                  class="input"
                   type="number"
                   step="0.1"
                   min="0"
-                  v-model.number="profile.voltage.vbattlow"
                 />
               </div>
             </div>
@@ -86,12 +86,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="actual-battery-voltage"
+                  v-model.number="profile.voltage.actual_battery_voltage"
+                  class="input"
                   type="number"
                   step="0.1"
                   min="0"
-                  v-model.number="profile.voltage.actual_battery_voltage"
                 />
               </div>
             </div>
@@ -109,12 +109,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="reported-telemetry-voltage"
+                  v-model.number="profile.voltage.reported_telemetry_voltage"
+                  class="input"
                   type="number"
                   step="0.1"
                   min="0"
-                  v-model.number="profile.voltage.reported_telemetry_voltage"
                 />
               </div>
             </div>
@@ -132,12 +132,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="vbat_scale"
+                  v-model.number="profile.voltage.vbat_scale"
+                  class="input"
                   type="number"
                   step="1"
                   min="0"
-                  v-model.number="profile.voltage.vbat_scale"
                 />
               </div>
             </div>
@@ -155,12 +155,12 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  class="input"
                   id="ibat_scale"
+                  v-model.number="profile.voltage.ibat_scale"
+                  class="input"
                   type="number"
                   step="1"
                   min="0"
-                  v-model.number="profile.voltage.ibat_scale"
                 />
               </div>
             </div>
@@ -177,19 +177,19 @@ import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
 
 export default defineComponent({
-  name: "voltage",
+  name: "Voltage",
+  setup() {
+    return {
+      profile: useProfileStore(),
+      state: useStateStore(),
+    };
+  },
   data() {
     return {
       pidVoltageCompensationOptions: [
         { value: 0, text: "Off" },
         { value: 1, text: "On" },
       ],
-    };
-  },
-  setup() {
-    return {
-      profile: useProfileStore(),
-      state: useStateStore(),
     };
   },
   computed: {

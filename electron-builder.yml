@@ -4,7 +4,7 @@ directories:
   output: build
   buildResources: public
 files:
-  - 'out/**/*'
+  - "out/**/*"
   - package-lock.json
   - package.json
   - README.md

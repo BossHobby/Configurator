@@ -157,7 +157,7 @@ export default defineComponent({
           this.root.append_alert({
             type: "success",
             msg: "Font updated!",
-          })
+          }),
         )
         .catch(() => {
           this.root.append_alert({
@@ -204,7 +204,7 @@ export default defineComponent({
         };
 
         const [fileHandle] = await (window as any).showOpenFilePicker(
-          pickerOpts
+          pickerOpts,
         );
         return await fileHandle.getFile();
       };
@@ -219,7 +219,7 @@ export default defineComponent({
           const font = OSD.packLogo(
             this.$refs.canvas,
             this.$refs.logoCanvas,
-            img
+            img,
           );
           return this.osd.apply_font(font);
         })
@@ -228,7 +228,7 @@ export default defineComponent({
           this.root.append_alert({
             type: "success",
             msg: "Logo updated!",
-          })
+          }),
         )
         .catch((err) => {
           this.root.append_alert({

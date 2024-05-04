@@ -98,7 +98,7 @@ class Github {
 
   private async fetchVersion(
     repo: { owner: string; repo: string },
-    branch: string
+    branch: string,
   ) {
     const octokit = await this.kit();
     return octokit.rest.repos
@@ -158,7 +158,7 @@ class Github {
         this.fetchArtifacts(b.head.ref),
         this.fetchVersion(
           { owner: b.head.repo.owner.login, repo: b.head.repo.name },
-          b.head.ref
+          b.head.ref,
         ),
       ]).then(([artifacts, version]) => {
         return {
@@ -193,7 +193,7 @@ class Github {
     const octokit = await this.kit();
     const resp = await octokit.rest.repos.listReleases(CONFIGURATOR_REPO);
     const releases = resp.data.filter(
-      (r) => r.assets.length > 0 && semver.valid(r.tag_name)
+      (r) => r.assets.length > 0 && semver.valid(r.tag_name),
     );
 
     const versions = releases.map((r) => r.tag_name);
@@ -218,7 +218,7 @@ class Github {
     });
 
     const zip = new ZipReader(
-      new Uint8ArrayReader(new Uint8Array(response.data as ArrayBuffer))
+      new Uint8ArrayReader(new Uint8Array(response.data as ArrayBuffer)),
     );
     const entry = (await zip.getEntries()).shift();
     if (!entry) {

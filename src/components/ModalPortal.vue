@@ -1,7 +1,7 @@
 <template>
   <div class="modal-portal">
     {{ $modal.isShown }}
-    <div class="modal is-active" v-if="$modal.isShown">
+    <div v-if="$modal.isShown" class="modal is-active">
       <div class="modal-background"></div>
       <component
         :is="$modal.component"

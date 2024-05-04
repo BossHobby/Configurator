@@ -15,11 +15,11 @@
               </h4>
 
               <svg
+                id="svg1"
                 width="400"
                 height="400"
                 viewBox="0 0 135.46665 135.46665"
                 version="1.1"
-                id="svg1"
                 sodipodi:docname="props_view.svg"
                 inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
                 xml:space="preserve"
@@ -29,6 +29,7 @@
                 xmlns:svg="http://www.w3.org/2000/svg"
               >
                 <path
+                  id="path1"
                   style="
                     fill: none;
                     stroke: #7a7a7a;
@@ -39,9 +40,9 @@
                     stroke-opacity: 1;
                   "
                   d="M 108.49869,108.49869 26.967982,26.967982"
-                  id="path1"
                 />
                 <path
+                  id="path2"
                   style="
                     display: inline;
                     fill: #7a7a7a;
@@ -54,17 +55,17 @@
                     stroke-opacity: 1;
                   "
                   d="M 26.967982,108.49869 108.49869,26.967982"
-                  id="path2"
                   inkscape:label="path2"
                 />
                 <g
+                  v-if="!profile.motor.invert_yaw"
                   id="g5"
                   style="stroke-width: 2.64583; stroke-dasharray: none"
                   transform="matrix(1.2037011,0,0,1.2037011,-13.909145,-13.640148)"
                   inkscape:label="props_in_bl"
-                  v-if="!profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -74,12 +75,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -90,9 +91,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 0.346888,-6.75997"
-                    id="path5"
                   />
                   <path
+                    id="path5-6"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -103,17 +104,17 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 -6.759978,0.34689"
-                    id="path5-6"
                   />
                 </g>
                 <g
+                  v-if="!profile.motor.invert_yaw"
                   id="g5-2"
                   transform="matrix(-1.2037011,0,0,-1.2037011,149.37581,149.26403)"
                   style="stroke-width: 2.64583; stroke-dasharray: none"
                   inkscape:label="props_in_fr"
-                  v-if="!profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -123,12 +124,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -139,9 +140,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 0.346888,-6.75997"
-                    id="path5-2"
                   />
                   <path
+                    id="path5-6-3"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -152,17 +153,17 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 -6.759978,0.34689"
-                    id="path5-6-3"
                   />
                 </g>
                 <g
+                  v-if="!profile.motor.invert_yaw"
                   id="g5-2-2"
                   transform="matrix(-1.2037013,0,0,1.2037013,149.37582,-13.797383)"
                   style="stroke-width: 2.64583; stroke-dasharray: none"
                   inkscape:label="props_in_br"
-                  v-if="!profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-2"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -172,12 +173,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-2"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-8"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -188,9 +189,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 0.346888,-6.75997"
-                    id="path5-2-8"
                   />
                   <path
+                    id="path5-6-3-9"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -201,10 +202,10 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 -6.759978,0.34689"
-                    id="path5-6-3-9"
                   />
                 </g>
                 <g
+                  v-if="!profile.motor.invert_yaw"
                   id="g5-2-1-2"
                   transform="matrix(1.2037013,0,0,-1.2037013,-13.829304,149.26404)"
                   style="
@@ -213,9 +214,9 @@
                     stroke-dasharray: none;
                   "
                   inkscape:label="props_in_fl"
-                  v-if="!profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-29-54"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -225,12 +226,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-29-54"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-3-7"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -241,9 +242,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 0.346888,-6.75997"
-                    id="path5-2-3-7"
                   />
                   <path
+                    id="path5-6-3-1-4"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -254,10 +255,10 @@
                       stroke-opacity: 1;
                     "
                     d="m 25.42414,111.81499 -6.759978,0.34689"
-                    id="path5-6-3-1-4"
                   />
                 </g>
                 <g
+                  v-if="profile.motor.invert_yaw"
                   id="g5-2-1"
                   transform="matrix(1.2037013,0,0,-1.2037013,-13.909145,149.65895)"
                   style="
@@ -266,9 +267,9 @@
                     stroke-dasharray: none;
                   "
                   inkscape:label="props_out_fl"
-                  v-if="profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-29"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -278,12 +279,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-29"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-3"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -294,9 +295,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 -0.34689,6.75997"
-                    id="path5-2-3"
                   />
                   <path
+                    id="path5-6-3-1"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -307,10 +308,10 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 6.75997,-0.34689"
-                    id="path5-6-3-1"
                   />
                 </g>
                 <g
+                  v-if="profile.motor.invert_yaw"
                   id="g5-2-1-8"
                   transform="matrix(-1.2037011,0,0,-1.2037011,149.37581,149.26403)"
                   style="
@@ -319,9 +320,9 @@
                     stroke-dasharray: none;
                   "
                   inkscape:label="props_out_fr"
-                  v-if="profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-29-4"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -331,12 +332,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-29-4"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-3-5"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -347,9 +348,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 -0.34689,6.75997"
-                    id="path5-2-3-5"
                   />
                   <path
+                    id="path5-6-3-1-0"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -360,10 +361,10 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 6.75997,-0.34689"
-                    id="path5-6-3-1-0"
                   />
                 </g>
                 <g
+                  v-if="profile.motor.invert_yaw"
                   id="g5-2-1-0"
                   transform="matrix(-1.2037013,0,0,1.2037013,149.37582,-13.988638)"
                   style="
@@ -372,9 +373,9 @@
                     stroke-dasharray: none;
                   "
                   inkscape:label="props_out_br"
-                  v-if="profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-29-6"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -384,12 +385,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-29-6"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-3-3"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -400,9 +401,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 -0.34689,6.75997"
-                    id="path5-2-3-3"
                   />
                   <path
+                    id="path5-6-3-1-2"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -413,10 +414,10 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 6.75997,-0.34689"
-                    id="path5-6-3-1-2"
                   />
                 </g>
                 <g
+                  v-if="profile.motor.invert_yaw"
                   id="g5-2-1-5"
                   transform="matrix(1.2037011,0,0,1.2037011,-13.909145,-13.842473)"
                   style="
@@ -425,9 +426,9 @@
                     stroke-dasharray: none;
                   "
                   inkscape:label="props_out_bl"
-                  v-if="profile.motor.invert_yaw"
                 >
                   <circle
+                    id="path4-0-29-5"
                     style="
                       fill: none;
                       fill-opacity: 1;
@@ -437,12 +438,12 @@
                       stroke-dasharray: none;
                       stroke-opacity: 1;
                     "
-                    id="path4-0-29-5"
                     cx="33.959526"
                     cy="101.60001"
                     r="13.229167"
                   />
                   <path
+                    id="path5-2-3-4"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -453,9 +454,9 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 -0.34689,6.75997"
-                    id="path5-2-3-4"
                   />
                   <path
+                    id="path5-6-3-1-7"
                     style="
                       fill: none;
                       stroke: #7a7a7a;
@@ -466,7 +467,6 @@
                       stroke-opacity: 1;
                     "
                     d="m 22.533776,108.2281 6.75997,-0.34689"
-                    id="path5-6-3-1-7"
                   />
                 </g>
               </svg>
@@ -485,8 +485,8 @@
                   <div class="control is-expanded">
                     <input-select
                       id="invert-yaw"
-                      class="is-fullwidth"
                       v-model.number="profile.motor.invert_yaw"
+                      class="is-fullwidth"
                       :options="invertYawModes"
                     />
                   </div>
@@ -505,13 +505,13 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="digital-idle"
+                      v-model.number="profile.motor.digital_idle"
+                      class="input"
                       type="number"
                       step="0.5"
                       min="0"
                       max="100"
-                      v-model.number="profile.motor.digital_idle"
                     />
                   </div>
                 </div>
@@ -519,11 +519,11 @@
             </div>
 
             <div
-              class="field is-horizontal"
               v-if="
                 info.quic_protocol_version > 1 &&
                 info.has_feature(constants.Features.BRUSHLESS)
               "
+              class="field is-horizontal"
             >
               <div class="field-label">
                 <label class="label">
@@ -536,8 +536,8 @@
                   <div class="control is-expanded">
                     <input-select
                       id="dshot-time"
-                      class="is-fullwidth"
                       v-model="profile.motor.dshot_time"
+                      class="is-fullwidth"
                       :options="dshotTimes"
                     ></input-select>
                   </div>
@@ -556,10 +556,10 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      type="checkbox"
-                      class="switch"
                       id="gyro-flip"
                       v-model="gyroFlip"
+                      type="checkbox"
+                      class="switch"
                     />
                     <label
                       class="py-0"
@@ -582,9 +582,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="gyro-orientation"
                       v-model="gyroOrientation"
+                      class="is-fullwidth"
                       :options="gyroOrientations"
                     ></input-select>
                   </div>
@@ -603,12 +603,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="torque-boost"
+                      v-model.number="profile.motor.torque_boost"
+                      class="input"
                       type="number"
                       step="0.1"
                       min="0"
-                      v-model.number="profile.motor.torque_boost"
                     />
                   </div>
                 </div>
@@ -626,12 +626,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="throttle-boost"
+                      v-model.number="profile.motor.throttle_boost"
+                      class="input"
                       type="number"
                       step="0.1"
                       min="0"
-                      v-model.number="profile.motor.throttle_boost"
                     />
                   </div>
                 </div>
@@ -649,13 +649,13 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="turtle-throttle-percent"
+                      v-model.number="profile.motor.turtle_throttle_percent"
+                      class="input"
                       type="number"
                       step="1"
                       min="0"
                       max="100"
-                      v-model.number="profile.motor.turtle_throttle_percent"
                     />
                   </div>
                 </div>
@@ -663,8 +663,8 @@
             </div>
 
             <div
-              class="field is-horizontal"
               v-if="profile.profileVersionGt('0.2.0')"
+              class="field is-horizontal"
             >
               <div class="field-label">
                 <label class="label">
@@ -676,13 +676,13 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="motor-limit-percent"
+                      v-model.number="profile.motor.motor_limit"
+                      class="input"
                       type="number"
                       step="1"
                       min="0"
                       max="100"
-                      v-model.number="profile.motor.motor_limit"
                     />
                   </div>
                 </div>

@@ -359,7 +359,7 @@ export class Blackbox {
   public writeHeaders(profile: profile_t) {
     this.writeHeaderRaw(
       "Product",
-      "Blackbox flight data recorder by Nicholas Sherlock"
+      "Blackbox flight data recorder by Nicholas Sherlock",
     );
     this.writeHeaderRaw("Data version", "2");
 
@@ -393,7 +393,7 @@ export class Blackbox {
         profile.pid.pid_rates[profile.pid.pid_profile].kp[0],
         profile.pid.pid_rates[profile.pid.pid_profile].ki[0],
         profile.pid.pid_rates[profile.pid.pid_profile].kd[0],
-      ].join(",")
+      ].join(","),
     );
 
     this.writeHeaderRaw(
@@ -402,7 +402,7 @@ export class Blackbox {
         profile.pid.pid_rates[profile.pid.pid_profile].kp[1],
         profile.pid.pid_rates[profile.pid.pid_profile].ki[1],
         profile.pid.pid_rates[profile.pid.pid_profile].kd[1],
-      ].join(",")
+      ].join(","),
     );
 
     this.writeHeaderRaw(
@@ -411,7 +411,7 @@ export class Blackbox {
         profile.pid.pid_rates[profile.pid.pid_profile].kp[2],
         profile.pid.pid_rates[profile.pid.pid_profile].ki[2],
         profile.pid.pid_rates[profile.pid.pid_profile].kd[2],
-      ].join(",")
+      ].join(","),
     );
 
     // BT: PT1, BIQUAD, PT2, PT3
@@ -424,32 +424,32 @@ export class Blackbox {
     if (profile.filter.gyro[0].type > 0) {
       this.writeHeaderRaw(
         "gyro_lpf1_type",
-        filterMap[profile.filter.gyro[0].type].toString()
+        filterMap[profile.filter.gyro[0].type].toString(),
       );
       this.writeHeaderRaw(
         "gyro_lpf1_static_hz",
-        profile.filter.gyro[0].cutoff_freq.toString()
+        profile.filter.gyro[0].cutoff_freq.toString(),
       );
     }
     if (profile.filter.gyro[1].type > 0) {
       this.writeHeaderRaw(
         "gyro_lpf2_type",
-        filterMap[profile.filter.gyro[1].type].toString()
+        filterMap[profile.filter.gyro[1].type].toString(),
       );
       this.writeHeaderRaw(
         "gyro_lpf2_static_hz",
-        profile.filter.gyro[1].cutoff_freq.toString()
+        profile.filter.gyro[1].cutoff_freq.toString(),
       );
     }
 
     if (profile.filter.dterm[0].type > 0) {
       this.writeHeaderRaw(
         "dterm_lpf1_type",
-        filterMap[profile.filter.dterm[0].type].toString()
+        filterMap[profile.filter.dterm[0].type].toString(),
       );
       this.writeHeaderRaw(
         "dterm_lpf1_static_hz",
-        profile.filter.dterm[0].cutoff_freq.toString()
+        profile.filter.dterm[0].cutoff_freq.toString(),
       );
     }
     if (profile.filter.dterm_dynamic_enable) {
@@ -458,18 +458,18 @@ export class Blackbox {
         [
           profile.filter.dterm_dynamic_min,
           profile.filter.dterm_dynamic_max,
-        ].join(",")
+        ].join(","),
       );
     }
 
     if (profile.filter.dterm[1].type > 0) {
       this.writeHeaderRaw(
         "dterm_lpf2_type",
-        filterMap[profile.filter.dterm[1].type].toString()
+        filterMap[profile.filter.dterm[1].type].toString(),
       );
       this.writeHeaderRaw(
         "dterm_lpf2_static_hz",
-        profile.filter.dterm[1].cutoff_freq.toString()
+        profile.filter.dterm[1].cutoff_freq.toString(),
       );
     }
 

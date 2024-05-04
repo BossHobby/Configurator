@@ -414,7 +414,7 @@ export default defineComponent({
     },
     downloadBindData() {
       const base64 = window.btoa(
-        String.fromCharCode(...new Uint8Array(this.bind.info.raw))
+        String.fromCharCode(...new Uint8Array(this.bind.info.raw)),
       );
       const encoded = encodeURIComponent(base64);
       const json = "data:application/octet-stream;charset=utf-8," + encoded;
@@ -434,7 +434,7 @@ export default defineComponent({
         info.bind_saved = 1;
         info.raw = Uint8Array.from(
           window.atob(event?.target?.result as string),
-          (c) => c.charCodeAt(0)
+          (c) => c.charCodeAt(0),
         );
 
         this.applyBindInfo(info);

@@ -241,8 +241,8 @@ export default defineComponent({
         const oldMode = this.profile.rate.rates[this.profile.rate.profile].mode;
         this.rateBackup[oldMode] = JSON.parse(
           JSON.stringify(
-            this.profile.rate.rates[this.profile.rate.profile].rate
-          )
+            this.profile.rate.rates[this.profile.rate.profile].rate,
+          ),
         );
         this.profile.rate.rates[this.profile.rate.profile].mode = val;
 

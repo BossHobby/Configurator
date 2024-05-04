@@ -2,7 +2,10 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Model</p>
-      <spinner-btn class="card-header-button is-primary" @click="root.cal_imu()">
+      <spinner-btn
+        class="card-header-button is-primary"
+        @click="root.cal_imu()"
+      >
         calibrate
       </spinner-btn>
     </header>
@@ -30,6 +33,12 @@ export default defineComponent({
       root: useRootStore(),
     };
   },
+  async mounted() {
+    await this.initThree();
+  },
+  beforeUnmount() {
+    cancelAnimationFrame(this.frameRequest);
+  },
   methods: {
     async initThree() {
       const container = document.getElementById("container");
@@ -41,7 +50,7 @@ export default defineComponent({
         45,
         container.clientWidth / container.clientHeight,
         0.01,
-        1000
+        1000,
       );
       this.camera.position.z = 140;
       this.camera.position.y = 40;
@@ -84,7 +93,7 @@ export default defineComponent({
         const GYRO = new THREE.Vector3(
           this.state.GEstG[0],
           this.state.GEstG[2],
-          -this.state.GEstG[1]
+          -this.state.GEstG[1],
         );
         GYRO.normalize();
 
@@ -96,12 +105,6 @@ export default defineComponent({
       this.renderer.render(this.scene, this.camera);
       this.frameRequest = requestAnimationFrame(this.animate);
     },
-  },
-  async mounted() {
-    await this.initThree();
-  },
-  beforeUnmount() {
-    cancelAnimationFrame(this.frameRequest);
   },
 });
 </script>

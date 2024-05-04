@@ -6,7 +6,10 @@
     <div class="column is-12">
       <MotorPins></MotorPins>
     </div>
-    <div class="column is-12" v-if="info.has_feature(constants.Features.BRUSHLESS)">
+    <div
+      v-if="info.has_feature(constants.Features.BRUSHLESS)"
+      class="column is-12"
+    >
       <ESCSettings></ESCSettings>
     </div>
   </div>

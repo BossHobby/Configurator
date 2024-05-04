@@ -9,9 +9,9 @@
       <div class="content">
         <div class="columns is-multiline my-2">
           <div
-            class="column is-6"
             v-for="m in motor.pins"
             :key="'motor-pin-' + m.index"
+            class="column is-6"
           >
             <div class="field field-is-2 is-horizontal">
               <div class="field-label">
@@ -26,8 +26,8 @@
                   <div class="control is-expanded">
                     <input-select
                       :id="'motor-pin-' + m.index"
-                      class="is-fullwidth"
                       v-model="profile.motor.motor_pins[m.index]"
+                      class="is-fullwidth"
                       :options="motorPins"
                     ></input-select>
                   </div>

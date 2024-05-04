@@ -23,7 +23,7 @@ library.add(
   faDownload,
   faPenToSquare,
   faFileExport,
-  faSpinner
+  faSpinner,
 );
 
 export default FontAwesomeIcon;

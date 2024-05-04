@@ -187,11 +187,15 @@ export default defineComponent({
 }
 
 .tooltip-enter-active {
-  transition: transform 0.4s ease-out, opacity 0.3s ease-out;
+  transition:
+    transform 0.4s ease-out,
+    opacity 0.3s ease-out;
 }
 
 .tooltip-leave-active {
-  transition: transform 0.35s ease-in, opacity 0.28s ease-out;
+  transition:
+    transform 0.35s ease-in,
+    opacity 0.28s ease-out;
 }
 
 .tooltip-enter-from {

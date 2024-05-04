@@ -22,7 +22,7 @@
             for help on getting started.<br />
             First time users should start on the FLASH tab.
           </p>
-          <p class="subtitle" v-if="updateAvailable">New Version available!</p>
+          <p v-if="updateAvailable" class="subtitle">New Version available!</p>
           <spinner-btn v-if="updateAvailable" @click="doUpdate">
             Update Now
           </spinner-btn>
@@ -49,18 +49,18 @@ export default defineComponent({
       appVersion: import.meta.env.VITE_APP_VERSION,
     };
   },
-  methods: {
-    doUpdate() {
-      return updater.update(this.updateAvailable);
-    },
-  },
   created() {
     if (!updater.updatePending()) {
       updater.checkForUpdate(
         this.appVersion,
-        (updateAvailable) => (this.updateAvailable = updateAvailable)
+        (updateAvailable) => (this.updateAvailable = updateAvailable),
       );
     }
+  },
+  methods: {
+    doUpdate() {
+      return updater.update(this.updateAvailable);
+    },
   },
 });
 </script>

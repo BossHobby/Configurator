@@ -13,8 +13,8 @@
               <label class="label">Serial Port</label>
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   v-model.number="serial_port"
+                  class="is-fullwidth"
                   :options="serialPorts"
                 />
               </div>
@@ -26,8 +26,8 @@
               <label class="label">Preset</label>
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   v-model="preset"
+                  class="is-fullwidth"
                   :options="presetOptions"
                 />
               </div>

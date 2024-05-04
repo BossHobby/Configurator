@@ -34,7 +34,7 @@ import GyroModel from "@/panel/GyroModel.vue";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
-  name: "home",
+  name: "Home",
   components: {
     Motor,
     Voltage,

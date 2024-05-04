@@ -5,9 +5,9 @@
     </div>
 
     <div
-      class="column"
       v-for="plot in plots"
       :key="plot.name"
+      class="column"
       :class="['is-' + plot.size]"
       style="height: 35vw"
     >
@@ -29,7 +29,7 @@ import GyroModel from "@/panel/GyroModel.vue";
 import { useStateStore } from "@/store/state";
 
 export default defineComponent({
-  name: "state",
+  name: "State",
   components: {
     RealtimePlot,
     GyroModel,

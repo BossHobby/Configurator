@@ -1,7 +1,9 @@
 <template>
   <div class="columns is-multiline">
     <div class="column is-12">
-      <OSDElementsLegacy v-if="default_profile.has_legacy_osd"></OSDElementsLegacy>
+      <OSDElementsLegacy
+        v-if="default_profile.has_legacy_osd"
+      ></OSDElementsLegacy>
       <OSDElements v-else></OSDElements>
     </div>
     <div class="column is-12">

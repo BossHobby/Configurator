@@ -16,7 +16,7 @@ for (const f of files) {
 }
 
 const existing = JSON.parse(
-  fs.readFileSync("src/assets/tooltips.json", "utf8")
+  fs.readFileSync("src/assets/tooltips.json", "utf8"),
 );
 for (const key of Object.keys(tooltips)) {
   tooltips[key] = {

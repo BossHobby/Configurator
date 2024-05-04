@@ -75,7 +75,7 @@ export class IntelHEX {
     if (seg.data.byteLength < segSize) {
       seg.data = concatUint8Array(
         seg.data,
-        new Uint8Array(segSize - seg.data.byteLength)
+        new Uint8Array(segSize - seg.data.byteLength),
       );
     }
 
@@ -129,7 +129,7 @@ export class IntelHEX {
           lastAddr = absoluteAddress + byteCount;
           result.segments[result.segments.length - 1].data = concatUint8Array(
             result.segments[result.segments.length - 1].data,
-            dataBuffer
+            dataBuffer,
           );
 
           break;

@@ -28,6 +28,6 @@ registerRoute(
     matchOptions: {
       ignoreVary: true,
     },
-  })
+  }),
 );
 precacheAndRoute(self.__WB_MANIFEST);

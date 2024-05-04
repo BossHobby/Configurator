@@ -168,7 +168,7 @@ export default defineComponent({
 
       for (const option of this.tmpl.options || []) {
         const entry = option.entries.find(
-          (e) => e.name == this.selected[option.name]
+          (e) => e.name == this.selected[option.name],
         );
         if (!entry) {
           continue;

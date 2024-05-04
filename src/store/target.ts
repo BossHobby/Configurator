@@ -59,7 +59,7 @@ export const useTargetStore = defineStore("target", {
     yaml(store) {
       const info = useInfoStore();
       return YAML.stringify(
-        skipEmpty({ mcu: info.mcu, ...(store as any).$state })
+        skipEmpty({ mcu: info.mcu, ...(store as any).$state }),
       );
     },
     serial_port_names(store): { [index: string]: number } {
@@ -107,7 +107,7 @@ export const useTargetStore = defineStore("target", {
         .set(QuicVal.Target, target)
         .then(() => this.fetch())
         .then(() =>
-          root.append_alert({ type: "success", msg: "Target applied!" })
+          root.append_alert({ type: "success", msg: "Target applied!" }),
         );
     },
   },

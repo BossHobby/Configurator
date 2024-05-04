@@ -45,7 +45,7 @@ export class Log {
   private static logFmtStr(
     level: LogLevel,
     prefix: string | undefined,
-    data: any[]
+    data: any[],
   ): string {
     let str = "[" + LevelNames[level] + "]";
     if (prefix && prefix.length) {

@@ -90,7 +90,7 @@ export const useSerialStore = defineStore("serial", {
           Log.error("serial", err);
           this.disconnect();
           return serial.close();
-        })
+        }),
       );
     },
     serial_passthrough({ port, baudrate, half_duplex, stop_bits }) {
@@ -103,7 +103,7 @@ export const useSerialStore = defineStore("serial", {
           port,
           baudrate,
           half_duplex ? 1 : 0,
-          stop_bits
+          stop_bits,
         )
         .then(() => serial.close())
         .then(() => this.toggle_connection())
@@ -217,7 +217,7 @@ export const useSerialStore = defineStore("serial", {
           Log.error("serial", err);
           this.disconnect();
           return serial.close();
-        })
+        }),
       );
     },
   },

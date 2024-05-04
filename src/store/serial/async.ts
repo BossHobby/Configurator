@@ -46,16 +46,19 @@ export class AsyncQueue {
     return QUEUE_BUFFER_SIZE - this._tail + this._head;
   }
 
-  constructor(private readable: ReadableStream, errorCallback: any) {
+  constructor(
+    private readable: ReadableStream,
+    errorCallback: any,
+  ) {
     this._done = readable
       .pipeTo(
         new WritableStream(
           {
             write: this.write.bind(this),
           },
-          new ByteLengthQueuingStrategy({ highWaterMark: 4096 })
+          new ByteLengthQueuingStrategy({ highWaterMark: 4096 }),
         ),
-        { signal: this._abort.signal }
+        { signal: this._abort.signal },
       )
       .catch((err) => {
         if (err != "close") {
@@ -72,7 +75,7 @@ export class AsyncQueue {
 
   private async write(
     array: Uint8Array,
-    controller?: WritableStreamDefaultController
+    controller?: WritableStreamDefaultController,
   ) {
     for (const v of array) {
       const next = (this._head + 1) % QUEUE_BUFFER_SIZE;
@@ -112,7 +115,7 @@ export class AsyncQueue {
             clearTimeout(timer);
             reject("timeout");
           }, timeout);
-        })
+        }),
       );
     }
     return Promise.race(promises);

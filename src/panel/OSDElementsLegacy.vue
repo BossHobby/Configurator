@@ -15,28 +15,45 @@
               <div class="field-body">
                 <div class="field">
                   <div class="control is-expanded">
-                    <input class="input" type="text" v-model="callsign" />
+                    <input v-model="callsign" class="input" type="text" />
                   </div>
                 </div>
               </div>
             </div>
 
             <div class="columns mt-4 mb-0">
-              <div class="column has-text-centered has-text-weight-semibold px-0 is-4">
+              <div
+                class="column has-text-centered has-text-weight-semibold px-0 is-4"
+              >
                 Element
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
                 Active
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
                 Invert
               </div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">X</div>
-              <div class="column has-text-left has-text-weight-semibold px-0 is-2">Y</div>
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
+                X
+              </div>
+              <div
+                class="column has-text-left has-text-weight-semibold px-0 is-2"
+              >
+                Y
+              </div>
             </div>
 
             <template v-for="(el, i) of elements" :key="i">
-              <div v-if="el.enabled" class="field mb-2 field-is-2 is-horizontal">
+              <div
+                v-if="el.enabled"
+                class="field mb-2 field-is-2 is-horizontal"
+              >
                 <div class="field-label">
                   <label class="label" for="pid-preset">
                     {{ el.name }}
@@ -116,8 +133,8 @@
                       <g v-if="el.enabled && el.active">
                         <text
                           v-for="(c, ci) of el.text"
-                          :class="{ 'text-invert': el.invert }"
                           :key="'el-' + i + '-' + ci"
+                          :class="{ 'text-invert': el.invert }"
                           :x="(el.pos_x + ci) * screen.char_width"
                           :y="el.pos_y * (screen.char_height - 1)"
                         >
@@ -142,6 +159,11 @@ import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "OSDElementsLegacy",
+  setup() {
+    return {
+      profile: useProfileStore(),
+    };
+  },
   data() {
     return {
       screen: {
@@ -151,11 +173,6 @@ export default defineComponent({
         char_height: 18,
       },
       imageSource: null,
-    };
-  },
-  setup() {
-    return {
-      profile: useProfileStore(),
     };
   },
   computed: {

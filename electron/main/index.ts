@@ -40,7 +40,7 @@ function createWindow(): void {
       ipcMain.once("serial", (_event, port) => {
         callback(port ? port : "");
       });
-    }
+    },
   );
 
   mainWindow.webContents.session.on(
@@ -50,7 +50,7 @@ function createWindow(): void {
 
       const devices = details.deviceList.filter((d) => {
         return USB_DEVICE_FILTER.some(
-          (f) => f.vendorId == d.vendorId && f.productId == d.productId
+          (f) => f.vendorId == d.vendorId && f.productId == d.productId,
         );
       });
 
@@ -62,7 +62,7 @@ function createWindow(): void {
           callback();
         }
       });
-    }
+    },
   );
 
   mainWindow.webContents.session.setPermissionCheckHandler(
@@ -72,7 +72,7 @@ function createWindow(): void {
       }
 
       return false;
-    }
+    },
   );
 
   mainWindow.webContents.session.setDevicePermissionHandler((details) => {

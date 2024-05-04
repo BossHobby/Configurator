@@ -23,7 +23,7 @@ export const useBindStore = defineStore("bind", {
         .then((b) => (this.info = b))
         .then(() => root.set_needs_reboot())
         .then(() =>
-          root.append_alert({ type: "success", msg: "Bind info applied!" })
+          root.append_alert({ type: "success", msg: "Bind info applied!" }),
         )
         .catch((err) => {
           Log.error(err);

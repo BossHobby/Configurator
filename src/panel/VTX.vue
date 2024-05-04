@@ -74,7 +74,7 @@
               </div>
             </div>
 
-            <div class="field is-horizontal" v-if="vtx.settings.pit_mode != 2">
+            <div v-if="vtx.settings.pit_mode != 2" class="field is-horizontal">
               <div class="field-label">
                 <label class="label">Pit Mode</label>
               </div>
@@ -120,7 +120,7 @@
               <div class="column is-4" style="margin-left: 30%">
                 <h6 class="mb-1 ml-2">Label</h6>
               </div>
-              <div class="column is-4" v-if="displayValueEdit">
+              <div v-if="displayValueEdit" class="column is-4">
                 <h6 class="mb-1 ml-3">Value</h6>
               </div>
             </div>
@@ -137,25 +137,25 @@
                     <div class="columns is-multiline">
                       <div class="column is-6">
                         <input
+                          :id="'power-level-value-' + index"
+                          v-model.text="vtx.settings.power_table.labels[index]"
                           class="input"
                           :class="{ 'is-static': vtx.settings.protocol == 3 }"
-                          :id="'power-level-value-' + index"
                           :readonly="vtx.settings.protocol == 3"
                           type="text"
                           maxlength="3"
-                          v-model.text="vtx.settings.power_table.labels[index]"
                         />
                       </div>
-                      <div class="column is-6" v-if="displayValueEdit">
+                      <div v-if="displayValueEdit" class="column is-6">
                         <input
-                          class="input"
                           :id="'power-level-value-' + index"
-                          type="number"
-                          step="0.1"
-                          min="0"
                           v-model.number="
                             vtx.settings.power_table.values[index]
                           "
+                          class="input"
+                          type="number"
+                          step="0.1"
+                          min="0"
                         />
                       </div>
                     </div>
@@ -186,7 +186,7 @@ import { useVTXStore } from "@/store/vtx";
 import { useInfoStore } from "@/store/info";
 
 export default defineComponent({
-  name: "vtx",
+  name: "Vtx",
   setup() {
     return {
       vtx: useVTXStore(),

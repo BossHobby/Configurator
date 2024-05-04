@@ -17,8 +17,8 @@
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   v-model.number="profile.receiver.channel_mapping"
+                  class="is-fullwidth"
                   :options="receiverChannelMappingOptions"
                 ></input-select>
               </div>
@@ -27,9 +27,9 @@
         </div>
 
         <div
-          class="field is-horizontal"
           v-for="(style, i) of channelStyle"
           :key="'channel-' + i"
+          class="field is-horizontal"
         >
           <div class="field-label" style="align-self: unset">
             <label class="label">
@@ -40,11 +40,13 @@
             <div class="field has-addons">
               <p class="control my-0">
                 <input
-                  class="input is-small"
                   :id="`limit-${channelNames[i]}-min`"
+                  v-model.number="
+                    profile.receiver.stick_calibration_limits[i].min
+                  "
+                  class="input is-small"
                   type="number"
                   step="0.1"
-                  v-model.number="profile.receiver.stick_calibration_limits[i].min"
                 />
               </p>
               <p class="control">
@@ -54,11 +56,13 @@
             <div class="field has-addons">
               <p class="control my-0">
                 <input
-                  class="input is-small"
                   :id="`limit-${channelNames[i]}-max`"
+                  v-model.number="
+                    profile.receiver.stick_calibration_limits[i].max
+                  "
+                  class="input is-small"
                   type="number"
                   step="0.1"
-                  v-model.number="profile.receiver.stick_calibration_limits[i].max"
                 />
               </p>
               <p class="control">
@@ -81,7 +85,10 @@
             <span v-if="timerCount">Continuing in {{ timerCount }}s..</span>
           </div>
           <div class="column is-4">
-            <spinner-btn class="is-pulled-right is-primary" @click="root.cal_sticks()">
+            <spinner-btn
+              class="is-pulled-right is-primary"
+              @click="root.cal_sticks()"
+            >
               Calibrate
             </spinner-btn>
           </div>
@@ -100,6 +107,13 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "RCChannels",
+  setup() {
+    return {
+      root: useRootStore(),
+      state: useStateStore(),
+      profile: useProfileStore(),
+    };
+  },
   data() {
     return {
       timerCount: 0,
@@ -119,13 +133,6 @@ export default defineComponent({
         "", //STICK_WIZARD_CONFIRMED
         "", //STICK_WIZARD_TIMEOUT
       ],
-    };
-  },
-  setup() {
-    return {
-      root: useRootStore(),
-      state: useStateStore(),
-      profile: useProfileStore(),
     };
   },
   computed: {

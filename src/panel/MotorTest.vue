@@ -1,5 +1,5 @@
 <template>
-  <div class="card" v-if="motor.test">
+  <div v-if="motor.test" class="card">
     <header class="card-header">
       <p class="card-header-title">Motor Test</p>
       <small class="card-header-icon">
@@ -13,7 +13,7 @@
       <div class="content">
         <template v-if="motor.test.active">
           <div class="columns is-multiline">
-            <div class="column is-6" v-for="m in motor.pins" :key="m.index">
+            <div v-for="m in motor.pins" :key="m.index" class="column is-6">
               <div class="field field-is-2 is-horizontal">
                 <div class="field-label">
                   <label class="label" for="pid-preset">
@@ -24,25 +24,25 @@
                   <div class="field has-addons">
                     <div class="control is-expanded">
                       <input
-                        class="input"
                         :id="m.id"
+                        v-model.number="value[m.index]"
+                        class="input"
                         type="range"
                         step="1"
                         min="0"
                         max="50"
-                        v-model.number="value[m.index]"
                         @input="update()"
                       />
                     </div>
                     <div class="control">
                       <input
-                        class="input"
                         :id="m.id"
+                        v-model.number="value[m.index]"
+                        class="input"
                         type="number"
                         step="1"
                         min="0"
                         max="50"
-                        v-model.number="value[m.index]"
                         @change="update()"
                       />
                     </div>
@@ -93,13 +93,13 @@ export default defineComponent({
       });
     },
   },
+  created() {
+    this.motor.fetch_motor_test();
+  },
   methods: {
     update() {
       return this.motor.motor_test_set_value(this.value.map((v) => v / 100));
     },
-  },
-  created() {
-    this.motor.fetch_motor_test();
   },
 });
 </script>

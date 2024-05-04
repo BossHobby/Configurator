@@ -19,5 +19,5 @@ ChartJS.register(
   LineElement,
   TimeScale,
   LinearScale,
-  CategoryScale
+  CategoryScale,
 );

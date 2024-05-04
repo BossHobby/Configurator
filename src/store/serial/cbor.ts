@@ -151,7 +151,7 @@ class Encoder {
 
   private encodeHeader(type: MajorType, val: number) {
     return this.buf.writeUint8(
-      (type << CBOR_TYPE_OFFSET) | (val & CBOR_VALUE_MASK)
+      (type << CBOR_TYPE_OFFSET) | (val & CBOR_VALUE_MASK),
     );
   }
 }

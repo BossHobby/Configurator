@@ -17,9 +17,9 @@
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   id="rx"
                   v-model.number="profile.serial.rx"
+                  class="is-fullwidth"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -38,9 +38,9 @@
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   id="smart-audio"
                   v-model.number="profile.serial.smart_audio"
+                  class="is-fullwidth"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -59,9 +59,9 @@
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  class="is-fullwidth"
                   id="digital_vtx"
                   v-model.number="profile.serial.hdzero"
+                  class="is-fullwidth"
                   :options="serialPorts"
                 ></input-select>
               </div>
@@ -80,7 +80,7 @@ import { useRootStore } from "@/store/root";
 import { useTargetStore } from "@/store/target";
 
 export default defineComponent({
-  name: "serial",
+  name: "Serial",
   setup() {
     return {
       root: useRootStore(),

@@ -1,9 +1,9 @@
 <template>
   <div class="columns is-multiline">
     <div
-      class="column is-6 my-3"
       v-for="(counter, index) in perf.counters"
       :key="'counter' + index"
+      class="column is-6 my-3"
       style="height: 35vw"
     >
       <RealtimePlot
@@ -21,7 +21,7 @@ import RealtimePlot from "@/components/RealtimePlot.vue";
 import { usePerfStore } from "@/store/perf";
 
 export default defineComponent({
-  name: "perf",
+  name: "Perf",
   components: {
     RealtimePlot,
   },

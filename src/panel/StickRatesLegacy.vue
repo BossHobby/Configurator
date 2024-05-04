@@ -298,7 +298,7 @@ export default defineComponent({
       return this.constrainf(
         angleRate,
         -SETPOINT_RATE_LIMIT,
-        SETPOINT_RATE_LIMIT
+        SETPOINT_RATE_LIMIT,
       );
     },
     update() {

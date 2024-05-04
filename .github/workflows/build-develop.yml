@@ -2,7 +2,7 @@ name: build-develop
 on:
   push:
     branches:
-      - 'develop'
+      - "develop"
 
 permissions:
   contents: write

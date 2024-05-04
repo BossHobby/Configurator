@@ -4,7 +4,7 @@
       <ReceiverSettings v-if="info.quicVersionGt('0.1.0')"></ReceiverSettings>
       <ReceiverSettingsLegacy v-else></ReceiverSettingsLegacy>
     </div>
-    <div class="column is-12" v-if="info.quicVersionGt('0.1.0')">
+    <div v-if="info.quicVersionGt('0.1.0')" class="column is-12">
       <RCChannels></RCChannels>
     </div>
     <div class="column is-12">

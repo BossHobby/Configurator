@@ -119,7 +119,7 @@ export default defineComponent({
       return this.constrainf(
         (n * n * n * expo + n * (1.0 - expo) + 1.0) * mid,
         0.0,
-        1.0
+        1.0,
       );
     },
     update() {

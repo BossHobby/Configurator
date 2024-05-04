@@ -20,7 +20,7 @@ function newPWAUpdater() {
 
     public async checkForUpdate(
       currentVersion: string,
-      updateCallback: (v: any) => Promise<any>
+      updateCallback: (v: any) => Promise<any>,
     ) {
       this.updateCallback = updateCallback;
       if (this.updateSW) {

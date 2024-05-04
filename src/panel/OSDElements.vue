@@ -177,7 +177,7 @@ function roundRect(
   y: number,
   w: number,
   h: number,
-  r: number
+  r: number,
 ) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
@@ -347,11 +347,11 @@ export default defineComponent({
       return {
         x: Math.min(
           Math.max(Math.floor((coord.x - colOffset) / OSD.CHAR_WIDTH), 0),
-          this.limits.width - 1
+          this.limits.width - 1,
         ),
         y: Math.min(
           Math.max(Math.floor(coord.y / OSD.CHAR_HEIGHT), 0),
-          this.limits.height - 1
+          this.limits.height - 1,
         ),
       };
     },
@@ -426,7 +426,7 @@ export default defineComponent({
       ctx: CanvasRenderingContext2D,
       coord: Coord2D,
       text: string,
-      inverted: boolean
+      inverted: boolean,
     ) {
       let length = 0;
       for (let i = 0; i < text.length; i++) {
@@ -438,12 +438,12 @@ export default defineComponent({
         const charX = OSD.pixelsWidth(
           Math.floor(char % 16),
           OSD.BORDER,
-          this.is_hd
+          this.is_hd,
         );
         const charY = OSD.pixelsHeight(
           Math.floor(char / 16),
           OSD.BORDER,
-          this.is_hd
+          this.is_hd,
         );
 
         let bitmap: any = undefined;
@@ -466,7 +466,7 @@ export default defineComponent({
             coord.x + i * OSD.CHAR_WIDTH,
             coord.y,
             OSD.CHAR_WIDTH,
-            OSD.CHAR_HEIGHT
+            OSD.CHAR_HEIGHT,
           );
         }
 
@@ -481,7 +481,7 @@ export default defineComponent({
         coord.y + 0.5,
         length * OSD.CHAR_WIDTH,
         OSD.CHAR_HEIGHT,
-        1.5
+        1.5,
       );
       ctx.stroke();
     },
@@ -507,7 +507,7 @@ export default defineComponent({
           ctx,
           this.translateElemement(pos),
           el.text,
-          el.invert == 1
+          el.invert == 1,
         );
       }
     },

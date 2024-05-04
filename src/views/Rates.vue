@@ -1,7 +1,9 @@
 <template>
   <div class="columns is-multiline">
     <div class="column is-12">
-      <StickRatesLegacy v-if="default_profile.has_legacy_stickrates"></StickRatesLegacy>
+      <StickRatesLegacy
+        v-if="default_profile.has_legacy_stickrates"
+      ></StickRatesLegacy>
       <StickRates v-else></StickRates>
     </div>
     <div v-if="profile.profileVersionGt('0.2.0')" class="column is-12">

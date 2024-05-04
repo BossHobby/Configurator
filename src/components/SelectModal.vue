@@ -11,7 +11,7 @@
     <section class="modal-card-body">
       <div class="select is-fullwidth is-multiple select-list">
         <div class="control">
-          <select size="8" v-model="value">
+          <select v-model="value" size="8">
             <option v-for="o of options" :key="o.value" :value="o.value">
               {{ o.text }}
             </option>
@@ -23,8 +23,8 @@
       <button class="button" @click="$emit('close')">Cancel</button>
       <button
         class="button is-success"
-        @click="$emit('close', value)"
         :disabled="value == undefined"
+        @click="$emit('close', value)"
       >
         Select
       </button>

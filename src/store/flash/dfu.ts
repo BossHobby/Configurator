@@ -81,7 +81,7 @@ export class DFU {
         value: 0x300 | index,
         index: 0, // specifies language
       },
-      255
+      255,
     );
 
     if (result?.status != "ok") {
@@ -109,7 +109,7 @@ export class DFU {
         value: 0x200,
         index: 0,
       },
-      18 + iface * 9
+      18 + iface * 9,
     );
 
     if (result?.status != "ok") {
@@ -139,7 +139,7 @@ export class DFU {
         value: 0x2100,
         index: 0,
       },
-      255
+      255,
     );
 
     if (result?.status != "ok") {
@@ -164,7 +164,7 @@ export class DFU {
     for (const iface of config.interfaces) {
       for (let i = 0; i < iface.alternates.length; i++) {
         const desc = await this.getInterfaceDescriptor(
-          iface.interfaceNumber + i
+          iface.interfaceNumber + i,
         );
         if (desc.bInterfaceNumber != interfaceNum) {
           continue;
@@ -181,7 +181,7 @@ export class DFU {
     request: number,
     value: number,
     iface: number,
-    length: number
+    length: number,
   ) {
     // data is ignored
     const result = await this.device.controlTransferIn(
@@ -192,7 +192,7 @@ export class DFU {
         value: value,
         index: iface,
       },
-      length
+      length,
     );
 
     if (result?.status != "ok") {
@@ -206,7 +206,7 @@ export class DFU {
     request: number,
     value: number,
     iface: number,
-    data?: number[]
+    data?: number[],
   ) {
     // length is ignored
     let arrayBuf = new ArrayBuffer(0);
@@ -224,7 +224,7 @@ export class DFU {
         value: value,
         index: iface,
       },
-      arrayBuf
+      arrayBuf,
     );
 
     if (result?.status != "ok") {
@@ -289,7 +289,7 @@ export class DFU {
       if (tmp1.length > 3) {
         Log.info(
           "flash",
-          'parseDescriptor: shrinking long descriptor "' + str + '"'
+          'parseDescriptor: shrinking long descriptor "' + str + '"',
         );
         tmp1.length = 3;
       }
@@ -366,7 +366,7 @@ export class DFU {
       DFURequest.GETSTATUS,
       0,
       0,
-      6
+      6,
     );
     if (busyCheck[4] != DFUState.dfuDNBUSY) {
       throw new Error("Failed to request address load");
@@ -394,7 +394,7 @@ export class DFU {
         DFURequest.GETSTATUS,
         0,
         0,
-        6
+        6,
       );
       if (status[4] != DFUState.dfuDNBUSY) {
         throw new Error("Failed to initiate unprotect memory command");
@@ -410,7 +410,7 @@ export class DFU {
           DFURequest.GETSTATUS,
           0,
           0,
-          6
+          6,
         );
 
         // unprotecting the flight controller did not work. It did not reboot.
@@ -421,7 +421,7 @@ export class DFU {
         // we encounter an error, but this is expected. should be a stall.
         Log.info(
           "flash",
-          "Unprotect memory command ran successfully. Unplug flight controller. Connect again in DFU mode and try flashing again."
+          "Unprotect memory command ran successfully. Unplug flight controller. Connect again in DFU mode and try flashing again.",
         );
       }
     };
@@ -432,7 +432,7 @@ export class DFU {
         DFURequest.UPLOAD,
         2,
         0,
-        total_size
+        total_size,
       );
       const data = await this.controlTransferIn(DFURequest.GETSTATUS, 0, 0, 6);
       if (data[4] == DFUState.dfuUPLOAD_IDLE && ob_data.length == total_size) {
@@ -442,7 +442,7 @@ export class DFU {
       } else {
         Log.info(
           "flash",
-          "Option bytes could not be read. Quite possibly read protected."
+          "Option bytes could not be read. Quite possibly read protected.",
         );
         await this.clearStatus();
         return unprotect();
@@ -508,7 +508,7 @@ export class DFU {
           ", page " +
           erase_page.page +
           " @ 0x" +
-          page_addr.toString(16)
+          page_addr.toString(16),
       );
 
       await this.controlTransferOut(DFURequest.DNLOAD, 0, 0, cmd);
@@ -517,11 +517,11 @@ export class DFU {
         DFURequest.GETSTATUS,
         0,
         0,
-        6
+        6,
       );
       if (status[4] != DFUState.dfuDNBUSY) {
         throw new Error(
-          "Failed to initiate page erase, page 0x" + page_addr.toString(16)
+          "Failed to initiate page erase, page 0x" + page_addr.toString(16),
         );
       }
 
@@ -548,13 +548,13 @@ export class DFU {
           DFURequest.GETSTATUS,
           0,
           0,
-          6
+          6,
         );
         if (clearStatus[4] != DFUState.dfuIDLE) {
           throw new Error(
             "Failed to erase page 0x" +
               page_addr.toString(16) +
-              " (did not reach dfuIDLE after clearing"
+              " (did not reach dfuIDLE after clearing",
           );
         }
       } else {
@@ -584,7 +584,7 @@ export class DFU {
         }
         const data_to_flash = segment.data.slice(
           bytes_flashed,
-          bytes_flashed + bytes_to_write
+          bytes_flashed + bytes_to_write,
         );
 
         address += bytes_to_write;
@@ -601,14 +601,14 @@ export class DFU {
           DFURequest.GETSTATUS,
           0,
           0,
-          6
+          6,
         );
         if (status[4] != DFUState.dfuDNBUSY) {
           throw new Error(
             "Failed to initiate write " +
               bytes_to_write +
               "bytes to 0x" +
-              address.toString(16)
+              address.toString(16),
           );
         }
 
@@ -619,14 +619,14 @@ export class DFU {
           DFURequest.GETSTATUS,
           0,
           0,
-          6
+          6,
         );
         if (data[4] != DFUState.dfuDNLOAD_IDLE) {
           throw new Error(
             "Failed to write " +
               bytes_to_write +
               "bytes to 0x" +
-              address.toString(16)
+              address.toString(16),
           );
         }
       }
@@ -659,7 +659,7 @@ export class DFU {
           DFURequest.UPLOAD,
           wBlockNum++,
           0,
-          bytes_to_read
+          bytes_to_read,
         );
         for (let i = 0; i < bytes_to_read; i++) {
           if (data[i] != segment.data[bytes_verified + i]) {
@@ -713,7 +713,7 @@ export class DFU {
         "Not Enough flash space " +
           hex.linear_bytes_total +
           "> " +
-          available_flash_size
+          available_flash_size,
       );
     }
 
@@ -730,7 +730,7 @@ export class DFU {
     if (info.internal_flash) {
       await this.unlockOptionBytes(
         info.option_bytes.start_address,
-        info.option_bytes.total_size
+        info.option_bytes.total_size,
       );
     }
 

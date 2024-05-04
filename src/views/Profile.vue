@@ -3,14 +3,14 @@
     <div class="column is-12"><Info></Info></div>
     <div class="column is-12">
       <div
-        class="notification is-warning"
         v-show="info.quic_protocol_version < 5"
+        class="notification is-warning"
       >
         Incompatible Firmware! <br />
         Please update to be able to change settings. <br />
         Current profile can be exported and loaded.
       </div>
-      <div class="notification is-danger" v-show="state.failloop > 0">
+      <div v-show="state.failloop > 0" class="notification is-danger">
         Faillop {{ state.failloopMessage }} ({{ state.failloop }}) Detected!
         <br />
         Please fix the issue to be able to change settings. <br />

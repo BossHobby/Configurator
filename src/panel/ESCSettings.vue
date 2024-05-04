@@ -8,13 +8,13 @@
     <div class="card-content">
       <div class="content">
         <div
-          class="columns is-multiline"
           v-if="motor.settings && motor.settings.length"
+          class="columns is-multiline"
         >
           <div
-            class="column is-6 px-5"
             v-for="m in motor.pins"
             :key="'motor-settings-' + m.index"
+            class="column is-6 px-5"
           >
             <div class="columns is-multiline my-2">
               <div class="column is-4">
@@ -55,16 +55,16 @@
       <span class="card-footer-item"></span>
       <span class="card-footer-item"></span>
       <spinner-btn
-        class="card-footer-item"
         v-if="motor.settings && motor.settings.length"
+        class="card-footer-item"
         :disabled="motor.loading"
         @click="motor.apply_motor_settings(motor.settings)"
       >
         Apply
       </spinner-btn>
       <spinner-btn
-        class="card-footer-item"
         v-else
+        class="card-footer-item"
         :disabled="motor.loading"
         @click="motor.fetch_motor_settings()"
       >

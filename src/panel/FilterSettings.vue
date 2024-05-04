@@ -7,8 +7,8 @@
 
     <div class="card-content">
       <div class="content column-narrow field-is-5">
-        <div class="columns" v-if="profile">
-          <div class="column is-6" v-if="profile.filter.gyro">
+        <div v-if="profile" class="columns">
+          <div v-if="profile.filter.gyro" class="column is-6">
             <div class="field is-horizontal">
               <div class="field-label">
                 <label class="label" for="gyro-1-type">
@@ -20,9 +20,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="gyro-1-type"
                       v-model.number="profile.filter.gyro[0].type"
+                      class="is-fullwidth"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -41,12 +41,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="gyro-1-freq"
+                      v-model.number="profile.filter.gyro[0].cutoff_freq"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.gyro[0].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -64,9 +64,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="gyro-2-type"
                       v-model.number="profile.filter.gyro[1].type"
+                      class="is-fullwidth"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -85,12 +85,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="gyro-2-freq"
+                      v-model.number="profile.filter.gyro[1].cutoff_freq"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.gyro[1].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -98,8 +98,8 @@
             </div>
 
             <div
-              class="field is-horizontal mt-6"
               v-if="profile.profileVersionGt('0.2.2')"
+              class="field is-horizontal mt-6"
             >
               <div class="field-label">
                 <label class="label" for="gyro-dynamic-enable">
@@ -111,9 +111,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="gyro-dynamic-enable"
                       v-model.number="profile.filter.gyro_dynamic_notch_enable"
+                      class="is-fullwidth"
                       :options="toggleOptions"
                     ></input-select>
                   </div>
@@ -122,7 +122,7 @@
             </div>
           </div>
 
-          <div class="column is-6" v-if="profile.filter.dterm">
+          <div v-if="profile.filter.dterm" class="column is-6">
             <div class="field is-horizontal">
               <div class="field-label">
                 <label class="label" for="dterm-1-type">
@@ -134,9 +134,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="dterm-1-type"
                       v-model.number="profile.filter.dterm[0].type"
+                      class="is-fullwidth"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -155,12 +155,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="dterm-1-freq"
+                      v-model.number="profile.filter.dterm[0].cutoff_freq"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.dterm[0].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -178,9 +178,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="dterm-2-type"
                       v-model.number="profile.filter.dterm[1].type"
+                      class="is-fullwidth"
                       :options="filterTypeOptions"
                     ></input-select>
                   </div>
@@ -199,12 +199,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="dterm-2-freq"
+                      v-model.number="profile.filter.dterm[1].cutoff_freq"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.dterm[1].cutoff_freq"
                     />
                   </div>
                 </div>
@@ -222,9 +222,9 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input-select
-                      class="is-fullwidth"
                       id="dterm-dynamic-enable"
                       v-model.number="profile.filter.dterm_dynamic_enable"
+                      class="is-fullwidth"
                       :options="toggleOptions"
                     ></input-select>
                   </div>
@@ -243,12 +243,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="dterm-dynamic-min"
+                      v-model.number="profile.filter.dterm_dynamic_min"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.dterm_dynamic_min"
                     />
                   </div>
                 </div>
@@ -266,12 +266,12 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="dterm-dynamic-max"
+                      v-model.number="profile.filter.dterm_dynamic_max"
+                      class="input"
                       type="number"
                       step="5"
                       min="0"
-                      v-model.number="profile.filter.dterm_dynamic_max"
                     />
                   </div>
                 </div>

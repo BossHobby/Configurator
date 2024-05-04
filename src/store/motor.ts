@@ -102,7 +102,7 @@ export const useMotorStore = defineStore("motor", {
       return serial
         .command(
           QuicCmd.Motor,
-          this.test.active ? QuicMotor.TestDisable : QuicMotor.TestEnable
+          this.test.active ? QuicMotor.TestDisable : QuicMotor.TestEnable,
         )
         .then(() => {
           this.test.active = this.test.active ? 0 : 1;

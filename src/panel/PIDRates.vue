@@ -20,15 +20,15 @@
                   <div class="control is-expanded">
                     <input-select
                       id="pid-preset"
-                      class="is-fullwidth"
                       v-model.number="current_preset"
+                      class="is-fullwidth"
                       :options="presets"
                     ></input-select>
                   </div>
                   <div class="control">
                     <spinner-btn
-                      @click="load_preset(current_preset)"
                       :disabled="current_preset == -1"
+                      @click="load_preset(current_preset)"
                     >
                       Load
                     </spinner-btn>
@@ -49,8 +49,8 @@
                   <div class="control is-expanded">
                     <input-select
                       id="pid-profile"
-                      class="is-fullwidth"
                       v-model.number="profile.pid.pid_profile"
+                      class="is-fullwidth"
                       :options="pidProfiles"
                     ></input-select>
                   </div>
@@ -75,9 +75,9 @@
             </div>
 
             <div
-              class="field field-is-2 is-horizontal"
               v-for="(val, key) in pid_rates"
               :key="key"
+              class="field field-is-2 is-horizontal"
             >
               <div class="field-label">
                 <label class="label">{{ key }}</label>
@@ -86,36 +86,36 @@
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`pid-${key}-roll`"
-                      type="number"
-                      step="1.0"
-                      min="0"
                       v-model.number="pid_rates[key][0]"
+                      class="input"
+                      type="number"
+                      step="1.0"
+                      min="0"
                     />
                   </p>
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`pid-${key}-pitch`"
+                      v-model.number="pid_rates[key][1]"
+                      class="input"
                       type="number"
                       step="1.0"
                       min="0"
-                      v-model.number="pid_rates[key][1]"
                     />
                   </p>
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`pid-${key}-yaw`"
+                      v-model.number="pid_rates[key][2]"
+                      class="input"
                       type="number"
                       step="1.0"
                       min="0"
-                      v-model.number="pid_rates[key][2]"
                     />
                   </p>
                 </div>
@@ -134,10 +134,10 @@
                   <div class="control is-expanded">
                     <input-select
                       id="throttle_dterm_attenuation-enable"
-                      class="is-fullwidth"
                       v-model.number="
                         profile.pid.throttle_dterm_attenuation.tda_active
                       "
+                      class="is-fullwidth"
                       :options="tdaOptions"
                     ></input-select>
                   </div>
@@ -159,14 +159,14 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="throttle_dterm_attenuation-breakpoint"
-                      type="number"
-                      step="0.05"
-                      min="0"
                       v-model.number="
                         profile.pid.throttle_dterm_attenuation.tda_breakpoint
                       "
+                      class="input"
+                      type="number"
+                      step="0.05"
+                      min="0"
                     />
                   </div>
                 </div>
@@ -184,14 +184,14 @@
                 <div class="field">
                   <div class="control is-expanded">
                     <input
-                      class="input"
                       id="throttle_dterm_attenuation-percent"
-                      type="number"
-                      step="0.05"
-                      min="0"
                       v-model.number="
                         profile.pid.throttle_dterm_attenuation.tda_percent
                       "
+                      class="input"
+                      type="number"
+                      step="0.05"
+                      min="0"
                     />
                   </div>
                 </div>
@@ -211,8 +211,8 @@
                   <div class="control is-expanded">
                     <input-select
                       id="stick-profile"
-                      class="is-fullwidth"
                       v-model.number="profile.pid.stick_profile"
+                      class="is-fullwidth"
                       :options="stickProfiles"
                     ></input-select>
                   </div>
@@ -237,9 +237,9 @@
             </div>
 
             <div
-              class="field field-is-2 is-horizontal"
               v-for="(val, key) in stick_rates"
               :key="key"
+              class="field field-is-2 is-horizontal"
             >
               <div class="field-label">
                 <label class="label">{{ key }}</label>
@@ -248,33 +248,33 @@
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`stick-${key}-roll`"
-                      type="number"
-                      step="0.01"
                       v-model.number="stick_rates[key][0]"
+                      class="input"
+                      type="number"
+                      step="0.01"
                     />
                   </p>
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`stick-${key}-pitch`"
+                      v-model.number="stick_rates[key][1]"
+                      class="input"
                       type="number"
                       step="0.01"
-                      v-model.number="stick_rates[key][1]"
                     />
                   </p>
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`stick-${key}-yaw`"
+                      v-model.number="stick_rates[key][2]"
+                      class="input"
                       type="number"
                       step="0.01"
-                      v-model.number="stick_rates[key][2]"
                     />
                   </p>
                 </div>
@@ -297,9 +297,9 @@
             </div>
 
             <div
-              class="field field-is-2 is-horizontal"
               v-for="(key, index) in ['kp', 'kd']"
               :key="index"
+              class="field field-is-2 is-horizontal"
             >
               <div class="field-label">
                 <label class="label">{{ key }}</label>
@@ -308,22 +308,22 @@
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`small-angle-${key}`"
+                      v-model.number="profile.pid.small_angle[key]"
+                      class="input"
                       type="number"
                       step="0.01"
-                      v-model.number="profile.pid.small_angle[key]"
                     />
                   </p>
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
                     <input
-                      class="input"
                       :id="`big-angle-${key}`"
+                      v-model.number="profile.pid.big_angle[key]"
+                      class="input"
                       type="number"
                       step="0.01"
-                      v-model.number="profile.pid.big_angle[key]"
                     />
                   </p>
                 </div>
@@ -343,6 +343,12 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "PIDRates",
+  setup() {
+    return {
+      root: useRootStore(),
+      profile: useProfileStore(),
+    };
+  },
   data() {
     return {
       pidProfiles: [
@@ -358,12 +364,6 @@ export default defineComponent({
         { value: 1, text: "On" },
       ],
       current_preset: -1,
-    };
-  },
-  setup() {
-    return {
-      root: useRootStore(),
-      profile: useProfileStore(),
     };
   },
   computed: {

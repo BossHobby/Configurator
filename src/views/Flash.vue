@@ -427,7 +427,7 @@ export default defineComponent({
     },
     pickRelease() {
       return this.releaseOptions.find(
-        (v) => !v.endsWith("-dev") && !v.includes("-rc")
+        (v) => !v.endsWith("-dev") && !v.includes("-rc"),
       );
     },
     selectTarget(target: any) {
@@ -533,7 +533,7 @@ export default defineComponent({
           const hex = IntelHEX.parse(hexStr);
           if (this.isRuntimeTarget) {
             const target = await this.flash.fetchRuntimeConfig(
-              this.target.target
+              this.target.target,
             );
             Log.info("Flash", "injecting target ", this.target.target);
             hex.patch(ConfigOffsets[this.target.mcu], target);
@@ -551,7 +551,7 @@ export default defineComponent({
           this.root.append_alert({
             type: "success",
             msg: "Firmware flashed!",
-          })
+          }),
         )
         .catch((err) => {
           Log.error("Flash", err);

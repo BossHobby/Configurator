@@ -40,7 +40,7 @@ function migrateProfileVersion(
   profile,
   target: target_t,
   profileVersion: string,
-  firmwareVersion: string
+  firmwareVersion: string,
 ) {
   if (semver.eq(profileVersion, "v0.1.0")) {
     const silverware = {
@@ -112,7 +112,7 @@ function migrateProfile(profile) {
       p,
       target.$state,
       decodeSemver(profileVersion),
-      decodeSemver(firmwareVersion)
+      decodeSemver(firmwareVersion),
     );
   }
 
@@ -256,7 +256,7 @@ export const useProfileStore = defineStore("profile", {
         .set(QuicVal.Profile, p)
         .then((p) => this.set_profile(p))
         .then(() =>
-          root.append_alert({ type: "success", msg: "Profile applied!" })
+          root.append_alert({ type: "success", msg: "Profile applied!" }),
         )
         .then(() => root.reset_needs_apply())
         .catch((err) => {

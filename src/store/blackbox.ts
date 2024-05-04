@@ -194,7 +194,7 @@ export const useBlackboxStore = defineStore("blackbox", {
             this.speed = v / delta;
           },
           QuicBlackbox.Get,
-          index
+          index,
         )
         .then((p) => {
           const fields = Object.keys(BlackboxFields)
@@ -245,7 +245,7 @@ export const useBlackboxStore = defineStore("blackbox", {
             this.speed = v / delta;
           },
           QuicBlackbox.Get,
-          index
+          index,
         )
         .then((p) => {
           const profile = useProfileStore();

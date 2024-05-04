@@ -18,7 +18,7 @@ export class OSD {
   public static pixelsWidth(
     v: number,
     border = OSD.BORDER,
-    is_hd = false
+    is_hd = false,
   ): number {
     if (is_hd) {
       border = 0;
@@ -29,7 +29,7 @@ export class OSD {
   public static pixelsHeight(
     v: number,
     border = OSD.BORDER,
-    is_hd = false
+    is_hd = false,
   ): number {
     if (is_hd) {
       border = 0;
@@ -89,7 +89,7 @@ export class OSD {
   private static unpackFontCanvas(
     canvas: HTMLCanvasElement,
     font: number[][],
-    inverted = false
+    inverted = false,
   ) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -136,28 +136,28 @@ export class OSD {
             ((OSD.getPixel(
               img.data,
               x + 0 + OSD.pixelsWidth(cx),
-              y + OSD.pixelsHeight(cy)
+              y + OSD.pixelsHeight(cy),
             ) &
               0x3) <<
               6) |
             ((OSD.getPixel(
               img.data,
               x + 1 + OSD.pixelsWidth(cx),
-              y + OSD.pixelsHeight(cy)
+              y + OSD.pixelsHeight(cy),
             ) &
               0x3) <<
               4) |
             ((OSD.getPixel(
               img.data,
               x + 2 + OSD.pixelsWidth(cx),
-              y + OSD.pixelsHeight(cy)
+              y + OSD.pixelsHeight(cy),
             ) &
               0x3) <<
               2) |
             ((OSD.getPixel(
               img.data,
               x + 3 + OSD.pixelsWidth(cx),
-              y + OSD.pixelsHeight(cy)
+              y + OSD.pixelsHeight(cy),
             ) &
               0x3) <<
               0);
@@ -187,7 +187,7 @@ export class OSD {
   public static packLogo(
     fontCanvas: HTMLCanvasElement,
     logoCanvas: HTMLCanvasElement,
-    logo: CanvasImageSource
+    logo: CanvasImageSource,
   ) {
     const logoCtx = logoCanvas.getContext("2d")!;
     logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
@@ -198,12 +198,12 @@ export class OSD {
       0,
       0,
       logo.width as number,
-      logo.height as number
+      logo.height as number,
     );
     for (let cy = 0; cy < OSD.LOGO_HEIGHT; cy++) {
       for (let cx = 0; cx < OSD.LOGO_WIDTH; cx++) {
         const char = new Uint8ClampedArray(
-          OSD.CHAR_WIDTH * OSD.CHAR_HEIGHT * 4
+          OSD.CHAR_WIDTH * OSD.CHAR_HEIGHT * 4,
         );
 
         for (let y = 0; y < OSD.CHAR_HEIGHT; y++) {
@@ -245,7 +245,7 @@ export class OSD {
     x: number,
     y: number,
     v: number,
-    inverted = false
+    inverted = false,
   ) {
     let WHITE = 2;
     let BLACK = 0;
@@ -280,7 +280,7 @@ export class OSD {
   private static getPixel(
     data: Uint8ClampedArray,
     vx: number,
-    vy: number
+    vy: number,
   ): number {
     let value = 0;
 

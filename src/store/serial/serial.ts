@@ -52,7 +52,7 @@ export class Serial {
   }
 
   public async connectFirstPort(
-    errorCallback: any = console.warn
+    errorCallback: any = console.warn,
   ): Promise<any> {
     try {
       const ports = await WebSerial.getPorts();
@@ -186,7 +186,7 @@ export class Serial {
     cmd: QuicCmd,
     progress: ProgressCallbackType,
     timeout: number | undefined,
-    values: any[]
+    values: any[],
   ) {
     await this.waitingCommands.wait();
     try {
@@ -217,7 +217,7 @@ export class Serial {
     cmd: QuicCmd,
     progress: ProgressCallbackType,
     timeout: number | undefined,
-    values: any[]
+    values: any[],
   ): Promise<QuicPacket> {
     const payload = this.encodeValues(values);
 
@@ -234,7 +234,7 @@ export class Serial {
       cmd,
       "len:",
       payload.length,
-      values
+      values,
     );
 
     await this.write(concatUint8Array(request, payload));
@@ -252,7 +252,7 @@ export class Serial {
       packet.flag,
       "len:",
       packet.len,
-      packet.payload
+      packet.payload,
     );
     return packet;
   }
@@ -294,7 +294,7 @@ export class Serial {
 
   private async readPacket(
     progress: ProgressCallbackType,
-    timeout: number | undefined
+    timeout: number | undefined,
   ): Promise<QuicPacket> {
     const hdr = await this.readHeader(timeout);
     if (hdr.cmd >= QuicCmd.Max || hdr.cmd == QuicCmd.Invalid) {

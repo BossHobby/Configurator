@@ -189,7 +189,7 @@ export default defineComponent({
     },
     blackboxFields() {
       const fieldflags = transformBlackboxFieldFlags(
-        this.profile.blackbox.field_flags
+        this.profile.blackbox.field_flags,
       );
       const fields = $enum(BlackboxField)
         .getEntries()

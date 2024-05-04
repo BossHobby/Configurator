@@ -9,12 +9,16 @@
         <div class="columns">
           <div class="column is-8">
             <div
-              class="field field-is-3 is-horizontal mr-4"
               v-for="f in auxFunctions"
               :key="f.key"
+              class="field field-is-3 is-horizontal mr-4"
             >
               <div class="field-label">
-                <label class="label" :for="f.key" :class="classForIndex(f.index)">
+                <label
+                  class="label"
+                  :for="f.key"
+                  :class="classForIndex(f.index)"
+                >
                   {{ f.key }}
                   <tooltip :entry="'channel.' + f.key.toLowerCase()" />
                 </label>
@@ -24,8 +28,8 @@
                   <div class="control is-expanded">
                     <input-select
                       :id="f.key"
-                      class="is-fullwidth"
                       v-model.number="profile.receiver.aux[f.index]"
+                      class="is-fullwidth"
                       :options="auxChannels"
                     ></input-select>
                   </div>
@@ -40,11 +44,17 @@
               </header>
               <div class="card-content">
                 <div class="content">
-                  <div class="columns" v-for="(v, index) in auxChannels" :key="v.text">
+                  <div
+                    v-for="(v, index) in auxChannels"
+                    :key="v.text"
+                    class="columns"
+                  >
                     <div class="column is-6 py-1">{{ v.text }}</div>
                     <div
                       class="column is-6 py-1"
-                      :class="valueForIndex(index) ? 'text-success' : 'text-danger'"
+                      :class="
+                        valueForIndex(index) ? 'text-success' : 'text-danger'
+                      "
                     >
                       {{ valueForIndex(index) ? "ON" : "OFF" }}
                     </div>
