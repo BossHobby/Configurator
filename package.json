@@ -18,7 +18,9 @@
     "pwa": "env DEPLOYMENT=local vite build && npx http-server ./dist",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "extract-tooltips": "node script/extract-tooltips.js"
+    "extract-tooltips": "node script/extract-tooltips.js",
+    "prepare": "husky",
+    "pre-commit": "pretty-quick --staged"
   },
   "dependencies": {
     "@bulvar/bulma": "^0.11.13",
@@ -68,7 +70,9 @@
     "eslint-plugin-vue": "^9.25.0",
     "glob": "^10.2.7",
     "http-server": "^14.1.0",
+    "husky": "^9.0.11",
     "prettier": "3.2.5",
+    "pretty-quick": "^4.0.0",
     "rimraf": "^5.0.1",
     "sass": "^1.52.1",
     "typescript": "~5.4.5",
