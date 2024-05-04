@@ -26,6 +26,10 @@ export class ArrayWriter {
 
   constructor(private litteEndian = true) {}
 
+  public reset() {
+    this.offset = 0;
+  }
+
   public get(index: number): number {
     return this.view.getUint8(index);
   }

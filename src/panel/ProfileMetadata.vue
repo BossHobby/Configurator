@@ -27,7 +27,7 @@
               <div class="control is-expanded">
                 <input
                   class="input is-static"
-                  :value="timeAgo(date)"
+                  :value="profile.modified"
                   readonly
                 />
               </div>
@@ -76,7 +76,6 @@ import { defineComponent } from "vue";
 import YAML from "yaml";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
-import { timeAgo } from "@/mixin/filters";
 import { useInfoStore } from "@/store/info";
 import { useStateStore } from "@/store/state";
 import { useProfileStore } from "@/store/profile";
@@ -117,7 +116,6 @@ export default defineComponent({
     },
   },
   methods: {
-    timeAgo,
     uploadProfile() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {

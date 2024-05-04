@@ -177,7 +177,7 @@
       <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
       </span>
-      <span class="navbar-item">Modified {{ timeAgo(date) }}</span>
+      <span class="navbar-item">Modified {{ profile.modified }}</span>
       <span class="navbar-item" style="font-size: 70%">
         Looptime {{ state.looptime_autodetect }} CPU Load
         {{ state.cpu_load }}
@@ -223,7 +223,6 @@
 import { defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
 import { RouterLink, RouterView } from "vue-router";
-import { timeAgo } from "@/mixin/filters";
 import AlertPortal from "@/components/AlertPortal.vue";
 import ModalPortal from "@/components/ModalPortal.vue";
 import SelectModal from "@/components/SelectModal.vue";
@@ -322,7 +321,6 @@ export default defineComponent({
     },
   },
   methods: {
-    timeAgo,
     getDarkMode() {
       if (localStorage.getItem("dark-mode")) {
         return localStorage.getItem("dark-mode") == "true";

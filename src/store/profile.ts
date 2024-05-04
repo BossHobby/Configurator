@@ -6,6 +6,7 @@ import { Log } from "@/log";
 import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
+import { timeAgo } from "@/mixin/filters";
 import type { target_t } from "./types";
 import { useTargetStore } from "./target";
 
@@ -124,6 +125,7 @@ function migrateProfile(profile) {
 export const useProfileStore = defineStore("profile", {
   state: () => ({
     semver: "v0.0.0",
+    modified: "",
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -198,6 +200,7 @@ export const useProfileStore = defineStore("profile", {
   },
   actions: {
     set_profile(profile) {
+      profile.modified = timeAgo(new Date(profile.meta.datetime * 1000));
       profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");
       this.$patch(profile);
