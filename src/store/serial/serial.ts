@@ -2,13 +2,11 @@ import {
   QuicCmd,
   QuicFlag,
   QuicVal,
-  QUIC_HEADER_LEN,
   QUIC_MAGIC,
   type QuicHeader,
   type QuicPacket,
 } from "./quic";
 import { ArrayWriter, concatUint8Array, stringToUint8Array } from "../util";
-import { AsyncQueue, AsyncSemaphore } from "./async";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
 import { WebSerial } from "./webserial";
@@ -27,16 +25,95 @@ export type ProgressCallbackType = (number) => void;
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noProgress = () => {};
 
-export class Serial {
-  private shouldRun = true;
-  private reSync = true;
+enum QuicParserState {
+  READ_MAGIC,
+  READ_CMD,
+  READ_LEN_HIGH,
+  READ_LEN_LOW,
+  READ_PAYLOAD,
+}
 
-  private waitingCommands = new AsyncSemaphore(1);
+class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
+  private state: QuicParserState = QuicParserState.READ_MAGIC;
+  private header: QuicHeader = {
+    cmd: 0,
+    flag: 0,
+    len: 0,
+  };
+  private payload: number[] = [];
+
+  constructor() {
+    super({
+      transform: (
+        chunk: Uint8Array,
+        controller: TransformStreamDefaultController<QuicPacket>,
+      ) => {
+        for (const b of chunk) {
+          const p = this.push(b);
+          if (p) {
+            controller.enqueue(p);
+          }
+        }
+      },
+    });
+  }
+
+  private push(val: number): QuicPacket | undefined {
+    switch (this.state) {
+      case QuicParserState.READ_MAGIC:
+        if (val == QUIC_MAGIC) {
+          this.state = QuicParserState.READ_CMD;
+        }
+        break;
+
+      case QuicParserState.READ_CMD:
+        this.header.cmd = val & (0xff >> 3);
+        this.header.flag = val >> 5;
+        this.state = QuicParserState.READ_LEN_HIGH;
+        break;
+
+      case QuicParserState.READ_LEN_HIGH:
+        this.header.len = val << 8;
+        this.state = QuicParserState.READ_LEN_LOW;
+        break;
+
+      case QuicParserState.READ_LEN_LOW:
+        this.header.len |= val;
+        this.payload = [];
+        this.state = QuicParserState.READ_PAYLOAD;
+
+        if (this.header.len == 0) {
+          this.state = QuicParserState.READ_MAGIC;
+          return {
+            ...this.header,
+            payload: Uint8Array.from(this.payload),
+          };
+        }
+        break;
+
+      case QuicParserState.READ_PAYLOAD:
+        this.payload.push(val);
+        if (this.payload.length == this.header.len) {
+          this.state = QuicParserState.READ_MAGIC;
+          return {
+            ...this.header,
+            payload: Uint8Array.from(this.payload),
+          };
+        }
+        break;
+    }
+  }
+}
+
+export class Serial {
+  private waitingCommands: Promise<QuicPacket> = Promise.resolve({} as any);
 
   private port?: SerialPort;
 
   private writer?: WritableStreamDefaultWriter<any>;
-  private reader?: AsyncQueue;
+  private reader?: ReadableStreamDefaultReader<QuicPacket>;
+
+  private transfromClosed?: Promise<void>;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
     try {
@@ -73,17 +150,16 @@ export class Serial {
       return;
     }
 
-    this.waitingCommands = new AsyncSemaphore(1);
-
     await this.port.open({
       baudRate: settings.serial.baudRate,
       bufferSize: settings.serial.bufferSize,
       flowControl: "none",
     });
 
+    const transform = new QuicStream();
+    this.transfromClosed = this.port.readable.pipeTo(transform.writable);
     this.writer = await this.port.writable.getWriter();
-    this.reader = new AsyncQueue(this.port.readable, errorCallback);
-    this.shouldRun = true;
+    this.reader = transform.readable.getReader();
   }
 
   public async softReboot() {
@@ -151,35 +227,25 @@ export class Serial {
   }
 
   async close() {
-    this.reSync = true;
-    this.shouldRun = false;
-
-    if (this.reader) {
-      try {
-        await this.reader?.close();
-      } catch (err) {
-        Log.warn("serial", err);
-      }
-    }
-
-    if (this.writer) {
-      try {
-        await this.writer.releaseLock();
-      } catch (err) {
-        Log.warn("serial", err);
-      }
-    }
-
     try {
+      await this.reader?.cancel();
+      await (this.transfromClosed || Promise.resolve()).catch(() => undefined);
+      this.reader?.releaseLock();
+
+      await this.writer?.close();
+      this.writer?.releaseLock();
+
       await this.port?.close();
     } catch (err) {
       Log.warn("serial", err);
+    } finally {
+      this.reader = undefined;
+      this.writer = undefined;
+
+      this.transfromClosed = undefined;
+
+      this.port = undefined;
     }
-
-    this.reader = undefined;
-    this.writer = undefined;
-
-    this.port = undefined;
   }
 
   private async _command(
@@ -188,21 +254,18 @@ export class Serial {
     timeout: number | undefined,
     values: any[],
   ) {
-    await this.waitingCommands.wait();
-    try {
-      const packet = await this.send(cmd, progress, timeout, values);
+    return (this.waitingCommands = this.waitingCommands
+      .then(() => this.send(cmd, progress, timeout, values))
+      .then((packet) => {
+        if (packet.cmd != cmd) {
+          throw new Error("invalid command");
+        }
+        if (packet.flag & QuicFlag.Error) {
+          throw new Error(packet.payload[0]);
+        }
 
-      if (packet.cmd != cmd) {
-        throw new Error("invalid command");
-      }
-      if (packet.flag & QuicFlag.Error) {
-        throw new Error(packet.payload[0]);
-      }
-
-      return packet;
-    } finally {
-      this.waitingCommands.signal();
-    }
+        return packet;
+      }));
   }
 
   private async write(array: Uint8Array) {
@@ -266,81 +329,65 @@ export class Serial {
     return result;
   }
 
-  private async readHeader(timeout: number | undefined): Promise<QuicHeader> {
-    if (!this.reader) {
-      throw new Error("no serial reader");
-    }
-
-    while (this.shouldRun) {
-      const magic = await this.reader.pop(timeout);
-      if (magic === QUIC_MAGIC) {
-        this.reSync = false;
-        break;
-      }
-      if (!this.reSync) {
-        this.reSync = true;
-        Log.info("serial", "invalid magic " + magic);
-        throw new Error("invalid magic " + magic);
-      }
-    }
-
-    const header = await this.reader.read(QUIC_HEADER_LEN - 1, timeout);
-    return {
-      cmd: header[0] & (0xff >> 3),
-      flag: header[0] >> 5,
-      len: (header[1] << 8) | header[2],
-    };
-  }
-
   private async readPacket(
     progress: ProgressCallbackType,
     timeout: number | undefined,
   ): Promise<QuicPacket> {
-    const hdr = await this.readHeader(timeout);
-    if (hdr.cmd >= QuicCmd.Max || hdr.cmd == QuicCmd.Invalid) {
-      throw new Error("invalid command");
-    }
     if (!this.reader) {
       throw new Error("no serial reader");
     }
 
-    if ((hdr.flag & QuicFlag.Streaming) == 0) {
-      const buffer = await this.reader.read(hdr.len, timeout);
-      progress(buffer.length);
+    const promises = [this.reader.read().then((r) => r.value)];
+    if (timeout) {
+      promises.push(
+        new Promise<QuicPacket | undefined>((resolve, reject) =>
+          setTimeout(() => reject("timeout"), timeout),
+        ),
+      );
+    }
 
-      let payload: any = [];
-      if (hdr.len) {
-        payload = CBOR.decode(buffer);
-      }
+    const value = await Promise.race(promises);
+    if (!value) {
+      throw new Error("no packet");
+    }
+
+    if (value.cmd >= QuicCmd.Max || value.cmd == QuicCmd.Invalid) {
+      throw new Error("invalid command");
+    }
+
+    if ((value.flag & QuicFlag.Streaming) == 0) {
       return {
-        ...hdr,
-        payload,
+        ...value,
+        payload: CBOR.decode(value.payload),
       };
     }
 
     const writer = new ArrayWriter();
-    writer.writeUint8s(await this.reader.read(hdr.len, timeout));
+    writer.writeUint8s(value.payload);
     Log.trace("serial", "[quic] recv stream chunk", writer.length);
     progress(writer.length);
 
+    const cmd = value.cmd;
     while (writer) {
-      const nexthdr = await this.readHeader(timeout);
-      if (nexthdr.cmd != hdr.cmd || (nexthdr.flag & QuicFlag.Streaming) == 0) {
+      const { value } = await this.reader.read();
+      if (!value) {
+        throw new Error("no packet");
+      }
+      if (value.cmd != cmd || (value.flag & QuicFlag.Streaming) == 0) {
         throw new Error("invalid command");
       }
-      if (nexthdr.len == 0) {
+      if (value.len == 0) {
         break;
       }
 
-      const buf = await this.reader.read(nexthdr.len, timeout);
-      writer.writeUint8s(buf);
+      writer.writeUint8s(value.payload);
       Log.trace("serial", "[quic] recv stream chunk", writer.length);
       progress(writer.length);
     }
 
     const payload: any[] = CBOR.decode(writer.array());
     return {
-      ...hdr,
+      ...value,
       payload,
     };
   }
