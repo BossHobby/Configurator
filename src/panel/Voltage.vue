@@ -167,7 +167,7 @@
           </div>
         </div>
 
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="profile.profileVersionGt('0.2.2')">
           <div class="field-label">
             <label class="label">
               Filtered voltage warnings
