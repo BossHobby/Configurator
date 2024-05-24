@@ -241,7 +241,10 @@
     "text": "Set to the value received by your tx or in the OSD view with a full lipo"
   },
   "voltage.vbattlow": {
-    "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V (uses Fuel gauge volts)",
+    "text": "Set the desired voltage to trigger a warning, single cell voltage is used Default 3.3V (uses Fuel gauge volts by default)",
     "link": "https://docs.bosshobby.com/Features/#voltage"
+  },
+  "voltage.use_filtered_voltage_for_warnings": {
+    "text": "Use filtered voltage instead Fuel gauge volts for Warnings"
   }
 }

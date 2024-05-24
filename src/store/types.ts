@@ -140,6 +140,7 @@ export interface profile_voltage_t {
   vbattlow: number;
   actual_battery_voltage: number;
   reported_telemetry_voltage: number;
+  use_filtered_voltage_for_warnings: number;
   vbat_scale: number;
   ibat_scale: number;
 }
