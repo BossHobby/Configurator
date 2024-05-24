@@ -166,6 +166,33 @@
             </div>
           </div>
         </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label">
+              Filtered voltage warnings
+              <tooltip entry="voltage.use_filtered_voltage_for_warnings" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  type="checkbox"
+                  class="switch"
+                  id="use_filtered_voltage_for_warnings"
+                  :checked="profile.voltage.use_filtered_voltage_for_warnings || 0"
+                  @change="profile.voltage.use_filtered_voltage_for_warnings = profile.voltage.use_filtered_voltage_for_warnings ? 0 : 1"
+                />
+                <label
+                  class="py-0"
+                  style="height: 2em"
+                  for="use_filtered_voltage_for_warnings"
+                ></label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
