@@ -114,6 +114,7 @@ export class Serial {
   private reader?: ReadableStreamDefaultReader<QuicPacket>;
 
   private transfromClosed?: Promise<void>;
+  private errorCallback?: any;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
     try {
@@ -155,6 +156,9 @@ export class Serial {
       bufferSize: settings.serial.bufferSize,
       flowControl: "none",
     });
+
+    this.errorCallback = errorCallback;
+    this.waitingCommands = Promise.resolve({} as any);
 
     const transform = new QuicStream();
     this.transfromClosed = this.port.readable.pipeTo(transform.writable);
@@ -228,24 +232,28 @@ export class Serial {
 
   async close() {
     try {
-      await this.reader?.cancel();
+      await this.reader?.cancel().catch(console.warn);
       await (this.transfromClosed || Promise.resolve()).catch(() => undefined);
       this.reader?.releaseLock();
-
-      await this.writer?.close();
-      this.writer?.releaseLock();
-
-      await this.port?.close();
     } catch (err) {
       Log.warn("serial", err);
-    } finally {
-      this.reader = undefined;
-      this.writer = undefined;
-
-      this.transfromClosed = undefined;
-
-      this.port = undefined;
     }
+
+    try {
+      await this.writer?.close();
+      this.writer?.releaseLock();
+    } catch (err) {
+      Log.warn("serial", err);
+    }
+
+    await this.port?.close().catch(console.warn);
+
+    this.reader = undefined;
+    this.writer = undefined;
+
+    this.transfromClosed = undefined;
+
+    this.port = undefined;
   }
 
   private async _command(
@@ -265,6 +273,12 @@ export class Serial {
         }
 
         return packet;
+      })
+      .catch((err) => {
+        if (this.errorCallback) {
+          this.errorCallback(err);
+        }
+        throw err;
       }));
   }
 
