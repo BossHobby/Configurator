@@ -40,7 +40,8 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
     flag: 0,
     len: 0,
   };
-  private payload = new ArrayWriter();
+  private payload = new Uint8Array(0);
+  private offset = 0;
 
   constructor() {
     super({
@@ -79,28 +80,29 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
 
       case QuicParserState.READ_LEN_LOW:
         this.header.len |= val;
-        this.payload.reset();
+        this.offset = 0;
+        this.payload = new Uint8Array(this.header.len);
         this.state = QuicParserState.READ_PAYLOAD;
 
         if (this.header.len == 0) {
           this.state = QuicParserState.READ_MAGIC;
           return {
             ...this.header,
-            payload: this.payload.array(),
+            payload: this.payload,
           };
         }
         break;
 
       case QuicParserState.READ_PAYLOAD:
-        this.payload.writeUint8(val);
-        if (this.payload.length == this.header.len) {
-          this.state = QuicParserState.READ_MAGIC;
-          return {
-            ...this.header,
-            payload: this.payload.array(),
-          };
+        this.payload[this.offset++] = val;
+        if (this.offset < this.header.len) {
+          break;
         }
-        break;
+        this.state = QuicParserState.READ_MAGIC;
+        return {
+          ...this.header,
+          payload: this.payload,
+        };
     }
   }
 }
