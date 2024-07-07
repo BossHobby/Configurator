@@ -12,6 +12,7 @@ export const useStateStore = defineStore("state", {
     vbat_filtered: 0.0,
     vbattfilt: null,
     ibat_filtered: 0.0,
+    ibat_drawn: 0.0,
     rx: [],
     rx_filtered: [],
     rx_status: 0,

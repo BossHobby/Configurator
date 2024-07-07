@@ -267,6 +267,13 @@ export default defineComponent({
           text: "\x72\x73\x74",
         });
       }
+      if (this.profile.profileVersionGt("0.2.3")) {
+        elements.push({
+          name: "CURRENT DRAWN",
+          enabled: true,
+          text: "0.00\x07",
+        });
+      }
       return elements;
     },
     elements() {
