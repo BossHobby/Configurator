@@ -119,32 +119,22 @@ export class Serial {
   private errorCallback?: any;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
-    try {
-      const port = await WebSerial.requestPort({
-        filters: SERIAL_FILTERS,
-      });
-      await this._connectPort(port, errorCallback);
-      return await this.get(QuicVal.Info, 10_000);
-    } catch (err) {
-      await this.close();
-      throw err;
-    }
+    const port = await WebSerial.requestPort({
+      filters: SERIAL_FILTERS,
+    });
+    await this._connectPort(port, errorCallback);
+    return await this.get(QuicVal.Info, 10_000);
   }
 
   public async connectFirstPort(
     errorCallback: any = console.warn,
   ): Promise<any> {
-    try {
-      const ports = await WebSerial.getPorts();
-      if (!ports.length) {
-        throw new Error("no ports");
-      }
-      await this._connectPort(ports[0], errorCallback);
-      return await this.get(QuicVal.Info, 10_000);
-    } catch (err) {
-      await this.close();
-      throw err;
+    const ports = await WebSerial.getPorts();
+    if (!ports.length) {
+      throw new Error("no ports");
     }
+    await this._connectPort(ports[0], errorCallback);
+    return await this.get(QuicVal.Info, 10_000);
   }
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
@@ -235,7 +225,7 @@ export class Serial {
   async close() {
     try {
       await this.reader?.cancel().catch(console.warn);
-      await (this.transfromClosed || Promise.resolve()).catch(() => undefined);
+      await (this.transfromClosed || Promise.resolve()).catch(console.warn);
       this.reader?.releaseLock();
     } catch (err) {
       Log.warn("serial", err);
