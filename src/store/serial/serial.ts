@@ -6,7 +6,12 @@ import {
   type QuicHeader,
   type QuicPacket,
 } from "./quic";
-import { ArrayWriter, concatUint8Array, stringToUint8Array } from "../util";
+import {
+  ArrayWriter,
+  asyncDelay,
+  concatUint8Array,
+  stringToUint8Array,
+} from "../util";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
 import { WebSerial } from "./webserial";
@@ -175,7 +180,9 @@ export class Serial {
     const target = await this.get(QuicVal.Target, 500)
       .then((p) => p.name)
       .catch(() => undefined);
+    await asyncDelay(100);
     await this.write(stringToUint8Array(HARD_REBOOT_MAGIC));
+    await asyncDelay(100);
     await this.write(stringToUint8Array("\r\nbl\r\n"));
     await this.close();
 
