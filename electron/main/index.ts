@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 
-import icon from "../../public/icon.png?asset";
+import icon from "../icon.png?asset";
 
 const USB_DEVICE_FILTER = [
   { vendorId: 0x0483, productId: 0xdf11 },
