@@ -19,8 +19,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import * as THREE from "three";
+import { defineComponent, getCurrentInstance } from "vue";
+import {
+  BoxGeometry,
+  MeshBasicMaterial,
+  WebGLRenderer,
+  Mesh,
+  Vector3,
+  Quaternion,
+  PerspectiveCamera,
+  HemisphereLight,
+  DirectionalLight,
+  Scene,
+} from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useStateStore } from "@/store/state";
 import { useRootStore } from "@/store/root";
@@ -29,6 +40,11 @@ export default defineComponent({
   name: "GyroModel",
   setup() {
     return {
+      frameRequest: -1,
+      camera: new PerspectiveCamera(),
+      scene: new Scene(),
+      renderer: new WebGLRenderer(),
+      model: undefined as any,
       state: useStateStore(),
       root: useRootStore(),
     };
@@ -46,7 +62,7 @@ export default defineComponent({
         return;
       }
 
-      this.camera = new THREE.PerspectiveCamera(
+      this.camera = new PerspectiveCamera(
         45,
         container.clientWidth / container.clientHeight,
         0.01,
@@ -56,20 +72,20 @@ export default defineComponent({
       this.camera.position.y = 40;
       this.camera.lookAt(0, 0, 0);
 
-      const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 5);
-      const mainLight = new THREE.DirectionalLight(0xffffff, 10);
+      const ambientLight = new HemisphereLight(0xddeeff, 0x0f0e0d, 5);
+      const mainLight = new DirectionalLight(0xffffff, 10);
       mainLight.position.set(0, 1000, 0);
 
-      this.scene = new THREE.Scene();
+      this.scene = new Scene();
       this.scene.add(ambientLight, mainLight);
 
-      const geometry = new THREE.BoxGeometry();
-      const material = new THREE.MeshBasicMaterial({
+      const geometry = new BoxGeometry();
+      const material = new MeshBasicMaterial({
         color: 0x00ff00,
         wireframe: true,
       });
 
-      const cube = new THREE.Mesh(geometry, material);
+      const cube = new Mesh(geometry, material);
       this.scene.add(cube);
 
       const loader = new GLTFLoader();
@@ -77,7 +93,7 @@ export default defineComponent({
       this.model = gltf.scene.children[0];
       this.scene.add(this.model);
 
-      this.renderer = new THREE.WebGLRenderer({
+      this.renderer = new WebGLRenderer({
         antialias: true,
         alpha: true,
       });
@@ -88,16 +104,16 @@ export default defineComponent({
       this.animate();
     },
     animate() {
-      if (this.model) {
-        const UP = new THREE.Vector3(0, 1, 0);
-        const GYRO = new THREE.Vector3(
+      if (this.model && this.state.GEstG) {
+        const UP = new Vector3(0, 1, 0);
+        const GYRO = new Vector3(
           this.state.GEstG[0],
           this.state.GEstG[2],
           -this.state.GEstG[1],
         );
         GYRO.normalize();
 
-        const q = new THREE.Quaternion();
+        const q = new Quaternion();
         q.setFromUnitVectors(UP, GYRO);
 
         this.model.rotation.setFromQuaternion(q);
