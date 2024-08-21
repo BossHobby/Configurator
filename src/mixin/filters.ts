@@ -1,7 +1,10 @@
-import moment from "moment";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 export function timeAgo(time) {
-  return moment(time).fromNow();
+  return dayjs(time).fromNow();
 }
 
 export function humanFileSize(bytes: number, si = false, dp = 1): string {
