@@ -80,6 +80,9 @@ export default defineConfig({
         mode: process.env.NODE_ENV,
       },
       injectManifest: {
+        globPatterns: [
+          "**/*.{css,glb,html,ico,jpg,js,png,svg,txt,webmanifest,woff2}",
+        ],
         rollupFormat: "iife",
       },
     }),
