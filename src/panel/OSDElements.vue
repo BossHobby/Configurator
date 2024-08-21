@@ -558,7 +558,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .osd-canvas {
   width: 100%;
-  background-image: url("@/assets/osd_background.jpg");
+  background-image: url("/osd_background.jpg");
   background-attachment: local;
   background-size: cover;
 }

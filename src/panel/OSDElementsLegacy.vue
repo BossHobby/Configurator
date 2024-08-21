@@ -311,7 +311,7 @@ export default defineComponent({
 svg {
   display: block;
 
-  background-image: url("@/assets/osd_background.jpg");
+  background-image: url("/osd_background.jpg");
   background-attachment: local;
   background-size: cover;
 
