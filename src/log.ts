@@ -51,10 +51,10 @@ export class Log {
     if (prefix && prefix.length) {
       str += "[" + prefix + "]";
     }
+    str += " ";
     while (typeof data[0] == "string") {
       str += data.shift();
     }
-
     return str;
   }
 
