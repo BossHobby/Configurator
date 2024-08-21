@@ -239,6 +239,7 @@ import LogoText from "./assets/Logo_Text.svg?component";
 import LogoTextDevelop from "./assets/Logo_Develop_Text.svg?component";
 import { Log } from "./log";
 import { WebSerial } from "./store/serial/webserial";
+import { settings } from "./store/serial/settings";
 
 export default defineComponent({
   name: "app",
@@ -314,6 +315,9 @@ export default defineComponent({
       return updater.updatePreparing() || updater.updatePending();
     },
     hasBrowserSupport() {
+      if (settings.websocketUrl()) {
+        return true;
+      }
       return navigator.usb && WebSerial;
     },
     logDownloadAnchorRef(): HTMLAnchorElement {

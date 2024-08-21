@@ -13,5 +13,8 @@ const desktopSerialSettings = {
 };
 
 export const settings = {
+  websocketUrl() {
+    return new URL(document.location.toString()).searchParams.get("ws");
+  },
   serial: isAndroid ? androidSerialSettings : desktopSerialSettings,
 };

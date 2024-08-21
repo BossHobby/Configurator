@@ -116,6 +116,7 @@ export class Serial {
   private waitingCommands: Promise<QuicPacket> = Promise.resolve({} as any);
 
   private port?: SerialPort;
+  private ws?: WebSocket;
 
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<QuicPacket>;
@@ -124,21 +125,27 @@ export class Serial {
   private errorCallback?: any;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
-    const port = await WebSerial.requestPort({
-      filters: SERIAL_FILTERS,
-    });
-    await this._connectPort(port, errorCallback);
+    const ws = settings.websocketUrl();
+    if (ws) {
+      await this._connectWebsocket(ws, errorCallback);
+    } else {
+      const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
+      await this._connectPort(port, errorCallback);
+    }
     return await this.get(QuicVal.Info, 10_000);
   }
 
   public async connectFirstPort(
     errorCallback: any = console.warn,
   ): Promise<any> {
-    const ports = await WebSerial.getPorts();
-    if (!ports.length) {
-      throw new Error("no ports");
+    const ws = settings.websocketUrl();
+    if (ws) {
+      await this._connectWebsocket(ws, errorCallback);
+    } else {
+      const ports = await WebSerial.getPorts();
+      if (!ports.length) throw new Error("no ports");
+      await this._connectPort(ports[0], errorCallback);
     }
-    await this._connectPort(ports[0], errorCallback);
     return await this.get(QuicVal.Info, 10_000);
   }
 
@@ -161,6 +168,39 @@ export class Serial {
     this.transfromClosed = this.port.readable.pipeTo(transform.writable);
     this.writer = await this.port.writable.getWriter();
     this.reader = transform.readable.getReader();
+  }
+
+  private async _connectWebsocket(
+    host: string,
+    errorCallback: any = console.warn,
+  ) {
+    const transform = new QuicStream();
+    const writer = transform.writable.getWriter();
+    this.reader = transform.readable.getReader();
+
+    this.errorCallback = errorCallback;
+    this.waitingCommands = Promise.resolve({} as any);
+
+    this.transfromClosed = Promise.resolve({} as any);
+
+    return new Promise<void>((resolve, reject) => {
+      this.ws = new WebSocket("wss://" + host + "/ws");
+      this.ws.binaryType = "arraybuffer";
+      this.ws.onopen = (e) => {
+        resolve();
+      };
+      this.ws.onmessage = async (e) => {
+        writer.write(new Uint8Array(e.data));
+      };
+      this.ws.onclose = (e) => {
+        errorCallback(e);
+        this.close();
+      };
+      this.ws.onerror = (e) => {
+        errorCallback(e);
+        reject(e);
+      };
+    });
   }
 
   public async softReboot() {
@@ -282,7 +322,9 @@ export class Serial {
   }
 
   private async write(array: Uint8Array) {
-    if (this.writer) {
+    if (this.ws) {
+      await this.ws?.send(array);
+    } else if (this.writer) {
       await this.writer.write(array);
     } else {
       throw new Error("no serial writer");
