@@ -50,13 +50,20 @@
                     class="columns"
                   >
                     <div class="column is-6 py-1">{{ v.text }}</div>
-                    <div
-                      class="column is-6 py-1"
-                      :class="
-                        valueForIndex(index) ? 'text-success' : 'text-danger'
-                      "
-                    >
-                      {{ valueForIndex(index) ? "ON" : "OFF" }}
+                    <div class="column is-6 py-1">
+                      <input
+                        type="checkbox"
+                        class="switch is-rounded"
+                        :id="'active-' + index"
+                        :name="'active-' + index"
+                        :checked="valueForIndex(index)"
+                        onclick="return false;"
+                      />
+                      <label
+                        class="py-0"
+                        :for="'active-' + index"
+                        style="height: 2em; cursor: default"
+                      ></label>
                     </div>
                   </div>
                 </div>
@@ -117,12 +124,12 @@ export default defineComponent({
         return "";
       }
 
-      if (this.profile.receiver.aux[index] == 12) return "text-danger";
-      if (this.profile.receiver.aux[index] == 13) return "text-success";
+      if (this.profile.receiver.aux[index] == 12) return "has-text-danger";
+      if (this.profile.receiver.aux[index] == 13) return "has-text-success";
       if (this.valueForIndex(this.profile.receiver.aux[index])) {
-        return "text-success";
+        return "has-text-success";
       }
-      return "";
+      return "has-text-danger";
     },
   },
 });
