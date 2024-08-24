@@ -56,7 +56,6 @@ export default defineConfig({
             type: "image/png",
           },
         ],
-        start_url: ".",
         display: "standalone",
         background_color: "#FFFFFF",
       },
