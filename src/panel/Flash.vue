@@ -1,236 +1,234 @@
 <template>
-  <div class="columns">
-    <form class="column is-12" @submit="onSubmit">
-      <div class="card">
-        <div class="card-header">
-          <p class="card-header-title">
-            Flash
-            <tooltip entry="flash.reset" />
-          </p>
-          <spinner-btn
-            class="card-header-button is-info"
-            type="button"
-            @click="resetToBootloader()"
-          >
-            Reset to Bootloader
-          </spinner-btn>
+  <form @submit="onSubmit">
+    <div class="card">
+      <div class="card-header">
+        <p class="card-header-title">
+          Flash
+          <tooltip entry="flash.reset" />
+        </p>
+        <spinner-btn
+          class="card-header-button is-info"
+          type="button"
+          @click="resetToBootloader()"
+        >
+          Reset to Bootloader
+        </spinner-btn>
+      </div>
+
+      <div class="card-content field-is-3">
+        <div v-if="currentTarget" class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label"> Current Target </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input is-static"
+                  :value="currentTarget"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="card-content field-is-3">
-          <div v-if="currentTarget" class="field is-horizontal">
-            <div class="field-label is-normal">
-              <label class="label"> Current Target </label>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">
+              Source <tooltip entry="flash.source" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <input-select
+                    v-model="source"
+                    :options="sourceOptions"
+                    :disabled="loading"
+                  >
+                  </input-select>
+                </div>
+              </div>
             </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
+          </div>
+        </div>
+
+        <div class="field is-horizontal" v-if="source == 'local'">
+          <div class="field-label is-medium">
+            <label class="label">
+              File
+              <tooltip entry="flash.file-local" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div
+                class="file is-boxed is-medium"
+                :class="{ 'has-name': file }"
+              >
+                <label class="file-label">
                   <input
-                    class="input is-static"
-                    :value="currentTarget"
-                    readonly
+                    class="file-input"
+                    type="file"
+                    @change="updateFile()"
+                    ref="file"
+                    accept=".hex"
+                    :disabled="loading"
+                  />
+                  <span class="file-cta">
+                    <span class="file-icon">
+                      <font-awesome-icon icon="fa-solid fa-upload" />
+                    </span>
+                    <span class="file-label"> Choose a file… </span>
+                  </span>
+                  <span v-if="file" class="file-name">
+                    {{ file.name }}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal" v-if="source == 'branch'">
+          <div class="field-label is-normal">
+            <label class="label">
+              Branch
+              <tooltip entry="flash.file-branch" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <input-select
+                    v-model="branch"
+                    :options="branchOptions"
+                    :disabled="loading"
                   />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="field is-horizontal">
-            <div class="field-label is-normal">
-              <label class="label">
-                Source <tooltip entry="flash.source" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <input-select
-                      v-model="source"
-                      :options="sourceOptions"
-                      :disabled="loading"
-                    >
-                    </input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="field is-horizontal" v-if="source == 'pull_request'">
+          <div class="field-label is-normal">
+            <label class="label">
+              Pull Request
+              <tooltip entry="flash.file-pull-request" />
+            </label>
           </div>
-
-          <div class="field is-horizontal" v-if="source == 'local'">
-            <div class="field-label is-medium">
-              <label class="label">
-                File
-                <tooltip entry="flash.file-local" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div
-                  class="file is-boxed is-medium"
-                  :class="{ 'has-name': file }"
-                >
-                  <label class="file-label">
-                    <input
-                      class="file-input"
-                      type="file"
-                      @change="updateFile()"
-                      ref="file"
-                      accept=".hex"
-                      :disabled="loading"
-                    />
-                    <span class="file-cta">
-                      <span class="file-icon">
-                        <font-awesome-icon icon="fa-solid fa-upload" />
-                      </span>
-                      <span class="file-label"> Choose a file… </span>
-                    </span>
-                    <span v-if="file" class="file-name">
-                      {{ file.name }}
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal" v-if="source == 'branch'">
-            <div class="field-label is-normal">
-              <label class="label">
-                Branch
-                <tooltip entry="flash.file-branch" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <input-select
-                      v-model="branch"
-                      :options="branchOptions"
-                      :disabled="loading"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal" v-if="source == 'pull_request'">
-            <div class="field-label is-normal">
-              <label class="label">
-                Pull Request
-                <tooltip entry="flash.file-pull-request" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <input-select
-                      v-model="pullRequest"
-                      :options="pullRequestOptions"
-                      :disabled="loading"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="field is-horizontal"
-            v-if="source == 'branch' || source == 'pull_request'"
-          >
-            <div class="field-label is-normal">
-              <label class="label">
-                Commit
-                <tooltip entry="flash.file-commit" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <input
-                    class="input is-fullwidth is-static"
-                    type="text"
-                    :value="commitHash"
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <input-select
+                    v-model="pullRequest"
+                    :options="pullRequestOptions"
+                    :disabled="loading"
                   />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="field is-horizontal" v-if="source == 'release'">
-            <div class="field-label is-normal">
-              <label class="label">
-                Release
-                <tooltip entry="flash.file-release" />
-              </label>
+        <div
+          class="field is-horizontal"
+          v-if="source == 'branch' || source == 'pull_request'"
+        >
+          <div class="field-label is-normal">
+            <label class="label">
+              Commit
+              <tooltip entry="flash.file-commit" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <input
+                  class="input is-fullwidth is-static"
+                  type="text"
+                  :value="commitHash"
+                />
+              </div>
             </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <input-select
-                      v-model="release"
-                      :options="releaseOptions"
-                      :disabled="loading"
-                    />
-                  </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal" v-if="source == 'release'">
+          <div class="field-label is-normal">
+            <label class="label">
+              Release
+              <tooltip entry="flash.file-release" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <input-select
+                    v-model="release"
+                    :options="releaseOptions"
+                    :disabled="loading"
+                  />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="field is-horizontal" v-if="source != 'local'">
-            <div class="field-label is-normal">
-              <label class="label">
-                Target
-                <tooltip entry="flash.file-remote" />
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <div
-                      class="dropdown"
-                      :class="{ 'is-active': dropdownActive || dropdownHover }"
-                    >
-                      <div class="dropdown-trigger">
-                        <div class="field">
-                          <p class="control is-expanded has-icons-right">
-                            <input
-                              class="input is-fullwidth"
-                              type="search"
-                              placeholder="Search..."
-                              v-model="targetSearch"
-                              @focus="dropdownActive = true"
-                              @blur="dropdownActive = false"
-                              :disabled="loading"
-                            />
-                          </p>
-                        </div>
+        <div class="field is-horizontal" v-if="source != 'local'">
+          <div class="field-label is-normal">
+            <label class="label">
+              Target
+              <tooltip entry="flash.file-remote" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <div
+                    class="dropdown"
+                    :class="{ 'is-active': dropdownActive || dropdownHover }"
+                  >
+                    <div class="dropdown-trigger">
+                      <div class="field">
+                        <p class="control is-expanded has-icons-right">
+                          <input
+                            class="input is-fullwidth"
+                            type="search"
+                            placeholder="Search..."
+                            v-model="targetSearch"
+                            @focus="dropdownActive = true"
+                            @blur="dropdownActive = false"
+                            :disabled="loading"
+                          />
+                        </p>
                       </div>
-                      <div
-                        class="dropdown-menu"
-                        style="overflow-y: auto; max-height: 50vh"
-                        role="menu"
-                        @mouseover="dropdownHover = true"
-                        @mouseleave="dropdownHover = false"
-                      >
-                        <div class="dropdown-content">
-                          <a
-                            v-for="o of targetOptions"
-                            :key="o.value"
-                            :value="o.value"
-                            class="dropdown-item"
-                            :class="{ 'is-active': target == o }"
-                            @click.prevent="selectTarget(o)"
-                          >
-                            {{ o.text }}
-                          </a>
-                        </div>
+                    </div>
+                    <div
+                      class="dropdown-menu"
+                      style="overflow-y: auto; max-height: 50vh"
+                      role="menu"
+                      @mouseover="dropdownHover = true"
+                      @mouseleave="dropdownHover = false"
+                    >
+                      <div class="dropdown-content">
+                        <a
+                          v-for="o of targetOptions"
+                          :key="o.value"
+                          :value="o.value"
+                          class="dropdown-item"
+                          :class="{ 'is-active': target == o }"
+                          @click.prevent="selectTarget(o)"
+                        >
+                          {{ o.text }}
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -238,36 +236,37 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <div v-for="(v, k) in progress" :key="k" class="columns my-2 mx-2">
-            <div class="column is-2">{{ k }}</div>
-            <div class="column is-10">
-              <progress
-                class="progress is-primary"
-                height="20px"
-                :value="v.current"
-                :max="v.total"
-              ></progress>
-            </div>
+        <div v-for="(v, k) in progress" :key="k" class="columns my-2 mx-2">
+          <div class="column is-2">{{ k }}</div>
+          <div class="column is-10">
+            <progress
+              class="progress is-primary"
+              height="20px"
+              :value="v.current"
+              :max="v.total"
+            ></progress>
           </div>
         </div>
-        <footer class="card-footer">
-          <spinner-btn
-            class="card-footer-item"
-            :class="{ 'is-loading': loading }"
-            :disabled="!canFlash"
-            type="submit"
-          >
-            Flash
-          </spinner-btn>
-        </footer>
       </div>
-    </form>
-  </div>
+      <footer class="card-footer">
+        <spinner-btn
+          class="card-footer-item"
+          :class="{ 'is-loading': loading }"
+          :disabled="!canFlash"
+          type="submit"
+        >
+          Flash
+        </spinner-btn>
+      </footer>
+    </div>
+  </form>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import Info from "@/panel/Info.vue";
 import { Flasher, type FlashProgress } from "@/store/flash/flash";
 import { github } from "@/store/util/github";
 import { Log } from "@/log";

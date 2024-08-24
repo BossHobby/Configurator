@@ -10,7 +10,6 @@ import Blackbox from "./views/Blackbox.vue";
 import State from "./views/State.vue";
 import Perf from "./views/Perf.vue";
 import Profile from "./views/Profile.vue";
-import Flash from "./views/Flash.vue";
 import Home from "./views/Home.vue";
 import Templates from "./views/Templates.vue";
 
@@ -36,11 +35,6 @@ const router = createRouter({
       path: "/templates",
       name: "templates",
       component: Templates,
-    },
-    {
-      path: "/flash",
-      name: "flash",
-      component: Flash,
     },
     {
       path: "/profile",

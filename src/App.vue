@@ -28,7 +28,7 @@
     aria-label="main navigation"
   >
     <div class="navbar-brand">
-      <router-link class="navbar-item py-1" to="/profile">
+      <router-link class="navbar-item py-1" to="/">
         <LogoTextDevelop
           v-if="branch == 'develop'"
           viewBox="0 0 512 130"
@@ -114,14 +114,6 @@
           to="/perf"
         >
           Perf
-        </router-link>
-      </div>
-      <div v-else class="navbar-start">
-        <router-link active-class="is-active" class="navbar-item" to="/">
-          Home
-        </router-link>
-        <router-link active-class="is-active" class="navbar-item" to="/flash">
-          Flash
         </router-link>
       </div>
 
@@ -312,7 +304,7 @@ export default defineComponent({
       return "Connect";
     },
     canConnect() {
-      return !this.serial.is_connecting && this.$route.name != "flash";
+      return !this.serial.is_connecting;
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
