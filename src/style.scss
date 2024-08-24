@@ -12,9 +12,12 @@ $white: rgb(255, 255, 255);
 $white-off: hsl(0, 0%, 95%);
 $white-offer: hsl(0, 0%, 75%);
 
+$danger: hsl(348, 86%, 61%);
+
 @use "bulma/sass" with (
   $family-primary: '"Roboto", sans-serif',
   $primary: $green,
+  $danger: $danger,
   $link: $white,
   $success: $green-light
 );
@@ -22,6 +25,11 @@ $white-offer: hsl(0, 0%, 75%);
 
 :root {
   --bulma-primary-invert-l: var(--bulma-primary-100-l);
+  --bulma-danger-invert-l: var(--bulma-danger-100-l);
+
+  .navbar {
+    --bulma-navbar-burger-color: #{$white-off};
+  }
 }
 
 .theme-dark {
@@ -36,18 +44,18 @@ $white-offer: hsl(0, 0%, 75%);
   --bulma-link-focus: #{$grey-lighter};
 
   --bulma-scheme-main: #{$grey-darker};
-  --bulma-scheme-main-l: lightness(#{$grey-darker});
+  --bulma-scheme-main-l: #{lightness($grey-darker)};
   --bulma-scheme-main-bis: #{$grey};
-  --bulma-scheme-main-bis-l: ligthness(#{$grey});
+  --bulma-scheme-main-bis-l: #{lightness($grey)};
   --bulma-scheme-main-ter: #{$grey};
-  --bulma-scheme-main-ter-l: ligthness(#{$grey});
+  --bulma-scheme-main-ter-l: #{lightness($grey)};
 
   --bulma-scheme-invert: #{$white-off};
-  --bulma-scheme-invert-l: lightness(#{$white-off});
+  --bulma-scheme-invert-l: #{lightness($white-off)};
   --bulma-scheme-invert-bis: #{$white};
-  --bulma-scheme-invert-bis-l: lightness(#{$white});
+  --bulma-scheme-invert-bis-l: #{lightness($white)};
   --bulma-scheme-invert-ter: #{$white};
-  --bulma-scheme-invert-ter-l: lightness(#{$white});
+  --bulma-scheme-invert-ter-l: #{lightness($white)};
 
   --bulma-background: #{$grey};
   --bulma-body-background-color: #{$grey};
@@ -61,6 +69,15 @@ $white-offer: hsl(0, 0%, 75%);
   --bulma-card-header-shadow: 0 0.125em 0.25em #{rgba($grey-darkest, 0.5)};
   --bulma-navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
   --bulma-navbar-box-shadow-color: rgb(8 8 8 / 30%);
+
+  .modal {
+    --bulma-modal-background-background-color: hsla(
+      var(--bulma-scheme-h),
+      var(--bulma-scheme-s),
+      var(--bulma-scheme-main-l),
+      0.86
+    );
+  }
 }
 
 body {
@@ -76,10 +93,6 @@ body {
     padding-top: 8px;
     padding-bottom: 8px;
   }
-}
-
-.navbar {
-  --bulma-navbar-burger-color: #{$white-off};
 }
 
 .field-label {
