@@ -11,7 +11,7 @@
     <slot>
       <span
         class="tooltip-icon"
-        :class="{ 'has-text-danger': danger, 'has-text-grey': !danger }"
+        :class="{ 'has-text-danger': danger, 'has-text-grey-light': !danger }"
         :id="'tooltip-' + entry"
       >
         <font-awesome-icon

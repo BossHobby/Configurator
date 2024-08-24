@@ -3,9 +3,9 @@ $green-light: hsl(96deg 53% 48%);
 $green-dark: hsl(96deg 53% 40%);
 
 $grey: hsl(0, 0%, 19%);
-$grey-darker: hsl(0, 0%, 16%);
-$grey-darkest: hsl(0, 0%, 3%);
-$grey-light: hsl(0, 0%, 29%);
+$grey-dark: hsl(0, 0%, 16%);
+$grey-darker: hsl(0, 0%, 3%);
+$grey-light: hsl(0, 0%, 42%);
 $grey-lighter: hsl(0, 0%, 73%);
 
 $white: rgb(255, 255, 255);
@@ -19,7 +19,13 @@ $danger: hsl(348, 86%, 61%);
   $primary: $green,
   $danger: $danger,
   $link: $white,
-  $success: $green-light
+  $success: $green-light,
+
+  $grey: $grey,
+  $grey-dark: $grey-dark,
+  $grey-darker: $grey-darker,
+  $grey-light: $grey-light,
+  $grey-lighter: $grey-lighter
 );
 @use "bulma/sass/utilities/css-variables" as cs;
 @import "switch.scss";
@@ -49,8 +55,8 @@ $danger: hsl(348, 86%, 61%);
   --bulma-link-invert: #{$grey-lighter};
   --bulma-link-focus: #{$grey-lighter};
 
-  @include register-var("scheme", $grey-darker);
-  @include register-var("scheme-main", $grey-darker);
+  @include register-var("scheme", $grey-dark);
+  @include register-var("scheme-main", $grey-dark);
   @include register-var("scheme-main-bis", $grey);
   @include register-var("scheme-main-ter", $grey);
   @include register-var("scheme-invert", $white-off);
@@ -64,9 +70,9 @@ $danger: hsl(348, 86%, 61%);
   --bulma-border-hover: #{$grey-lighter};
   --bulma-border-light: #{$grey-light};
 
-  --bulma-shadow: #{0 0.5em 1em -0.125em rgba($grey-darkest, 0.5)},
-    #{0 0px 0 1px rgba($grey-darkest, 0.2)};
-  --bulma-card-header-shadow: 0 0.125em 0.25em #{rgba($grey-darkest, 0.5)};
+  --bulma-shadow: #{0 0.5em 1em -0.125em rgba($grey-darker, 0.5)},
+    #{0 0px 0 1px rgba($grey-darker, 0.2)};
+  --bulma-card-header-shadow: 0 0.125em 0.25em #{rgba($grey-darker, 0.5)};
   --bulma-navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
   --bulma-navbar-box-shadow-color: rgb(8 8 8 / 30%);
 
