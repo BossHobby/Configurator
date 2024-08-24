@@ -105,9 +105,6 @@
   "flash.source": {
     "text": "If you compile your own hex select `local` and choose it in the next box"
   },
-  "log.download": {
-    "text": "Download log file"
-  },
   "motor.digital_idle": {
     "text": "Adjust in small ammounts if needed to achieve smooth idle"
   },

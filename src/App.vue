@@ -120,16 +120,6 @@
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="buttons">
-            <button class="button is-primary" @click="downloadLog()">
-              <tooltip entry="log.download">
-                <font-awesome-icon
-                  icon="fa-solid fa-file-export"
-                  size="lg"
-                  fixed-width
-                />
-              </tooltip>
-              <a ref="logDownloadAnchor" style="display: none"></a>
-            </button>
             <button class="button is-primary" @click="setDarkMode(!darkMode)">
               <font-awesome-icon
                 v-if="!darkMode"
@@ -182,6 +172,14 @@
       <span class="navbar-item" style="font-size: 60%">
         CPU Temp {{ state.cpu_temp.toFixed(2) }}°C
       </span>
+      <button class="navbar-item is-small" @click="downloadLog()">
+        <font-awesome-icon
+          icon="fa-solid fa-file-export"
+          size="sm"
+          fixed-width
+        />
+        <a ref="logDownloadAnchor" style="display: none"></a>
+      </button>
     </div>
 
     <div class="navbar-end">
