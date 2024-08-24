@@ -2,56 +2,65 @@ $green: hsl(96deg 53% 43%);
 $green-light: hsl(96deg 53% 48%);
 $green-dark: hsl(96deg 53% 40%);
 
-$gray: hsl(0, 0%, 19%);
-$gray-darker: hsl(0, 0%, 16%);
-$gray-darkest: hsl(0, 0%, 3%);
-$gray-light: hsl(0, 0%, 29%);
-$gray-lighter: hsl(0, 0%, 73%);
+$grey: hsl(0, 0%, 19%);
+$grey-darker: hsl(0, 0%, 16%);
+$grey-darkest: hsl(0, 0%, 3%);
+$grey-light: hsl(0, 0%, 29%);
+$grey-lighter: hsl(0, 0%, 73%);
 
 $white: rgb(255, 255, 255);
 $white-off: hsl(0, 0%, 95%);
 $white-offer: hsl(0, 0%, 75%);
 
-$primary: $green;
-
-@use "../node_modules/@bulvar/bulma/bulma.sass" with (
-  $primary: $primary,
-  $link: $green,
-  $link-visited: $green,
+@use "bulma/sass" with (
+  $family-primary: '"Roboto", sans-serif',
+  $primary: $green,
+  $link: $white,
   $success: $green-light
 );
-@use "../node_modules/@bulvar/bulma/themes/light.sass";
-@import "../node_modules/bulma/sass/utilities/_all.sass";
-@import "../node_modules/bulma-switch/src/sass/index.sass";
+@import "switch.scss";
+
+:root {
+  --bulma-primary-invert-l: var(--bulma-primary-100-l);
+}
 
 .theme-dark {
-  --text: #{$white-off};
-  --text-strong: #{$white};
-  --text-light: #{$white-offer};
+  --bulma-text: #{$white-off};
+  --bulma-text-strong: #{$white};
+  --bulma-text-light: #{$white-offer};
 
-  --link: #{$green};
-  --link-visited: #{$green};
-  --link-hover: #{$gray-lighter};
-  --link-invert: #{$gray-lighter};
-  --link-focus: #{$gray-lighter};
+  --bulma-link: #{$green};
+  --bulma-link-visited: #{$green};
+  --bulma-link-hover: #{$grey-lighter};
+  --bulma-link-invert: #{$grey-lighter};
+  --bulma-link-focus: #{$grey-lighter};
 
-  --scheme-main: #{$gray-darker};
-  --scheme-main-bis: #{$gray};
-  --scheme-main-ter: #{$gray};
-  --scheme-invert: #{$white-off};
+  --bulma-scheme-main: #{$grey-darker};
+  --bulma-scheme-main-l: lightness(#{$grey-darker});
+  --bulma-scheme-main-bis: #{$grey};
+  --bulma-scheme-main-bis-l: ligthness(#{$grey});
+  --bulma-scheme-main-ter: #{$grey};
+  --bulma-scheme-main-ter-l: ligthness(#{$grey});
 
-  --background: #{$gray};
-  --body-background-color: #{$gray};
+  --bulma-scheme-invert: #{$white-off};
+  --bulma-scheme-invert-l: lightness(#{$white-off});
+  --bulma-scheme-invert-bis: #{$white};
+  --bulma-scheme-invert-bis-l: lightness(#{$white});
+  --bulma-scheme-invert-ter: #{$white};
+  --bulma-scheme-invert-ter-l: lightness(#{$white});
 
-  --border: #{$gray-light};
-  --border-hover: #{$gray-lighter};
-  --border-light: #{$gray-light};
+  --bulma-background: #{$grey};
+  --bulma-body-background-color: #{$grey};
 
-  --shadow: #{0 0.5em 1em -0.125em rgba($gray-darkest, 0.5)},
-    #{0 0px 0 1px rgba($gray-darkest, 0.2)};
-  --card-header-shadow: 0 0.125em 0.25em #{rgba($gray-darkest, 0.5)};
-  --navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
-  --navbar-box-shadow-color: rgb(8 8 8 / 30%);
+  --bulma-border: #{$grey-light};
+  --bulma-border-hover: #{$grey-lighter};
+  --bulma-border-light: #{$grey-light};
+
+  --bulma-shadow: #{0 0.5em 1em -0.125em rgba($grey-darkest, 0.5)},
+    #{0 0px 0 1px rgba($grey-darkest, 0.2)};
+  --bulma-card-header-shadow: 0 0.125em 0.25em #{rgba($grey-darkest, 0.5)};
+  --bulma-navbar-bottom-box-shadow-size: 0 -0.1em 0.125em;
+  --bulma-navbar-box-shadow-color: rgb(8 8 8 / 30%);
 }
 
 body {
@@ -67,6 +76,10 @@ body {
     padding-top: 8px;
     padding-bottom: 8px;
   }
+}
+
+.navbar {
+  --bulma-navbar-burger-color: #{$white-off};
 }
 
 .field-label {
@@ -99,11 +112,6 @@ body {
 
 .card-header-button {
   margin: 10px;
-}
-
-.card-footer-item.button {
-  border-radius: 0;
-  height: unset;
 }
 
 .logo-animation {

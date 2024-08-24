@@ -206,16 +206,16 @@
           Reboot required
         </div>
       </span>
-      <div class="navbar-item">
+      <div class="navbar-item pt-0">
         <div class="buttons">
           <spinner-btn class="is-warning mx-2" @click="serial.soft_reboot()">
             Reboot
           </spinner-btn>
-          <div class="ml-3 mb-3 is-hidden-tablet">
+          <div class="ml-3 mb-3 is-hidden-tablet" style="max-width: 40%">
             <div class="is-size-5">
               {{ profile.meta.name }}
             </div>
-            <div>Modified {{ profile.modified }}</div>
+            <div class="is-size-7">Modified {{ profile.modified }}</div>
           </div>
           <spinner-btn
             class="is-primary ml-auto"
@@ -294,7 +294,7 @@ export default defineComponent({
       if (newVal) {
         document.firstElementChild.className = "theme-dark";
       } else {
-        document.firstElementChild.className = "";
+        document.firstElementChild.className = "theme-light";
       }
     },
   },
