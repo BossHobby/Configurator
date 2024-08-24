@@ -153,7 +153,7 @@
               />
             </button>
             <spinner-btn
-              class="button is-primary"
+              class="is-primary ml-auto"
               @click="serial.toggle_connection"
               :disabled="!canConnect"
             >
