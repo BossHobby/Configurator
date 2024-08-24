@@ -109,13 +109,22 @@ export default defineComponent({
     },
   },
   mounted() {
-    const offset = (this.$refs.tooltipContainer as HTMLElement)?.offsetTop;
-    const height = (this.$refs.tooltipContent as HTMLElement)?.clientHeight;
+    if (!this.$refs.tooltipContainer || !this.$refs.tooltipContent) return;
 
-    const top = offset >= height;
+    const { offsetTop, offsetLeft } = this.$refs
+      .tooltipContainer as HTMLElement;
+    const { clientHeight, clientWidth } = this.$refs
+      .tooltipContent as HTMLElement;
+
+    const top = offsetTop >= clientHeight;
+    const left = window.innerWidth - offsetLeft < clientWidth;
+    const right = offsetLeft < clientHeight;
     this.placmentClass = {
       "tooltip-bottom": !top,
       "tooltip-top": top,
+      "tooltip-left": left,
+      "tooltip-right": right,
+      "tooltip-center": !left && !right,
     };
   },
 });
@@ -161,7 +170,6 @@ export default defineComponent({
     .tooltip-text {
       bottom: 100%;
       left: 54%;
-      transform: translateX(-50%);
 
       &::after {
         top: 100%;
@@ -171,11 +179,28 @@ export default defineComponent({
     }
   }
 
+  &.tooltip-left {
+    .tooltip-text {
+      transform: translateX(-100%);
+    }
+  }
+
+  &.tooltip-center {
+    .tooltip-text {
+      transform: translateX(-50%);
+    }
+  }
+
+  &.tooltip-right {
+    .tooltip-text {
+      transform: translateX(0%);
+    }
+  }
+
   &.tooltip-bottom {
     .tooltip-text {
       top: 100%;
       left: 54%;
-      transform: translateX(-50%);
 
       &::after {
         bottom: 100%;
