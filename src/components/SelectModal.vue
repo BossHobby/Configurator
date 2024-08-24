@@ -20,14 +20,16 @@
       </div>
     </section>
     <footer class="modal-card-foot">
-      <button class="button" @click="$emit('close')">Cancel</button>
-      <button
-        class="button is-success"
-        :disabled="value == undefined"
-        @click="$emit('close', value)"
-      >
-        Select
-      </button>
+      <div class="buttons is-justify-content-space-between" style="width: 100%">
+        <button class="button" @click="$emit('close')">Cancel</button>
+        <button
+          class="button is-success"
+          :disabled="value == undefined"
+          @click="$emit('close', value)"
+        >
+          Select
+        </button>
+      </div>
     </footer>
   </div>
 </template>
