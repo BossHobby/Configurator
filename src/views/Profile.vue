@@ -1,6 +1,6 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-12"><Info></Info></div>
+    <div class="column is-12 is-hidden-mobile"><Info></Info></div>
     <div class="column is-12">
       <div
         v-show="info.quic_protocol_version < 5"

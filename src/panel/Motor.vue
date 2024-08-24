@@ -16,7 +16,8 @@
 
               <svg
                 id="svg1"
-                width="400"
+                width="100%"
+                style="max-width: 400px; width: 100%"
                 height="400"
                 viewBox="0 0 135.46665 135.46665"
                 version="1.1"

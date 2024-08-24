@@ -168,15 +168,20 @@
   <AlertPortal />
   <ModalPortal />
 
-  <div class="container router-outlet-container">
-    <router-view></router-view>
+  <div class="router-outlet-container">
+    <div class="container">
+      <router-view></router-view>
+    </div>
   </div>
 
   <div v-if="serial.is_connected" class="navbar is-fixed-bottom has-shadow">
-    <div class="navbar-brand">
+    <div class="navbar-brand is-hidden-mobile">
       <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
       </span>
+    </div>
+
+    <div class="navbar-start is-hidden-mobile">
       <span class="navbar-item">Modified {{ profile.modified }}</span>
       <span class="navbar-item" style="font-size: 70%">
         Looptime {{ state.looptime_autodetect }} CPU Load
@@ -201,20 +206,26 @@
           Reboot required
         </div>
       </span>
-
-      <spinner-btn
-        class="navbar-item is-warning my-auto mx-2"
-        @click="serial.soft_reboot()"
-      >
-        Reboot
-      </spinner-btn>
-      <spinner-btn
-        class="navbar-item is-primary my-auto mx-2"
-        @click="profile.apply_profile(profile.$state)"
-        :disabled="info.is_read_only"
-      >
-        Apply
-      </spinner-btn>
+      <div class="navbar-item">
+        <div class="buttons">
+          <spinner-btn class="is-warning mx-2" @click="serial.soft_reboot()">
+            Reboot
+          </spinner-btn>
+          <div class="ml-3 mb-3 is-hidden-tablet">
+            <div class="is-size-5">
+              {{ profile.meta.name }}
+            </div>
+            <div>Modified {{ profile.modified }}</div>
+          </div>
+          <spinner-btn
+            class="is-primary ml-auto"
+            @click="profile.apply_profile(profile.$state)"
+            :disabled="info.is_read_only"
+          >
+            Apply
+          </spinner-btn>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -408,8 +419,11 @@ export default defineComponent({
   margin-bottom: 0 !important;
 }
 .router-outlet-container {
-  margin-top: 6rem !important;
-  margin-bottom: 6rem !important;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  padding-top: 6rem !important;
+  padding-bottom: 6rem !important;
 }
 </style>
 
