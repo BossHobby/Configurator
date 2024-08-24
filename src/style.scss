@@ -21,7 +21,13 @@ $danger: hsl(348, 86%, 61%);
   $link: $white,
   $success: $green-light
 );
+@use "bulma/sass/utilities/css-variables" as cs;
 @import "switch.scss";
+
+@mixin register-var($name, $value) {
+  @include cs.register-var($name, $value);
+  @include cs.register-hsl($name, $value);
+}
 
 :root {
   --bulma-primary-invert-l: var(--bulma-primary-100-l);
@@ -43,19 +49,13 @@ $danger: hsl(348, 86%, 61%);
   --bulma-link-invert: #{$grey-lighter};
   --bulma-link-focus: #{$grey-lighter};
 
-  --bulma-scheme-main: #{$grey-darker};
-  --bulma-scheme-main-l: #{lightness($grey-darker)};
-  --bulma-scheme-main-bis: #{$grey};
-  --bulma-scheme-main-bis-l: #{lightness($grey)};
-  --bulma-scheme-main-ter: #{$grey};
-  --bulma-scheme-main-ter-l: #{lightness($grey)};
-
-  --bulma-scheme-invert: #{$white-off};
-  --bulma-scheme-invert-l: #{lightness($white-off)};
-  --bulma-scheme-invert-bis: #{$white};
-  --bulma-scheme-invert-bis-l: #{lightness($white)};
-  --bulma-scheme-invert-ter: #{$white};
-  --bulma-scheme-invert-ter-l: #{lightness($white)};
+  @include register-var("scheme", $grey-darker);
+  @include register-var("scheme-main", $grey-darker);
+  @include register-var("scheme-main-bis", $grey);
+  @include register-var("scheme-main-ter", $grey);
+  @include register-var("scheme-invert", $white-off);
+  @include register-var("scheme-invert-bis", $white);
+  @include register-var("scheme-invert-ter", $white);
 
   --bulma-background: #{$grey};
   --bulma-body-background-color: #{$grey};
