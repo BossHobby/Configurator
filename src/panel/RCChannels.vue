@@ -36,8 +36,8 @@
               {{ channelNames[i] }}
             </label>
           </div>
-          <div class="field-body">
-            <div class="field has-addons">
+          <div class="field-body columns is-mobile">
+            <div class="column field has-addons">
               <p class="control my-0">
                 <input
                   :id="`limit-${channelNames[i]}-min`"
@@ -53,7 +53,7 @@
                 <a class="button is-small is-static"> min </a>
               </p>
             </div>
-            <div class="field has-addons">
+            <div class="column field has-addons">
               <p class="control my-0">
                 <input
                   :id="`limit-${channelNames[i]}-max`"
@@ -78,7 +78,7 @@
             </div>
           </div>
         </div>
-        <div class="columns mt-5">
+        <div class="columns is-mobile mt-5">
           <div class="column is-8 wizard">
             Stick Calibration Wizard <br />
             {{ wizardStates[state.stick_calibration_wizard] }} <br />

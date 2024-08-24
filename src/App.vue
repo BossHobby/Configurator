@@ -56,7 +56,11 @@
       class="navbar-menu"
       :class="{ 'is-active': showMenuItem }"
     >
-      <div v-if="serial.is_connected" class="navbar-start">
+      <div
+        v-if="serial.is_connected"
+        class="navbar-start"
+        @click="showMenuItem = false"
+      >
         <router-link
           active-class="is-active"
           class="navbar-item"
@@ -157,13 +161,13 @@
   </div>
 
   <div v-if="serial.is_connected" class="navbar is-fixed-bottom has-shadow">
-    <div class="navbar-brand is-hidden-mobile">
+    <div class="navbar-brand is-hidden-touch">
       <span class="navbar-item is-size-4">
         {{ profile.meta.name }}
       </span>
     </div>
 
-    <div class="navbar-start is-hidden-mobile">
+    <div class="navbar-start is-hidden-touch">
       <span class="navbar-item">Modified {{ profile.modified }}</span>
       <span class="navbar-item" style="font-size: 70%">
         Looptime {{ state.looptime_autodetect }} CPU Load
@@ -201,7 +205,7 @@
           <spinner-btn class="is-warning mx-2" @click="serial.soft_reboot()">
             Reboot
           </spinner-btn>
-          <div class="ml-3 mb-3 is-hidden-tablet" style="max-width: 40%">
+          <div class="ml-3 mb-3 is-hidden-desktop" style="max-width: 40%">
             <div class="is-size-5">
               {{ profile.meta.name }}
             </div>
@@ -401,9 +405,9 @@ export default defineComponent({
   margin-bottom: 0 !important;
 }
 .router-outlet-container {
-  width: 100vw;
-  height: 100vh;
-  overflow: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-top: 6rem !important;
   padding-bottom: 6rem !important;
 }

@@ -21,7 +21,7 @@
               </div>
             </div>
 
-            <div class="columns mt-4 mb-0">
+            <div class="columns is-mobile mt-4 mb-0">
               <div
                 class="column has-text-centered has-text-weight-semibold px-0 is-4"
               >
@@ -59,8 +59,8 @@
                     {{ el.name }}
                   </label>
                 </div>
-                <div class="field-body">
-                  <div class="field">
+                <div class="field-body columns is-mobile">
+                  <div class="column field">
                     <div class="control is-expanded">
                       <input
                         :id="'active-' + i"
@@ -77,7 +77,7 @@
                       ></label>
                     </div>
                   </div>
-                  <div class="field">
+                  <div class="column field">
                     <div class="control is-expanded">
                       <input
                         :id="'invert-' + i"
@@ -94,7 +94,7 @@
                       ></label>
                     </div>
                   </div>
-                  <div class="field" style="align-self: center">
+                  <div class="column field" style="align-self: center">
                     <div class="control is-expanded">
                       <input
                         class="input"
@@ -107,7 +107,7 @@
                       />
                     </div>
                   </div>
-                  <div class="field" style="align-self: center">
+                  <div class="column field" style="align-self: center">
                     <div class="control is-expanded">
                       <input
                         class="input"

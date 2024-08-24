@@ -61,9 +61,9 @@
 
               <div class="card-content">
                 <div class="content">
-                  <div class="columns is-multiline">
+                  <div class="columns is-mobile is-multiline">
                     <div class="column is-offset-4 is-8">
-                      <div class="columns is-multiline">
+                      <div class="columns is-mobile is-multiline">
                         <div class="column is-4">
                           <h6>Roll</h6>
                         </div>
@@ -77,7 +77,7 @@
                     </div>
                   </div>
                   <div
-                    class="columns is-multiline"
+                    class="columns is-mobile is-multiline"
                     v-for="(val, index) in currentProfile.rate"
                     :key="rateLabel[index]"
                   >
@@ -86,10 +86,10 @@
                         rateLabel[index]
                       }}</label>
                     </div>
-                    <div class="field-body">
+                    <div class="column field-body">
                       <div class="field">
                         <div class="control is-expanded">
-                          <div class="columns is-multiline">
+                          <div class="columns is-mobile is-multiline">
                             <div class="column is-4">
                               <input
                                 class="input"

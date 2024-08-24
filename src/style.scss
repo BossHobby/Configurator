@@ -86,12 +86,17 @@ $danger: hsl(348, 86%, 61%);
   }
 }
 
-body {
+html,
+body,
+#app {
   font-family: "Roboto", sans-serif;
   font-feature-settings: "kern", "liga";
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .column-narrow {

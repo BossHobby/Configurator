@@ -37,7 +37,7 @@
               </div>
             </div>
           </div>
-          <div class="column is-4">
+          <div class="column is-4 is-hidden-mobile">
             <div class="card">
               <header class="card-header">
                 <p class="card-header-title">Current AUX State</p>

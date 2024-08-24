@@ -60,6 +60,7 @@ export default defineComponent({
   top: 85px;
   z-index: 10001;
   width: 500px;
+  max-width: 100vw;
 }
 .alert-enter-active,
 .alert-leave-active {
