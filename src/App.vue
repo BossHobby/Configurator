@@ -299,14 +299,6 @@ export default defineComponent({
     },
   },
   computed: {
-    availablePortOptions() {
-      return this.serial.available.map((p) => {
-        return {
-          value: p,
-          text: p.name,
-        };
-      });
-    },
     date() {
       return new Date(this.profile.meta.datetime * 1000);
     },
