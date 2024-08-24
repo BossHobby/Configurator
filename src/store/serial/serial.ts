@@ -190,7 +190,11 @@ export class Serial {
         resolve();
       };
       this.ws.onmessage = async (e) => {
-        writer.write(new Uint8Array(e.data));
+        try {
+          writer.write(new Uint8Array(e.data));
+        } catch (e) {
+          errorCallback(e);
+        }
       };
       this.ws.onclose = (e) => {
         errorCallback(e);
@@ -286,6 +290,7 @@ export class Serial {
     }
 
     await this.port?.close().catch(console.warn);
+    this.ws?.close();
 
     this.reader = undefined;
     this.writer = undefined;
@@ -293,6 +298,7 @@ export class Serial {
     this.transfromClosed = undefined;
 
     this.port = undefined;
+    this.ws = undefined;
   }
 
   private async _command(
