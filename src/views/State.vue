@@ -9,7 +9,7 @@
       :key="plot.name"
       class="column"
       :class="['is-' + plot.size]"
-      style="height: 35vw"
+      style="height: 40vh"
     >
       <RealtimePlot
         :title="plot.title"
