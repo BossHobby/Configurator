@@ -70,7 +70,6 @@ enum AuxChannels {
   CHANNEL_16,
   OFF,
   ON,
-  AUX_GESTURE,
 }
 
 enum AuxFunctionsV010 {
