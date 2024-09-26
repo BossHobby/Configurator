@@ -15,7 +15,7 @@
               <div class="field-body">
                 <div class="field">
                   <div class="control is-expanded">
-                    <input v-model="callsign" class="input" type="text" />
+                    <input class="input" type="text" v-model="callsign" />
                   </div>
                 </div>
               </div>
@@ -100,7 +100,9 @@
                         class="input"
                         type="number"
                         step="1"
-                        :value="el.pos_x"
+                        :value="el.pos.x"
+                        min="0"
+                        :max="limits.width - 1"
                         @input="osd_set(i, 'pos_x', $event?.target?.value)"
                       />
                     </div>
@@ -111,7 +113,9 @@
                         class="input"
                         type="number"
                         step="1"
-                        :value="el.pos_y"
+                        :value="el.pos.y"
+                        min="0"
+                        :max="limits.height - 1"
                         @input="osd_set(i, 'pos_y', $event?.target?.value)"
                       />
                     </div>
@@ -124,25 +128,28 @@
           <div class="column is-6">
             <div class="card">
               <header class="card-header">
-                <p class="card-header-title">Preview</p>
+                <div class="card-header-title">
+                  Preview
+                  <div v-if="!is_hd" class="select ml-4">
+                    <select v-model="preview">
+                      <option>NTSC</option>
+                      <option>PAL</option>
+                    </select>
+                  </div>
+                </div>
               </header>
               <div class="card-content">
                 <div class="content">
-                  <svg :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
-                    <g v-for="(el, i) of elements" :key="i">
-                      <g v-if="el.enabled && el.active">
-                        <text
-                          v-for="(c, ci) of el.text"
-                          :key="'el-' + i + '-' + ci"
-                          :class="{ 'text-invert': el.invert }"
-                          :x="(el.pos_x + ci) * screen.char_width"
-                          :y="el.pos_y * (screen.char_height - 1)"
-                        >
-                          {{ c }}
-                        </text>
-                      </g>
-                    </g>
-                  </svg>
+                  <canvas
+                    :width="canvasWidth"
+                    :height="canvasHeight"
+                    ref="canvas"
+                    class="osd-canvas"
+                    @mousedown="drag_start"
+                    @mousemove="drag_move"
+                    @mouseup="drag_drop"
+                    @mouseleave="drag_drop"
+                  ></canvas>
                 </div>
               </div>
             </div>
@@ -155,182 +162,404 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { OSD } from "@/store/util/osd";
 import { useProfileStore } from "@/store/profile";
+import { useOSDStore } from "@/store/osd";
+
+interface Coord2D {
+  x: number;
+  y: number;
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  return ctx;
+}
 
 export default defineComponent({
-  name: "OSDElementsLegacy",
+  name: "OSDElements",
   setup() {
     return {
       profile: useProfileStore(),
+      osd: useOSDStore(),
     };
   },
   data() {
     return {
-      screen: {
-        width: 30 - 2,
-        height: 16 - 2,
-        char_width: 12,
-        char_height: 18,
+      preview: "NTSC",
+      drag: {
+        element: -1,
+        colOffset: 0,
+        coord: { x: 0, y: 0 } as Coord2D,
       },
-      imageSource: null,
     };
   },
   computed: {
-    svg_width() {
-      return this.screen.width * this.screen.char_width;
+    is_hd() {
+      return this.profile.serial.hdzero > 0;
     },
-    svg_height() {
-      return this.screen.height * this.screen.char_height;
+    currentElements() {
+      return this.is_hd
+        ? this.profile.osd.elements_hd
+        : this.profile.osd.elements;
     },
-    viewBox() {
-      return `0 0 ${this.svg_width} ${this.svg_height}`;
+    limits() {
+      return {
+        width: this.is_hd ? 50 : 30,
+        height: this.is_hd ? 18 : 15,
+      };
     },
-    callsign: {
-      get() {
-        return this.profile.osd.elements
-          .slice(1, 5)
-          .flatMap((e) => {
-            return [0, 8, 16, 24].map((shift) => {
-              const val = (e >> shift) & 0xff;
-              if (val == 0x3f) {
-                return "";
-              }
-              return String.fromCharCode(val);
-            });
-          })
-          .join("");
-      },
-      set(val) {
-        const str = val.toUpperCase();
-        const elements = Array(20)
-          .fill(0x3f)
-          .map((v, i) => {
-            if (i < str.length) {
-              return str.charCodeAt(i);
-            }
-            return v;
-          })
-          .reduce((prev, curr, i) => {
-            const byte = Math.floor(i / 4);
-            const shift = [0, 8, 16, 24][i % 4];
-            prev[byte] = prev[byte] | ((curr & 0xff) << shift);
-            return prev;
-          }, []);
-
-        const copy = [...this.profile.osd.elements];
-        for (let i = 0; i < elements.length; i++) {
-          copy[i + 1] = elements[i];
-        }
-        this.profile.osd.elements = copy;
-      },
+    screen() {
+      const screen = { ...this.limits };
+      if (!this.is_hd && this.preview == "NTSC") {
+        // NTSC has less lines
+        screen.height -= 2;
+      }
+      return screen;
     },
-    element_options() {
-      return [
-        { name: "CALLSIGN", enabled: true, text: this.callsign },
-        { name: "callsign2", enabled: false, text: "" },
-        { name: "callsign3", enabled: false, text: "" },
-        { name: "callsign4", enabled: false, text: "" },
-        { name: "callsign5", enabled: false, text: "" },
-        { name: "callsign6", enabled: false, text: "" },
-        { name: "FUELGAUGE VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "FILTERED VOLTS", enabled: true, text: "1S 4.3V" },
-        { name: "GYRO TEMP", enabled: true, text: "40C" },
-        { name: "FLIGHT MODE", enabled: true, text: "___ACRO___" },
-        { name: "RSSI", enabled: true, text: "90" },
-        { name: "STOPWATCH", enabled: true, text: "120" },
-        { name: "SYSTEM STATUS", enabled: true, text: "__**ARMED**____" },
-        { name: "THROTTLE", enabled: true, text: "50" },
+    canvas() {
+      return this.$refs.canvas as HTMLCanvasElement;
+    },
+    canvasWidth() {
+      return this.screen.width * OSD.CHAR_WIDTH;
+    },
+    canvasHeight() {
+      return this.screen.height * OSD.CHAR_HEIGHT;
+    },
+    elementOptions() {
+      const elements = [
+        { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
+        { name: "CELL COUNT", enabled: true, text: "1S" },
+        { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3\x70" },
+        { name: "FILTERED VOLTS", enabled: true, text: " 4.3\x06" },
+        { name: "GYRO TEMP", enabled: true, text: "  40\x0e" },
+        { name: "FLIGHT MODE", enabled: true, text: "   ACRO   " },
+        { name: "RSSI", enabled: true, text: "  90\x01" },
+        { name: "STOPWATCH", enabled: true, text: "01:20" },
+        {
+          name: "SYSTEM STATUS",
+          enabled: true,
+          text: "     **FAILSAFE**     ",
+        },
+        { name: "THROTTLE", enabled: true, text: "  50\x04" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
-        { name: "CURRENT", enabled: true, text: "2000A" },
+        { name: "CURRENT", enabled: true, text: "0.00\x9a" },
       ];
+      if (this.profile.profileVersionGt("0.2.2")) {
+        elements.push({
+          name: "CROSSHAIR",
+          enabled: true,
+          text: "\x72\x73\x74",
+        });
+      }
+      if (this.profile.profileVersionGt("0.2.3")) {
+        elements.push({
+          name: "CURRENT DRAWN",
+          enabled: true,
+          text: "0.00\x07",
+        });
+      }
+      return elements;
     },
     elements() {
-      return this.profile.osd.elements
+      return this.currentElements
         .filter((el, i) => {
-          return this.element_options[i];
+          return this.elementOptions[i];
         })
         .map((el, i) => {
           return {
-            ...this.element_options[i],
-            active: this.osd_decode(el, "active"),
-            invert: this.osd_decode(el, "invert"),
-            pos_x: this.osd_decode(el, "pos_x"),
-            pos_y: this.osd_decode(el, "pos_y"),
+            index: i,
+            ...this.elementOptions[i],
+            active: OSD.elementDecodeLegacy(el, "active"),
+            invert: OSD.elementDecodeLegacy(el, "invert"),
+            pos: {
+              x: OSD.elementDecodeLegacy(el, "pos_x"),
+              y: OSD.elementDecodeLegacy(el, "pos_y"),
+            } as Coord2D,
             value: el,
           };
         });
     },
+    callsign: {
+      set(val) {
+        let str = val.toUpperCase();
+        for (let i = val.length; i < 36; i++) {
+          str += "\0";
+        }
+        this.profile.osd.callsign = str;
+      },
+      get() {
+        return this.profile.osd.callsign.replace(/\0/g, "");
+      },
+    },
+  },
+  watch: {
+    elements() {
+      this.draw_canvas();
+    },
+    drag() {
+      this.draw_canvas();
+    },
+    canvasWidth() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
+    canvasHeight() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
+    "osd.font_bitmap"() {
+      this.$nextTick(() => {
+        this.draw_canvas();
+      });
+    },
   },
   methods: {
+    translateMouse(evt: MouseEvent): Coord2D {
+      return {
+        x: evt.offsetX * (this.canvasWidth / this.canvas.clientWidth),
+        y: evt.offsetY * (this.canvasHeight / this.canvas.clientHeight),
+      };
+    },
+    translateElemement(coord: Coord2D): Coord2D {
+      if (!this.is_hd && this.preview == "NTSC") {
+        if (coord.y > 12) {
+          coord.y -= 2;
+        }
+      }
+      return {
+        x: coord.x * OSD.CHAR_WIDTH,
+        // simulate almost cut-off 0-th line
+        y: OSD.CHAR_HEIGHT - 2 + (coord.y - 1) * OSD.CHAR_HEIGHT,
+      };
+    },
+    normalizeCoords(coord: Coord2D, colOffset: number = 0): Coord2D {
+      return {
+        x: Math.min(
+          Math.max(Math.floor((coord.x - colOffset) / OSD.CHAR_WIDTH), 0),
+          this.limits.width - 1,
+        ),
+        y: Math.min(
+          Math.max(Math.floor(coord.y / OSD.CHAR_HEIGHT), 0),
+          this.limits.height - 1,
+        ),
+      };
+    },
+    drag_start(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+
+      const el = this.findElement(mouse);
+      if (el != null) {
+        const coord = this.translateElemement(el.pos);
+        const colOffset = mouse.x - coord.x;
+        this.drag = {
+          element: el.index,
+          colOffset,
+          coord: this.normalizeCoords(mouse, colOffset),
+        };
+        this.canvas.style.cursor = "grab";
+      }
+    },
+    drag_move(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+      if (this.drag.element == -1) {
+        const el = this.findElement(mouse);
+        this.canvas.style.cursor = el != null ? "pointer" : "initial";
+        return;
+      }
+
+      this.drag = {
+        ...this.drag,
+        coord: this.normalizeCoords(mouse, this.drag.colOffset),
+      };
+    },
+    drag_drop(evt: MouseEvent) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const mouse = this.translateMouse(evt);
+      if (this.drag.element == -1) {
+        return;
+      }
+
+      const coord = this.normalizeCoords(mouse, this.drag.colOffset);
+      this.osd_set(this.drag.element, "pos_x", coord.x);
+      this.osd_set(this.drag.element, "pos_y", coord.y);
+      this.canvas.style.cursor = "initial";
+      this.drag = {
+        element: -1,
+        colOffset: 0,
+        coord: { x: 0, y: 0 } as Coord2D,
+      };
+    },
     osd_set(i, attr, val) {
-      const copy = [...this.profile.osd.elements];
-      copy[i] = this.osd_encode(this.profile.osd.elements[i], attr, val);
-      this.profile.set_osd_elements(copy);
-    },
-    osd_decode(element, attr) {
-      switch (attr) {
-        case "active":
-          return element & 0x01;
-        case "invert":
-          return (element >> 1) & 0x01;
-        case "pos_x":
-          return (element >> 2) & 0x1f;
-        case "pos_y":
-          return (element >> 7) & 0x0f;
-        default:
-          return 0;
+      const elements = this.is_hd
+        ? this.profile.osd.elements_hd
+        : this.profile.osd.elements;
+
+      const copy: any[] = [...elements];
+      copy[i] = OSD.elementEncodeLegacy(elements[i], attr, val);
+
+      if (this.is_hd) {
+        this.profile.set_osd_elements_hd(copy);
+      } else {
+        this.profile.set_osd_elements(copy);
       }
     },
-    osd_encode(element, attr, val) {
-      switch (attr) {
-        case "active":
-          if (val) {
-            return element | 0x01;
-          } else {
-            return element & ~0x01;
-          }
-        case "invert":
-          if (val) {
-            return element | (0x01 << 1);
-          } else {
-            return element & ~(0x01 << 1);
-          }
-        case "pos_x":
-          return (element & ~(0x1f << 2)) | ((val & 0x1f) << 2);
-        case "pos_y":
-          return (element & ~(0x0f << 7)) | ((val & 0x0f) << 7);
-        default:
-          return element;
+    draw_canvas_text(
+      ctx: CanvasRenderingContext2D,
+      coord: Coord2D,
+      text: string,
+      inverted: boolean,
+    ) {
+      let length = 0;
+      for (let i = 0; i < text.length; i++) {
+        let char = text.charCodeAt(i);
+        if (char == 0) {
+          break;
+        }
+
+        const charX = OSD.pixelsWidth(
+          Math.floor(char % 16),
+          OSD.BORDER,
+          this.is_hd,
+        );
+        const charY = OSD.pixelsHeight(
+          Math.floor(char / 16),
+          OSD.BORDER,
+          this.is_hd,
+        );
+
+        let bitmap: any = undefined;
+        if (this.is_hd) {
+          bitmap = this.osd.font_bitmap;
+          char += 256;
+        } else {
+          bitmap = inverted
+            ? this.osd.font_bitmap_inverted
+            : this.osd.font_bitmap;
+        }
+
+        if (bitmap) {
+          ctx.drawImage(
+            bitmap,
+            charX,
+            charY,
+            OSD.CHAR_WIDTH * (this.is_hd ? 2 : 1),
+            OSD.CHAR_HEIGHT * (this.is_hd ? 2 : 1),
+            coord.x + i * OSD.CHAR_WIDTH,
+            coord.y,
+            OSD.CHAR_WIDTH,
+            OSD.CHAR_HEIGHT,
+          );
+        }
+
+        length++;
+      }
+
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 1;
+      roundRect(
+        ctx,
+        coord.x + 0.5,
+        coord.y + 0.5,
+        length * OSD.CHAR_WIDTH,
+        OSD.CHAR_HEIGHT,
+        1.5,
+      );
+      ctx.stroke();
+    },
+    draw_canvas() {
+      const ctx = this.canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      for (const [index, el] of this.elements.entries()) {
+        if (!el.enabled || !el.active) {
+          continue;
+        }
+
+        let pos = { ...el.pos };
+        if (index == this.drag.element) {
+          pos = { ...this.drag.coord };
+        }
+
+        this.draw_canvas_text(
+          ctx,
+          this.translateElemement(pos),
+          el.text,
+          el.invert == 1,
+        );
       }
     },
+    findElement(mouse: Coord2D) {
+      for (const el of this.elements) {
+        if (!el.enabled || !el.active) {
+          continue;
+        }
+
+        const coord = this.translateElemement(el.pos);
+        if (mouse.y < coord.y || mouse.y > coord.y + OSD.CHAR_HEIGHT) {
+          continue;
+        }
+
+        let length = el.text.indexOf("\0");
+        if (length == -1) {
+          length = el.text.length;
+        }
+        if (mouse.x < coord.x || mouse.x > coord.x + length * OSD.CHAR_WIDTH) {
+          continue;
+        }
+
+        return el;
+      }
+
+      return null;
+    },
+  },
+  mounted() {
+    Promise.resolve()
+      .then(() => {
+        if (this.is_hd) {
+          return this.osd.fetch_hd_osd_font();
+        }
+      })
+      .then((_) => this.draw_canvas());
   },
 });
 </script>
 
 <style lang="scss" scoped>
-svg {
-  display: block;
-
+.osd-canvas {
+  width: 100%;
   background-image: url("/osd_background.jpg");
   background-attachment: local;
   background-size: cover;
-
-  font-family: monospace;
-  font-size: 18px;
-  border: 1px solid #3333334d;
-  margin: auto;
-
-  text {
-    fill: #fff;
-  }
-
-  .text-invert {
-    paint-order: stroke;
-    fill: #000;
-    stroke: #fff;
-    stroke-width: 3px;
-    stroke-linecap: butt;
-    stroke-linejoin: miter;
-  }
 }
 </style>
