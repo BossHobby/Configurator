@@ -69,6 +69,12 @@
                 :class="{ 'has-name': file }"
               >
                 <label class="file-label">
+                  <span class="file-cta">
+                    <span class="file-icon">
+                      <font-awesome-icon icon="fa-solid fa-upload" />
+                    </span>
+                    <span class="file-label"> Choose a file… </span>
+                  </span>
                   <input
                     class="file-input"
                     type="file"
@@ -77,12 +83,6 @@
                     accept=".hex"
                     :disabled="loading"
                   />
-                  <span class="file-cta">
-                    <span class="file-icon">
-                      <font-awesome-icon icon="fa-solid fa-upload" />
-                    </span>
-                    <span class="file-label"> Choose a file… </span>
-                  </span>
                   <span v-if="file" class="file-name">
                     {{ file.name }}
                   </span>
