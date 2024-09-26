@@ -10,6 +10,24 @@
           <div class="column is-6">
             <div class="field field-is-2 is-horizontal">
               <div class="field-label">
+                <label class="label"> Profile </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="font-file"
+                      class="is-fullwidth"
+                      v-model="osdProfile"
+                      :options="osdProfileOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field field-is-2 is-horizontal">
+              <div class="field-label">
                 <label class="label"> Callsign Text </label>
               </div>
               <div class="field-body">
@@ -202,6 +220,11 @@ export default defineComponent({
   data() {
     return {
       preview: "NTSC",
+      osdProfile: 0,
+      osdProfileOptions: [
+        { text: "Profile 1", value: 0 },
+        { text: "Profile 2", value: 1 },
+      ],
       drag: {
         element: -1,
         colOffset: 0,
@@ -213,10 +236,8 @@ export default defineComponent({
     is_hd() {
       return this.profile.serial.hdzero > 0;
     },
-    currentElements() {
-      return this.is_hd
-        ? this.profile.osd.elements_hd
-        : this.profile.osd.elements;
+    currentProfile() {
+      return this.profile.osd.profiles[this.osdProfile];
     },
     limits() {
       return {
@@ -243,7 +264,7 @@ export default defineComponent({
     },
     elementOptions() {
       const elements = [
-        { name: "CALLSIGN", enabled: true, text: this.profile.osd.callsign },
+        { name: "CALLSIGN", enabled: true, text: this.callsign },
         { name: "CELL COUNT", enabled: true, text: "1S" },
         { name: "FUELGAUGE VOLTS", enabled: true, text: " 4.3\x70" },
         { name: "FILTERED VOLTS", enabled: true, text: " 4.3\x06" },
@@ -277,7 +298,7 @@ export default defineComponent({
       return elements;
     },
     elements() {
-      return this.currentElements
+      return this.currentProfile.elements
         .filter((el, i) => {
           return this.elementOptions[i];
         })
@@ -288,8 +309,8 @@ export default defineComponent({
             active: OSD.elementDecode(el, "active"),
             invert: OSD.elementDecode(el, "invert"),
             pos: {
-              x: OSD.elementDecode(el, "pos_x"),
-              y: OSD.elementDecode(el, "pos_y"),
+              x: OSD.elementDecode(el, this.is_hd ? "pos_hd_x" : "pos_sd_x"),
+              y: OSD.elementDecode(el, this.is_hd ? "pos_hd_y" : "pos_sd_y"),
             } as Coord2D,
             value: el,
           };
@@ -301,10 +322,13 @@ export default defineComponent({
         for (let i = val.length; i < 36; i++) {
           str += "\0";
         }
-        this.profile.osd.callsign = str;
+        this.profile.osd.profiles[this.osdProfile].callsign = str;
       },
       get() {
-        return this.profile.osd.callsign.replace(/\0/g, "");
+        return this.profile.osd.profiles[this.osdProfile].callsign.replace(
+          /\0/g,
+          "",
+        );
       },
     },
   },
@@ -406,8 +430,16 @@ export default defineComponent({
       }
 
       const coord = this.normalizeCoords(mouse, this.drag.colOffset);
-      this.osd_set(this.drag.element, "pos_x", coord.x);
-      this.osd_set(this.drag.element, "pos_y", coord.y);
+      this.osd_set(
+        this.drag.element,
+        this.is_hd ? "pos_hd_x" : "pos_sd_x",
+        coord.x,
+      );
+      this.osd_set(
+        this.drag.element,
+        this.is_hd ? "pos_hd_y" : "pos_sd_y",
+        coord.y,
+      );
       this.canvas.style.cursor = "initial";
       this.drag = {
         element: -1,
@@ -416,18 +448,15 @@ export default defineComponent({
       };
     },
     osd_set(i, attr, val) {
-      const elements = this.is_hd
-        ? this.profile.osd.elements_hd
-        : this.profile.osd.elements;
+      const elements = this.currentProfile.elements;
 
       const copy: any[] = [...elements];
       copy[i] = OSD.elementEncode(elements[i], attr, val);
 
-      if (this.is_hd) {
-        this.profile.set_osd_elements_hd(copy);
-      } else {
-        this.profile.set_osd_elements(copy);
-      }
+      this.profile.osd.profiles[this.osdProfile] = {
+        ...this.profile.osd.profiles[this.osdProfile],
+        elements: copy,
+      };
     },
     draw_canvas_text(
       ctx: CanvasRenderingContext2D,

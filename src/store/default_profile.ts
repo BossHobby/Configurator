@@ -52,7 +52,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
     },
     has_legacy_osd(state) {
-      return semver.lte(decodeSemver(state.meta.version), "v0.1.0");
+      return semver.lte(decodeSemver(state.meta.version), "v0.2.4");
     },
   },
   actions: {

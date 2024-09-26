@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import semver from "semver";
 import { useInfoStore } from "./info";
+import { useProfileStore } from "./profile";
 
 enum Features {
   BRUSHLESS = 1 << 1,
@@ -103,6 +104,24 @@ enum AuxFunctionsV011 {
   AUX_FPV_SWITCH,
   AUX_BLACKBOX,
   AUX_PREARM,
+}
+
+enum AuxFunctionsV025 {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_RACEMODE,
+  AUX_HORIZON,
+  AUX_STICK_BOOST_PROFILE,
+  _AUX_RATE_PROFILE,
+  AUX_BUZZER_ENABLE,
+  AUX_TURTLE,
+  AUX_MOTOR_TEST,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
 }
 
 enum RXProtocolV5 {
@@ -255,8 +274,11 @@ export const useConstantStore = defineStore("constant", {
       return RXProtocolV5;
     },
     AuxFunctions() {
+      const profile = useProfileStore();
+      if (profile.profileVersionGt("0.2.4")) {
+        return AuxFunctionsV025;
+      }
       const info = useInfoStore();
-
       if (semver.gt(info.quic_protocol_semver, "0.1.0")) {
         return AuxFunctionsV011;
       }

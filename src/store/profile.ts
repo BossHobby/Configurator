@@ -139,6 +139,16 @@ export const useProfileStore = defineStore("profile", {
       callsign: "",
       elements: [],
       elements_hd: [],
+      profiles: [
+        {
+          callsign: "",
+          elements: [] as any[],
+        },
+        {
+          callsign: "",
+          elements: [] as any[],
+        },
+      ],
     },
     meta: {
       name: "",

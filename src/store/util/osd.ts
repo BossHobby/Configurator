@@ -43,6 +43,52 @@ export class OSD {
         return element & 0x01;
       case "invert":
         return (element >> 1) & 0x01;
+      case "pos_sd_x":
+        return (element >> 2) & 0x1f;
+      case "pos_sd_y":
+        return (element >> 7) & 0x1f;
+      case "pos_hd_x":
+        return (element >> 12) & 0xff;
+      case "pos_hd_y":
+        return (element >> 20) & 0xff;
+      default:
+        return 0;
+    }
+  }
+
+  public static elementEncode(element, attr, val) {
+    switch (attr) {
+      case "active":
+        if (val) {
+          return element | 0x01;
+        } else {
+          return element & ~0x01;
+        }
+      case "invert":
+        if (val) {
+          return element | (0x01 << 1);
+        } else {
+          return element & ~(0x01 << 1);
+        }
+      case "pos_sd_x":
+        return (element & ~(0x1f << 2)) | ((val & 0x1f) << 2);
+      case "pos_sd_y":
+        return (element & ~(0x1f << 7)) | ((val & 0x1f) << 7);
+      case "pos_hd_x":
+        return (element & ~(0xff << 12)) | ((val & 0xff) << 12);
+      case "pos_hd_y":
+        return (element & ~(0xff << 20)) | ((val & 0xff) << 20);
+      default:
+        return element;
+    }
+  }
+
+  public static elementDecodeLegacy(element, attr) {
+    switch (attr) {
+      case "active":
+        return element & 0x01;
+      case "invert":
+        return (element >> 1) & 0x01;
       case "pos_x":
         return (element >> 2) & 0xff;
       case "pos_y":
@@ -52,7 +98,7 @@ export class OSD {
     }
   }
 
-  public static elementEncode(element, attr, val) {
+  public static elementEncodeLegacy(element, attr, val) {
     switch (attr) {
       case "active":
         if (val) {
