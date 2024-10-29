@@ -193,7 +193,7 @@
     "text": "Adding some expo will soften the stick feel around the set `Throttle Mid`"
   },
   "rate.throttle_mid": {
-    "text": "Can be set to about where your `hover point` is giving improved resolution on the stick"
+    "text": "Can be set to about where your `hover point` is, maximum throttle value will be affected if set below 0.5"
   },
   "receiver.bind_saved": {
     "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
