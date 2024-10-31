@@ -133,7 +133,7 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
   [BlackboxField.DEBUG]: {
     name: "debug",
     title: "Debug",
-    axis: AxisIndex(4),
+    axis: AxisIndex(10),
     scale: 1,
     unit: BlackboxFieldUnit.NONE,
   },
