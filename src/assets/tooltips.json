@@ -9,7 +9,7 @@
     "disabled": true
   },
   "channel.aux_fpv_switch": {
-    "text": "Vtx Pit mode on a switch"
+    "text": "Vtx Pit mode on a switch. If you are not using this leave as ON"
   },
   "channel.aux_horizon": {
     "text": "Self levelling up to a specific angle then Acro on both Roll and Pitch, requires Level mode active"
