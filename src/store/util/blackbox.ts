@@ -525,16 +525,20 @@ export class Blackbox {
       const test = bit & this.fieldflags;
       if (test & (1 << d.blackbox_field)) {
         let v = val[index];
-        if (d.array_index != undefined) {
-          v = v[d.array_index];
-        }
-        if (d.convert) {
-          v = d.convert(v);
-        }
-        if (d.signed) {
-          this.writeSigned(v);
+        if (v != undefined) {
+          if (d.array_index != undefined) {
+            v = v[d.array_index];
+          }
+          if (d.convert) {
+            v = d.convert(v);
+          }
+          if (d.signed) {
+            this.writeSigned(v);
+          } else {
+            this.writeUnsigned(v);
+          }
         } else {
-          this.writeUnsigned(v);
+          Log.warn("blackbox", "skipping blackbox entry");
         }
         // Adjust index only if field was written and field descriptor says we should
         index += d.advance;
