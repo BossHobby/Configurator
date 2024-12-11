@@ -24,8 +24,6 @@ export class ArrayWriter {
     return this.offset;
   }
 
-  constructor(private litteEndian = true) {}
-
   public reset() {
     this.offset = 0;
   }
@@ -39,13 +37,6 @@ export class ArrayWriter {
 
     this.view.setUint8(this.offset, v);
     this.offset++;
-  }
-
-  public writeUint16(v: number) {
-    this.grow(2);
-
-    this.view.setUint16(this.offset, v, this.litteEndian);
-    this.offset += 2;
   }
 
   public writeUint8s(values: ArrayLike<number>) {
