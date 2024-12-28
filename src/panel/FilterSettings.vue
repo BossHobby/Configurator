@@ -302,6 +302,7 @@ export default defineComponent({
         { value: 1, text: "PT1" },
         { value: 2, text: "PT2" },
         { value: 3, text: "PT3" },
+        { value: 4, text: "LULU" },
       ],
       toggleOptions: [
         { value: 0, text: "Off" },
