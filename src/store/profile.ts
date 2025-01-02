@@ -95,7 +95,7 @@ function migrateProfileVersion(
     }
   }
 
-  if (semver.lte(profileVersion, "v0.2.4")) {
+  if (semver.lte(profileVersion, "v0.2.4") && profile.osd?.elements?.length) {
     const elements: any[] = [];
 
     for (let i = 0; i < profile.osd.elements.length; i++) {
