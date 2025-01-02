@@ -216,7 +216,7 @@ export default defineComponent({
         { value: 1, text: "TRAMP" },
         { value: 2, text: "SMARTAUDIO" },
       ];
-      if (this.info.quicVersionGt("0.1.1")) {
+      if (this.info.quic_semver_gt("0.1.1")) {
         data.push({ value: 3, text: "MSP_VTX" });
       }
       return data;
@@ -229,7 +229,7 @@ export default defineComponent({
         { value: 3, text: "VTX_BAND_F" },
         { value: 4, text: "VTX_BAND_R" },
       ];
-      if (this.info.quicVersionGt("0.1.1")) {
+      if (this.info.quic_semver_gt("0.1.1")) {
         data.push({ value: 5, text: "VTX_BAND_L" });
       }
       return data;
@@ -246,7 +246,7 @@ export default defineComponent({
         { value: 2, text: "VTX_POWER_LEVEL_3" },
         { value: 3, text: "VTX_POWER_LEVEL_4" },
       ];
-      if (this.info.quicVersionGt("0.1.1")) {
+      if (this.info.quic_semver_gt("0.1.1")) {
         data.push({ value: 4, text: "VTX_POWER_LEVEL_5" });
       }
       return data;

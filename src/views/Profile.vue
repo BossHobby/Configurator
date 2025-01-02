@@ -2,13 +2,10 @@
   <div class="columns is-multiline">
     <div class="column is-12 is-hidden-mobile"><Info></Info></div>
     <div class="column is-12">
-      <div
-        v-show="info.quic_protocol_version < 5"
-        class="notification is-warning"
-      >
+      <div v-show="info.version_too_old" class="notification is-warning">
         Incompatible Firmware! <br />
         Please update to be able to change settings. <br />
-        Current profile can be exported and loaded.
+        Your current profile can be exported and loaded.
       </div>
       <div v-show="state.failloop > 0" class="notification is-danger">
         Faillop {{ state.failloopMessage }} ({{ state.failloop }}) Detected!

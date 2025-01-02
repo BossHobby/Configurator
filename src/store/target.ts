@@ -66,7 +66,7 @@ export const useTargetStore = defineStore("target", {
       const res = {};
 
       const info = useInfoStore();
-      if (info.quicVersionGte("0.2.0")) {
+      if (info.quic_semver_gte("0.2.0")) {
         for (const p of store.serial_ports) {
           if (p.index == 0) {
             continue;
@@ -90,7 +90,7 @@ export const useTargetStore = defineStore("target", {
     },
     motor_pin_names(store): string[] {
       const info = useInfoStore();
-      if (info.quicVersionGte("0.2.0")) {
+      if (info.quic_semver_gte("0.2.0")) {
         return store.motor_pins;
       } else {
         return info.motor_pins;

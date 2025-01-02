@@ -179,7 +179,7 @@ export const useSerialStore = defineStore("serial", {
         this.is_connected = true;
         info.set_info(i);
 
-        if (info.quicVersionGte("0.2.0")) {
+        if (info.quic_semver_gte("0.2.0")) {
           target.fetch();
         }
 

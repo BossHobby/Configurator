@@ -13,7 +13,7 @@ export const useOSDStore = defineStore("osd", {
   actions: {
     async fetch_sd_osd_font() {
       const info = useInfoStore();
-      if (!info.quicVersionGte("0.2.0")) {
+      if (!info.quic_semver_gte("0.2.0")) {
         return serial.get(QuicVal.OSDFont).then((font) => {
           this.font_raw = font;
           this.font_bitmap = OSD.unpackFontBitmap(font);
@@ -32,7 +32,7 @@ export const useOSDStore = defineStore("osd", {
     },
     async apply_font(font: Uint8Array[]) {
       const info = useInfoStore();
-      if (!info.quicVersionGte("0.2.0")) {
+      if (!info.quic_semver_gte("0.2.0")) {
         return serial.set(QuicVal.OSDFont, ...font);
       }
 

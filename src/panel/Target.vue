@@ -5,7 +5,7 @@
     </header>
     <div class="card-content">
       <div class="content column-narrow field-is-2">
-        <template v-if="info.quicVersionGte('0.2.0')">
+        <template v-if="info.quic_semver_gte('0.2.0')">
           <div class="field is-horizontal">
             <div class="field-label">
               <label class="label" for="name">Name</label>
@@ -87,7 +87,7 @@
       </div>
     </div>
 
-    <footer v-if="info.quicVersionGte('0.2.0')" class="card-footer">
+    <footer v-if="info.quic_semver_gte('0.2.0')" class="card-footer">
       <spinner-btn class="card-footer-item" @click="downloadTarget">
         Save Target
       </spinner-btn>

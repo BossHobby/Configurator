@@ -1,7 +1,7 @@
 <template>
   <div class="columns is-multiline">
     <div class="column is-12">
-      <div class="card" v-if="info.quicVersionGt('0.1.2')">
+      <div class="card" v-if="info.quic_semver_gt('0.1.2')">
         <div class="card-header">
           <p class="card-header-title">Blackbox Settings</p>
         </div>
@@ -255,7 +255,7 @@ export default defineComponent({
   },
   created() {
     this.blackbox.list_blackbox();
-    if (this.info.quicVersionGt("0.1.2")) {
+    if (this.info.quic_semver_gt("0.1.2")) {
       this.blackbox.fetch_presets();
     }
   },
