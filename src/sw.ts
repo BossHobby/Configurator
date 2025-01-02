@@ -1,6 +1,7 @@
 import { clientsClaim } from "workbox-core";
 import { registerRoute } from "workbox-routing";
-import { StaleWhileRevalidate } from "workbox-strategies";
+import { CacheFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
 import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
 
 declare let self: ServiceWorkerGlobalScope;
@@ -23,11 +24,16 @@ cleanupOutdatedCaches();
 
 registerRoute(
   ({ url }) => cacheUrls.includes(url.hostname),
-  new StaleWhileRevalidate({
+  new CacheFirst({
     cacheName: "github-cache",
     matchOptions: {
       ignoreVary: true,
     },
+    plugins: [
+      new ExpirationPlugin({
+        maxAgeSeconds: 5 * 60,
+      }),
+    ],
   }),
 );
 precacheAndRoute(self.__WB_MANIFEST);
