@@ -9,6 +9,7 @@ import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
 import type { target_t } from "./types";
 import { useTargetStore } from "./target";
+import { OSD } from "./util/osd";
 
 export function mergeDeep(target, source) {
   for (const [key, val] of Object.entries(source)) {
@@ -43,6 +44,13 @@ function migrateProfileVersion(
   profileVersion: string,
   firmwareVersion: string,
 ) {
+  if (profile.meta.name) {
+    profile.meta.name = profile.meta.name.replace(/\0/g, "");
+  }
+  if (profile.osd?.callsign) {
+    profile.osd.callsign = profile.osd.callsign.replace(/\0/g, "");
+  }
+
   if (semver.eq(profileVersion, "v0.1.0")) {
     const silverware = {
       mode: 0,
@@ -87,11 +95,51 @@ function migrateProfileVersion(
     }
   }
 
-  if (profile.meta.name) {
-    profile.meta.name = profile.meta.name.replace(/\0/g, "");
-  }
-  if (profile.osd?.callsign) {
-    profile.osd.callsign = profile.osd.callsign.replace(/\0/g, "");
+  if (semver.lte(profileVersion, "v0.2.4")) {
+    const elements: any[] = [];
+
+    for (let i = 0; i < profile.osd.elements.length; i++) {
+      const element_sd = profile.osd.elements[i];
+      const element_hd = profile.osd.elements_hd[i];
+
+      let element = 0;
+      element |= OSD.elementEncode(
+        element,
+        "active",
+        OSD.elementDecodeLegacy(element_sd, "active"),
+      );
+      element |= OSD.elementEncode(
+        element,
+        "invert",
+        OSD.elementDecodeLegacy(element_sd, "invert"),
+      );
+      element |= OSD.elementEncode(
+        element,
+        "pos_sd_x",
+        OSD.elementDecodeLegacy(element_sd, "pos_x"),
+      );
+      element |= OSD.elementEncode(
+        element,
+        "pos_sd_y",
+        OSD.elementDecodeLegacy(element_sd, "pos_y"),
+      );
+      element |= OSD.elementEncode(
+        element,
+        "pos_hd_x",
+        OSD.elementDecodeLegacy(element_hd, "pos_x"),
+      );
+      element |= OSD.elementEncode(
+        element,
+        "pos_hd_y",
+        OSD.elementDecodeLegacy(element_hd, "pos_y"),
+      );
+      elements.push(element);
+    }
+
+    profile.osd.profiles = [
+      { callsign: profile.osd.callsign, elements },
+      { callsign: profile.osd.callsign, elements },
+    ];
   }
 
   return profile;
