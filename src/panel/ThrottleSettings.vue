@@ -56,11 +56,12 @@
               </div>
             </div>
           </div>
-          <div class="column is-6" style="height: 30vw">
+          <div class="column is-6">
             <LineChart
               :title="'Throttle'"
               :labels="plot.labels"
               :axis="plot.axis"
+              class="image is-fullwidth is-4by3"
             ></LineChart>
           </div>
         </div>
