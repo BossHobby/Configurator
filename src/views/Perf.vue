@@ -4,12 +4,12 @@
       v-for="(counter, index) in perf.counters"
       :key="'counter' + index"
       class="column is-6 my-3"
-      style="height: 35vw"
     >
       <RealtimePlot
         :title="counter.name"
         :axis="Object.keys(counter).slice(1)"
         :input="counter"
+        class="image is-fullwidth is-4by3"
       ></RealtimePlot>
     </div>
   </div>
