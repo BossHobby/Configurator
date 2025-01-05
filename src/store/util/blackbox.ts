@@ -452,7 +452,10 @@ export class Blackbox {
         profile.filter.dterm[0].cutoff_freq.toString(),
       );
     }
-    if (profile.filter.dterm_dynamic_enable) {
+    if (
+      profile.filter.dterm_dynamic_enable ||
+      profile.filter.dterm_dynamic_type
+    ) {
       this.writeHeaderRaw(
         "dterm_lpf1_dyn_hz",
         [

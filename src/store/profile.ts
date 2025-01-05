@@ -142,6 +142,16 @@ function migrateProfileVersion(
     ];
   }
 
+  if (
+    semver.lt(profileVersion, "v0.2.7") &&
+    semver.gte(firmwareVersion, "v0.2.7") &&
+    profile.filter
+  ) {
+    profile.filter.dterm_dynamic_type = profile.filter.dterm_dynamic_enable
+      ? 1
+      : 0;
+  }
+
   return profile;
 }
 
