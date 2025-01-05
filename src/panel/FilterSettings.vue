@@ -211,7 +211,31 @@
               </div>
             </div>
 
-            <div class="field is-horizontal mt-6">
+            <div
+              class="field is-horizontal mt-6"
+              v-if="profile.profileVersionGt('0.2.5')"
+            >
+              <div class="field-label">
+                <label class="label" for="dterm-dynamic-enable">
+                  DTerm Dynamic
+                  <tooltip entry="filter.dterm_dynamic_type" />
+                </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="dterm-dynamic-enable"
+                      v-model.number="profile.filter.dterm_dynamic_type"
+                      class="is-fullwidth"
+                      :options="filterTypeOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="field is-horizontal mt-6">
               <div class="field-label">
                 <label class="label" for="dterm-dynamic-enable">
                   DTerm Dynamic

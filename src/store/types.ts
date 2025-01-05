@@ -179,7 +179,7 @@ export interface profile_filter_parameter_t {
 export interface profile_filter_t {
   gyro: profile_filter_parameter_t[];
   dterm: profile_filter_parameter_t[];
-  dterm_dynamic_enable: number;
+  dterm_dynamic_type: number;
   dterm_dynamic_min: number;
   dterm_dynamic_max: number;
 }

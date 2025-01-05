@@ -58,6 +58,10 @@
     "text": "Enable a dynamic D-term filtercut, you almost always want to leave this ON",
     "link": "https://docs.bosshobby.com/Features/#dynamic-d-term"
   },
+  "filter.dterm_dynamic_type": {
+    "text": "Enable a dynamic D-term filtercut, you almost always want to use at least a pt1",
+    "link": "https://docs.bosshobby.com/Features/#dynamic-d-term"
+  },
   "filter.dterm_dynamic_max": {
     "disabled": true
   },
