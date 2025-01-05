@@ -12,30 +12,7 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
-              LipoCellCount
-              <tooltip entry="voltage.lipo_cell_count" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="lipo-cell-count"
-                  v-model.number="profile.voltage.lipo_cell_count"
-                  class="input"
-                  type="number"
-                  step="1"
-                  min="0"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              PidVoltageCompensation
+              Pid Voltage Compensation
               <tooltip entry="voltage.pid_voltage_compensation" />
             </label>
           </div>
@@ -55,7 +32,30 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
-              VBattLow
+              Lipo Cell Count
+              <tooltip entry="voltage.lipo_cell_count" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="lipo-cell-count"
+                  v-model.number="profile.voltage.lipo_cell_count"
+                  class="input"
+                  type="number"
+                  step="1"
+                  min="0"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 field is-horizontal">
+          <div class="field-label">
+            <label class="label">
+              Voltage Warning Threshold
               <tooltip entry="voltage.vbattlow" />
             </label>
           </div>
@@ -74,11 +74,47 @@
             </div>
           </div>
         </div>
-
-        <div class="field is-horizontal">
+        <div
+          class="field is-horizontal"
+          v-if="profile.profileVersionGt('0.2.2')"
+        >
           <div class="field-label">
             <label class="label">
-              ActualBatteryVoltage
+              Filtered Voltage Warnings
+              <tooltip entry="voltage.use_filtered_voltage_for_warnings" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  type="checkbox"
+                  class="switch"
+                  id="use_filtered_voltage_for_warnings"
+                  :checked="
+                    profile.voltage.use_filtered_voltage_for_warnings || 0
+                  "
+                  @change="
+                    profile.voltage.use_filtered_voltage_for_warnings = profile
+                      .voltage.use_filtered_voltage_for_warnings
+                      ? 0
+                      : 1
+                  "
+                />
+                <label
+                  class="py-0"
+                  style="height: 2em"
+                  for="use_filtered_voltage_for_warnings"
+                ></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 field is-horizontal">
+          <div class="field-label">
+            <label class="label">
+              Actual Battery Voltage
               <tooltip entry="voltage.actual_battery_voltage" />
             </label>
           </div>
@@ -101,7 +137,7 @@
         <div class="field is-horizontal">
           <div class="field-label">
             <label class="label">
-              ReportedTelemetryVoltage
+              Reported Battery Voltage
               <tooltip entry="voltage.reported_telemetry_voltage" />
             </label>
           </div>
@@ -162,33 +198,6 @@
                   step="1"
                   min="0"
                 />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="profile.profileVersionGt('0.2.2')">
-          <div class="field-label">
-            <label class="label">
-              Filtered voltage warnings
-              <tooltip entry="voltage.use_filtered_voltage_for_warnings" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  type="checkbox"
-                  class="switch"
-                  id="use_filtered_voltage_for_warnings"
-                  :checked="profile.voltage.use_filtered_voltage_for_warnings || 0"
-                  @change="profile.voltage.use_filtered_voltage_for_warnings = profile.voltage.use_filtered_voltage_for_warnings ? 0 : 1"
-                />
-                <label
-                  class="py-0"
-                  style="height: 2em"
-                  for="use_filtered_voltage_for_warnings"
-                ></label>
               </div>
             </div>
           </div>
