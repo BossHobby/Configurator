@@ -276,21 +276,25 @@ export class Serial {
   async close() {
     try {
       await this.reader?.cancel().catch(console.warn);
-      await (this.transfromClosed || Promise.resolve()).catch(console.warn);
+      await (this.transfromClosed || Promise.resolve()).catch();
       this.reader?.releaseLock();
     } catch (err) {
       Log.warn("serial", err);
     }
 
     try {
-      await this.writer?.close();
+      await this.writer?.close().catch(console.warn);
       this.writer?.releaseLock();
     } catch (err) {
       Log.warn("serial", err);
     }
 
-    await this.port?.close().catch(console.warn);
-    this.ws?.close();
+    try {
+      await this.port?.close().catch(console.warn);
+      this.ws?.close();
+    } catch (err) {
+      Log.warn("serial", err);
+    }
 
     this.reader = undefined;
     this.writer = undefined;
