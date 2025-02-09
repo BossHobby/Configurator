@@ -121,7 +121,13 @@
                         :value="el.pos.x"
                         min="0"
                         :max="limits.width - 1"
-                        @input="osd_set(i, 'pos_x', $event?.target?.value)"
+                        @input="
+                          osd_set(
+                            i,
+                            is_hd ? 'pos_hd_x' : 'pos_sd_x',
+                            $event?.target?.value,
+                          )
+                        "
                       />
                     </div>
                   </div>
@@ -134,7 +140,13 @@
                         :value="el.pos.y"
                         min="0"
                         :max="limits.height - 1"
-                        @input="osd_set(i, 'pos_y', $event?.target?.value)"
+                        @input="
+                          osd_set(
+                            i,
+                            is_hd ? 'pos_hd_y' : 'pos_sd_y',
+                            $event?.target?.value,
+                          )
+                        "
                       />
                     </div>
                   </div>
