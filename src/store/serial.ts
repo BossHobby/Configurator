@@ -7,7 +7,7 @@ import { Log } from "@/log";
 import router from "@/router";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
-import { QuicCmd } from "./serial/quic";
+import { QuicCmd, QuicMotor } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { settings } from "./serial/settings";
 import { useInfoStore } from "./info";
@@ -118,6 +118,27 @@ export const useSerialStore = defineStore("serial", {
           root.append_alert({
             type: "danger",
             msg: "Serial passthrough failed",
+          });
+        });
+    },
+    esc_passthrough({ index, baudrate }) {
+      const root = useRootStore();
+
+      return serial
+        .command(QuicCmd.Motor, QuicMotor.Serial, index, baudrate)
+        .then(() => serial.close())
+        .then(() => this.toggle_connection())
+        .then(() => {
+          root.append_alert({
+            type: "success",
+            msg: "ESC passthrough successful!",
+          });
+        })
+        .catch((err) => {
+          Log.error("serial", err);
+          root.append_alert({
+            type: "danger",
+            msg: "ESC passthrough failed",
           });
         });
     },
