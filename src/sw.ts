@@ -15,6 +15,11 @@ const cacheUrls = [
 self.__WB_DISABLE_DEV_LOGS = true;
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key)))),
+    );
     self.skipWaiting();
   }
 });
@@ -31,6 +36,10 @@ registerRoute(
     },
     plugins: [
       new ExpirationPlugin({
+        matchOptions: {
+          ignoreVary: true,
+        },
+        purgeOnQuotaError: true,
         maxAgeSeconds: 5 * 60,
       }),
     ],
