@@ -43,6 +43,7 @@ export enum QuicMotor {
   TestDisable,
   TestSetValue,
   Esc4WayIf,
+  Serial,
 }
 
 export enum QuicOSD {
