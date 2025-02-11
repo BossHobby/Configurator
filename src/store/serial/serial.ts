@@ -313,7 +313,7 @@ export class Serial {
         if (packet.cmd != cmd) {
           throw new Error("invalid command");
         }
-        if (packet.flag & QuicFlag.Error) {
+        if (packet.flag == QuicFlag.Error) {
           throw new Error(packet.payload[0]);
         }
 
@@ -416,7 +416,7 @@ export class Serial {
       throw new Error("invalid command");
     }
 
-    if ((value.flag & QuicFlag.Streaming) == 0) {
+    if (value.flag != QuicFlag.Streaming) {
       return {
         ...value,
         payload: CBOR.decode(value.payload),
@@ -434,7 +434,7 @@ export class Serial {
       if (!value) {
         throw new Error("no packet");
       }
-      if (value.cmd != cmd || (value.flag & QuicFlag.Streaming) == 0) {
+      if (value.cmd != cmd || value.flag != QuicFlag.Streaming) {
         throw new Error("invalid command");
       }
       if (value.len == 0) {
