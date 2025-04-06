@@ -28,7 +28,7 @@ $danger: hsl(348, 86%, 61%);
   $grey-lighter: $grey-lighter
 );
 @use "bulma/sass/utilities/css-variables" as cs;
-@import "switch.scss";
+@use "switch.scss";
 
 @mixin register-var($name, $value) {
   @include cs.register-var($name, $value);
