@@ -143,12 +143,14 @@ export const useSerialStore = defineStore("serial", {
         });
     },
     disconnect() {
-      const root = useRootStore();
-
-      stopInterval();
+      if (!this.is_connected) return;
 
       this.is_connected = false;
       this.is_connecting = false;
+
+      stopInterval();
+
+      const root = useRootStore();
       root.reset_needs_reboot();
 
       if (router.currentRoute.value.fullPath != "/home") {

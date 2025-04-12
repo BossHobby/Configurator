@@ -28,7 +28,7 @@ const SERIAL_FILTERS = [
 export type ProgressCallbackType = (number) => void;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-const noProgress = () => {};
+const noProgress = () => { };
 
 enum QuicParserState {
   READ_MAGIC,
@@ -123,6 +123,7 @@ export class Serial {
 
   private transfromClosed?: Promise<void>;
   private errorCallback?: any;
+  private isClosing = false;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
     const ws = settings.websocketUrl();
@@ -275,30 +276,44 @@ export class Serial {
 
   async close() {
     try {
-      await this.reader?.cancel().catch(console.warn);
-      await (this.transfromClosed || Promise.resolve()).catch(console.warn);
-      this.reader?.releaseLock();
+      if (this.isClosing) return;
+      this.isClosing = true;
+
+      const errors = (
+        await Promise.all(
+          [
+            () => this.reader?.cancel().catch((e) => e),
+            () => (this.transfromClosed || Promise.resolve()).catch((e) => e),
+            () => Promise.resolve(this.reader?.releaseLock()).catch((e) => e),
+            () => this.writer?.close().catch((e) => e),
+            () => Promise.resolve(this.writer?.releaseLock()).catch((e) => e),
+          ].map((p) => {
+            try {
+              return p();
+            } catch (err) {
+              return err;
+            }
+          }),
+        )
+      ).filter((e) => e);
+
+      if (errors.length) console.warn(errors);
+
+      await this.port?.close().catch((e) => e);
+      this.ws?.close();
     } catch (err) {
-      Log.warn("serial", err);
+      console.warn(err);
+    } finally {
+      this.reader = undefined;
+      this.writer = undefined;
+
+      this.transfromClosed = undefined;
+
+      this.port = undefined;
+      this.ws = undefined;
+
+      this.isClosing = false;
     }
-
-    try {
-      await this.writer?.close();
-      this.writer?.releaseLock();
-    } catch (err) {
-      Log.warn("serial", err);
-    }
-
-    await this.port?.close().catch(console.warn);
-    this.ws?.close();
-
-    this.reader = undefined;
-    this.writer = undefined;
-
-    this.transfromClosed = undefined;
-
-    this.port = undefined;
-    this.ws = undefined;
   }
 
   private async _command(
@@ -322,6 +337,7 @@ export class Serial {
       .catch((err) => {
         if (this.errorCallback) {
           this.errorCallback(err);
+          this.errorCallback = undefined;
         }
         throw err;
       }));
