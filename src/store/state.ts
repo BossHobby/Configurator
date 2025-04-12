@@ -29,6 +29,7 @@ export const useStateStore = defineStore("state", {
     accel_raw: null,
     gyro: null,
     gyro_raw: null,
+    altitude: 0,
   }),
   getters: {
     vbat(state) {

@@ -68,9 +68,15 @@ export default defineComponent({
         },
         {
           name: "gyro_temp",
-          size: 12,
+          size: 6,
           title: "Gyro Temperature",
           axis: "°C",
+        },
+        {
+          name: "altitude",
+          size: 6,
+          title: "Altitude",
+          axis: "m",
         },
         {
           name: "GEstG",
