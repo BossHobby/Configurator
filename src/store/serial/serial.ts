@@ -28,7 +28,7 @@ const SERIAL_FILTERS = [
 export type ProgressCallbackType = (number) => void;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-const noProgress = () => { };
+const noProgress = () => {};
 
 enum QuicParserState {
   READ_MAGIC,
@@ -118,6 +118,7 @@ export class Serial {
   private port?: SerialPort;
   private ws?: WebSocket;
 
+  private transform?: QuicStream;
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<QuicPacket>;
 
@@ -147,7 +148,7 @@ export class Serial {
       if (!ports.length) throw new Error("no ports");
       await this._connectPort(ports[0], errorCallback);
     }
-    return await this.get(QuicVal.Info, 10_000);
+    return await this.get(QuicVal.Info, 30_000);
   }
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
@@ -165,10 +166,19 @@ export class Serial {
     this.errorCallback = errorCallback;
     this.waitingCommands = Promise.resolve({} as any);
 
-    const transform = new QuicStream();
-    this.transfromClosed = this.port.readable.pipeTo(transform.writable);
     this.writer = await this.port.writable.getWriter();
-    this.reader = transform.readable.getReader();
+
+    this.transform = new QuicStream();
+    this.transfromClosed = this.port.readable.pipeTo(this.transform.writable);
+    this.reader = this.transform.readable.getReader();
+
+    while (true) {
+      try {
+        await this.readPacket(noProgress, 100);
+      } catch (err) {
+        break;
+      }
+    }
   }
 
   private async _connectWebsocket(
@@ -406,6 +416,26 @@ export class Serial {
     return result;
   }
 
+  private async readTimeout(timeout: number | undefined) {
+    const timer = timeout
+      ? setTimeout(() => {
+          this.reader?.releaseLock();
+          this.reader = this.transform?.readable.getReader();
+        }, timeout)
+      : undefined;
+    try {
+      const result = await this.reader?.read().then((r) => r.value);
+      if (timer) clearTimeout(timer);
+      return result;
+    } catch (e) {
+      if (e instanceof TypeError) {
+        throw new Error("timeout");
+      } else {
+        throw e;
+      }
+    }
+  }
+
   private async readPacket(
     progress: ProgressCallbackType,
     timeout: number | undefined,
@@ -414,16 +444,7 @@ export class Serial {
       throw new Error("no serial reader");
     }
 
-    const promises = [this.reader.read().then((r) => r.value)];
-    if (timeout) {
-      promises.push(
-        new Promise<QuicPacket | undefined>((resolve, reject) =>
-          setTimeout(() => reject("timeout"), timeout),
-        ),
-      );
-    }
-
-    const value = await Promise.race(promises);
+    const value = await this.readTimeout(timeout);
     if (!value) {
       throw new Error("no packet");
     }
