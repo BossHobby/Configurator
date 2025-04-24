@@ -124,6 +124,25 @@ enum AuxFunctionsV025 {
   AUX_OSD_PROFILE,
 }
 
+enum AuxFunctionsV026 {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_RACEMODE,
+  AUX_HORIZON,
+  AUX_STICK_BOOST_PROFILE,
+  _AUX_RATE_PROFILE,
+  AUX_BUZZER_ENABLE,
+  AUX_TURTLE,
+  AUX_MOTOR_TEST,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
+  AUX_RETURN_TO_HOME,
+}
+
 enum RXProtocolV5 {
   INVALID,
   UNIFIED_SERIAL,
@@ -280,6 +299,9 @@ export const useConstantStore = defineStore("constant", {
     },
     AuxFunctions() {
       const profile = useProfileStore();
+      if (profile.profileVersionGt("0.2.5")) {
+        return AuxFunctionsV026;
+      }
       if (profile.profileVersionGt("0.2.4")) {
         return AuxFunctionsV025;
       }

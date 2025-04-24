@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from "vue";
+import { defineComponent } from "vue";
 import {
   BoxGeometry,
   MeshBasicMaterial,

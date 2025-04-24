@@ -307,6 +307,16 @@ export default defineComponent({
           text: "0.00\x07",
         });
       }
+      if (this.profile.profileVersionGt("0.2.5")) {
+        elements.push({ name: "ALTITUDE", enabled: true, text: "\x7f119\x0c" });
+        elements.push({ name: "GPS_SATS", enabled: true, text: "\x1E\x1F19" });
+        elements.push({ name: "GPS_SPEED", enabled: true, text: " 25\x9E" });
+        elements.push({
+          name: "GPS_HOME",
+          enabled: true,
+          text: "\x051000\x0c",
+        });
+      }
       return elements;
     },
     elements() {

@@ -30,6 +30,18 @@ export const useStateStore = defineStore("state", {
     gyro: null,
     gyro_raw: null,
     altitude: 0,
+    gps_version: 0,
+    gps_lock: false,
+    gps_sats: 0,
+    gps_speed: 0,
+    gps_heading: 0,
+    gps_coord: { lon: 0, lat: 0 },
+    gps_home: { lon: 0, lat: 0 },
+    gps_altitude: 0,
+    heading: 0,
+    home_bearing: 0,
+    home_distance: 0,
+    attitude: [],
   }),
   getters: {
     vbat(state) {

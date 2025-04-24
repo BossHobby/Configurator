@@ -13,6 +13,7 @@
     </div>
     <div class="column is-6">
       <Serial></Serial>
+      <GPS v-if="profile.serial.gps != 0" class="mt-4"></GPS>
     </div>
   </div>
   <div class="columns">
@@ -29,16 +30,18 @@ import { defineComponent } from "vue";
 import Motor from "@/panel/Motor.vue";
 import Voltage from "@/panel/Voltage.vue";
 import Serial from "@/panel/Serial.vue";
+import GPS from "@/panel/GPS.vue";
 import VTX from "@/panel/VTX.vue";
 import GyroModel from "@/panel/GyroModel.vue";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
-  name: "Home",
+  name: "SetupView",
   components: {
     Motor,
     Voltage,
     Serial,
+    GPS,
     VTX,
     GyroModel,
   },
