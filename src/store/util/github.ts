@@ -77,17 +77,24 @@ class Github {
       .listWorkflowRunsForRepo({
         ...FIRMWARE_REPO,
         branch: branch,
-        per_page: 1,
+        per_page: 10, // Get more runs to filter through
         status: "success",
       })
       .then((runs) => {
-        if (runs.data.total_count == 0) {
+        // Filter for "build" workflow runs only
+        const buildRuns = runs.data.workflow_runs.filter(
+          (run) => run.name === "build",
+        );
+
+        if (buildRuns.length === 0) {
           return [];
         }
+
+        // Get artifacts from the first build workflow run
         return octokit.rest.actions
           .listWorkflowRunArtifacts({
             ...FIRMWARE_REPO,
-            run_id: runs.data.workflow_runs[0].id,
+            run_id: buildRuns[0].id,
             per_page: 100,
           })
           .then((res) => {
