@@ -240,6 +240,7 @@ export const useProfileStore = defineStore("profile", {
     },
     blackbox: {
       field_flags: 0,
+      debug_flags: 0,
       sample_rate_hz: 0,
     },
   }),

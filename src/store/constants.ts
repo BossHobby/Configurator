@@ -238,6 +238,11 @@ export enum LQISource {
   DIRECT,
 }
 
+export enum BlackboxDebugFlag {
+  BBOX_DEBUG_DYN_NOTCH = 0x1 << 0,
+  BBOX_DEBUG_NAVIGATION = 0x1 << 1,
+}
+
 export const FailloopMessages = {
   [Failloop.FAILLOOP_NONE]: "",
   [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - currently unused",

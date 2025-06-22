@@ -186,6 +186,7 @@ export interface profile_filter_t {
 
 export interface profile_blackbox_t {
   field_flags: number;
+  debug_flags: number;
   sample_rate_hz: number;
 }
 
