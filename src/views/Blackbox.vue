@@ -50,6 +50,23 @@
             </div>
 
             <div class="field field-is-2 is-horizontal">
+              <div class="field-label">
+                <label class="label">Debug Mode</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="blackbox-debug-mode"
+                      v-model.number="profile.blackbox.debug_flags"
+                      :options="debugModeOptions"
+                    ></input-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field field-is-2 is-horizontal">
               <div class="field-label is-align-self-flex-start pt-2">
                 <label class="label">Fields</label>
               </div>
@@ -158,7 +175,7 @@ import {
   BlackboxFields,
   transformBlackboxFieldFlags,
 } from "@/store/blackbox";
-import { BlackboxField } from "@/store/constants";
+import { BlackboxField, BlackboxDebugFlag } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
@@ -178,6 +195,7 @@ export default defineComponent({
   data() {
     return {
       current_preset: -1,
+      BlackboxDebugFlag,
     };
   },
   computed: {
@@ -214,6 +232,16 @@ export default defineComponent({
             text: p.name,
           };
         }),
+      ];
+    },
+    debugModeOptions() {
+      return [
+        { value: 0, text: "None" },
+        {
+          value: BlackboxDebugFlag.BBOX_DEBUG_DYN_NOTCH,
+          text: "Dynamic Notch",
+        },
+        { value: BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION, text: "Navigation" },
       ];
     },
   },
