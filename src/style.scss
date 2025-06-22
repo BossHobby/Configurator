@@ -13,13 +13,15 @@ $white-off: hsl(0, 0%, 95%);
 $white-offer: hsl(0, 0%, 75%);
 
 $danger: hsl(348, 86%, 61%);
+$info: hsl(204, 86%, 48%);
 
 @use "bulma/sass" with (
   $family-primary: '"Roboto", sans-serif',
   $primary: $green,
   $danger: $danger,
+  $info: $info,
   $link: $white,
-  $success: $green-light,
+  $success: $green,
 
   $grey: $grey,
   $grey-dark: $grey-dark,
@@ -38,6 +40,8 @@ $danger: hsl(348, 86%, 61%);
 :root {
   --bulma-primary-invert-l: var(--bulma-primary-100-l);
   --bulma-danger-invert-l: var(--bulma-danger-100-l);
+  --bulma-success-invert-l: var(--bulma-success-100-l);
+  --bulma-info-invert-l: var(--bulma-info-100-l);
 
   .navbar {
     --bulma-navbar-burger-color: #{$white-off};
