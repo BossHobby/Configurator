@@ -3,8 +3,10 @@ import { useRootStore } from "./root";
 import { QuicBlackbox, QuicCmd, QuicVal } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { Blackbox } from "./util/blackbox";
+import { CompressedBlackboxDecoder } from "./util/blackbox-compressed";
 import { BlackboxField } from "./constants";
 import { useProfileStore } from "./profile";
+import { useInfoStore } from "./info";
 import type { profile_t } from "./types";
 
 export enum BlackboxFieldUnit {
@@ -183,6 +185,7 @@ export const useBlackboxStore = defineStore("blackbox", {
       const root = useRootStore();
       const file = this.list.files[index];
       const fieldflags = transformBlackboxFieldFlags(file.field_flags);
+      const info = useInfoStore();
 
       const start = performance.now();
       return serial
@@ -203,10 +206,21 @@ export const useBlackboxStore = defineStore("blackbox", {
             })
             .map((i) => BlackboxFields[i]);
 
+          // Check if we need to use the compressed decoder
+          const decoder = new CompressedBlackboxDecoder(
+            info.quic_protocol_semver,
+            file,
+          );
+
+          // Decode the compressed data if necessary
+          const decodedPayload = decoder.decode(p.payload);
+
           const f = {
             ...file,
             fields,
-            entries: p.payload,
+            entries: decodedPayload,
+            compressed: decoder.useCompression,
+            firmwareVersion: info.quic_protocol_semver,
           };
 
           const encoded = encodeURIComponent(JSON.stringify(f));
@@ -234,6 +248,7 @@ export const useBlackboxStore = defineStore("blackbox", {
     download_blackbox_btfl(index) {
       const root = useRootStore();
       const file = this.list.files[index];
+      const info = useInfoStore();
 
       const start = performance.now();
       return serial
@@ -249,9 +264,19 @@ export const useBlackboxStore = defineStore("blackbox", {
         )
         .then((p) => {
           const profile = useProfileStore();
+
+          // Check if we need to use the compressed decoder
+          const decoder = new CompressedBlackboxDecoder(
+            info.quic_protocol_semver,
+            file,
+          );
+
+          // Decode the compressed data if necessary
+          const decodedPayload = decoder.decode(p.payload);
+
           const writer = new Blackbox(file);
           writer.writeHeaders(profile as unknown as profile_t);
-          for (const v of p.payload) {
+          for (const v of decodedPayload) {
             writer.writeValue(v);
           }
           return writer.toUrl();
