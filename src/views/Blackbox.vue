@@ -39,11 +39,11 @@
               <div class="field-body">
                 <div class="field">
                   <div class="control is-expanded">
-                    <input
-                      class="input is-static"
-                      :value="blackboxRate"
-                      readonly
-                    />
+                    <input-select
+                      id="blackbox-log-rate"
+                      v-model.number="profile.blackbox.sample_rate_hz"
+                      :options="logRateOptions"
+                    ></input-select>
                   </div>
                 </div>
               </div>
@@ -202,9 +202,6 @@ export default defineComponent({
     usedSize() {
       return (this.blackbox?.list?.files || []).reduce((p, c) => p + c.size, 0);
     },
-    blackboxRate() {
-      return this.profile.blackbox.sample_rate_hz.toString() + " Hz";
-    },
     blackboxFields() {
       const fieldflags = transformBlackboxFieldFlags(
         this.profile.blackbox.field_flags,
@@ -242,6 +239,14 @@ export default defineComponent({
           text: "Dynamic Notch",
         },
         { value: BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION, text: "Navigation" },
+      ];
+    },
+    logRateOptions() {
+      return [
+        { value: 200, text: "200 Hz" },
+        { value: 1000, text: "1 kHz" },
+        { value: 2000, text: "2 kHz" },
+        { value: 4000, text: "4 kHz" },
       ];
     },
   },
