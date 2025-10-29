@@ -76,6 +76,10 @@
   "filter.gyro_2_type": {
     "disabled": true
   },
+  "filter.gyro_dynamic_notch_enable": {
+    "text": "Tracks noise peaks and inserts notch filters at these frequencies",
+    "link": "https://docs.bosshobby.com/Features/#dynamic-notch-filter"
+  },
   "filter.settings": {
     "text": "The default filter setting are designed to be safe, before making adjustments refer to the wiki",
     "link": "https://docs.bosshobby.com/Features/#filters"
