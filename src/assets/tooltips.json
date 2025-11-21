@@ -23,6 +23,9 @@
   "channel.aux_motor_test": {
     "text": "Activate the motor test function, useful to check individual motors in the field"
   },
+  "channel.aux_osd_profile": {
+    "text": "Allows for a second OSD screen with different or no elements on a switch"
+  },
   "channel.aux_prearm": {
     "text": "Allows for a separate AUX channel to be set as a safety for arming, the set AUX should be ON before the ARM switch is activated. If not used leave this as ON"
   },
