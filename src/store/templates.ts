@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-const isDevelop = import.meta.env.VITE_BRANCH_NAME;
+const isDevelop = import.meta.env.VITE_BRANCH_NAME == 'develop';
 
 const DEVELOP_TEMPLATE_URL =
   "https://raw.githubusercontent.com/BossHobby/Templates/develop-deploy/";
