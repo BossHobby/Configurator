@@ -19,6 +19,9 @@
                     v-model.number="vtx.settings.protocol"
                     :options="vtxProtocolOptions"
                   ></input-select>
+                  <p v-if="vtx.settings.protocol == 0" class="help is-warning">
+                    Please select a VTX protocol
+                  </p>
                 </div>
               </div>
             </div>
@@ -212,7 +215,7 @@ export default defineComponent({
     },
     vtxProtocolOptions() {
       const data = [
-        { value: 0, text: "AUTO" },
+        //{ value: 0, text: "AUTO" }, we dont do this anymore
         { value: 1, text: "TRAMP" },
         { value: 2, text: "SMARTAUDIO" },
       ];
