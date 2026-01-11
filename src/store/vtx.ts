@@ -42,8 +42,7 @@ export const useVTXStore = defineStore("vtx", {
     update_vtx_settings(force = false) {
       if (this.settings.detected == 0 || force) {
         return serial.get(QuicVal.VtxSettings).then((settings) => {
-          const protocol =
-            settings.detected == 0 ? this.settings.protocol : settings.protocol;
+          const protocol = this.settings.protocol || settings.protocol;
           this.settings = {
             ...settings,
             protocol,
