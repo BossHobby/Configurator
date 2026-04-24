@@ -29,6 +29,7 @@ export enum QuicVal {
   PerfCounters,
   BlackboxPresets,
   Target,
+  GpsStatus,
 }
 
 export enum QuicBlackbox {

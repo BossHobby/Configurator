@@ -227,6 +227,9 @@
   "serial.smart_audio": {
     "text": "Enter the UART the VTX TX line is connected to"
   },
+  "serial.gps": {
+    "text": "Enter the UART the GPS TX line is connected to"
+  },
   "serial_passthrough": {
     "text": "Can be used to flash serial receivers via passthrough, set correct uart and Start"
   },

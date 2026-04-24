@@ -10,6 +10,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       rx: 0,
       smart_audio: 0,
       hdzero: 0,
+      gps: 0,
     },
     filter: {
       gyro: [{}, {}],
