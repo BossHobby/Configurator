@@ -22,6 +22,14 @@
       ></VTX>
     </div>
   </div>
+  <div
+    class="columns"
+    v-if="profile.profileVersionGt('0.2.6') && profile.serial.gps != 0"
+  >
+    <div class="column is-12">
+      <GPS></GPS>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -29,6 +37,7 @@ import { defineComponent } from "vue";
 import Motor from "@/panel/Motor.vue";
 import Voltage from "@/panel/Voltage.vue";
 import Serial from "@/panel/Serial.vue";
+import GPS from "@/panel/GPS.vue";
 import VTX from "@/panel/VTX.vue";
 import GyroModel from "@/panel/GyroModel.vue";
 import { useProfileStore } from "@/store/profile";
@@ -39,6 +48,7 @@ export default defineComponent({
     Motor,
     Voltage,
     Serial,
+    GPS,
     VTX,
     GyroModel,
   },

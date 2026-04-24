@@ -292,6 +292,8 @@ export default defineComponent({
         { name: "THROTTLE", enabled: true, text: "  50\x04" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
         { name: "CURRENT", enabled: true, text: "0.00\x9a" },
+        { name: "GPS SATS", enabled: true, text: "\x1e\x1f 12" },
+        { name: "GPS SPEED", enabled: true, text: " 45\x9e" },
       ];
       if (this.profile.profileVersionGt("0.2.2")) {
         elements.push({

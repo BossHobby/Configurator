@@ -68,6 +68,30 @@
             </div>
           </div>
         </div>
+
+        <div
+          class="field is-horizontal"
+          v-if="profile.profileVersionGt('0.2.6')"
+        >
+          <div class="field-label">
+            <label class="label">
+              GPS
+              <tooltip entry="serial.gps" />
+            </label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input-select
+                  id="gps"
+                  v-model.number="profile.serial.gps"
+                  class="is-fullwidth"
+                  :options="serialPorts"
+                ></input-select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

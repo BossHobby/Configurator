@@ -162,6 +162,7 @@ export interface profile_serial_t {
   rx: number;
   smart_audio: number;
   hdzero: number;
+  gps: number;
 }
 
 export interface profile_osd_t {
