@@ -212,13 +212,14 @@ export enum StickWizardState {
 
 enum Failloop {
   FAILLOOP_NONE = 0,
-  FAILLOOP_LOW_BATTERY = 2, // - low battery at powerup - currently unused
+  FAILLOOP_LOW_BATTERY = 2, // - low battery at powerup - unused
   FAILLOOP_RADIO = 3, // - radio chip not found
   FAILLOOP_GYRO = 4, // - gyro not found
-  FAILLOOP_FAULT = 5, // - clock, intterrupts, systick, gcc bad code, bad memory access (code issues like bad pointers) - this should not come up
+  FAILLOOP_FAULT = 5, // - clock, intterrupts, systick
   FAILLOOP_LOOPTIME = 6, // - loop time issue - if loop time exceeds 20mS
-  FAILLOOP_SPI = 7, // - spi error  - triggered by hardware spi driver only
-  FAILLOOP_SPI_MAIN = 8, // - spi error main loop  - triggered by hardware spi driver only
+  FAILLOOP_DMA = 7, // - dma error
+  FAILLOOP_SPI = 8, // - spi error
+  FAILLOOP_NO_TARGET = 9, // - no target configured - connect configurator and load target
 }
 
 // These should align with 'blackbox_t' and 'blackbox_field_t' in Quicksilver source 'blackbox.h'
@@ -252,15 +253,15 @@ export enum BlackboxDebugFlag {
 
 export const FailloopMessages = {
   [Failloop.FAILLOOP_NONE]: "",
-  [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - currently unused",
+  [Failloop.FAILLOOP_LOW_BATTERY]: "low battery at powerup - unused",
   [Failloop.FAILLOOP_RADIO]: "radio chip not found",
   [Failloop.FAILLOOP_GYRO]: "gyro not found",
-  [Failloop.FAILLOOP_FAULT]:
-    "clock, intterrupts, systick, gcc bad code, bad memory access (code issues like bad pointers) - this should not come up",
-  [Failloop.FAILLOOP_LOOPTIME]: "loop time issue - if loop time exceeds 20mS",
-  [Failloop.FAILLOOP_SPI]: "spi error  - triggered by hardware spi driver only",
-  [Failloop.FAILLOOP_SPI_MAIN]:
-    "spi error main loop  - triggered by hardware spi driver only",
+  [Failloop.FAILLOOP_FAULT]: "clock, intterrupts, systick",
+  [Failloop.FAILLOOP_LOOPTIME]: "loop time issue",
+  [Failloop.FAILLOOP_DMA]: "dma error",
+  [Failloop.FAILLOOP_SPI]: "spi error",
+  [Failloop.FAILLOOP_NO_TARGET]:
+    "no target configured - connect configurator and load target",
 };
 
 export const useConstantStore = defineStore("constant", {
