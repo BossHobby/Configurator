@@ -3,6 +3,7 @@ import { useProfileStore } from "./profile";
 import { useDefaultProfileStore } from "./default_profile";
 import { usePerfStore } from "./perf";
 import { useBindStore } from "./bind";
+import { useGpsStore } from "./gps";
 import { Log } from "@/log";
 import router from "@/router";
 import { defineStore } from "pinia";
@@ -49,6 +50,7 @@ export const useSerialStore = defineStore("serial", {
 
       const bind = useBindStore();
       const perf = usePerfStore();
+      const profile = useProfileStore();
       const state = useStateStore();
       const vtx = useVTXStore();
 
@@ -62,6 +64,10 @@ export const useSerialStore = defineStore("serial", {
         }
         if (router.currentRoute.value.fullPath == "/setup") {
           await vtx.update_vtx_settings();
+          if (profile.profileVersionGt("0.2.6") && profile.serial.gps != 0) {
+            const gps = useGpsStore();
+            await gps.poll_serial();
+          }
         }
       }
     },
