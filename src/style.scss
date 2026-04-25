@@ -12,7 +12,7 @@ $white: rgb(255, 255, 255);
 $white-off: hsl(0, 0%, 95%);
 $white-offer: hsl(0, 0%, 75%);
 
-$danger: hsl(348, 86%, 61%);
+$danger: hsl(0 85% 53% / 1);
 $info: hsl(204, 86%, 48%);
 
 @use "bulma/sass" with (

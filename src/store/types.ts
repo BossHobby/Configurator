@@ -150,9 +150,15 @@ export interface profile_stick_calibration_limits_t {
   max: number;
 }
 
+export interface aux_function_map_t {
+  channel: number;
+  range_min: number;
+  range_max: number;
+}
+
 export interface profile_receiver_t {
   protocol: number;
-  aux: number[];
+  aux: aux_function_map_t[];
   lqi_source: number;
   channel_mapping: number;
   stick_calibration_limits: profile_stick_calibration_limits_t[];
