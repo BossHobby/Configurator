@@ -7,7 +7,7 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
-import type { target_t } from "./types";
+import type { aux_function_map_t, target_t } from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
 
@@ -152,6 +152,25 @@ function migrateProfileVersion(
       : 0;
   }
 
+  if (
+    semver.lt(profileVersion, "v0.3.0") &&
+    semver.gte(firmwareVersion, "v0.3.0") &&
+    Array.isArray(profile.receiver?.aux)
+  ) {
+    profile.receiver.aux = profile.receiver.aux.map((entry) => {
+      if (typeof entry === "number") {
+        const isOff = entry === 12;
+        const isOn = entry === 13;
+        return {
+          channel: entry,
+          range_min: isOff || isOn ? 0 : 32768,
+          range_max: 65535,
+        } as aux_function_map_t;
+      }
+      return entry;
+    });
+  }
+
   return profile;
 }
 
@@ -237,7 +256,7 @@ export const useProfileStore = defineStore("profile", {
     receiver: {
       lqi_source: -1,
       channel_mapping: 0,
-      aux: [],
+      aux: [] as aux_function_map_t[],
       protocol: 0,
     },
     pid: {

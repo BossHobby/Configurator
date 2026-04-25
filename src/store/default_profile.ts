@@ -55,6 +55,9 @@ export const useDefaultProfileStore = defineStore("default_profile", {
     has_legacy_osd(state) {
       return semver.lte(decodeSemver(state.meta.version), "v0.2.4");
     },
+    has_legacy_aux(state) {
+      return semver.lt(decodeSemver(state.meta.version), "v0.3.0");
+    },
   },
   actions: {
     fetch_default_profile() {
