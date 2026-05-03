@@ -54,6 +54,7 @@ export const useTargetStore = defineStore("target", {
     spi_ports: [],
 
     motor_pins: [],
+    outputs: [],
   }),
   getters: {
     yaml(store) {
@@ -90,6 +91,9 @@ export const useTargetStore = defineStore("target", {
     },
     motor_pin_names(store): string[] {
       const info = useInfoStore();
+      if (store.outputs?.length) {
+        return store.outputs.map((output) => output.pin);
+      }
       if (info.quic_semver_gte("0.2.0")) {
         return store.motor_pins;
       } else {

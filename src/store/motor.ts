@@ -4,6 +4,52 @@ import { Log } from "@/log";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
 import { useProfileStore } from "./profile";
+import { output_source_t } from "./types";
+import { useInfoStore } from "./info";
+
+const OUTPUT_COUNT = 8;
+
+const MULTI_PINS = [
+  {
+    index: 0,
+    source: output_source_t.OUTPUT_SOURCE_MOTOR_1,
+    id: "MOTOR_1",
+    label: "Motor 1",
+  },
+  {
+    index: 1,
+    source: output_source_t.OUTPUT_SOURCE_MOTOR_2,
+    id: "MOTOR_2",
+    label: "Motor 2",
+  },
+  {
+    index: 2,
+    source: output_source_t.OUTPUT_SOURCE_MOTOR_3,
+    id: "MOTOR_3",
+    label: "Motor 3",
+  },
+  {
+    index: 3,
+    source: output_source_t.OUTPUT_SOURCE_MOTOR_4,
+    id: "MOTOR_4",
+    label: "Motor 4",
+  },
+];
+
+const ROVER_PINS = [
+  {
+    index: 0,
+    source: output_source_t.OUTPUT_SOURCE_THROTTLE,
+    id: "THROTTLE",
+    label: "Throttle",
+  },
+  {
+    index: 3,
+    source: output_source_t.OUTPUT_SOURCE_STEERING,
+    id: "SERVO",
+    label: "Servo",
+  },
+];
 
 export const useMotorStore = defineStore("motor", {
   state: () => ({
@@ -13,36 +59,19 @@ export const useMotorStore = defineStore("motor", {
       value: new Array<number>(),
     },
     settings: null as any,
-    _pins: [
-      {
-        index: 1,
-        id: "MOTOR_FL",
-        label: "Front Left",
-      },
-      {
-        index: 3,
-        id: "MOTOR_FR",
-        label: "Front Right",
-      },
-      {
-        index: 0,
-        id: "MOTOR_BL",
-        label: "Back Left",
-      },
-      {
-        index: 2,
-        id: "MOTOR_BR",
-        label: "Back Right",
-      },
-    ],
   }),
   getters: {
-    pins(state) {
+    pins() {
+      const info = useInfoStore();
       const profile = useProfileStore();
-      return state._pins.map((p) => {
+      const pins = info.is_rover ? ROVER_PINS : MULTI_PINS;
+      return pins.map((p) => {
+        const output = profile.outputs.find((o) => o.source === p.source);
+        const index = output?.target_output ?? p.index;
         return {
           ...p,
-          pin: profile.motor.motor_pins[p.index],
+          index,
+          pin: index,
         };
       });
     },
@@ -106,6 +135,10 @@ export const useMotorStore = defineStore("motor", {
         )
         .then(() => {
           this.test.active = this.test.active ? 0 : 1;
+          const info = useInfoStore();
+          if (info.is_rover) {
+            this.test.value = Array(OUTPUT_COUNT).fill(0);
+          }
         });
     },
     motor_test_set_value(value) {
