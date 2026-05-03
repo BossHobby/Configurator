@@ -7,6 +7,7 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
+import { output_protocol_t, output_source_t } from "./types";
 import type { aux_function_map_t, target_t } from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
@@ -194,6 +195,34 @@ function migrateProfile(profile) {
     );
   }
 
+  if (!Array.isArray(p.outputs) || p.outputs.length === 0) {
+    const pins = p?.motor?.motor_pins || [0, 1, 2, 3];
+    p.outputs = pins
+      .slice(0, 4)
+      .map((target_output: number, index: number) => ({
+        target_output,
+        role: output_role_t.OUTPUT_ROLE_MOTOR_1 + index,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 1000,
+        rate_hz: 0,
+      }));
+  }
+  delete p?.motor?.motor_pins;
+
+  if (Array.isArray(p.outputs)) {
+    p.outputs = p.outputs.map((output: any) => {
+      const { role, ...rest } = output || {};
+      return {
+        ...rest,
+        source: output?.source ?? role ?? output_source_t.OUTPUT_SOURCE_NONE,
+        source_index: output?.source_index ?? 0,
+      };
+    });
+  }
+
   p.meta.datetime = Math.floor(Date.now() / 1000);
 
   return p;
@@ -203,6 +232,52 @@ export const useProfileStore = defineStore("profile", {
   state: () => ({
     semver: "v0.0.0",
     modified: "",
+    outputs: [
+      {
+        target_output: 0,
+        source: output_source_t.OUTPUT_SOURCE_MOTOR_1,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        source_index: 0,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 1000,
+        rate_hz: 0,
+      },
+      {
+        target_output: 1,
+        source: output_source_t.OUTPUT_SOURCE_MOTOR_2,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        source_index: 0,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 1000,
+        rate_hz: 0,
+      },
+      {
+        target_output: 2,
+        source: output_source_t.OUTPUT_SOURCE_MOTOR_3,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        source_index: 0,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 1000,
+        rate_hz: 0,
+      },
+      {
+        target_output: 3,
+        source: output_source_t.OUTPUT_SOURCE_MOTOR_4,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        source_index: 0,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 1000,
+        rate_hz: 0,
+      },
+    ],
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -235,7 +310,6 @@ export const useProfileStore = defineStore("profile", {
     motor: {
       gyro_orientation: 0,
       invert_yaw: 1,
-      motor_pins: [] as number[],
     },
     rate: {
       mode: 0,
