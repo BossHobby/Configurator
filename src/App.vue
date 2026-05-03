@@ -74,15 +74,18 @@
         <router-link active-class="is-active" class="navbar-item" to="/setup">
           Setup
         </router-link>
-        <router-link active-class="is-active" class="navbar-item" to="/rates">
-          Rates
-        </router-link>
         <router-link
           active-class="is-active"
           class="navbar-item"
           to="/receiver"
         >
           Receiver
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/outputs">
+          Outputs
+        </router-link>
+        <router-link active-class="is-active" class="navbar-item" to="/control">
+          Control
         </router-link>
         <router-link
           active-class="is-active"
@@ -91,9 +94,6 @@
           to="/osd"
         >
           OSD
-        </router-link>
-        <router-link active-class="is-active" class="navbar-item" to="/motor">
-          Motor
         </router-link>
         <router-link
           active-class="is-active"
@@ -106,8 +106,12 @@
         >
           Blackbox
         </router-link>
-        <router-link active-class="is-active" class="navbar-item" to="/state">
-          State
+        <router-link
+          active-class="is-active"
+          class="navbar-item"
+          to="/diagnostics"
+        >
+          Diagnostics
         </router-link>
         <router-link
           active-class="is-active"

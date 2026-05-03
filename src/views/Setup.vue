@@ -4,7 +4,7 @@
       <GyroModel></GyroModel>
     </div>
     <div class="column is-12">
-      <Motor></Motor>
+      <BoardOrientationSettings></BoardOrientationSettings>
     </div>
   </div>
   <div class="columns">
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Motor from "@/panel/Motor.vue";
+import BoardOrientationSettings from "@/panel/BoardOrientationSettings.vue";
 import Voltage from "@/panel/Voltage.vue";
 import Serial from "@/panel/Serial.vue";
 import GPS from "@/panel/GPS.vue";
@@ -45,7 +45,7 @@ import { useProfileStore } from "@/store/profile";
 export default defineComponent({
   name: "Home",
   components: {
-    Motor,
+    BoardOrientationSettings,
     Voltage,
     Serial,
     GPS,

@@ -2,12 +2,12 @@ import { useSerialStore } from "./store/serial";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import Setup from "./views/Setup.vue";
-import Rates from "./views/Rates.vue";
+import Control from "./views/Control.vue";
+import Diagnostics from "./views/Diagnostics.vue";
+import Outputs from "./views/Outputs.vue";
 import Receiver from "./views/Receiver.vue";
 import OSD from "./views/OSD.vue";
-import Motor from "./views/Motor.vue";
 import Blackbox from "./views/Blackbox.vue";
-import State from "./views/State.vue";
 import Perf from "./views/Perf.vue";
 import Profile from "./views/Profile.vue";
 import Home from "./views/Home.vue";
@@ -47,9 +47,18 @@ const router = createRouter({
       component: Setup,
     },
     {
+      path: "/outputs",
+      name: "outputs",
+      component: Outputs,
+    },
+    {
+      path: "/control",
+      name: "control",
+      component: Control,
+    },
+    {
       path: "/rates",
-      name: "rates",
-      component: Rates,
+      redirect: "/control",
     },
     {
       path: "/receiver",
@@ -63,8 +72,7 @@ const router = createRouter({
     },
     {
       path: "/motor",
-      name: "motor",
-      component: Motor,
+      redirect: "/outputs",
     },
     {
       path: "/blackbox",
@@ -73,8 +81,12 @@ const router = createRouter({
     },
     {
       path: "/state",
-      name: "state",
-      component: State,
+      redirect: "/diagnostics",
+    },
+    {
+      path: "/diagnostics",
+      name: "diagnostics",
+      component: Diagnostics,
     },
     {
       path: "/perf",

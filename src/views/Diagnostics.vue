@@ -23,16 +23,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-
 import RealtimePlot from "@/components/RealtimePlot.vue";
 import GyroModel from "@/panel/GyroModel.vue";
 import { useStateStore } from "@/store/state";
 
 export default defineComponent({
-  name: "State",
+  name: "Diagnostics",
   components: {
-    RealtimePlot,
     GyroModel,
+    RealtimePlot,
   },
   setup() {
     return {

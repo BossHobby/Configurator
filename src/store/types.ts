@@ -130,7 +130,6 @@ export interface profile_motor_t {
   gyro_orientation: number;
   torque_boost: number;
   throttle_boost: number;
-  motor_pins: number[];
   turtle_throttle_percent: number;
 }
 
@@ -145,8 +144,10 @@ export interface profile_voltage_t {
   ibat_scale: number;
 }
 
-export interface profile_stick_calibration_limits_t {
+export interface rx_role_map_t {
+  channel: number;
   min: number;
+  center: number;
   max: number;
 }
 
@@ -160,8 +161,7 @@ export interface profile_receiver_t {
   protocol: number;
   aux: aux_function_map_t[];
   lqi_source: number;
-  channel_mapping: number;
-  stick_calibration_limits: profile_stick_calibration_limits_t[];
+  role_map: rx_role_map_t[];
 }
 
 export interface profile_serial_t {
@@ -181,6 +181,12 @@ export interface profile_osd_t {
 export interface profile_filter_parameter_t {
   type: number;
   cutoff_freq: number;
+}
+
+export interface rover_pid_rate_t {
+  kp: number;
+  ki: number;
+  kd: number;
 }
 
 export interface profile_filter_t {
@@ -210,8 +216,55 @@ export interface profile_metadata_t {
   datetime: number;
 }
 
+export enum output_protocol_t {
+  OUTPUT_PROTOCOL_NONE,
+  OUTPUT_PROTOCOL_DSHOT,
+  OUTPUT_PROTOCOL_BRUSHED,
+  OUTPUT_PROTOCOL_PWM,
+}
+
+export enum output_source_t {
+  OUTPUT_SOURCE_NONE = 0,
+  OUTPUT_SOURCE_THROTTLE = 1,
+  OUTPUT_SOURCE_STEERING = 2,
+  OUTPUT_SOURCE_MOTOR_1 = 1,
+  OUTPUT_SOURCE_MOTOR_2 = 2,
+  OUTPUT_SOURCE_MOTOR_3 = 3,
+  OUTPUT_SOURCE_MOTOR_4 = 4,
+  OUTPUT_SOURCE_RX_CHANNEL_ROVER = 3,
+  OUTPUT_SOURCE_RX_CHANNEL_MULTI = 5,
+}
+
+export interface profile_output_t {
+  target_output: number;
+  source: number;
+  protocol: number;
+  source_index: number;
+  invert: number;
+  trim: number;
+  min: number;
+  max: number;
+  rate_hz: number;
+}
+
+export enum vehicle_type_t {
+  VEHICLE_TYPE_MULTI = 1 << 0,
+  VEHICLE_TYPE_ROVER = 1 << 1,
+  VEHICLE_TYPE_WING = 1 << 2,
+}
+
+export interface profile_rover_t {
+  center_deadband: number;
+  yaw_rate: number;
+  pid: rover_pid_rate_t;
+  throttle_scale_breakpoint: number;
+  throttle_scale_factor: number;
+  reversible: number;
+}
+
 export interface profile_t {
   meta: profile_metadata_t;
+  outputs: profile_output_t[];
   motor: profile_motor_t;
   serial: profile_serial_t;
   filter: profile_filter_t;
@@ -221,6 +274,7 @@ export interface profile_t {
   pid: profile_pid_t;
   voltage: profile_voltage_t;
   blackbox: profile_blackbox_t;
+  rover: profile_rover_t;
 }
 
 export type gpio_pins_t = string;
@@ -266,6 +320,11 @@ export interface target_rx_spi_device_t {
   reset?: gpio_pins_t;
 }
 
+export interface target_output_t {
+  pin: gpio_pins_t;
+  caps: number;
+}
+
 export interface target_t {
   name: string;
 
@@ -291,6 +350,8 @@ export interface target_t {
   sdcard_detect?: target_invert_pin_t;
   buzzer?: target_invert_pin_t;
   motor_pins: gpio_pins_t[];
+  outputs: target_output_t[];
+  vehicles?: number;
 }
 
 export enum target_feature_t {
@@ -313,4 +374,5 @@ export interface target_info_t {
   usart_ports: string[];
 
   gyro_id: number;
+  vehicle_type: number;
 }

@@ -1,7 +1,9 @@
 <template>
   <div v-if="motor.test" class="card">
     <header class="card-header">
-      <p class="card-header-title">Motor Test</p>
+      <p class="card-header-title">
+        {{ info.is_rover ? "Output Test" : "Motor Test" }}
+      </p>
       <small class="card-header-icon">
         {{ state.vbat.toFixed(2) }}V <br />
         {{ state.ibat_filtered.toFixed(2) }}mA
@@ -12,41 +14,49 @@
     <div class="card-content">
       <div class="content">
         <template v-if="motor.test.active">
-          <div class="columns is-multiline">
-            <div v-for="m in motor.pins" :key="m.index" class="column is-6">
-              <div class="field field-is-2 is-horizontal">
-                <div class="field-label">
-                  <label class="label" for="pid-preset">
-                    {{ m.label }}
-                  </label>
+          <div
+            v-for="m in outputTestPins"
+            :key="'motor-test-' + m.index"
+            class="field field-is-2 is-horizontal"
+          >
+            <div class="field-label">
+              <label class="label">{{ m.label }}</label>
+            </div>
+            <div class="field-body">
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input
+                    :id="m.id"
+                    :value="getValuePercent(m.index)"
+                    class="input"
+                    type="range"
+                    step="1"
+                    :min="isBidirectional(m.index) ? -100 : 0"
+                    :max="isBidirectional(m.index) ? 100 : 50"
+                    @input="
+                      setValuePercent(
+                        m.index,
+                        Number(($event.target as HTMLInputElement).value),
+                      )
+                    "
+                  />
                 </div>
-                <div class="field-body">
-                  <div class="field has-addons">
-                    <div class="control is-expanded">
-                      <input
-                        :id="m.id"
-                        v-model.number="value[m.index]"
-                        class="input"
-                        type="range"
-                        step="1"
-                        min="0"
-                        max="50"
-                        @input="update()"
-                      />
-                    </div>
-                    <div class="control">
-                      <input
-                        :id="m.id"
-                        v-model.number="value[m.index]"
-                        class="input"
-                        type="number"
-                        step="1"
-                        min="0"
-                        max="50"
-                        @change="update()"
-                      />
-                    </div>
-                  </div>
+                <div class="control">
+                  <input
+                    :id="m.id + '-num'"
+                    :value="getValuePercent(m.index)"
+                    class="input"
+                    type="number"
+                    step="1"
+                    :min="isBidirectional(m.index) ? -100 : 0"
+                    :max="isBidirectional(m.index) ? 100 : 50"
+                    @change="
+                      setValuePercent(
+                        m.index,
+                        Number(($event.target as HTMLInputElement).value),
+                      )
+                    "
+                  />
                 </div>
               </div>
             </div>
@@ -54,7 +64,7 @@
         </template>
         <template v-else>
           <div class="is-size-5 has-text-centered has-text-weight-semibold">
-            Motor Test disabled
+            {{ info.is_rover ? "Output Test disabled" : "Motor Test disabled" }}
           </div>
         </template>
       </div>
@@ -73,6 +83,7 @@
 <script lang="ts">
 import { useMotorStore } from "@/store/motor";
 import { useStateStore } from "@/store/state";
+import { useInfoStore } from "@/store/info";
 import { defineComponent } from "vue";
 
 export default defineComponent({
@@ -81,24 +92,46 @@ export default defineComponent({
     return {
       motor: useMotorStore(),
       state: useStateStore(),
+      info: useInfoStore(),
     };
   },
   computed: {
-    value() {
-      return this.motor.test.value.map((v) => {
-        if (v < 0.0) {
-          v = 0;
-        }
-        return v * 100;
-      });
+    outputTestPins() {
+      if (!this.info.is_rover) {
+        return this.motor.pins;
+      }
+      return this.motor.pins.map((pin) => ({
+        ...pin,
+        label: pin.source === 1 ? "Throttle" : "Steering",
+      }));
     },
   },
   created() {
     this.motor.fetch_motor_test();
   },
   methods: {
-    update() {
-      return this.motor.motor_test_set_value(this.value.map((v) => v / 100));
+    isBidirectional(index: number): boolean {
+      if (!this.info.is_rover) return false;
+      return true;
+    },
+    getValuePercent(index: number): number {
+      const raw = this.motor.test.value[index] ?? 0;
+      const value = Math.round(raw * 100);
+      if (this.isBidirectional(index)) {
+        return Math.max(-100, Math.min(100, value));
+      }
+      return Math.max(0, Math.min(50, value));
+    },
+    setValuePercent(index: number, value: number) {
+      const clamped = this.isBidirectional(index)
+        ? Math.max(-100, Math.min(100, value))
+        : Math.max(0, Math.min(50, value));
+      const next = [...(this.motor.test.value || [])];
+      while (next.length <= index) {
+        next.push(0);
+      }
+      next[index] = clamped / 100;
+      return this.motor.motor_test_set_value(next);
     },
   },
 });

@@ -1,6 +1,6 @@
 <template>
   <div class="columns is-multiline">
-    <div class="column is-12">
+    <div v-if="!info.is_rover" class="column is-12">
       <StickRatesLegacy
         v-if="default_profile.has_legacy_stickrates"
       ></StickRatesLegacy>
@@ -10,40 +10,50 @@
       <ThrottleSettings></ThrottleSettings>
     </div>
     <div class="column is-12">
+      <MotorControlSettings></MotorControlSettings>
+    </div>
+    <div class="column is-12">
       <PIDRates></PIDRates>
     </div>
     <div class="column is-12">
       <FilterSettings></FilterSettings>
+    </div>
+    <div v-if="info.is_rover" class="column is-12">
+      <RoverSettings></RoverSettings>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import FilterSettings from "@/panel/FilterSettings.vue";
+import MotorControlSettings from "@/panel/MotorControlSettings.vue";
+import PIDRates from "@/panel/PIDRates.vue";
+import RoverSettings from "@/panel/RoverSettings.vue";
 import StickRates from "@/panel/StickRates.vue";
 import StickRatesLegacy from "@/panel/StickRatesLegacy.vue";
-import PIDRates from "@/panel/PIDRates.vue";
-import FilterSettings from "@/panel/FilterSettings.vue";
 import ThrottleSettings from "@/panel/ThrottleSettings.vue";
 import { useDefaultProfileStore } from "@/store/default_profile";
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
-  name: "Rate",
+  name: "Control",
   components: {
-    StickRates,
-    PIDRates,
     FilterSettings,
+    MotorControlSettings,
+    PIDRates,
+    RoverSettings,
+    StickRates,
     StickRatesLegacy,
     ThrottleSettings,
   },
   setup() {
     return {
-      profile: useProfileStore(),
       default_profile: useDefaultProfileStore(),
+      info: useInfoStore(),
+      profile: useProfileStore(),
     };
   },
 });
 </script>
-
-<style scoped></style>
