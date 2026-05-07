@@ -2,12 +2,83 @@ import { defineStore } from "pinia";
 import { useRootStore } from "./root";
 import { QuicBlackbox, QuicCmd, QuicVal } from "./serial/quic";
 import { serial } from "./serial/serial";
-import { Blackbox } from "./util/blackbox";
-import { CompressedBlackboxDecoder } from "./util/blackbox-compressed";
+import {
+  BLACKBOX_SCALE,
+  blackboxScaleForFirmware,
+  transformBlackboxFieldFlags,
+  type BlackboxFile,
+} from "./util/blackbox-shared";
 import { BlackboxField } from "./constants";
 import { useProfileStore } from "./profile";
 import { useInfoStore } from "./info";
 import type { profile_t } from "./types";
+
+type BlackboxWorkerFormat = "json" | "btfl";
+
+let blackboxWorkerRequestId = 0;
+
+function processBlackboxInWorker(
+  format: BlackboxWorkerFormat,
+  payload: Uint8Array,
+  file: BlackboxFile,
+  firmwareVersion: string,
+  fields?: BlackboxFieldDef[],
+  profile?: profile_t,
+) {
+  return new Promise<string>((resolve, reject) => {
+    const worker = new Worker(
+      new URL("./blackbox.worker.ts", import.meta.url),
+      {
+        type: "module",
+      },
+    );
+    const id = ++blackboxWorkerRequestId;
+
+    worker.onmessage = (event) => {
+      if (event.data.id != id) {
+        return;
+      }
+      worker.terminate();
+
+      if (event.data.error) {
+        reject(new Error(event.data.error));
+        return;
+      }
+
+      resolve(URL.createObjectURL(event.data.blob));
+    };
+    worker.onerror = (event) => {
+      worker.terminate();
+      reject(event.error ?? new Error(event.message));
+    };
+
+    const buffer = payload.buffer.slice(
+      payload.byteOffset,
+      payload.byteOffset + payload.byteLength,
+    );
+    const cloneableFile = { ...file };
+    const cloneableFields = fields?.map((field) => ({
+      ...field,
+      axis: field.axis ? [...field.axis] : undefined,
+    }));
+    const cloneableProfile = profile
+      ? (JSON.parse(JSON.stringify(profile)) as profile_t)
+      : undefined;
+
+    worker.postMessage(
+      {
+        id,
+        format,
+        payload: buffer,
+        file: cloneableFile,
+        firmwareVersion,
+        fields: cloneableFields,
+        profile: cloneableProfile,
+      },
+      [buffer],
+    );
+  });
+}
 
 export enum BlackboxFieldUnit {
   NONE = "none",
@@ -30,13 +101,8 @@ export interface BlackboxPreset {
   sample_rate_hz: number;
 }
 
-export interface BlackboxFile {
-  field_flags: number;
-  looptime: number;
-  blackbox_rate: number;
-  start: number;
-  size: number;
-}
+export type { BlackboxFile } from "./util/blackbox-shared";
+export { transformBlackboxFieldFlags } from "./util/blackbox-shared";
 
 const AxisRPY = ["Roll", "Pitch", "Yaw"];
 const AxisRPYT = [...AxisRPY, "Throttle"];
@@ -60,70 +126,70 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     name: "pid_pterm",
     title: "PID P-Term",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
   [BlackboxField.PID_I_TERM]: {
     name: "pid_iterm",
     title: "PID I-Term",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
   [BlackboxField.PID_D_TERM]: {
     name: "pid_dterm",
     title: "PID D-Term",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
   [BlackboxField.RX]: {
     name: "rx",
     title: "RX",
     axis: AxisRPYT,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
   [BlackboxField.SETPOINT]: {
     name: "setpoint",
     title: "Setpoint",
     axis: AxisRPYT,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.ACCEL_RAW]: {
     name: "accel_raw",
     title: "Accel Raw",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.ACCEL_FILTER]: {
     name: "accel_filter",
     title: "Accel Filter",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.GYRO_RAW]: {
     name: "gyro_raw",
     title: "Gyro Raw",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.GYRO_FILTER]: {
     name: "gyro_filter",
     title: "Gyro Filter",
     axis: AxisRPY,
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
   [BlackboxField.MOTOR]: {
     name: "motor",
     title: "Motor",
     axis: AxisIndex(4),
-    scale: 1000,
+    scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
   [BlackboxField.CPU_LOAD]: {
@@ -140,12 +206,6 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     unit: BlackboxFieldUnit.NONE,
   },
 };
-
-export function transformBlackboxFieldFlags(flags: number) {
-  // Quicksilver versions 0.96 and below don't provide the field flags
-  const res = flags == undefined ? -1 : flags;
-  return res | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
-}
 
 export const useBlackboxStore = defineStore("blackbox", {
   state: () => ({
@@ -189,7 +249,7 @@ export const useBlackboxStore = defineStore("blackbox", {
 
       const start = performance.now();
       return serial
-        .commandProgress(
+        .commandProgressRaw(
           QuicCmd.Blackbox,
           (v: number) => {
             const delta = (performance.now() - start) / 1000;
@@ -201,30 +261,24 @@ export const useBlackboxStore = defineStore("blackbox", {
         )
         .then((p) => {
           const fields = Object.keys(BlackboxFields)
-            .filter((val, key) => {
+            .filter((_val, key) => {
               return (fieldflags & (1 << key)) > 0;
             })
-            .map((i) => BlackboxFields[i]);
+            .map((i) => ({
+              ...BlackboxFields[i],
+              scale:
+                BlackboxFields[i].scale == BLACKBOX_SCALE
+                  ? blackboxScaleForFirmware(info.quic_protocol_semver)
+                  : BlackboxFields[i].scale,
+            }));
 
-          // Check if we need to use the compressed decoder
-          const decoder = new CompressedBlackboxDecoder(
-            info.quic_protocol_semver,
+          return processBlackboxInWorker(
+            "json",
+            p.payload,
             file,
-          );
-
-          // Decode the compressed data if necessary
-          const decodedPayload = decoder.decode(p.payload);
-
-          const f = {
-            ...file,
+            info.quic_protocol_semver,
             fields,
-            entries: decodedPayload,
-            compressed: decoder.useCompression,
-            firmwareVersion: info.quic_protocol_semver,
-          };
-
-          const encoded = encodeURIComponent(JSON.stringify(f));
-          return "data:text/json;charset=utf-8," + encoded;
+          );
         })
         .then((url) => {
           root.append_alert({
@@ -252,7 +306,7 @@ export const useBlackboxStore = defineStore("blackbox", {
 
       const start = performance.now();
       return serial
-        .commandProgress(
+        .commandProgressRaw(
           QuicCmd.Blackbox,
           (v: number) => {
             const delta = (performance.now() - start) / 1000;
@@ -265,21 +319,14 @@ export const useBlackboxStore = defineStore("blackbox", {
         .then((p) => {
           const profile = useProfileStore();
 
-          // Check if we need to use the compressed decoder
-          const decoder = new CompressedBlackboxDecoder(
-            info.quic_protocol_semver,
+          return processBlackboxInWorker(
+            "btfl",
+            p.payload,
             file,
+            info.quic_protocol_semver,
+            undefined,
+            JSON.parse(JSON.stringify(profile)) as profile_t,
           );
-
-          // Decode the compressed data if necessary
-          const decodedPayload = decoder.decode(p.payload);
-
-          const writer = new Blackbox(file);
-          writer.writeHeaders(profile as unknown as profile_t);
-          for (const v of decodedPayload) {
-            writer.writeValue(v);
-          }
-          return writer.toUrl();
         })
         .then((url) => {
           root.append_alert({

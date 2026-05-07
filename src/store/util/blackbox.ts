@@ -1,6 +1,10 @@
 import { Log } from "@/log";
 import { ArrayWriter } from ".";
-import { transformBlackboxFieldFlags, type BlackboxFile } from "../blackbox";
+import {
+  BLACKBOX_SCALE,
+  transformBlackboxFieldFlags,
+  type BlackboxFile,
+} from "./blackbox-shared";
 import { BlackboxField } from "../constants";
 import type { profile_t } from "../types";
 
@@ -10,12 +14,12 @@ export interface FieldDefinition {
   blackbox_field: BlackboxField;
   advance: number;
   signed: boolean;
-  convert?: (v: number) => number;
+  convert?: (v: number, scale: number) => number;
 }
 
-function convertToDeg(flip: number): (v: number) => number {
-  return (val) => {
-    return (((flip * val * 1) / 1000) * 180) / Math.PI;
+function convertToDeg(flip: number): (v: number, scale: number) => number {
+  return (val, scale) => {
+    return (((flip * val * 1) / scale) * 180) / Math.PI;
   };
 }
 
@@ -352,7 +356,10 @@ export class Blackbox {
   private defs = DefaultFields;
   private fieldflags: number;
 
-  constructor(private file: BlackboxFile) {
+  constructor(
+    private file: BlackboxFile,
+    private scale = BLACKBOX_SCALE,
+  ) {
     this.fieldflags = transformBlackboxFieldFlags(file.field_flags);
   }
 
@@ -533,7 +540,7 @@ export class Blackbox {
             v = v[d.array_index];
           }
           if (d.convert) {
-            v = d.convert(v);
+            v = d.convert(v, this.scale);
           }
           if (d.signed) {
             this.writeSigned(v);
@@ -553,9 +560,12 @@ export class Blackbox {
   }
 
   public toUrl() {
-    const buf = this.buffer.array();
-    const blob = new Blob([buf], { type: "octet/stream" });
+    const blob = new Blob([this.array()], { type: "octet/stream" });
     return window.URL.createObjectURL(blob);
+  }
+
+  public array() {
+    return this.buffer.array();
   }
 
   private writeHeaderJoin(key: string, fn: (d: FieldDefinition) => string) {

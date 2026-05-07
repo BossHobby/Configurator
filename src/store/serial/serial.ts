@@ -284,6 +284,14 @@ export class Serial {
     return this._command(cmd, progress, undefined, values);
   }
 
+  public async commandProgressRaw(
+    cmd: QuicCmd,
+    progress: ProgressCallbackType,
+    ...values: any[]
+  ): Promise<QuicPacket> {
+    return this._command(cmd, progress, undefined, values, false);
+  }
+
   async close() {
     try {
       if (this.isClosing) return;
@@ -331,9 +339,10 @@ export class Serial {
     progress: ProgressCallbackType,
     timeout: number | undefined,
     values: any[],
+    decodeStreaming = true,
   ) {
     return (this.waitingCommands = this.waitingCommands
-      .then(() => this.send(cmd, progress, timeout, values))
+      .then(() => this.send(cmd, progress, timeout, values, decodeStreaming))
       .then((packet) => {
         if (packet.cmd != cmd) {
           throw new Error("invalid command");
@@ -368,6 +377,7 @@ export class Serial {
     progress: ProgressCallbackType,
     timeout: number | undefined,
     values: any[],
+    decodeStreaming: boolean,
   ): Promise<QuicPacket> {
     const payload = this.encodeValues(values);
 
@@ -389,10 +399,10 @@ export class Serial {
 
     await this.write(concatUint8Array(request, payload));
 
-    let packet = await this.readPacket(progress, timeout);
+    let packet = await this.readPacket(progress, timeout, decodeStreaming);
     while (packet.cmd == QuicCmd.Log) {
       Log.info("serial", "[quic] " + packet.payload[0]);
-      packet = await this.readPacket(progress, timeout);
+      packet = await this.readPacket(progress, timeout, decodeStreaming);
     }
     Log.trace(
       "serial",
@@ -439,6 +449,7 @@ export class Serial {
   private async readPacket(
     progress: ProgressCallbackType,
     timeout: number | undefined,
+    decodeStreaming = true,
   ): Promise<QuicPacket> {
     if (!this.reader) {
       throw new Error("no serial reader");
@@ -483,7 +494,10 @@ export class Serial {
       progress(writer.length);
     }
 
-    const payload: any[] = CBOR.decode(writer.array());
+    const payloadBytes = writer.array();
+    const payload: any[] | Uint8Array = decodeStreaming
+      ? CBOR.decode(payloadBytes)
+      : payloadBytes;
     return {
       ...value,
       payload,
