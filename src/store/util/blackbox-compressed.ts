@@ -1,6 +1,9 @@
 import semver from "semver";
 import { BlackboxField } from "../constants";
-import { transformBlackboxFieldFlags, type BlackboxFile } from "../blackbox";
+import {
+  transformBlackboxFieldFlags,
+  type BlackboxFile,
+} from "./blackbox-shared";
 
 const BLACKBOX_FRAME_TYPE_BIT = 0x80000000; // Bit 31
 
