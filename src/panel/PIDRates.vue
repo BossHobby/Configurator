@@ -5,7 +5,72 @@
     </header>
 
     <div class="card-content">
-      <div class="content column-narrow field-is-5">
+      <div v-if="info.is_rover" class="content column-narrow field-is-5">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="rover-pid-kp">Steering PID Kp</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="rover-pid-kp"
+                  v-model.number="profile.rover.pid.kp"
+                  class="input"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="200"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="rover-pid-ki">Steering PID Ki</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="rover-pid-ki"
+                  v-model.number="profile.rover.pid.ki"
+                  class="input"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="200"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="rover-pid-kd">Steering PID Kd</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="rover-pid-kd"
+                  v-model.number="profile.rover.pid.kd"
+                  class="input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="200"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="content column-narrow field-is-5">
         <div class="columns">
           <div class="column is-6">
             <div class="field field-is-2 is-horizontal">
@@ -338,6 +403,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useRootStore } from "@/store/root";
 
@@ -345,6 +411,7 @@ export default defineComponent({
   name: "PIDRates",
   setup() {
     return {
+      info: useInfoStore(),
       root: useRootStore(),
       profile: useProfileStore(),
     };

@@ -5,7 +5,55 @@
     </header>
 
     <div class="card-content">
-      <div class="content">
+      <div v-if="info.is_rover" class="content column-narrow field-is-5">
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="rover-throttle-scale-breakpoint"
+              >Throttle Scale Breakpoint (%)</label
+            >
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="rover-throttle-scale-breakpoint"
+                  v-model.number="throttleScaleBreakpointPct"
+                  class="input"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label">
+            <label class="label" for="rover-throttle-scale-factor"
+              >Throttle Scale Factor (%)</label
+            >
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  id="rover-throttle-scale-factor"
+                  v-model.number="throttleScaleFactorPct"
+                  class="input"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="content">
         <div class="columns column-narrow field-is-5">
           <div class="column is-6">
             <div class="field is-horizontal mt-6">
@@ -71,6 +119,7 @@
 </template>
 
 <script lang="ts">
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { defineComponent } from "vue";
 
@@ -83,6 +132,7 @@ export default defineComponent({
   },
   setup() {
     return {
+      info: useInfoStore(),
       profile: useProfileStore(),
     };
   },
@@ -105,6 +155,34 @@ export default defineComponent({
     },
     "profile.rate.throttle_mid"() {
       this.update();
+    },
+  },
+  computed: {
+    throttleScaleBreakpointPct: {
+      get(): number {
+        return Math.round(
+          (this.profile.rover.throttle_scale_breakpoint || 0) * 100,
+        );
+      },
+      set(val: number) {
+        this.profile.rover.throttle_scale_breakpoint = Math.min(
+          1,
+          Math.max(0, (val || 0) / 100),
+        );
+      },
+    },
+    throttleScaleFactorPct: {
+      get(): number {
+        return Math.round(
+          (this.profile.rover.throttle_scale_factor || 0) * 100,
+        );
+      },
+      set(val: number) {
+        this.profile.rover.throttle_scale_factor = Math.min(
+          1,
+          Math.max(0, (val || 0) / 100),
+        );
+      },
     },
   },
   methods: {

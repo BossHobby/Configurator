@@ -310,12 +310,14 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "FilterSettings",
   setup() {
     return {
+      info: useInfoStore(),
       profile: useProfileStore(),
     };
   },
