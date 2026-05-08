@@ -63,7 +63,28 @@ enum GyroTypeV021 {
   LSM6DSK320X,
 }
 
-enum AuxChannels {
+enum AuxChannelsLegacy {
+  CHANNEL_5,
+  CHANNEL_6,
+  CHANNEL_7,
+  CHANNEL_8,
+  CHANNEL_9,
+  CHANNEL_10,
+  CHANNEL_11,
+  CHANNEL_12,
+  CHANNEL_13,
+  CHANNEL_14,
+  CHANNEL_15,
+  CHANNEL_16,
+  OFF,
+  ON,
+}
+
+enum RxChannels {
+  CHANNEL_1,
+  CHANNEL_2,
+  CHANNEL_3,
+  CHANNEL_4,
   CHANNEL_5,
   CHANNEL_6,
   CHANNEL_7,
@@ -129,6 +150,36 @@ enum AuxFunctionsV025 {
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
+}
+
+enum AuxFunctionsV026 {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_RACEMODE,
+  AUX_HORIZON,
+  AUX_STICK_BOOST_PROFILE,
+  _AUX_RATE_PROFILE,
+  AUX_BUZZER_ENABLE,
+  AUX_TURTLE,
+  AUX_MOTOR_TEST,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
+}
+
+enum AuxFunctionsV026Rover {
+  AUX_ARMING,
+  AUX_BUZZER_ENABLE,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
+  AUX_RATE_ASSIST,
+  AUX_RATE_THROTTLE,
 }
 
 enum RXProtocolV5 {
@@ -219,7 +270,8 @@ enum Failloop {
   FAILLOOP_LOOPTIME = 6, // - loop time issue - if loop time exceeds 20mS
   FAILLOOP_DMA = 7, // - dma error
   FAILLOOP_SPI = 8, // - spi error
-  FAILLOOP_NO_TARGET = 9, // - no target configured - connect configurator and load target
+  FAILLOOP_VEHICLE = 9, // - vehicle type not supported by target
+  FAILLOOP_NO_TARGET = 10, // - no target configured - connect configurator and load target
 }
 
 // These should align with 'blackbox_t' and 'blackbox_field_t' in Quicksilver source 'blackbox.h'
@@ -248,7 +300,7 @@ export enum LQISource {
 
 export enum BlackboxDebugFlag {
   BBOX_DEBUG_DYN_NOTCH = 0x1 << 0,
-  BBOX_DEBUG_NAVIGATION = 0x1 << 1,
+  BBOX_DEBUG_ROVER = 0x1 << 1,
 }
 
 export const FailloopMessages = {
@@ -260,6 +312,7 @@ export const FailloopMessages = {
   [Failloop.FAILLOOP_LOOPTIME]: "loop time issue",
   [Failloop.FAILLOOP_DMA]: "dma error",
   [Failloop.FAILLOOP_SPI]: "spi error",
+  [Failloop.FAILLOOP_VEHICLE]: "vehicle type not supported by target",
   [Failloop.FAILLOOP_NO_TARGET]:
     "no target configured - connect configurator and load target",
 };
@@ -268,7 +321,8 @@ export const useConstantStore = defineStore("constant", {
   state: () => ({
     Features,
     GyroRotation,
-    AuxChannels,
+    AuxChannelsLegacy,
+    RxChannels,
     RXSerialProtocol,
     StickWizardState,
     Failloop,
@@ -288,14 +342,27 @@ export const useConstantStore = defineStore("constant", {
     },
     AuxFunctions() {
       const profile = useProfileStore();
+      const info = useInfoStore();
+      if (profile.profileVersionGt("0.2.5")) {
+        if (info.is_rover) {
+          return AuxFunctionsV026Rover;
+        }
+        return AuxFunctionsV026;
+      }
       if (profile.profileVersionGt("0.2.4")) {
         return AuxFunctionsV025;
       }
-      const info = useInfoStore();
       if (semver.gt(info.quic_protocol_semver, "0.1.0")) {
         return AuxFunctionsV011;
       }
       return AuxFunctionsV010;
+    },
+    AuxChannels() {
+      const profile = useProfileStore();
+      if (profile.profileVersionGt("0.2.5")) {
+        return RxChannels;
+      }
+      return AuxChannelsLegacy;
     },
     GyroType() {
       const info = useInfoStore();

@@ -3,6 +3,7 @@ import semver from "semver";
 import { decodeSemver } from "@/store/util";
 import { defineStore } from "pinia";
 import type { target_info_t } from "./types";
+import { vehicle_type_t } from "./types";
 import { $enum } from "ts-enum-util";
 import { useConstantStore } from "./constants";
 import { useDefaultProfileStore } from "./default_profile";
@@ -27,6 +28,7 @@ export const useInfoStore = defineStore("info", {
 
     gyro_id: 0,
     gyro_name: "",
+    vehicle_type: 0,
     rx_protocol: 0,
     rx_protocols: [],
     features: 0,
@@ -60,6 +62,15 @@ export const useInfoStore = defineStore("info", {
     is_read_only(state) {
       const fwstate = useStateStore();
       return this.version_too_old || fwstate.failloop > 0;
+    },
+    is_rover(state) {
+      return (state.vehicle_type & vehicle_type_t.VEHICLE_TYPE_ROVER) !== 0;
+    },
+    is_multi(state) {
+      return (
+        state.vehicle_type === 0 ||
+        (state.vehicle_type & vehicle_type_t.VEHICLE_TYPE_MULTI) !== 0
+      );
     },
   },
   actions: {

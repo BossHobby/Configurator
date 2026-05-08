@@ -255,6 +255,7 @@ export enum vehicle_type_t {
 
 export interface profile_rover_t {
   center_deadband: number;
+  steer_authority: number;
   yaw_rate: number;
   pid: rover_pid_rate_t;
   throttle_scale_breakpoint: number;
