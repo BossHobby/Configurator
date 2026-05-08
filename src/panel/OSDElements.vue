@@ -193,6 +193,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { OSD } from "@/store/util/osd";
+import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useOSDStore } from "@/store/osd";
 
@@ -225,6 +226,7 @@ export default defineComponent({
   name: "OSDElements",
   setup() {
     return {
+      info: useInfoStore(),
       profile: useProfileStore(),
       osd: useOSDStore(),
     };
@@ -316,6 +318,11 @@ export default defineComponent({
           text: " 0.0\x57",
         });
       }
+      elements.push({
+        name: "INCLINOMETER",
+        enabled: this.info.is_rover,
+        text: "R 12P 18",
+      });
       return elements;
     },
     elements() {
