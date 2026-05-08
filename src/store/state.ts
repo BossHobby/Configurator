@@ -15,6 +15,7 @@ export const useStateStore = defineStore("state", {
     ibat_drawn: 0.0,
     rx: [],
     rx_filtered: [],
+    rx_channels: [],
     rx_status: 0,
     rx_rssi: 0,
     gyro_temp: 0,
