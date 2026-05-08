@@ -257,5 +257,11 @@
   },
   "voltage.use_filtered_voltage_for_warnings": {
     "text": "Use filtered voltage instead Fuel gauge volts for Warnings"
+  },
+  "rover.servo_pwm_hz": {
+    "text": "PWM frequency for the steering servo output in Hz. Standard servos typically use 50Hz."
+  },
+  "rover.reversible": {
+    "text": "Enable bidirectional motor output. Allows the drive motor to run in reverse using the throttle reverse limit."
   }
 }

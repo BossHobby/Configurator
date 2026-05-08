@@ -195,6 +195,10 @@ function migrateProfile(profile) {
     );
   }
 
+  p.filter = {
+    ...(default_profile.filter || {}),
+    ...(p.filter || {}),
+  };
   if (Array.isArray(p.receiver?.role_map)) {
     p.receiver.role_map = p.receiver.role_map.map((map: any) => ({
       channel: map?.channel ?? 0,
@@ -346,14 +350,13 @@ export const useProfileStore = defineStore("profile", {
     },
     rover: {
       center_deadband: 0.05,
-      steer_authority: 1.0,
       yaw_rate: 180.0,
       pid: {
         kp: 70.0,
         ki: 0.0,
         kd: 6.0,
       },
-      throttle_scale_breakpoint: 0.0,
+      throttle_scale_breakpoint: 1.0,
       throttle_scale_factor: 0.5,
       reversible: 1,
     },
