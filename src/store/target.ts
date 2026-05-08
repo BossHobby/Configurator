@@ -48,6 +48,8 @@ export const useTargetStore = defineStore("target", {
 
     gyro_orientation: 0,
 
+    vehicles: 0,
+
     leds: [],
     serial_ports: [],
     serial_soft_ports: [],

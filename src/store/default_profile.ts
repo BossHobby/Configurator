@@ -28,6 +28,17 @@ export const useDefaultProfileStore = defineStore("default_profile", {
     motor: {
       invert_yaw: 1,
     },
+    rover: {
+      pid: {
+        kp: 70.0,
+        ki: 0.0,
+        kd: 6.0,
+      },
+      yaw_rate: 180.0,
+      throttle_scale_breakpoint: 0.0,
+      throttle_scale_factor: 0.5,
+      reversible: 1,
+    },
     rate: {
       mode: 0,
       silverware: {},

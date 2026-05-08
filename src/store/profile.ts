@@ -195,22 +195,14 @@ function migrateProfile(profile) {
     );
   }
 
-  if (!Array.isArray(p.outputs) || p.outputs.length === 0) {
-    const pins = p?.motor?.motor_pins || [0, 1, 2, 3];
-    p.outputs = pins
-      .slice(0, 4)
-      .map((target_output: number, index: number) => ({
-        target_output,
-        role: output_role_t.OUTPUT_ROLE_MOTOR_1 + index,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 1000,
-        rate_hz: 0,
-      }));
+  if (Array.isArray(p.receiver?.role_map)) {
+    p.receiver.role_map = p.receiver.role_map.map((map: any) => ({
+      channel: map?.channel ?? 0,
+      min: map?.min ?? -1,
+      center: map?.center ?? 0,
+      max: map?.max ?? 1,
+    }));
   }
-  delete p?.motor?.motor_pins;
 
   if (Array.isArray(p.outputs)) {
     p.outputs = p.outputs.map((output: any) => {
@@ -329,7 +321,12 @@ export const useProfileStore = defineStore("profile", {
     },
     receiver: {
       lqi_source: -1,
-      channel_mapping: 0,
+      role_map: [
+        { channel: 0, min: -1, center: 0, max: 1 },
+        { channel: 1, min: -1, center: 0, max: 1 },
+        { channel: 3, min: -1, center: 0, max: 1 },
+        { channel: 2, min: -1, center: 0, max: 1 },
+      ],
       aux: [] as aux_function_map_t[],
       protocol: 0,
     },
@@ -346,6 +343,19 @@ export const useProfileStore = defineStore("profile", {
       field_flags: 0,
       debug_flags: 0,
       sample_rate_hz: 0,
+    },
+    rover: {
+      center_deadband: 0.05,
+      steer_authority: 1.0,
+      yaw_rate: 180.0,
+      pid: {
+        kp: 70.0,
+        ki: 0.0,
+        kd: 6.0,
+      },
+      throttle_scale_breakpoint: 0.0,
+      throttle_scale_factor: 0.5,
+      reversible: 1,
     },
   }),
   getters: {

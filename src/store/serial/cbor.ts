@@ -390,6 +390,7 @@ export class CBOR {
         if (err.message != "EOF") {
           throw err;
         }
+        break;
       }
     }
 

@@ -486,6 +486,7 @@ export class Serial {
         throw new Error("invalid command");
       }
       if (value.len == 0) {
+        Log.trace("serial", "[quic] recv stream end", writer.length);
         break;
       }
 
@@ -495,9 +496,11 @@ export class Serial {
     }
 
     const payloadBytes = writer.array();
+    Log.trace("serial", "[quic] decode stream payload", writer.length);
     const payload: any[] | Uint8Array = decodeStreaming
       ? CBOR.decode(payloadBytes)
       : payloadBytes;
+    Log.trace("serial", "[quic] decoded stream payload", payload.length);
     return {
       ...value,
       payload,
