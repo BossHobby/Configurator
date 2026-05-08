@@ -238,7 +238,7 @@ export default defineComponent({
           value: BlackboxDebugFlag.BBOX_DEBUG_DYN_NOTCH,
           text: "Dynamic Notch",
         },
-        { value: BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION, text: "Navigation" },
+        { value: BlackboxDebugFlag.BBOX_DEBUG_ROVER, text: "Rover" },
       ];
     },
     logRateOptions() {
