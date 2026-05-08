@@ -29,7 +29,7 @@
                       :id="f.key"
                       :model-value="channelForIndex(f.index)"
                       class="is-fullwidth"
-                      :options="auxChannels"
+                      :options="auxChannelOptions(f.index)"
                       @update:modelValue="setChannel(f.index, $event)"
                     ></input-select>
                   </div>
@@ -52,7 +52,7 @@
                     :id="f.key"
                     :model-value="channelForIndex(f.index)"
                     class="aux-channel-select"
-                    :options="auxChannels"
+                    :options="auxChannelOptions(f.index)"
                     @update:modelValue="setChannel(f.index, $event)"
                   ></input-select>
                 </div>
@@ -60,7 +60,10 @@
 
               <div class="column">
                 <aux-range-control
-                  v-if="hasRanges && channelForIndex(f.index) < 12"
+                  v-if="
+                    hasRanges &&
+                    channelForIndex(f.index) < maxSelectableRxChannel()
+                  "
                   :min="rangePercent(f.index, 'min')"
                   :max="rangePercent(f.index, 'max')"
                   :current="currentAuxPercent(channelForIndex(f.index))"
@@ -151,7 +154,25 @@ export default defineComponent({
       if (entry) return entry.channel;
       const aux = this.profile.receiver.aux;
       if (aux && typeof aux[index] === "number") return aux[index];
-      return 12;
+      return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
+    },
+    auxChannelOptions(index: number): Array<{ text: string; value: number }> {
+      if (!this.profile.profileVersionGt("0.2.5")) return this.auxChannels;
+
+      const selected = this.channelForIndex(index);
+      const roleChannels = new Set(
+        (this.profile.receiver.role_map || [])
+          .map((role) => role.channel)
+          .filter((channel) => channel >= 0 && channel < 16),
+      );
+
+      return this.auxChannels.filter((option) => {
+        if (option.value >= 16) return true;
+        return option.value === selected || !roleChannels.has(option.value);
+      });
+    },
+    maxSelectableRxChannel(): number {
+      return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
     },
     functionLabel(key: string): string {
       return key.replace(/^AUX_/, "").replaceAll("_", " ");
@@ -167,8 +188,12 @@ export default defineComponent({
       return `${this.rangePercent(index, "min")}% to ${this.rangePercent(index, "max")}%`;
     },
     currentAuxPercent(channel: number): number | null {
-      if (channel < 0 || channel >= 12) return null;
-      const value = this.state.aux[channel];
+      const directChannels = this.profile.profileVersionGt("0.2.5");
+      const maxChannel = directChannels ? 16 : 12;
+      if (channel < 0 || channel >= maxChannel) return null;
+      const value = directChannels
+        ? this.state.rx_channels?.[channel] ?? this.state.aux[channel]
+        : this.state.aux[channel];
       if (value === undefined || value === null) return null;
       if (value <= 1) return value ? 100 : 0;
       return Math.round((value / 65535) * 100);
@@ -214,8 +239,10 @@ export default defineComponent({
       }
 
       const channel = this.channelForIndex(index);
-      if (channel === 12) return "aux-function-off";
-      if (channel === 13) return "aux-function-on";
+      const offChannel = this.profile.profileVersionGt("0.2.5") ? 16 : 12;
+      const onChannel = offChannel + 1;
+      if (channel === offChannel) return "aux-function-off";
+      if (channel === onChannel) return "aux-function-on";
       const current = this.currentAuxPercent(channel);
       if (current === null) return "";
       if (this.default_profile.has_legacy_aux) {
