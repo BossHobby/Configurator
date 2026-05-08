@@ -10,14 +10,14 @@
           <div class="field-label">
             <label class="label">
               Channel Mapping
-              <tooltip entry="receiver.channel_mapping" />
+              <tooltip entry="receiver.role_map" />
             </label>
           </div>
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
                 <input-select
-                  v-model.number="profile.receiver.channel_mapping"
+                  v-model.number="selectedPreset"
                   class="is-fullwidth"
                   :options="receiverChannelMappingOptions"
                 ></input-select>
@@ -26,57 +26,42 @@
           </div>
         </div>
 
-        <div
-          v-for="(style, i) of channelStyle"
-          :key="'channel-' + i"
-          class="field is-horizontal"
-        >
-          <div class="field-label" style="align-self: unset">
-            <label class="label">
-              {{ channelNames[i] }}
-            </label>
-          </div>
-          <div class="field-body columns is-mobile">
-            <div class="column field has-addons">
-              <p class="control my-0">
-                <input
-                  :id="`limit-${channelNames[i]}-min`"
-                  v-model.number="
-                    profile.receiver.stick_calibration_limits[i].min
-                  "
-                  class="input is-small"
-                  type="number"
-                  step="0.1"
+        <div class="rx-role-list">
+          <section
+            v-for="(_, i) in channelNames"
+            :key="'role-' + i"
+            class="box py-3 mb-3"
+          >
+            <div class="columns is-vcentered is-variable is-4 mb-0">
+              <div class="column is-3">
+                <label class="label mb-1" :for="`role-channel-${i}`">
+                  {{ channelNames[i] }}
+                  <tooltip entry="receiver.role_map" />
+                </label>
+                <div class="field aux-channel-field mb-2">
+                  <input-select
+                    :id="`role-channel-${i}`"
+                    :model-value="roleMap(i).channel"
+                    class="aux-channel-select"
+                    :options="rxChannelOptions"
+                    @update:modelValue="setRoleField(i, 'channel', $event)"
+                  ></input-select>
+                </div>
+              </div>
+
+              <div class="column">
+                <rc-calibration-control
+                  :min="roleMap(i).min"
+                  :center="roleMap(i).center"
+                  :max="roleMap(i).max"
+                  :current="sourceChannelValue(i)"
+                  @update:min="setRoleField(i, 'min', $event)"
+                  @update:center="setRoleField(i, 'center', $event)"
+                  @update:max="setRoleField(i, 'max', $event)"
                 />
-              </p>
-              <p class="control">
-                <a class="button is-small is-static"> min </a>
-              </p>
-            </div>
-            <div class="column field has-addons">
-              <p class="control my-0">
-                <input
-                  :id="`limit-${channelNames[i]}-max`"
-                  v-model.number="
-                    profile.receiver.stick_calibration_limits[i].max
-                  "
-                  class="input is-small"
-                  type="number"
-                  step="0.1"
-                />
-              </p>
-              <p class="control">
-                <a class="button is-small is-static"> max </a>
-              </p>
-            </div>
-          </div>
-          <div class="column is-6 py-0">
-            <div class="channel-container">
-              <div class="channel-bar" :style="style">
-                {{ Math.floor(state.rx_filtered[i] * (i != 3 ? 50 : 100)) }}
               </div>
             </div>
-          </div>
+          </section>
         </div>
         <div class="columns is-mobile mt-5">
           <div class="column is-8 wizard">
@@ -104,25 +89,25 @@ import { defineComponent } from "vue";
 import { useStateStore } from "@/store/state";
 import { useProfileStore } from "@/store/profile";
 import { useRootStore } from "@/store/root";
+import { useInfoStore } from "@/store/info";
+import type { rx_role_map_t } from "@/store/types";
+import RcCalibrationControl from "@/components/RcCalibrationControl.vue";
 
 export default defineComponent({
   name: "RCChannels",
+  components: { RcCalibrationControl },
   setup() {
     return {
       root: useRootStore(),
       state: useStateStore(),
       profile: useProfileStore(),
+      info: useInfoStore(),
     };
   },
   data() {
     return {
       timerCount: 0,
       timerTimeout: 0,
-      receiverChannelMappingOptions: [
-        { value: 0, text: "AETR" },
-        { value: 1, text: "TAER" },
-      ],
-      channelNames: ["Roll", "Pitch", "Yaw", "Throttle"],
       wizardStates: [
         "", //STICK_WIZARD_INACTIVE
         "Succeeded", //STICK_WIZARD_SUCCESS
@@ -136,23 +121,94 @@ export default defineComponent({
     };
   },
   computed: {
-    channelStyle() {
-      return this.state.rx_filtered.map((r, i) => {
-        if (i == 3) {
-          // throttle
-          const value = 2 + Math.abs(r) * 98;
-          return {
-            "margin-left": "0%",
-            width: value + "%",
-          };
+    receiverChannelMappingOptions() {
+      if (this.info.is_rover) {
+        return [
+          { value: 0, text: "Aircraft Radio" },
+          { value: 2, text: "Pistol Radio" },
+        ];
+      }
+      return [
+        { value: 0, text: "AETR" },
+        { value: 1, text: "TAER" },
+      ];
+    },
+    channelNames() {
+      return this.info.is_rover
+        ? ["Throttle", "Steering"]
+        : ["Roll", "Pitch", "Yaw", "Throttle"];
+    },
+    channelValues() {
+      return this.info.is_rover
+        ? [this.state.rx_filtered?.[3] || 0, this.state.rx_filtered?.[2] || 0]
+        : this.state.rx_filtered;
+    },
+    rxChannelOptions() {
+      return Array.from({ length: 16 }, (_, i) => ({
+        value: i,
+        text: `CHANNEL_${i + 1}`,
+      }));
+    },
+    selectedPreset: {
+      get(): number {
+        const channels = this.profile.receiver.role_map
+          .map((role) => role.channel)
+          .join(",");
+        if (this.info?.is_rover) {
+          return channels === "1,0" ? 2 : 0;
         }
-
-        const value = 2 + Math.abs(r) * 49;
-        return {
-          "margin-left": r < 0 ? 51 - value + "%" : "49%",
-          width: value + "%",
-        };
-      });
+        return channels === "1,2,3,0" ? 1 : 0;
+      },
+      set(value: number) {
+        if (this.info?.is_rover) {
+          const channels = value === 2 ? [1, 0] : [2, 3];
+          this.profile.receiver.role_map = channels.map((channel) => ({
+            channel,
+            min: -1,
+            center: 0,
+            max: 1,
+          }));
+          return;
+        }
+        const channels = value === 1 ? [1, 2, 3, 0] : [0, 1, 3, 2];
+        this.profile.receiver.role_map = channels.map((channel) => ({
+          channel,
+          min: -1,
+          center: 0,
+          max: 1,
+        }));
+      },
+    },
+  },
+  methods: {
+    defaultRoleMap(index: number): rx_role_map_t {
+      return {
+        channel: index,
+        min: -1,
+        center: 0,
+        max: 1,
+      };
+    },
+    roleMap(index: number): rx_role_map_t {
+      return (
+        this.profile.receiver.role_map?.[index] || this.defaultRoleMap(index)
+      );
+    },
+    setRoleField(index: number, field: keyof rx_role_map_t, value: number) {
+      const roleMap = [...(this.profile.receiver.role_map || [])];
+      const numericValue = Number(value);
+      roleMap[index] = {
+        ...this.defaultRoleMap(index),
+        ...roleMap[index],
+        [field]: field === "channel" ? Math.trunc(numericValue) : numericValue,
+      };
+      this.profile.receiver = { ...this.profile.receiver, role_map: roleMap };
+    },
+    sourceChannelValue(index: number): number {
+      const channel = this.roleMap(index).channel;
+      const raw = this.state.rx_channels?.[channel];
+      if (raw === undefined || raw === null) return 0;
+      return Math.max(-1, Math.min(1, (Number(raw) / 65535) * 2 - 1));
     },
   },
   watch: {
@@ -193,22 +249,20 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.channel-container {
-  background-color: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 8px;
-
-  width: 100%;
-
-  .channel-bar {
-    color: #fff;
-    background-color: hsl(96deg 56% 43%);
-    border-radius: 8px;
-    text-align: center;
-
-    margin-left: 50%;
-  }
+.rx-role-list .box {
+  box-shadow: none;
+  border: 1px solid var(--bulma-border, #dbdbdb);
 }
+
+.aux-channel-field :deep(.select),
+.aux-channel-field :deep(select) {
+  max-width: 100%;
+}
+
+.aux-channel-select {
+  display: inline-block;
+}
+
 .wizard {
   font-size: 1.25rem;
 }
