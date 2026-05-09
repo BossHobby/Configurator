@@ -17,23 +17,33 @@ type BlackboxWorkerRequest = {
 };
 
 function decodeFrames(request: BlackboxWorkerRequest) {
-  const frames = CBOR.decode(new Uint8Array(request.payload));
+  const values = CBOR.decode(new Uint8Array(request.payload));
+  const profile = isProfile(values[0])
+    ? (values.shift() as profile_t)
+    : undefined;
   const decoder = new CompressedBlackboxDecoder(
     request.firmwareVersion,
     request.file,
   );
 
   return {
-    entries: decoder.decode(frames),
+    profile,
+    entries: decoder.decode(values),
     compressed: decoder.useCompression,
   };
+}
+
+function isProfile(value: unknown): value is profile_t {
+  return (
+    !!value && typeof value == "object" && "meta" in value && "motor" in value
+  );
 }
 
 self.onmessage = (event: MessageEvent<BlackboxWorkerRequest>) => {
   const request = event.data;
 
   try {
-    const { entries, compressed } = decodeFrames(request);
+    const { profile, entries, compressed } = decodeFrames(request);
     let blob: Blob;
 
     if (request.format == "json") {
@@ -45,12 +55,14 @@ self.onmessage = (event: MessageEvent<BlackboxWorkerRequest>) => {
             entries,
             compressed,
             firmwareVersion: request.firmwareVersion,
+            profile,
           }),
         ],
         { type: "application/json" },
       );
     } else {
-      if (!request.profile) {
+      const btflProfile = profile ?? request.profile;
+      if (!btflProfile) {
         throw new Error("missing profile");
       }
 
@@ -58,7 +70,7 @@ self.onmessage = (event: MessageEvent<BlackboxWorkerRequest>) => {
         request.file,
         blackboxScaleForFirmware(request.firmwareVersion),
       );
-      writer.writeHeaders(request.profile);
+      writer.writeHeaders(btflProfile);
       for (const v of entries) {
         writer.writeValue(v);
       }
