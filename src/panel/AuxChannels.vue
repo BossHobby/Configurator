@@ -192,7 +192,7 @@ export default defineComponent({
       const maxChannel = directChannels ? 16 : 12;
       if (channel < 0 || channel >= maxChannel) return null;
       const value = directChannels
-        ? this.state.rx_channels?.[channel] ?? this.state.aux[channel]
+        ? (this.state.rx_channels?.[channel] ?? this.state.aux[channel])
         : this.state.aux[channel];
       if (value === undefined || value === null) return null;
       if (value <= 1) return value ? 100 : 0;

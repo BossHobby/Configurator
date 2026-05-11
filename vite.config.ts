@@ -73,6 +73,7 @@ export default defineConfig({
         globPatterns: [
           "**/*.{css,glb,html,ico,jpg,js,png,svg,txt,webmanifest,woff2}",
         ],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         rollupFormat: "iife",
       },
     }),
