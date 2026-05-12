@@ -181,6 +181,28 @@
           </div>
         </div>
 
+        <div
+          class="field is-horizontal"
+          v-if="source != 'local' && isRuntimeTarget && supportsVehicles"
+        >
+          <div class="field-label is-normal">
+            <label class="label"> Vehicle </label>
+          </div>
+          <div class="field-body">
+            <div class="field is-narrow">
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <input-select
+                    v-model="vehicle"
+                    :options="vehicleOptions"
+                    :disabled="loading"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="field is-horizontal" v-if="source != 'local'">
           <div class="field-label is-normal">
             <label class="label">
@@ -302,6 +324,7 @@ export default defineComponent({
       release: undefined as string | undefined,
       branch: undefined as string | undefined,
       pullRequest: undefined as string | undefined,
+      vehicle: "multi",
       targetSearch: "",
       currentTarget: undefined as string | undefined,
       target: undefined as any | undefined,
@@ -337,6 +360,11 @@ export default defineComponent({
       this.target = undefined;
       this.file = undefined;
     },
+    vehicle() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
   },
   computed: {
     branchOptions() {
@@ -347,6 +375,41 @@ export default defineComponent({
     },
     releaseOptions() {
       return Object.keys(this.flash.releases);
+    },
+    firmwareVersion() {
+      if (this.source == "release" && this.release) {
+        return this.release;
+      }
+      if (this.source == "branch" && this.branch) {
+        return this.flash.branches[this.branch].version;
+      }
+      if (this.source == "pull_request" && this.pullRequest) {
+        return this.flash.pullRequests[this.pullRequest].version;
+      }
+      return "v0.0.0";
+    },
+    supportsVehicles() {
+      return semver.satisfies(this.firmwareVersion, ">=0.12.0", {
+        includePrerelease: true,
+      });
+    },
+    targetVehicles() {
+      const vehicles = new Set<string>();
+      for (const target of this.flash.targets) {
+        for (const vehicle of target.vehicles || ["multi"]) {
+          vehicles.add(vehicle);
+        }
+      }
+      return Array.from(vehicles);
+    },
+    selectedVehicle() {
+      return this.supportsVehicles ? this.vehicle : "multi";
+    },
+    vehicleOptions() {
+      return this.targetVehicles.map((vehicle) => ({
+        value: vehicle,
+        text: vehicle.charAt(0).toUpperCase() + vehicle.slice(1),
+      }));
     },
     commitHash() {
       const source =
@@ -381,10 +444,14 @@ export default defineComponent({
     targetOptions() {
       let options = [] as any[];
       if (this.isRuntimeTarget) {
-        options = this.flash.targets.map((r) => {
-          const mgfr = this.flash.manufacturers[r.manufacturer || "CUST"];
-          return { value: r, text: `${mgfr.name} / ${r.name}` };
-        });
+        options = this.flash.targets
+          .filter((r) =>
+            (r.vehicles || ["multi"]).includes(this.selectedVehicle),
+          )
+          .map((r) => {
+            const mgfr = this.flash.manufacturers[r.manufacturer || "CUST"];
+            return { value: r, text: `${mgfr.name} / ${r.name}` };
+          });
       } else {
         let targets = [] as any[];
         if (this.source == "release" && this.release) {
@@ -429,6 +496,22 @@ export default defineComponent({
         (v) => !v.endsWith("-dev") && !v.includes("-rc"),
       );
     },
+    selectRuntimeArtifact(artifacts: any[]) {
+      const env = `${this.selectedVehicle}-${this.target?.mcu}`;
+      const artifact = artifacts.find((a) => a.name.includes(env));
+      if (artifact) {
+        return artifact;
+      }
+      if (this.selectedVehicle == "multi") {
+        const legacyArtifact = artifacts.find((a) =>
+          a.name.includes(this.target?.mcu),
+        );
+        if (legacyArtifact) {
+          return legacyArtifact;
+        }
+      }
+      throw new Error(`firmware artifact not found for ${env}`);
+    },
     selectTarget(target: any) {
       this.target = target.value;
       this.targetSearch = target.text;
@@ -465,9 +548,7 @@ export default defineComponent({
         case "release":
           if (this.isRuntimeTarget && this.release) {
             const release = this.flash.releases[this.release];
-            const asset = release
-              .sort((a, b) => a.name.length - b.name.length)
-              .find((a) => a.name.includes(this.target?.mcu));
+            const asset = this.selectRuntimeArtifact(release);
             return github.fetchAsset(asset).then((res) => res.text());
           }
           return github.fetchAsset(this.target).then((res) => res.text());
@@ -475,9 +556,7 @@ export default defineComponent({
         case "branch":
           if (this.isRuntimeTarget && this.branch) {
             const branch = this.flash.branches[this.branch];
-            const artifact = branch.artifacts
-              .sort((a, b) => a.name.length - b.name.length)
-              .find((a) => a.name.includes(this.target?.mcu));
+            const artifact = this.selectRuntimeArtifact(branch.artifacts);
             return github.fetchArtifact(artifact);
           }
           return github.fetchArtifact(this.target);
@@ -485,9 +564,7 @@ export default defineComponent({
         case "pull_request":
           if (this.isRuntimeTarget && this.pullRequest) {
             const pullRequest = this.flash.pullRequests[this.pullRequest];
-            const artifact = pullRequest.artifacts
-              .sort((a, b) => a.name.length - b.name.length)
-              .find((a) => a.name.includes(this.target?.mcu));
+            const artifact = this.selectRuntimeArtifact(pullRequest.artifacts);
             return github.fetchArtifact(artifact);
           }
           return github.fetchArtifact(this.target);
