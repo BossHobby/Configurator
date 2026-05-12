@@ -113,9 +113,33 @@ export default defineComponent({
       return val;
     },
     calcThrottle(throttle: number): number {
-      const n = throttle * 2.0 - 1.0;
       const expo = this.profile.rate.throttle_expo;
       const mid = this.profile.rate.throttle_mid;
+
+      if (this.profile.profileVersionGt("0.2.5")) {
+        const throttle_minus_mid = throttle - mid;
+
+        let divisor = 1;
+        if (throttle_minus_mid > 0.0) {
+          divisor = 1 - mid;
+        }
+        if (throttle_minus_mid < 0.0) {
+          divisor = mid;
+        }
+
+        return this.constrainf(
+          mid +
+            throttle_minus_mid *
+              (1 -
+                expo +
+                (expo * (throttle_minus_mid * throttle_minus_mid)) /
+                  (divisor * divisor)),
+          0.0,
+          1.0,
+        );
+      }
+
+      const n = throttle * 2.0 - 1.0;
       return this.constrainf(
         (n * n * n * expo + n * (1.0 - expo) + 1.0) * mid,
         0.0,
