@@ -8,6 +8,7 @@ export interface RuntimeTarget {
   target: string;
   manufacturer: string;
   mcu: string;
+  vehicles?: string[];
 }
 
 export const TARGET_URL =
