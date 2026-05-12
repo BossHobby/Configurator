@@ -274,6 +274,13 @@ export default defineComponent({
           text: "0.00\x07",
         });
       }
+      if (this.profile.profileVersionGt("0.2.6")) {
+        elements.push({
+          name: "WATTS",
+          enabled: true,
+          text: " 0.0\x57",
+        });
+      }
       return elements;
     },
     elements() {
