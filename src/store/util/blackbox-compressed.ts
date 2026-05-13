@@ -14,8 +14,14 @@ export class CompressedBlackboxDecoder {
   private fieldOrder: BlackboxField[] = [];
   private fieldIndexMap: Map<BlackboxField, number> = new Map();
 
-  constructor(firmwareVersion: string, file: BlackboxFile) {
-    this.fieldflags = transformBlackboxFieldFlags(file.field_flags);
+  constructor(
+    private firmwareVersion: string,
+    file: BlackboxFile,
+  ) {
+    this.fieldflags = transformBlackboxFieldFlags(
+      file.field_flags,
+      firmwareVersion,
+    );
     this.useCompression = semver.gte(firmwareVersion, "0.2.5");
 
     // Build field order based on BlackboxField enum
@@ -65,7 +71,10 @@ export class CompressedBlackboxDecoder {
   }
 
   private getActiveFields(fieldFlags: number): number {
-    return fieldFlags & ~BLACKBOX_FRAME_TYPE_BIT;
+    return transformBlackboxFieldFlags(
+      fieldFlags & ~BLACKBOX_FRAME_TYPE_BIT,
+      this.firmwareVersion,
+    );
   }
 
   private decodeFrame(frameData: any): any[] | null {

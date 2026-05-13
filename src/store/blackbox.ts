@@ -84,6 +84,8 @@ export enum BlackboxFieldUnit {
   NONE = "none",
   US = "us",
   RADIANS = "rad",
+  DEGREES = "deg",
+  METERS = "m",
 }
 
 export interface BlackboxFieldDef {
@@ -205,6 +207,26 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     scale: 1,
     unit: BlackboxFieldUnit.NONE,
   },
+  [BlackboxField.GPS_COORD]: {
+    name: "gps_coord",
+    title: "GPS Coordinates",
+    axis: ["Latitude", "Longitude"],
+    scale: 10000000,
+    unit: BlackboxFieldUnit.DEGREES,
+  },
+  [BlackboxField.GPS_HOME]: {
+    name: "gps_home",
+    title: "Home Coordinates",
+    axis: ["Latitude", "Longitude"],
+    scale: 10000000,
+    unit: BlackboxFieldUnit.DEGREES,
+  },
+  [BlackboxField.ALTITUDE]: {
+    name: "altitude",
+    title: "Navigation Altitude",
+    scale: 10,
+    unit: BlackboxFieldUnit.METERS,
+  },
 };
 
 export const useBlackboxStore = defineStore("blackbox", {
@@ -244,8 +266,11 @@ export const useBlackboxStore = defineStore("blackbox", {
     download_blackbox_quic(index) {
       const root = useRootStore();
       const file = this.list.files[index];
-      const fieldflags = transformBlackboxFieldFlags(file.field_flags);
       const info = useInfoStore();
+      const fieldflags = transformBlackboxFieldFlags(
+        file.field_flags,
+        info.quic_protocol_semver,
+      );
 
       const start = performance.now();
       return serial

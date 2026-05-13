@@ -250,6 +250,15 @@ export interface profile_wing_t {
   autolaunch_finish_ms: number;
 }
 
+export interface profile_navigation_t {
+  rth_altitude: number;
+  rth_on_failsafe: boolean;
+  rth_cruise_speed: number;
+  rth_throttle_min: number;
+  rth_throttle_hover: number;
+  rth_throttle_max: number;
+}
+
 export interface blackbox_preset_t {
   field_flags: number;
   sample_rate_hz: number;
@@ -317,6 +326,7 @@ export interface profile_t {
   mixer: profile_mixer_rule_t[];
   motor: profile_motor_t;
   serial: profile_serial_t;
+  gps: { constellations: number };
   filter: profile_filter_t;
   osd: profile_osd_t;
   rate: profile_rate_t;
@@ -327,6 +337,7 @@ export interface profile_t {
   vtx: profile_vtx_t;
   rover: profile_rover_t;
   wing: profile_wing_t;
+  navigation: profile_navigation_t;
 }
 
 export type gpio_pins_t = string;
