@@ -15,8 +15,11 @@
     <div class="column is-12">
       <FilterSettings></FilterSettings>
     </div>
-    <div class="column is-12">
-      <MotorControlSettings></MotorControlSettings>
+    <div
+      v-if="profile.navigation.rth_altitude !== undefined"
+      class="column is-12"
+    >
+      <Navigation></Navigation>
     </div>
     <div v-if="info.is_rover" class="column is-12">
       <RoverSettings></RoverSettings>
@@ -30,7 +33,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import FilterSettings from "@/panel/FilterSettings.vue";
-import MotorControlSettings from "@/panel/MotorControlSettings.vue";
+import Navigation from "@/panel/Navigation.vue";
 import PIDRates from "@/panel/PIDRates.vue";
 import RoverSettings from "@/panel/RoverSettings.vue";
 import StickRates from "@/panel/StickRates.vue";
@@ -45,7 +48,7 @@ export default defineComponent({
   name: "Control",
   components: {
     FilterSettings,
-    MotorControlSettings,
+    Navigation,
     PIDRates,
     RoverSettings,
     StickRates,

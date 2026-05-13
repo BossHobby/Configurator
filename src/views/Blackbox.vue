@@ -58,7 +58,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="blackbox-debug-mode"
-                      v-model.number="profile.blackbox.debug_flags"
+                      v-model.number="debugMode"
                       :options="debugModeOptions"
                     ></input-select>
                   </div>
@@ -205,6 +205,7 @@ export default defineComponent({
     blackboxFields() {
       const fieldflags = transformBlackboxFieldFlags(
         this.profile.blackbox.field_flags,
+        this.info.quic_protocol_semver,
       );
       const fields = $enum(BlackboxField)
         .getEntries()
@@ -231,6 +232,28 @@ export default defineComponent({
         }),
       ];
     },
+    debugMode: {
+      get(): number {
+        return this.profile.blackbox.debug_flags;
+      },
+      set(value: number) {
+        this.profile.blackbox.debug_flags = value;
+        if (value !== 0) {
+          this.profile.blackbox.field_flags |=
+            1 <<
+            (this.info.quic_semver_gte("0.2.10") ? BlackboxField.DEBUG : 13);
+          if (
+            value === BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION &&
+            this.info.quic_semver_gte("0.2.10")
+          ) {
+            this.profile.blackbox.field_flags |=
+              (1 << BlackboxField.GPS_COORD) |
+              (1 << BlackboxField.GPS_HOME) |
+              (1 << BlackboxField.ALTITUDE);
+          }
+        }
+      },
+    },
     debugModeOptions() {
       return [
         { value: 0, text: "None" },
@@ -239,6 +262,10 @@ export default defineComponent({
           text: "Dynamic Notch",
         },
         { value: BlackboxDebugFlag.BBOX_DEBUG_ROVER, text: "Rover" },
+        {
+          value: BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION,
+          text: "Navigation / RTH",
+        },
       ];
     },
     logRateOptions() {
@@ -283,6 +310,20 @@ export default defineComponent({
       this.profile.blackbox.field_flags = this.blackbox.presets[i].field_flags;
       this.profile.blackbox.sample_rate_hz =
         this.blackbox.presets[i].sample_rate_hz;
+      if (this.profile.blackbox.debug_flags !== 0) {
+        this.profile.blackbox.field_flags |=
+          1 << (this.info.quic_semver_gte("0.2.10") ? BlackboxField.DEBUG : 13);
+      }
+      if (
+        this.profile.blackbox.debug_flags ===
+          BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION &&
+        this.info.quic_semver_gte("0.2.10")
+      ) {
+        this.profile.blackbox.field_flags |=
+          (1 << BlackboxField.GPS_COORD) |
+          (1 << BlackboxField.GPS_HOME) |
+          (1 << BlackboxField.ALTITUDE);
+      }
       this.current_preset = -1;
     },
   },
