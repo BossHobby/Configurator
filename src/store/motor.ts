@@ -12,27 +12,27 @@ const OUTPUT_COUNT = 8;
 const MULTI_PINS = [
   {
     index: 0,
-    source: output_source_t.OUTPUT_SOURCE_MOTOR_1,
+    source: 0,
     id: "MOTOR_1",
-    label: "Motor 1",
+    label: "M1 (Back Left)",
   },
   {
     index: 1,
-    source: output_source_t.OUTPUT_SOURCE_MOTOR_2,
+    source: 1,
     id: "MOTOR_2",
-    label: "Motor 2",
+    label: "M2 (Front Left)",
   },
   {
     index: 2,
-    source: output_source_t.OUTPUT_SOURCE_MOTOR_3,
+    source: 2,
     id: "MOTOR_3",
-    label: "Motor 3",
+    label: "M3 (Back Right)",
   },
   {
     index: 3,
-    source: output_source_t.OUTPUT_SOURCE_MOTOR_4,
+    source: 3,
     id: "MOTOR_4",
-    label: "Motor 4",
+    label: "M4 (Front Right)",
   },
 ];
 
@@ -45,7 +45,7 @@ const ROVER_PINS = [
   },
   {
     index: 3,
-    source: output_source_t.OUTPUT_SOURCE_STEERING,
+    source: output_source_t.OUTPUT_SOURCE_YAW,
     id: "SERVO",
     label: "Servo",
   },
@@ -65,13 +65,33 @@ export const useMotorStore = defineStore("motor", {
       const info = useInfoStore();
       const profile = useProfileStore();
       const pins = info.is_rover ? ROVER_PINS : MULTI_PINS;
+      const legacyMotorOutputs =
+        !info.is_rover && profile.has_legacy_motor_outputs;
       return pins.map((p) => {
-        const output = profile.outputs.find((o) => o.source === p.source);
-        const index = output?.target_output ?? p.index;
+        if (legacyMotorOutputs) {
+          const pin = Array.isArray(profile.motor?.motor_pins)
+            ? profile.motor.motor_pins[p.index]
+            : undefined;
+          return {
+            ...p,
+            pin,
+            testIndex: p.index,
+          };
+        }
+
+        const rule = profile.mixer.find((r) => r.source === p.source);
+        const output = profile.outputs[p.index];
+        const logicalIndex = info.is_rover
+          ? (rule?.output_index ?? p.index)
+          : p.index;
+        const mappedOutput = profile.outputs[logicalIndex];
+        const index =
+          mappedOutput?.target_output ?? output?.target_output ?? p.index;
         return {
           ...p,
           index,
           pin: index,
+          testIndex: logicalIndex,
         };
       });
     },

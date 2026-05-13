@@ -44,8 +44,6 @@ export const useTargetStore = defineStore("target", {
   state: (): target_t => ({
     name: "",
 
-    brushless: true,
-
     gyro_orientation: 0,
 
     vehicles: 0,
