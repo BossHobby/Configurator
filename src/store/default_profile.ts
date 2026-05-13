@@ -37,6 +37,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       throttle_scale_factor: 0.5,
       reversible: 1,
     },
+    wing: {},
     rate: {
       mode: 0,
       silverware: {},

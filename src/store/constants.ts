@@ -182,6 +182,21 @@ enum AuxFunctionsV026Rover {
   AUX_RATE_THROTTLE,
 }
 
+enum AuxFunctionsV026Wing {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_ACROMODE,
+  AUX_BUZZER_ENABLE,
+  AUX_RSSI,
+  AUX_FPV_SWITCH,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
+  AUX_AUTOTRIM,
+  AUX_AUTOLAUNCH,
+}
+
 enum RXProtocolV5 {
   INVALID,
   UNIFIED_SERIAL,
@@ -346,6 +361,9 @@ export const useConstantStore = defineStore("constant", {
       if (profile.profileVersionGt("0.2.5")) {
         if (info.is_rover) {
           return AuxFunctionsV026Rover;
+        }
+        if (info.is_wing) {
+          return AuxFunctionsV026Wing;
         }
         return AuxFunctionsV026;
       }

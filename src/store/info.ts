@@ -66,6 +66,9 @@ export const useInfoStore = defineStore("info", {
     is_rover(state) {
       return (state.vehicle_type & vehicle_type_t.VEHICLE_TYPE_ROVER) !== 0;
     },
+    is_wing(state) {
+      return (state.vehicle_type & vehicle_type_t.VEHICLE_TYPE_WING) !== 0;
+    },
     is_multi(state) {
       return (
         state.vehicle_type === 0 ||

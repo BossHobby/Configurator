@@ -4,7 +4,7 @@ import { Log } from "@/log";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
 import { useProfileStore } from "./profile";
-import { output_source_t } from "./types";
+import { output_protocol_t, output_source_t } from "./types";
 import { useInfoStore } from "./info";
 
 const OUTPUT_COUNT = 8;
@@ -42,14 +42,54 @@ const ROVER_PINS = [
     source: output_source_t.OUTPUT_SOURCE_THROTTLE,
     id: "THROTTLE",
     label: "Throttle",
+    bidirectional: true,
   },
   {
     index: 3,
     source: output_source_t.OUTPUT_SOURCE_YAW,
     id: "SERVO",
-    label: "Servo",
+    label: "Steering",
+    bidirectional: true,
   },
 ];
+
+const WING_SOURCE_LABELS = {
+  [output_source_t.OUTPUT_SOURCE_THROTTLE]: "Throttle",
+  [output_source_t.OUTPUT_SOURCE_ROLL]: "Roll",
+  [output_source_t.OUTPUT_SOURCE_PITCH]: "Pitch",
+  [output_source_t.OUTPUT_SOURCE_YAW]: "Yaw",
+  [output_source_t.OUTPUT_SOURCE_RX_CHANNEL]: "RX",
+};
+
+function wingOutputTestPins(profile) {
+  return profile.outputs
+    .map((output, outputIndex) => {
+      if (
+        !output ||
+        output.protocol === output_protocol_t.OUTPUT_PROTOCOL_NONE
+      ) {
+        return null;
+      }
+
+      const mixes = profile.mixer
+        .filter((rule) => rule.output_index === outputIndex)
+        .map((rule) => WING_SOURCE_LABELS[rule.source])
+        .filter(Boolean);
+      const mixLabel =
+        mixes.length > 0 ? ` (${[...new Set(mixes)].join(" + ")})` : "";
+
+      return {
+        index: output.target_output,
+        source: outputIndex,
+        id: `OUTPUT_${outputIndex + 1}`,
+        label: `S${output.target_output + 1}${mixLabel}`,
+        testIndex: outputIndex,
+        bidirectional:
+          output.protocol === output_protocol_t.OUTPUT_PROTOCOL_PWM,
+      };
+    })
+    .filter(Boolean);
+}
 
 export const useMotorStore = defineStore("motor", {
   state: () => ({
@@ -64,6 +104,10 @@ export const useMotorStore = defineStore("motor", {
     pins() {
       const info = useInfoStore();
       const profile = useProfileStore();
+      if (info.is_wing) {
+        return wingOutputTestPins(profile);
+      }
+
       const pins = info.is_rover ? ROVER_PINS : MULTI_PINS;
       const legacyMotorOutputs =
         !info.is_rover && profile.has_legacy_motor_outputs;
@@ -91,7 +135,7 @@ export const useMotorStore = defineStore("motor", {
           ...p,
           index,
           pin: index,
-          testIndex: logicalIndex,
+          testIndex: p.testIndex ?? logicalIndex,
         };
       });
     },
@@ -156,7 +200,7 @@ export const useMotorStore = defineStore("motor", {
         .then(() => {
           this.test.active = this.test.active ? 0 : 1;
           const info = useInfoStore();
-          if (info.is_rover) {
+          if (info.is_rover || info.is_wing) {
             this.test.value = Array(OUTPUT_COUNT).fill(0);
           }
         });
