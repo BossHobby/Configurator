@@ -12,9 +12,18 @@ export interface BlackboxFile {
   size: number;
 }
 
-export function transformBlackboxFieldFlags(flags: number) {
+export function transformBlackboxFieldFlags(
+  flags: number,
+  firmwareVersion?: string,
+) {
   // Quicksilver versions 0.96 and below don't provide the field flags.
-  const res = flags == undefined ? -1 : flags;
+  let res = flags == undefined ? (1 << 14) - 1 : flags;
+  if (
+    flags == undefined ||
+    (firmwareVersion && semver.lt(firmwareVersion, "0.2.10"))
+  ) {
+    res = (res & ~(1 << 13)) | (res & (1 << 13) ? 1 << BlackboxField.DEBUG : 0);
+  }
   return res | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
 }
 

@@ -168,6 +168,7 @@ enum AuxFunctionsV026 {
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
+  AUX_RETURN_TO_HOME,
 }
 
 enum AuxFunctionsV026Rover {
@@ -178,6 +179,7 @@ enum AuxFunctionsV026Rover {
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
+  AUX_RETURN_TO_HOME,
   AUX_RATE_ASSIST,
   AUX_RATE_THROTTLE,
 }
@@ -305,6 +307,9 @@ export enum BlackboxField {
   GYRO_FILTER,
   OUTPUT,
   CPU_LOAD,
+  GPS_COORD,
+  GPS_HOME,
+  ALTITUDE,
   DEBUG,
 }
 
@@ -317,6 +322,7 @@ export enum LQISource {
 export enum BlackboxDebugFlag {
   BBOX_DEBUG_DYN_NOTCH = 0x1 << 0,
   BBOX_DEBUG_ROVER = 0x1 << 1,
+  BBOX_DEBUG_NAVIGATION = 0x1 << 2,
 }
 
 export const FailloopMessages = {

@@ -146,6 +146,10 @@ function migrateProfileVersion(
     ...(default_profile.wing || {}),
     ...(profile.wing || {}),
   };
+  profile.navigation = {
+    ...(default_profile.navigation || {}),
+    ...(profile.navigation || {}),
+  };
 
   if (semver.eq(profileVersion, "v0.1.0")) {
     const silverware = {
@@ -347,6 +351,7 @@ export const useProfileStore = defineStore("profile", {
       hdzero: 0,
       gps: 0,
     },
+    gps: { constellations: 5 },
     filter: {
       gyro: [{}, {}],
       dterm: [{}, {}],
@@ -429,6 +434,7 @@ export const useProfileStore = defineStore("profile", {
     },
     vtx: {},
     wing: {},
+    navigation: {},
   }),
   getters: {
     current_pid_rate: (state) => {

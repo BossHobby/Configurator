@@ -6,6 +6,7 @@ import { decodeSemver } from "./util";
 
 export const useDefaultProfileStore = defineStore("default_profile", {
   state: () => ({
+    gps: { constellations: 5 },
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -68,6 +69,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       small_angle: {},
       throttle_dterm_attenuation: {},
     },
+    navigation: {},
   }),
   getters: {
     has_legacy_stickrates(state) {

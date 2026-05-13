@@ -349,6 +349,41 @@ export const DefaultFields: FieldDefinition[] = [
   },
 
   {
+    name: "GPS_coord[0]",
+    array_index: 0,
+    blackbox_field: BlackboxField.GPS_COORD,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "GPS_coord[1]",
+    array_index: 1,
+    blackbox_field: BlackboxField.GPS_COORD,
+    advance: 1,
+    signed: true,
+  },
+  {
+    name: "GPS_home[0]",
+    array_index: 0,
+    blackbox_field: BlackboxField.GPS_HOME,
+    advance: 0,
+    signed: true,
+  },
+  {
+    name: "GPS_home[1]",
+    array_index: 1,
+    blackbox_field: BlackboxField.GPS_HOME,
+    advance: 1,
+    signed: true,
+  },
+  {
+    name: "BaroAlt",
+    blackbox_field: BlackboxField.ALTITUDE,
+    advance: 1,
+    signed: true,
+    convert: (value) => value * 10,
+  },
+  {
     name: "debug[0]",
     array_index: 0,
     blackbox_field: BlackboxField.DEBUG,
@@ -631,7 +666,7 @@ export class Blackbox {
   }
 
   private writeSigned(val: number) {
-    const unsigned = (val << 1) ^ (val >> 31);
+    const unsigned = ((val << 1) ^ (val >> 31)) >>> 0;
     return this.writeUnsigned(unsigned);
   }
 }
