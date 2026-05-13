@@ -35,6 +35,24 @@
               </div>
             </div>
           </div>
+
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label" for="vehicle-type">Vehicle</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <input
+                    id="vehicle-type"
+                    class="input is-static"
+                    :value="vehicleType"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </template>
         <template v-else>
           <div class="field is-horizontal">
@@ -105,6 +123,7 @@
 import { useConstantStore } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
 import { useTargetStore } from "@/store/target";
+import { vehicle_type_t } from "@/store/types";
 import { $enum } from "ts-enum-util";
 import { computed, defineComponent } from "vue";
 import YAML from "yaml";
@@ -137,6 +156,15 @@ export default defineComponent({
           return this.info.features & (1 << (i + 1));
         })
         .join(", ");
+    },
+    vehicleType() {
+      if (this.info.vehicle_type & vehicle_type_t.VEHICLE_TYPE_WING) {
+        return "Wing";
+      }
+      if (this.info.vehicle_type & vehicle_type_t.VEHICLE_TYPE_ROVER) {
+        return "Rover";
+      }
+      return "Multirotor";
     },
   },
   methods: {
