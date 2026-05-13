@@ -2,7 +2,7 @@
   <div v-if="motor.test" class="card">
     <header class="card-header">
       <p class="card-header-title">
-        {{ info.is_rover ? "Output Test" : "Motor Test" }}
+        {{ testTitle }}
       </p>
       <small class="card-header-icon">
         {{ state.vbat.toFixed(2) }}V <br />
@@ -63,7 +63,7 @@
         </template>
         <template v-else>
           <div class="is-size-5 has-text-centered has-text-weight-semibold">
-            {{ info.is_rover ? "Output Test disabled" : "Motor Test disabled" }}
+            {{ testTitle + " disabled" }}
           </div>
         </template>
       </div>
@@ -95,14 +95,13 @@ export default defineComponent({
     };
   },
   computed: {
+    testTitle() {
+      return this.info.is_rover || this.info.is_wing
+        ? "Output Test"
+        : "Motor Test";
+    },
     outputTestPins() {
-      if (!this.info.is_rover) {
-        return this.motor.pins;
-      }
-      return this.motor.pins.map((pin) => ({
-        ...pin,
-        label: pin.source === 1 ? "Throttle" : "Steering",
-      }));
+      return this.motor.pins;
     },
   },
   created() {
@@ -110,8 +109,8 @@ export default defineComponent({
   },
   methods: {
     isBidirectional(index: number): boolean {
-      if (!this.info.is_rover) return false;
-      return true;
+      return !!this.outputTestPins.find((pin) => pin.testIndex === index)
+        ?.bidirectional;
     },
     getValuePercent(index: number): number {
       const raw = this.motor.test.value[index] ?? 0;

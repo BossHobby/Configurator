@@ -225,6 +225,25 @@ export interface profile_blackbox_t {
   sample_rate_hz: number;
 }
 
+export interface profile_wing_t {
+  autotrim_threshold: number;
+  autotrim_step: number;
+  autolaunch_accel_threshold: number;
+  autolaunch_velocity_threshold: number;
+  autolaunch_max_altitude: number;
+  autolaunch_idle_throttle: number;
+  autolaunch_throttle: number;
+  autolaunch_pitch_angle: number;
+  autolaunch_stick_deadband: number;
+  autolaunch_detect_time_ms: number;
+  autolaunch_idle_delay_ms: number;
+  autolaunch_motor_delay_ms: number;
+  autolaunch_spinup_ms: number;
+  autolaunch_min_time_ms: number;
+  autolaunch_timeout_ms: number;
+  autolaunch_finish_ms: number;
+}
+
 export interface blackbox_preset_t {
   field_flags: number;
   sample_rate_hz: number;
@@ -301,6 +320,7 @@ export interface profile_t {
   blackbox: profile_blackbox_t;
   vtx: profile_vtx_t;
   rover: profile_rover_t;
+  wing: profile_wing_t;
 }
 
 export type gpio_pins_t = string;

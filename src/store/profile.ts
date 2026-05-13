@@ -19,6 +19,10 @@ const MULTI_MIXER_SOURCES = [
   output_source_t.OUTPUT_SOURCE_YAW,
 ];
 
+const DEFAULT_MOTOR = {
+  digital_idle: 4.5,
+};
+
 function deriveMultiMixer(profile) {
   const propsOut = Boolean(profile.motor?.invert_yaw);
   const weights = [
@@ -120,6 +124,11 @@ function migrateProfileVersion(
   if (profile.osd?.callsign) {
     profile.osd.callsign = profile.osd.callsign.replace(/\0/g, "");
   }
+  const default_profile = useDefaultProfileStore();
+  profile.wing = {
+    ...(default_profile.wing || {}),
+    ...(profile.wing || {}),
+  };
 
   if (semver.eq(profileVersion, "v0.1.0")) {
     const silverware = {
@@ -269,6 +278,16 @@ function migrateProfile(profile) {
     ...(default_profile.filter || {}),
     ...(p.filter || {}),
   };
+  p.motor = {
+    ...DEFAULT_MOTOR,
+    ...(default_profile.motor || {}),
+    ...(p.motor || {}),
+  };
+  p.wing = {
+    ...(default_profile.wing || {}),
+    ...(p.wing || {}),
+  };
+
   if (Array.isArray(p.receiver?.role_map)) {
     p.receiver.role_map = p.receiver.role_map.map((map: any) => ({
       channel: map?.channel ?? 0,
@@ -281,7 +300,7 @@ function migrateProfile(profile) {
   coerceProfileByteStrings(p);
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
-  if (!info.is_rover && semver.gte(decodeSemver(firmwareVersion), "v0.3.0")) {
+  if (info.is_multi && semver.gte(decodeSemver(firmwareVersion), "v0.3.0")) {
     deriveMultiMixer(p);
   }
 
@@ -324,6 +343,7 @@ export const useProfileStore = defineStore("profile", {
       datetime: 0,
     },
     motor: {
+      ...DEFAULT_MOTOR,
       gyro_orientation: 0,
     },
     rate: {
@@ -380,6 +400,7 @@ export const useProfileStore = defineStore("profile", {
       reversible: 1,
     },
     vtx: {},
+    wing: {},
   }),
   getters: {
     current_pid_rate: (state) => {
@@ -399,6 +420,10 @@ export const useProfileStore = defineStore("profile", {
   },
   actions: {
     set_profile(profile) {
+      profile.motor = {
+        ...DEFAULT_MOTOR,
+        ...(profile.motor || {}),
+      };
       profile.modified = timeAgo(new Date(profile.meta.datetime * 1000));
       profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");

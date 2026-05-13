@@ -10,16 +10,19 @@
       <ThrottleSettings></ThrottleSettings>
     </div>
     <div class="column is-12">
-      <MotorControlSettings></MotorControlSettings>
-    </div>
-    <div class="column is-12">
       <PIDRates></PIDRates>
     </div>
     <div class="column is-12">
       <FilterSettings></FilterSettings>
     </div>
+    <div class="column is-12">
+      <MotorControlSettings></MotorControlSettings>
+    </div>
     <div v-if="info.is_rover" class="column is-12">
       <RoverSettings></RoverSettings>
+    </div>
+    <div v-if="info.is_wing" class="column is-12">
+      <WingSettings></WingSettings>
     </div>
   </div>
 </template>
@@ -33,6 +36,7 @@ import RoverSettings from "@/panel/RoverSettings.vue";
 import StickRates from "@/panel/StickRates.vue";
 import StickRatesLegacy from "@/panel/StickRatesLegacy.vue";
 import ThrottleSettings from "@/panel/ThrottleSettings.vue";
+import WingSettings from "@/panel/WingSettings.vue";
 import { useDefaultProfileStore } from "@/store/default_profile";
 import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
@@ -47,6 +51,7 @@ export default defineComponent({
     StickRates,
     StickRatesLegacy,
     ThrottleSettings,
+    WingSettings,
   },
   setup() {
     return {
