@@ -1,7 +1,10 @@
 import { CBOR } from "./serial/cbor";
 import { Blackbox } from "./util/blackbox";
 import { CompressedBlackboxDecoder } from "./util/blackbox-compressed";
-import { blackboxScaleForFirmware } from "./util/blackbox-shared";
+import {
+  blackboxScaleForFirmware,
+  transformBlackboxFieldFlags,
+} from "./util/blackbox-shared";
 import type { BlackboxFieldDef } from "./blackbox";
 import type { BlackboxFile } from "./util/blackbox-shared";
 import type { profile_t } from "./types";
@@ -51,7 +54,16 @@ self.onmessage = (event: MessageEvent<BlackboxWorkerRequest>) => {
         [
           JSON.stringify({
             ...request.file,
-            fields: request.fields,
+            fields: request.fields?.map((field, index) => {
+              const value = entries[0]?.[index];
+              if (field.name === "debug" && Array.isArray(value)) {
+                return {
+                  ...field,
+                  axis: value.map((_, channel) => channel.toString()),
+                };
+              }
+              return field;
+            }),
             entries,
             compressed,
             firmwareVersion: request.firmwareVersion,
@@ -67,7 +79,13 @@ self.onmessage = (event: MessageEvent<BlackboxWorkerRequest>) => {
       }
 
       const writer = new Blackbox(
-        request.file,
+        {
+          ...request.file,
+          field_flags: transformBlackboxFieldFlags(
+            request.file.field_flags,
+            request.firmwareVersion,
+          ),
+        },
         blackboxScaleForFirmware(request.firmwareVersion),
       );
       writer.writeHeaders(btflProfile);

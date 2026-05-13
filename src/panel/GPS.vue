@@ -3,221 +3,268 @@
     <header class="card-header">
       <p class="card-header-title">GPS</p>
       <div class="card-header-icon">
-        <span v-if="gps.state !== 10" class="tag" :class="gpsConfigStateClass">
+        <span v-if="gps.state !== 13" class="tag" :class="gpsConfigStateClass">
           {{ gps.configStateName }}
         </span>
       </div>
     </header>
 
     <div class="card-content">
-      <div class="content column-narrow field-is-5" v-if="!gpsDetected">
-        <div class="notification is-warning">
-          <p>
-            No GPS module detected. Make sure GPS is connected and configured on
-            the correct serial port.
-          </p>
-        </div>
-      </div>
-
-      <div class="content column-narrow field-is-5" v-else>
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Module</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag is-medium">{{ gpsVersionName }}</span>
+      <div class="columns">
+        <div class="column is-one-third">
+          <div
+            class="content column-narrow field-is-5"
+            v-if="profile.serial.gps"
+          >
+            <h6 class="title is-6">Constellations</h6>
+            <div
+              class="field is-horizontal"
+              v-for="item in constellationOptions"
+              :key="item.bit"
+            >
+              <div class="field-label">
+                <label class="label" :for="'gps-constellation-' + item.bit">{{
+                  item.name
+                }}</label>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Satellites</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag is-medium" :class="satelliteCountClass">
-                  {{ state.gps_sats }} {{ gpsStatusText }}
-                </span>
-                <span v-if="gps.sats_in_view > 0" class="ml-2">
-                  ({{ gps.sats_used }} used / {{ gps.sats_in_view }} in view)
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="field is-horizontal"
-          v-if="gps.activeConstellations.length > 0"
-        >
-          <div class="field-label">
-            <label class="label">Constellations</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <div class="is-size-7">
-                  <span v-if="gps.gps.sats_in_view > 0" class="mr-2">
-                    <span class="tag is-small is-info">GPS</span>
-                    <span class="ml-1"
-                      >{{ gps.gps.sats_used }}/{{ gps.gps.sats_in_view }}</span
-                    >
-                  </span>
-                  <span v-if="gps.glonass.sats_in_view > 0" class="mr-2">
-                    <span class="tag is-small is-info">GLO</span>
-                    <span class="ml-1"
-                      >{{ gps.glonass.sats_used }}/{{
-                        gps.glonass.sats_in_view
-                      }}</span
-                    >
-                  </span>
-                  <span v-if="gps.galileo.sats_in_view > 0" class="mr-2">
-                    <span class="tag is-small is-info">GAL</span>
-                    <span class="ml-1"
-                      >{{ gps.galileo.sats_used }}/{{
-                        gps.galileo.sats_in_view
-                      }}</span
-                    >
-                  </span>
-                  <span v-if="gps.beidou.sats_in_view > 0" class="mr-2">
-                    <span class="tag is-small is-info">BDS</span>
-                    <span class="ml-1"
-                      >{{ gps.beidou.sats_used }}/{{
-                        gps.beidou.sats_in_view
-                      }}</span
-                    >
-                  </span>
+              <div class="field-body">
+                <div class="field">
+                  <input
+                    :id="'gps-constellation-' + item.bit"
+                    type="checkbox"
+                    class="switch"
+                    :value="item.bit"
+                    v-model="selectedConstellations"
+                    :disabled="
+                      selectedConstellations.length === 1 &&
+                      selectedConstellations.includes(item.bit)
+                    "
+                  />
+                  <label :for="'gps-constellation-' + item.bit"></label>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="field is-horizontal" v-if="state.gps_lock">
-          <div class="field-label">
-            <label class="label">Fix Type</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag" :class="fixTypeClass">
-                  {{ gps.fixTypeName || "3D Fix" }}
-                </span>
-                <span v-if="gps.fix_quality > 0" class="ml-2">
-                  Quality: {{ gps.fix_quality }}%
-                </span>
-              </div>
+        <div class="column">
+          <h6 class="title is-6">Status</h6>
+          <div class="content column-narrow field-is-5" v-if="!gpsDetected">
+            <div class="notification is-warning">
+              <p>
+                No GPS module detected. Make sure GPS is connected and
+                configured on the correct serial port.
+              </p>
             </div>
           </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="state.gps_lock">
-          <div class="field-label">
-            <label class="label">Position</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <p class="is-size-7">
-                  Lat: {{ formatCoordinate(state.gps_coord.lat, "lat") }}<br />
-                  Lon: {{ formatCoordinate(state.gps_coord.lon, "lon") }}
-                </p>
+          <div class="content column-narrow field-is-5" v-else>
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Module</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag is-medium">{{ gpsVersionName }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="gps.h_acc > 0 && state.gps_lock">
-          <div class="field-label">
-            <label class="label">Accuracy</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <p class="is-size-7">
-                  H: {{ (gps.h_acc / 1000).toFixed(1) }}m V:
-                  {{ (gps.v_acc / 1000).toFixed(1) }}m
-                </p>
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">Satellites</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag is-medium" :class="satelliteCountClass">
+                      {{ state.gps_sats }} {{ gpsStatusText }}
+                    </span>
+                    <span v-if="gps.sats_in_view > 0" class="ml-2">
+                      ({{ gps.sats_used }} used / {{ gps.sats_in_view }} in
+                      view)
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="state.gps_lock">
-          <div class="field-label">
-            <label class="label">Speed</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <p>{{ (state.gps_speed * 3.6).toFixed(1) }} km/h</p>
+            <div
+              class="field is-horizontal"
+              v-if="gps.activeConstellations.length > 0"
+            >
+              <div class="field-label">
+                <label class="label">Constellations</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <div class="is-size-7">
+                      <span v-if="gps.gps.sats_in_view > 0" class="mr-2">
+                        <span class="tag is-small is-info">GPS</span>
+                        <span class="ml-1"
+                          >{{ gps.gps.sats_used }}/{{
+                            gps.gps.sats_in_view
+                          }}</span
+                        >
+                      </span>
+                      <span v-if="gps.glonass.sats_in_view > 0" class="mr-2">
+                        <span class="tag is-small is-info">GLO</span>
+                        <span class="ml-1"
+                          >{{ gps.glonass.sats_used }}/{{
+                            gps.glonass.sats_in_view
+                          }}</span
+                        >
+                      </span>
+                      <span v-if="gps.galileo.sats_in_view > 0" class="mr-2">
+                        <span class="tag is-small is-info">GAL</span>
+                        <span class="ml-1"
+                          >{{ gps.galileo.sats_used }}/{{
+                            gps.galileo.sats_in_view
+                          }}</span
+                        >
+                      </span>
+                      <span v-if="gps.beidou.sats_in_view > 0" class="mr-2">
+                        <span class="tag is-small is-info">BDS</span>
+                        <span class="ml-1"
+                          >{{ gps.beidou.sats_used }}/{{
+                            gps.beidou.sats_in_view
+                          }}</span
+                        >
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="state.gps_lock">
-          <div class="field-label">
-            <label class="label">Heading</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <p>{{ state.gps_heading.toFixed(0) }}°</p>
+            <div class="field is-horizontal" v-if="state.gps_lock">
+              <div class="field-label">
+                <label class="label">Fix Type</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag" :class="fixTypeClass">
+                      {{ gps.fixTypeName || "3D Fix" }}
+                    </span>
+                    <span v-if="gps.fix_quality > 0" class="ml-2">
+                      Quality: {{ gps.fix_quality }}%
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="gps.pdop > 0">
-          <div class="field-label">
-            <label class="label">PDOP</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag" :class="pdopClass">
-                  {{ (gps.pdop / 100).toFixed(2) }}
-                </span>
+            <div class="field is-horizontal" v-if="state.gps_lock">
+              <div class="field-label">
+                <label class="label">Position</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <p class="is-size-7">
+                      Lat: {{ formatCoordinate(state.gps_coord.lat, "lat")
+                      }}<br />
+                      Lon: {{ formatCoordinate(state.gps_coord.lon, "lon") }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="gps.update_rate > 0">
-          <div class="field-label">
-            <label class="label">Update Rate</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag is-info">{{ gps.update_rate }} Hz</span>
-                <span
-                  v-if="gps.powerModeName !== 'Unknown'"
-                  class="ml-2 tag is-info"
-                >
-                  {{ gps.powerModeName }}
-                </span>
+            <div
+              class="field is-horizontal"
+              v-if="gps.h_acc > 0 && state.gps_lock"
+            >
+              <div class="field-label">
+                <label class="label">Accuracy</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <p class="is-size-7">
+                      H: {{ (gps.h_acc / 1000).toFixed(1) }}m V:
+                      {{ (gps.v_acc / 1000).toFixed(1) }}m
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="field is-horizontal" v-if="gps.avg_cno > 0">
-          <div class="field-label">
-            <label class="label">Signal Quality</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <span class="tag" :class="signalQualityClass">
-                  {{ gps.avg_cno }} dBHz
-                </span>
+            <div class="field is-horizontal" v-if="state.gps_lock">
+              <div class="field-label">
+                <label class="label">Speed</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <p>{{ (state.gps_speed * 3.6).toFixed(1) }} km/h</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal" v-if="state.gps_lock">
+              <div class="field-label">
+                <label class="label">Heading</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <p>{{ state.gps_heading.toFixed(0) }}°</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal" v-if="gps.pdop > 0">
+              <div class="field-label">
+                <label class="label">PDOP</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag" :class="pdopClass">
+                      {{ (gps.pdop / 100).toFixed(2) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal" v-if="gps.update_rate > 0">
+              <div class="field-label">
+                <label class="label">Update Rate</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag is-info">{{ gps.update_rate }} Hz</span>
+                    <span
+                      v-if="gps.powerModeName !== 'Unknown'"
+                      class="ml-2 tag is-info"
+                    >
+                      {{ gps.powerModeName }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal" v-if="gps.avg_cno > 0">
+              <div class="field-label">
+                <label class="label">Signal Quality</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control">
+                    <span class="tag" :class="signalQualityClass">
+                      {{ gps.avg_cno }} dBHz
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -230,6 +277,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useStateStore } from "@/store/state";
+import { useProfileStore } from "@/store/profile";
+import { useRootStore } from "@/store/root";
 import { useGpsStore } from "@/store/gps";
 
 export default defineComponent({
@@ -241,9 +290,32 @@ export default defineComponent({
     return {
       state,
       gps,
+      profile: useProfileStore(),
+      root: useRootStore(),
     };
   },
   computed: {
+    constellationOptions() {
+      return [
+        { bit: 1, name: "GPS (US)" },
+        { bit: 2, name: "GLONASS (RU)" },
+        { bit: 4, name: "Galileo (EU)" },
+        { bit: 8, name: "BeiDou (CN)" },
+      ];
+    },
+    selectedConstellations: {
+      get(): number[] {
+        return this.constellationOptions
+          .filter((item) => this.profile.gps.constellations & item.bit)
+          .map((item) => item.bit);
+      },
+      set(bits: number[]) {
+        this.profile.gps.constellations = bits.reduce(
+          (mask, bit) => mask | bit,
+          0,
+        );
+      },
+    },
     gpsDetected() {
       return typeof this.gps.version === "number" && this.gps.version !== 0;
     },
@@ -302,10 +374,18 @@ export default defineComponent({
     },
     gpsConfigStateClass() {
       // Configuration state classes
-      if (this.gps.state === 9) return "is-success"; // Running
+      if (this.gps.state === 10 || this.gps.state === 12) return "is-success"; // Running
       if (this.gps.state === 8) return "is-info"; // Waiting for Lock
-      if (this.gps.state === 10) return "is-danger"; // Not Detected
+      if (this.gps.state === 13) return "is-danger"; // Not Detected
       return "is-warning"; // All other config states
+    },
+  },
+  watch: {
+    "profile.gps": {
+      handler() {
+        this.root.set_needs_reboot();
+      },
+      deep: true,
     },
   },
   methods: {

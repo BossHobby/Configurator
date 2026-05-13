@@ -339,6 +339,10 @@ export default defineComponent({
           text: "\x01250MW",
         });
       }
+      elements.push(
+        { name: "ALTITUDE", enabled: true, text: "\x7f 12.3\x0c" },
+        { name: "GPS HOME", enabled: true, text: "\x05 42.0\x0c" },
+      );
       return elements;
     },
     elements() {

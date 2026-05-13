@@ -56,7 +56,10 @@
       <div v-else class="content">
         <div class="columns column-narrow field-is-5">
           <div class="column is-6">
-            <div class="field is-horizontal mt-6">
+            <div
+              v-if="profile.profileVersionGt('0.2.0')"
+              class="field is-horizontal mt-6"
+            >
               <div class="field-label">
                 <label class="label" for="throttle_mid">
                   Throttle Mid
@@ -80,7 +83,10 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
+            <div
+              v-if="profile.profileVersionGt('0.2.0')"
+              class="field is-horizontal"
+            >
               <div class="field-label">
                 <label class="label" for="throttle_expo">
                   Throttle Expo
@@ -103,8 +109,54 @@
                 </div>
               </div>
             </div>
+
+            <div class="field is-horizontal mt-6">
+              <div class="field-label">
+                <label class="label" for="torque-boost">
+                  Torque Boost
+                  <tooltip entry="motor.torque_boost" />
+                </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      id="torque-boost"
+                      v-model.number="profile.motor.torque_boost"
+                      class="input"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="throttle-boost">
+                  Throttle Boost
+                  <tooltip entry="motor.throttle_boost" />
+                </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input
+                      id="throttle-boost"
+                      v-model.number="profile.motor.throttle_boost"
+                      class="input"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="column is-6">
+          <div v-if="profile.profileVersionGt('0.2.0')" class="column is-6">
             <LineChart
               :title="'Throttle'"
               :labels="plot.labels"
@@ -226,6 +278,9 @@ export default defineComponent({
       );
     },
     update() {
+      if (this.info.is_rover || !this.profile.profileVersionGt("0.2.0")) {
+        return;
+      }
       const axis = [] as any[];
       for (let i = 0; i <= 100; i++) {
         const input = i / 100.0;
