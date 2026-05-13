@@ -288,7 +288,7 @@ export enum BlackboxField {
   ACCEL_FILTER,
   GYRO_RAW,
   GYRO_FILTER,
-  MOTOR,
+  OUTPUT,
   CPU_LOAD,
   DEBUG,
 }

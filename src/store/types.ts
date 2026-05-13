@@ -126,7 +126,6 @@ export interface profile_motor_t {
   digital_idle: number;
   motor_limit: number;
   dshot_time: dshot_time_t;
-  invert_yaw: number;
   gyro_orientation: number;
   torque_boost: number;
   throttle_boost: number;
@@ -226,25 +225,27 @@ export enum output_protocol_t {
 export enum output_source_t {
   OUTPUT_SOURCE_NONE = 0,
   OUTPUT_SOURCE_THROTTLE = 1,
-  OUTPUT_SOURCE_STEERING = 2,
-  OUTPUT_SOURCE_MOTOR_1 = 1,
-  OUTPUT_SOURCE_MOTOR_2 = 2,
-  OUTPUT_SOURCE_MOTOR_3 = 3,
-  OUTPUT_SOURCE_MOTOR_4 = 4,
-  OUTPUT_SOURCE_RX_CHANNEL_ROVER = 3,
-  OUTPUT_SOURCE_RX_CHANNEL_MULTI = 5,
+  OUTPUT_SOURCE_ROLL = 2,
+  OUTPUT_SOURCE_PITCH = 3,
+  OUTPUT_SOURCE_YAW = 4,
+  OUTPUT_SOURCE_RX_CHANNEL = 5,
 }
 
 export interface profile_output_t {
   target_output: number;
-  source: number;
   protocol: number;
-  source_index: number;
   invert: number;
   trim: number;
   min: number;
   max: number;
   rate_hz: number;
+}
+
+export interface profile_mixer_rule_t {
+  output_index: number;
+  source: number;
+  source_index: number;
+  weight: number;
 }
 
 export enum vehicle_type_t {
@@ -265,6 +266,7 @@ export interface profile_rover_t {
 export interface profile_t {
   meta: profile_metadata_t;
   outputs: profile_output_t[];
+  mixer: profile_mixer_rule_t[];
   motor: profile_motor_t;
   serial: profile_serial_t;
   filter: profile_filter_t;
@@ -322,13 +324,11 @@ export interface target_rx_spi_device_t {
 
 export interface target_output_t {
   pin: gpio_pins_t;
-  caps: number;
+  caps: string[];
 }
 
 export interface target_t {
   name: string;
-
-  brushless: boolean;
 
   leds: target_led_t[];
   serial_ports: target_serial_port_t[];

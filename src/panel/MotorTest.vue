@@ -16,7 +16,7 @@
         <template v-if="motor.test.active">
           <div
             v-for="m in outputTestPins"
-            :key="'motor-test-' + m.index"
+            :key="'motor-test-' + m.source"
             class="field field-is-2 is-horizontal"
           >
             <div class="field-label">
@@ -27,15 +27,15 @@
                 <div class="control is-expanded">
                   <input
                     :id="m.id"
-                    :value="getValuePercent(m.index)"
+                    :value="getValuePercent(m.testIndex)"
                     class="input"
                     type="range"
                     step="1"
-                    :min="isBidirectional(m.index) ? -100 : 0"
-                    :max="isBidirectional(m.index) ? 100 : 50"
+                    :min="isBidirectional(m.testIndex) ? -100 : 0"
+                    :max="isBidirectional(m.testIndex) ? 100 : 50"
                     @input="
                       setValuePercent(
-                        m.index,
+                        m.testIndex,
                         Number(($event.target as HTMLInputElement).value),
                       )
                     "
@@ -44,16 +44,15 @@
                 <div class="control">
                   <input
                     :id="m.id + '-num'"
-                    :value="getValuePercent(m.index)"
+                    :value="formatValuePercent(m.testIndex)"
                     class="input"
-                    type="number"
-                    step="1"
-                    :min="isBidirectional(m.index) ? -100 : 0"
-                    :max="isBidirectional(m.index) ? 100 : 50"
+                    type="text"
                     @change="
                       setValuePercent(
-                        m.index,
-                        Number(($event.target as HTMLInputElement).value),
+                        m.testIndex,
+                        parseValuePercent(
+                          ($event.target as HTMLInputElement).value,
+                        ),
                       )
                     "
                   />
@@ -121,6 +120,16 @@ export default defineComponent({
         return Math.max(-100, Math.min(100, value));
       }
       return Math.max(0, Math.min(50, value));
+    },
+    formatValuePercent(index: number): string {
+      const value = this.getValuePercent(index);
+      return value === 0 ? "Off" : `${value}%`;
+    },
+    parseValuePercent(value: string): number {
+      if (value.trim().toLowerCase() === "off") {
+        return 0;
+      }
+      return Number.parseInt(value, 10) || 0;
     },
     setValuePercent(index: number, value: number) {
       const clamped = this.isBidirectional(index)

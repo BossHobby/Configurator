@@ -25,9 +25,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       version: 0,
       datetime: 0,
     },
-    motor: {
-      invert_yaw: 1,
-    },
+    motor: {},
     rover: {
       pid: {
         kp: 70.0,

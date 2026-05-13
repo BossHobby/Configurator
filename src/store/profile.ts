@@ -7,10 +7,43 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
-import { output_protocol_t, output_source_t } from "./types";
 import type { aux_function_map_t, target_t } from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
+import { useInfoStore } from "./info";
+import { output_source_t } from "./types";
+
+const MULTI_MIXER_SOURCES = [
+  output_source_t.OUTPUT_SOURCE_ROLL,
+  output_source_t.OUTPUT_SOURCE_PITCH,
+  output_source_t.OUTPUT_SOURCE_YAW,
+];
+
+function deriveMultiMixer(profile) {
+  const propsOut = Boolean(profile.motor?.invert_yaw);
+  const weights = [
+    [100, 100, propsOut ? -100 : 100],
+    [100, -100, propsOut ? 100 : -100],
+    [-100, 100, propsOut ? 100 : -100],
+    [-100, -100, propsOut ? -100 : 100],
+  ];
+
+  profile.mixer = (profile.mixer || []).filter(
+    (rule) =>
+      rule.output_index >= 4 || !MULTI_MIXER_SOURCES.includes(rule.source),
+  );
+
+  weights.forEach((motorWeights, outputIndex) => {
+    MULTI_MIXER_SOURCES.forEach((source, sourceIndex) => {
+      profile.mixer.push({
+        output_index: outputIndex,
+        source,
+        source_index: 0,
+        weight: motorWeights[sourceIndex],
+      });
+    });
+  });
+}
 
 export function mergeDeep(target, source) {
   for (const [key, val] of Object.entries(source)) {
@@ -178,6 +211,7 @@ function migrateProfileVersion(
 function migrateProfile(profile) {
   const target = useTargetStore();
   const default_profile = useDefaultProfileStore();
+  const info = useInfoStore();
 
   const firmwareVersion = ensureMinVersion(default_profile?.meta?.version);
   const profileVersion = ensureMinVersion(profile?.meta?.version);
@@ -208,18 +242,10 @@ function migrateProfile(profile) {
     }));
   }
 
-  if (Array.isArray(p.outputs)) {
-    p.outputs = p.outputs.map((output: any) => {
-      const { role, ...rest } = output || {};
-      return {
-        ...rest,
-        source: output?.source ?? role ?? output_source_t.OUTPUT_SOURCE_NONE,
-        source_index: output?.source_index ?? 0,
-      };
-    });
-  }
-
   p.meta.datetime = Math.floor(Date.now() / 1000);
+  if (!info.is_rover && semver.gte(decodeSemver(firmwareVersion), "v0.3.0")) {
+    deriveMultiMixer(p);
+  }
 
   return p;
 }
@@ -228,52 +254,8 @@ export const useProfileStore = defineStore("profile", {
   state: () => ({
     semver: "v0.0.0",
     modified: "",
-    outputs: [
-      {
-        target_output: 0,
-        source: output_source_t.OUTPUT_SOURCE_MOTOR_1,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-        source_index: 0,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 1000,
-        rate_hz: 0,
-      },
-      {
-        target_output: 1,
-        source: output_source_t.OUTPUT_SOURCE_MOTOR_2,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-        source_index: 0,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 1000,
-        rate_hz: 0,
-      },
-      {
-        target_output: 2,
-        source: output_source_t.OUTPUT_SOURCE_MOTOR_3,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-        source_index: 0,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 1000,
-        rate_hz: 0,
-      },
-      {
-        target_output: 3,
-        source: output_source_t.OUTPUT_SOURCE_MOTOR_4,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-        source_index: 0,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 1000,
-        rate_hz: 0,
-      },
-    ],
+    outputs: [],
+    mixer: [],
     serial: {
       rx: 0,
       smart_audio: 0,
@@ -305,7 +287,6 @@ export const useProfileStore = defineStore("profile", {
     },
     motor: {
       gyro_orientation: 0,
-      invert_yaw: 1,
     },
     rate: {
       mode: 0,
@@ -372,6 +353,9 @@ export const useProfileStore = defineStore("profile", {
       return (version) => {
         return semver.gt(state.semver, version);
       };
+    },
+    has_legacy_motor_outputs(state) {
+      return semver.lt(state.semver, "v0.3.0");
     },
   },
   actions: {

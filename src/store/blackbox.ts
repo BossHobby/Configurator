@@ -185,10 +185,10 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.RADIANS,
   },
-  [BlackboxField.MOTOR]: {
-    name: "motor",
-    title: "Motor",
-    axis: AxisIndex(4),
+  [BlackboxField.OUTPUT]: {
+    name: "output",
+    title: "Output",
+    axis: AxisIndex(8),
     scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
