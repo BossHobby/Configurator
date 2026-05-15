@@ -1,5 +1,5 @@
 import { serial } from "./serial/serial";
-import { QuicVal } from "./serial/quic";
+import { QuicCmd, QuicRx, QuicVal } from "./serial/quic";
 import { Log } from "@/log";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
@@ -30,6 +30,20 @@ export const useBindStore = defineStore("bind", {
           root.append_alert({
             type: "danger",
             msg: "Apply failed! " + err,
+          });
+        });
+    },
+    bind_crsf() {
+      const root = useRootStore();
+
+      return serial
+        .command(QuicCmd.RX, QuicRx.Bind)
+        .then(() => root.append_alert({ type: "success", msg: "Bind sent!" }))
+        .catch((err) => {
+          Log.error(err);
+          root.append_alert({
+            type: "danger",
+            msg: "Bind failed! " + err,
           });
         });
     },

@@ -12,6 +12,7 @@ export enum QuicCmd {
   CalSticks,
   Serial,
   OSD,
+  RX,
   Max,
 }
 
@@ -50,6 +51,10 @@ export enum QuicMotor {
 export enum QuicOSD {
   ReadChar,
   WriteChar,
+}
+
+export enum QuicRx {
+  Bind,
 }
 
 export enum QuicFlag {

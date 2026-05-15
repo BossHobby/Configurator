@@ -78,12 +78,19 @@
 
         <div
           class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == RXProtocol.UNIFIED_SERIAL"
+          v-if="
+            bind.info.raw &&
+            (rx_protocol == RXProtocol.UNIFIED_SERIAL ||
+              rx_protocol == RXProtocol.CRSF)
+          "
         >
           <header class="card-header">
             <p class="card-header-title">Serial Protocol</p>
           </header>
-          <div class="card-content">
+          <div
+            class="card-content"
+            v-if="rx_protocol == RXProtocol.UNIFIED_SERIAL"
+          >
             <div class="content" v-if="profile.serial.rx">
               <div class="field is-horizontal">
                 <div class="field-label">
@@ -121,8 +128,16 @@
           </div>
 
           <footer class="card-footer">
+            <spinner-btn
+              v-if="isCrsfProtocol"
+              class="card-footer-item"
+              @click="bind.bind_crsf()"
+            >
+              Bind
+            </spinner-btn>
             <span class="card-footer-item"></span>
             <spinner-btn
+              v-if="rx_protocol == RXProtocol.UNIFIED_SERIAL"
               class="card-footer-item"
               @click="applySerialBindInfo()"
             >
@@ -317,6 +332,22 @@ export default defineComponent({
         this.RXProtocol.FLYSKY_AFHDS2A,
       ];
       return spi.includes(this.rx_protocol);
+    },
+    isCrsfProtocol() {
+      if (this.rx_protocol == this.RXProtocol.CRSF) {
+        return true;
+      }
+
+      if (this.rx_protocol != this.RXProtocol.UNIFIED_SERIAL) {
+        return false;
+      }
+
+      const crsf = this.serialProtoNames.indexOf("CRSF");
+      if (this.serialProto == crsf) {
+        return true;
+      }
+
+      return this.state.rx_status == 200 + crsf;
     },
     protoStatus() {
       const spi = [
