@@ -196,7 +196,7 @@ function migrateProfileVersion(
         const isOff = entry === 12;
         const isOn = entry === 13;
         return {
-          channel: entry,
+          channel: 4 + entry,
           range_min: isOff || isOn ? 0 : 32768,
           range_max: 65535,
         } as aux_function_map_t;
