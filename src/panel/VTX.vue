@@ -2,10 +2,13 @@
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">VTX</p>
+      <div class="card-header-icon">
+        <span class="tag" :class="vtxStatusClass">{{ vtxStatusText }}</span>
+      </div>
     </header>
 
     <div class="card-content">
-      <div class="content columns">
+      <div class="columns">
         <div class="column field-is-3">
           <div class="field is-horizontal">
             <div class="field-label">
@@ -16,10 +19,10 @@
                 <div class="control is-expanded">
                   <input-select
                     id="vtx-protocol"
-                    v-model.number="vtx.settings.protocol"
+                    v-model.number="desiredVtx.protocol"
                     :options="vtxProtocolOptions"
                   ></input-select>
-                  <p v-if="vtx.settings.protocol == 0" class="help is-warning">
+                  <p v-if="desiredVtx.protocol == 0" class="help is-warning">
                     Please select a VTX protocol
                   </p>
                 </div>
@@ -27,22 +30,32 @@
             </div>
           </div>
 
-          <template v-if="vtx.settings.detected">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Frequency</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    {{
-                      frequencyTable[vtx.settings.band][vtx.settings.channel]
-                    }}
-                  </div>
+          <div class="field is-horizontal">
+            <div class="field-label">
+              <label class="label">Detected</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control is-expanded">
+                  <template v-if="vtx.status.protocol">
+                    <span class="tag is-medium is-success">
+                      {{ protocolNames[vtx.status.protocol] }}
+                    </span>
+                    <span v-if="detectedFrequency">
+                      <span class="tag is-medium is-info ml-2">
+                        {{ detectedFrequency }} MHz
+                      </span>
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span class="tag is-medium is-warning">Not detected</span>
+                  </template>
                 </div>
               </div>
             </div>
+          </div>
 
+          <template v-if="desiredVtx.protocol">
             <div class="field is-horizontal">
               <div class="field-label">
                 <label class="label">Band</label>
@@ -52,7 +65,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="vtx-band"
-                      v-model.number="vtx.settings.band"
+                      v-model.number="desiredVtx.band"
                       :options="vtxBandOptions"
                     ></input-select>
                   </div>
@@ -69,7 +82,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="vtx-channel"
-                      v-model.number="vtx.settings.channel"
+                      v-model.number="desiredVtx.channel"
                       :options="vtxChannelOptions"
                     ></input-select>
                   </div>
@@ -77,7 +90,7 @@
               </div>
             </div>
 
-            <div v-if="vtx.settings.pit_mode != 2" class="field is-horizontal">
+            <div v-if="desiredVtx.pit_mode != 2" class="field is-horizontal">
               <div class="field-label">
                 <label class="label">Pit Mode</label>
               </div>
@@ -86,7 +99,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="vtx-pit-mode"
-                      v-model.number="vtx.settings.pit_mode"
+                      v-model.number="desiredVtx.pit_mode"
                       :options="vtxPitModeOptions"
                     ></input-select>
                   </div>
@@ -103,7 +116,7 @@
                   <div class="control is-expanded">
                     <input-select
                       id="vtx-power-level"
-                      v-model.number="vtx.settings.power_level"
+                      v-model.number="desiredVtx.power_level"
                       :options="vtxPowerLevelOptions"
                     ></input-select>
                   </div>
@@ -111,71 +124,119 @@
               </div>
             </div>
           </template>
-          <template v-else>
-            <div class="is-size-5 has-text-centered has-text-weight-semibold">
-              Not detected
-            </div>
-          </template>
         </div>
-        <div class="column field-is-3">
-          <template v-if="vtx.settings.detected && vtx.settings.power_table">
-            <div class="columns">
-              <div class="column is-4" style="margin-left: 30%">
-                <h6 class="mb-1 ml-2">Label</h6>
-              </div>
-              <div v-if="displayValueEdit" class="column is-4">
-                <h6 class="mb-1 ml-3">Value</h6>
-              </div>
-            </div>
-            <div
-              v-for="(label, index) in vtx.settings.power_table.labels"
-              class="field field-is-2 is-horizontal"
-            >
-              <div class="field-label">
-                <label class="label">Power Level {{ index + 1 }}</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <div class="columns is-multiline">
-                      <div class="column is-6">
-                        <input
-                          :id="'power-level-value-' + index"
-                          v-model.text="vtx.settings.power_table.labels[index]"
-                          class="input"
-                          :class="{ 'is-static': vtx.settings.protocol == 3 }"
-                          :readonly="vtx.settings.protocol == 3"
-                          type="text"
-                          maxlength="3"
-                        />
-                      </div>
-                      <div v-if="displayValueEdit" class="column is-6">
-                        <input
-                          :id="'power-level-value-' + index"
-                          v-model.number="
-                            vtx.settings.power_table.values[index]
-                          "
-                          class="input"
-                          type="number"
-                          step="0.1"
-                          min="0"
-                        />
-                      </div>
+
+        <div class="column">
+          <div v-if="desiredVtx.protocol && desiredVtx.power_table">
+            <template v-if="desiredPowerTableRows.length">
+              <div class="columns">
+                <div class="column is-2"></div>
+                <div class="column is-5">
+                  <div class="columns is-mobile">
+                    <div class="column">
+                      <h6>Label</h6>
+                    </div>
+                    <div class="column">
+                      <h6>Detected</h6>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-5">
+                  <div class="columns is-mobile">
+                    <div class="column">
+                      <h6>Value</h6>
+                    </div>
+                    <div class="column">
+                      <h6>Detected</h6>
                     </div>
                   </div>
                 </div>
               </div>
+              <div
+                v-for="index in desiredPowerTableRows"
+                :key="index"
+                class="columns is-vcentered"
+              >
+                <div class="column is-2">
+                  <label class="label">Level {{ index + 1 }}</label>
+                </div>
+                <div class="column is-5">
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input
+                        :id="'power-level-label-' + index"
+                        v-model.text="desiredVtx.power_table.labels[index]"
+                        class="input"
+                        type="text"
+                        maxlength="3"
+                        @focus="ensureDesiredPowerTable(index)"
+                      />
+                    </div>
+                    <div class="control is-expanded">
+                      <input
+                        :id="'runtime-power-level-label-' + index"
+                        class="input"
+                        type="text"
+                        :value="runtimePowerLabel(index)"
+                        disabled
+                        readonly
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-5">
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input
+                        :id="'power-level-value-' + index"
+                        v-model.number="desiredVtx.power_table.values[index]"
+                        class="input"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        :placeholder="detectedPowerValue(index)"
+                        @focus="ensureDesiredPowerTable(index)"
+                      />
+                    </div>
+                    <div class="control is-expanded">
+                      <input
+                        :id="'runtime-power-level-value-' + index"
+                        class="input"
+                        type="number"
+                        :value="detectedPowerValue(index)"
+                        disabled
+                        readonly
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <div
+              v-if="showLoadDetectedPowerTable"
+              class="field is-grouped is-justify-content-flex-end"
+            >
+              <div class="control">
+                <button
+                  class="button is-small is-info is-light"
+                  type="button"
+                  @click="loadDetectedPowerTable()"
+                >
+                  Load Detected Power Levels
+                </button>
+              </div>
             </div>
-          </template>
+          </div>
         </div>
       </div>
     </div>
 
-    <footer class="card-footer">
+    <footer v-if="isLegacyVtx" class="card-footer">
       <span class="card-footer-item"></span>
       <spinner-btn
         class="card-footer-item is-primary"
-        @click="vtx.apply_vtx_settings(vtx.settings)"
+        @click="applyVtxSettings()"
       >
         Apply
       </spinner-btn>
@@ -187,6 +248,7 @@
 import { defineComponent } from "vue";
 import { useVTXStore } from "@/store/vtx";
 import { useInfoStore } from "@/store/info";
+import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "Vtx",
@@ -194,6 +256,7 @@ export default defineComponent({
     return {
       vtx: useVTXStore(),
       info: useInfoStore(),
+      profile: useProfileStore(),
     };
   },
   data() {
@@ -210,8 +273,61 @@ export default defineComponent({
     };
   },
   computed: {
+    desiredVtx() {
+      return this.isLegacyVtx
+        ? this.vtx.legacy_settings
+        : this.profile.vtx || this.vtx.legacy_settings;
+    },
+    isLegacyVtx() {
+      return !this.info.quic_semver_gte("0.2.9");
+    },
+    vtxStatusText() {
+      return this.vtx.status.protocol ? "Detected" : "Not detected";
+    },
+    vtxStatusClass() {
+      return this.vtx.status.protocol ? "is-success" : "is-warning";
+    },
     displayValueEdit() {
-      return this.vtx.settings.protocol == 1;
+      return this.desiredVtx?.protocol == 1;
+    },
+    detectedFrequency() {
+      if (!this.vtx.status.protocol) {
+        return undefined;
+      }
+      return this.frequencyTable[this.vtx.status.band]?.[
+        this.vtx.status.channel
+      ];
+    },
+    showLoadDetectedPowerTable() {
+      return (
+        this.info.quic_semver_gte("0.2.9") &&
+        this.detectedPowerLevelOptions.length > 0
+      );
+    },
+    desiredPowerTableRows() {
+      const powerTable = this.desiredVtx?.power_table;
+      const levels =
+        powerTable?.levels || this.detectedPowerLevelOptions.length;
+      if (!levels) {
+        return [];
+      }
+      return Array.from({ length: levels }, (_, index) => index);
+    },
+    detectedPowerLevelOptions() {
+      const powerTable = this.vtx.status.power_table;
+      if (!powerTable?.levels) {
+        return [];
+      }
+      return Array.from({ length: powerTable.levels }, (_, index) => {
+        const label = powerTable.labels?.[index] || "";
+        if (!this.powerLevelIsPopulated(powerTable, index, label)) {
+          return undefined;
+        }
+        return {
+          value: index,
+          text: this.formatPowerLabel(powerTable, index, label),
+        };
+      }).filter(Boolean);
     },
     vtxProtocolOptions() {
       const data = [
@@ -238,9 +354,16 @@ export default defineComponent({
       return data;
     },
     vtxPowerLevelOptions() {
-      if (this.vtx.settings.power_table) {
-        return this.vtx.settings.power_table.labels.map((label, index) => {
-          return { value: index, text: label };
+      const levels =
+        this.desiredVtx?.power_table?.levels ||
+        this.vtx.status.power_table?.levels;
+
+      if (levels) {
+        return Array.from({ length: levels }, (_, index) => {
+          return {
+            value: index,
+            text: this.powerLevelOptionLabel(index),
+          };
         });
       }
       const data = [
@@ -275,7 +398,104 @@ export default defineComponent({
     },
   },
   created() {
-    this.vtx.update_vtx_settings(true);
+    this.vtx.update_status(true);
+  },
+  methods: {
+    normalizePowerLabels(vtxSettings) {
+      if (!vtxSettings.power_table) {
+        return;
+      }
+      for (let i = 0; i < vtxSettings.power_table.labels.length; i++) {
+        while (vtxSettings.power_table.labels[i].length < 3) {
+          vtxSettings.power_table.labels[i] += " ";
+        }
+      }
+    },
+    applyVtxSettings() {
+      this.normalizePowerLabels(this.desiredVtx);
+      return this.vtx.apply_legacy_settings(this.desiredVtx);
+    },
+    loadDetectedPowerTable() {
+      if (!this.vtx.status.power_table?.levels) {
+        return;
+      }
+
+      const power_table = {
+        levels: this.detectedPowerLevelOptions.length,
+        labels: this.detectedPowerLevelOptions.map((option) =>
+          option.text.slice(0, 3),
+        ),
+        values: this.detectedPowerLevelOptions.map(
+          (option) => this.vtx.status.power_table.values[option.value] || 0,
+        ),
+      };
+
+      if (this.info.quic_semver_gte("0.2.9")) {
+        this.profile.vtx = {
+          ...this.profile.vtx,
+          power_table,
+        };
+        return;
+      }
+    },
+    ensureDesiredPowerTable(index) {
+      const levels = Math.max(
+        this.desiredVtx.power_table.levels || 0,
+        this.detectedPowerLevelOptions.length,
+        index + 1,
+      );
+      this.desiredVtx.power_table.levels = levels;
+      for (let i = 0; i < levels; i++) {
+        if (this.desiredVtx.power_table.labels[i] == undefined) {
+          this.desiredVtx.power_table.labels[i] = "";
+        }
+        if (this.desiredVtx.power_table.values[i] == undefined) {
+          this.desiredVtx.power_table.values[i] = 0;
+        }
+      }
+    },
+    detectedPowerValue(index) {
+      return this.vtx.status.power_table.values?.[index] || "";
+    },
+    runtimePowerLabel(index) {
+      const powerTable = this.vtx.status.power_table;
+      if (!powerTable?.levels || index >= powerTable.levels) {
+        return "";
+      }
+      return this.formatPowerLabel(
+        powerTable,
+        index,
+        powerTable.labels?.[index] || "",
+      );
+    },
+    powerLevelOptionLabel(index) {
+      const profileTable = this.desiredVtx?.power_table;
+      const runtimeTable = this.vtx.status.power_table;
+      const profileLabel = profileTable?.labels?.[index] || "";
+      if (this.powerLevelIsPopulated(profileTable, index, profileLabel)) {
+        return this.formatPowerLabel(profileTable, index, profileLabel);
+      }
+      const runtimeLabel = runtimeTable?.labels?.[index] || "";
+      if (this.powerLevelIsPopulated(runtimeTable, index, runtimeLabel)) {
+        return this.formatPowerLabel(runtimeTable, index, runtimeLabel);
+      }
+      return `Power Level ${index + 1}`;
+    },
+    formatPowerLabel(powerTable, index, label) {
+      const text = label.replace(/\0/g, "").trim();
+      if (text) {
+        return text;
+      }
+      const value = powerTable.values?.[index];
+      return value ? `${value} mW` : `Power Level ${index + 1}`;
+    },
+    powerLevelIsPopulated(powerTable, index, label) {
+      if (!powerTable) {
+        return false;
+      }
+      const text = label.replace(/\0/g, "").trim();
+      return Boolean(powerTable.values?.[index] || (text && text !== "0"));
+    },
   },
 });
 </script>

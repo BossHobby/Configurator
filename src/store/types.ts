@@ -156,12 +156,35 @@ export interface aux_function_map_t {
   range_max: number;
 }
 
+export interface profile_receiver_bind_t {
+  bind_saved: number;
+  raw: Uint8Array;
+}
+
 export interface profile_receiver_t {
   protocol: number;
+  bind: profile_receiver_bind_t;
   aux: aux_function_map_t[];
   lqi_source: number;
   role_map: rx_role_map_t[];
 }
+
+export interface vtx_power_table_t {
+  levels: number;
+  labels: string[];
+  values: number[];
+}
+
+export interface profile_vtx_t {
+  protocol: number;
+  band: number;
+  channel: number;
+  pit_mode: number;
+  power_level: number;
+  power_table: vtx_power_table_t;
+}
+
+export interface vtx_status_t extends profile_vtx_t {}
 
 export interface profile_serial_t {
   rx: number;
@@ -276,6 +299,7 @@ export interface profile_t {
   pid: profile_pid_t;
   voltage: profile_voltage_t;
   blackbox: profile_blackbox_t;
+  vtx: profile_vtx_t;
   rover: profile_rover_t;
 }
 
