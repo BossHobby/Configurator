@@ -64,6 +64,42 @@ function makeSemver(major: number, minor: number, patch: number) {
   return (major << 16) | (minor << 8) | patch;
 }
 
+export function cloneProfileValue(value: any): any {
+  if (value instanceof Uint8Array) {
+    return new Uint8Array(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => cloneProfileValue(entry));
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        key,
+        cloneProfileValue(entry),
+      ]),
+    );
+  }
+  return value;
+}
+
+function bytesFromBase64(value: string): Uint8Array {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function coerceProfileByteStrings(profile: any) {
+  const raw = profile.receiver?.bind?.raw;
+  if (typeof raw === "string") {
+    profile.receiver.bind.raw = bytesFromBase64(raw);
+  } else if (Array.isArray(raw)) {
+    profile.receiver.bind.raw = Uint8Array.from(raw);
+  }
+}
+
 function ensureMinVersion(version): number {
   version = version || makeSemver(0, 1, 0);
   if (version < makeSemver(0, 1, 0)) {
@@ -216,7 +252,7 @@ function migrateProfile(profile) {
   const firmwareVersion = ensureMinVersion(default_profile?.meta?.version);
   const profileVersion = ensureMinVersion(profile?.meta?.version);
 
-  let p = JSON.parse(JSON.stringify(profile));
+  let p = cloneProfileValue(profile);
   if (!p.meta) {
     p.meta = {};
   }
@@ -241,6 +277,8 @@ function migrateProfile(profile) {
       max: map?.max ?? 1,
     }));
   }
+
+  coerceProfileByteStrings(p);
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
   if (!info.is_rover && semver.gte(decodeSemver(firmwareVersion), "v0.3.0")) {
@@ -341,6 +379,7 @@ export const useProfileStore = defineStore("profile", {
       throttle_scale_factor: 0.5,
       reversible: 1,
     },
+    vtx: {},
   }),
   getters: {
     current_pid_rate: (state) => {

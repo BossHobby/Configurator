@@ -49,6 +49,7 @@ export const useSerialStore = defineStore("serial", {
       }
 
       const bind = useBindStore();
+      const info = useInfoStore();
       const perf = usePerfStore();
       const profile = useProfileStore();
       const state = useStateStore();
@@ -56,14 +57,17 @@ export const useSerialStore = defineStore("serial", {
 
       await state.fetch_state();
       if (counter % 4) {
-        if (router.currentRoute.value.fullPath == "/receiver") {
+        if (
+          router.currentRoute.value.fullPath == "/receiver" &&
+          !info.quic_semver_gte("0.2.9")
+        ) {
           await bind.fetch_bind_info();
         }
         if (router.currentRoute.value.fullPath == "/perf") {
           await perf.fetch_perf_counters();
         }
         if (router.currentRoute.value.fullPath == "/setup") {
-          await vtx.update_vtx_settings();
+          await vtx.update_status();
           if (profile.profileVersionGt("0.2.6") && profile.serial.gps != 0) {
             const gps = useGpsStore();
             await gps.poll_serial();
@@ -212,10 +216,12 @@ export const useSerialStore = defineStore("serial", {
           target.fetch();
         }
 
-        default_profile.fetch_default_profile();
-        root.fetch_pid_rate_presets();
-        profile.fetch_profile();
-        vtx.update_vtx_settings();
+        await Promise.all([
+          default_profile.fetch_default_profile(),
+          root.fetch_pid_rate_presets(),
+          profile.fetch_profile(),
+        ]);
+        vtx.update_status();
 
         startInterval((c) => this.poll_serial(c));
 

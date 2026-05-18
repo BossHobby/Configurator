@@ -59,7 +59,7 @@
           <div class="field-body">
             <div class="field">
               <div class="control is-expanded">
-                {{ bind.info.bind_saved ? "yes" : "no" }}
+                {{ bindInfo.bind_saved ? "yes" : "no" }}
               </div>
             </div>
           </div>
@@ -79,7 +79,7 @@
         <div
           class="card mt-4"
           v-if="
-            bind.info.raw &&
+            bindInfo.raw &&
             (rx_protocol == RXProtocol.UNIFIED_SERIAL ||
               rx_protocol == RXProtocol.CRSF)
           "
@@ -137,7 +137,9 @@
             </spinner-btn>
             <span class="card-footer-item"></span>
             <spinner-btn
-              v-if="rx_protocol == RXProtocol.UNIFIED_SERIAL"
+              v-if="
+                isLegacyBindInfo && rx_protocol == RXProtocol.UNIFIED_SERIAL
+              "
               class="card-footer-item"
               @click="applySerialBindInfo()"
             >
@@ -148,7 +150,7 @@
 
         <div
           class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
+          v-if="bindInfo.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
         >
           <header class="card-header">
             <p class="card-header-title">ExpressLRS</p>
@@ -220,7 +222,7 @@
           </footer>
         </div>
 
-        <div class="card mt-4" v-if="bind.info.raw && isSpiProtocol">
+        <div class="card mt-4" v-if="bindInfo.raw && isSpiProtocol">
           <header class="card-header">
             <p class="card-header-title">Bind Data</p>
           </header>
@@ -284,6 +286,7 @@ export default defineComponent({
     return {
       serialProto: 0,
       elrsBindPhraseInput: "",
+      bindReady: false,
     };
   },
   setup() {
@@ -314,6 +317,14 @@ export default defineComponent({
     },
     rx_protocol() {
       return this.profile.receiver.protocol || this.info.rx_protocol;
+    },
+    isLegacyBindInfo() {
+      return !this.info.quic_semver_gte("0.2.9");
+    },
+    bindInfo() {
+      return this.isLegacyBindInfo
+        ? this.bind.info
+        : this.profile.receiver.bind || this.bind.info;
     },
     protocolOptions() {
       return (this.info.rx_protocols || [])
@@ -383,10 +394,10 @@ export default defineComponent({
       return "trying " + this.serialProtoNames[index];
     },
     elrsBindPhrase() {
-      return this.bind?.info?.raw?.slice(1, 7).join(", ");
+      return this.bindInfo?.raw?.slice(1, 7).join(", ");
     },
     elrsSwitchMode() {
-      return this.bind?.info?.raw[8] ? "Hybrid Switches" : "Wide Switches";
+      return this.bindInfo?.raw[8] ? "Hybrid Switches" : "Wide Switches";
     },
     downloadAnchor() {
       return this.$refs.downloadAnchor as HTMLAnchorElement;
@@ -399,11 +410,26 @@ export default defineComponent({
     "profile.receiver.protocol"() {
       this.reset();
     },
+    serialProto() {
+      if (
+        this.bindReady &&
+        !this.isLegacyBindInfo &&
+        this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL
+      ) {
+        this.applySerialBindInfo();
+      }
+    },
   },
   methods: {
     async applyBindInfo(info: any) {
-      await this.profile.apply_profile(this.profile.$state);
-      await this.bind.apply_bind_info(info);
+      if (this.isLegacyBindInfo) {
+        await this.profile.apply_profile(this.profile.$state);
+        await this.bind.apply_bind_info(info);
+        return;
+      }
+
+      this.profile.receiver.bind = info;
+      this.root.set_needs_reboot();
     },
     parseHexString(str: string) {
       const result = [] as number[];
@@ -417,7 +443,7 @@ export default defineComponent({
       const hex = md5(`-DMY_BINDING_PHRASE="${input}"`);
       const bytes = this.parseHexString(hex).slice(0, 6);
 
-      const info = { ...this.bind?.info };
+      const info = { ...this.bindInfo };
       info.bind_saved = 1;
 
       info.raw[0] = 1;
@@ -434,7 +460,7 @@ export default defineComponent({
       }
 
       const proto = this.serialProto;
-      const info = { ...this.bind?.info };
+      const info = { ...this.bindInfo };
       for (let i = 0; i < info.raw.length; i++) {
         info.raw[i] = 0;
       }
@@ -445,7 +471,7 @@ export default defineComponent({
     },
     downloadBindData() {
       const base64 = window.btoa(
-        String.fromCharCode(...new Uint8Array(this.bind.info.raw)),
+        String.fromCharCode(...new Uint8Array(this.bindInfo.raw)),
       );
       const encoded = encodeURIComponent(base64);
       const json = "data:application/octet-stream;charset=utf-8," + encoded;
@@ -461,7 +487,7 @@ export default defineComponent({
     uploadBindData() {
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {
-        const info = { ...this.bind?.info };
+        const info = { ...this.bindInfo };
         info.bind_saved = 1;
         info.raw = Uint8Array.from(
           window.atob(event?.target?.result as string),
@@ -480,7 +506,7 @@ export default defineComponent({
       this.fileRef.click();
     },
     reset() {
-      const info = { ...this.bind?.info };
+      const info = { ...this.bindInfo };
       info.bind_saved = 0;
       for (let i = 0; i < info.raw.length; i++) {
         info.raw[i] = 0;
@@ -493,14 +519,17 @@ export default defineComponent({
     },
   },
   async created() {
-    await this.bind.fetch_bind_info();
+    if (this.isLegacyBindInfo) {
+      await this.bind.fetch_bind_info();
+    }
 
     if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
-      this.serialProto = this.bind.info.raw[0];
+      this.serialProto = this.bindInfo.raw[0];
       if (this.serialProto == 0 && this.state.rx_status >= 200) {
         this.serialProto = this.state.rx_status - 200;
       }
     }
+    this.bindReady = true;
   },
 });
 </script>
