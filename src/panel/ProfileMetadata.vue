@@ -81,6 +81,27 @@ import { useStateStore } from "@/store/state";
 import { useProfileStore } from "@/store/profile";
 import { useSerialStore } from "@/store/serial";
 
+function bindRawToBase64(raw: unknown): string | unknown {
+  if (!(raw instanceof Uint8Array)) {
+    return raw;
+  }
+
+  let binary = "";
+  for (const byte of raw) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+function encodeProfileForYaml(profile: any) {
+  const yamlProfile = structuredClone(profile);
+  const bind = yamlProfile.receiver?.bind;
+  if (bind?.raw) {
+    bind.raw = bindRawToBase64(bind.raw);
+  }
+  return yamlProfile;
+}
+
 export default defineComponent({
   name: "ProlfileMetadata",
   setup() {
@@ -136,7 +157,8 @@ export default defineComponent({
     },
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
-        const encoded = encodeURIComponent(YAML.stringify(profile));
+        const yamlProfile = encodeProfileForYaml(profile);
+        const encoded = encodeURIComponent(YAML.stringify(yamlProfile));
         const yaml = "data:text/yaml;charset=utf-8," + encoded;
 
         const date = this.date.toISOString().substring(0, 10);
