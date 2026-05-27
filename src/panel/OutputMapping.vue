@@ -103,220 +103,132 @@
           <div
             v-for="(mapping, index) in mappedOutputs"
             :key="'output-mapping-' + mapping.outputIndex"
-            class="columns is-mobile is-variable is-4 mb-2 output-row"
-            :class="{ 'is-multiline': info.is_wing }"
+            class="columns is-mobile is-variable is-4 is-multiline mb-2 output-row"
           >
-            <template v-if="info.is_wing">
-              <div
-                class="column is-6-desktop is-12-tablet output-settings-column"
-              >
-                <div class="columns is-mobile is-variable is-3 mb-2">
-                  <div class="column">
-                    <label class="label is-small">Output</label>
-                    <input-select
-                      v-model.number="mapping.output.target_output"
-                      class="is-fullwidth"
-                      :options="outputOptions"
-                    ></input-select>
-                  </div>
-                  <div class="column">
-                    <label class="label is-small">Protocol</label>
-                    <input-select
-                      v-model.number="mapping.output.protocol"
-                      class="is-fullwidth"
-                      :options="protocolOptionsForOutput(mapping.output)"
-                      @update:model-value="
-                        onProtocolChange(mapping.output, $event)
-                      "
-                    ></input-select>
-                  </div>
-                  <div v-if="hasPwmFrequency(mapping.output)" class="column">
-                    <label class="label is-small">PWM Frequency</label>
-                    <input-select
-                      v-model.number="mapping.output.rate_hz"
-                      class="is-fullwidth"
-                      :options="pwmOptions"
-                    ></input-select>
-                  </div>
-                  <div class="column is-narrow output-remove-column">
-                    <button
-                      class="button is-small is-light"
-                      type="button"
-                      @click="removeMapping(mapping)"
-                    >
-                      Remove
-                    </button>
-                  </div>
+            <div
+              class="column is-6-desktop is-12-tablet output-settings-column"
+            >
+              <div class="columns is-mobile is-variable is-3 mb-2">
+                <div class="column">
+                  <label class="label is-small">Output</label>
+                  <input-select
+                    v-model.number="mapping.output.target_output"
+                    class="is-fullwidth"
+                    :options="outputOptions"
+                  ></input-select>
                 </div>
-                <div class="columns is-mobile is-variable is-3">
-                  <div
-                    v-if="hasOutputInvert(mapping.output)"
-                    class="column is-narrow invert-column"
-                  >
-                    <input
-                      :id="'output-invert-' + index"
-                      type="checkbox"
-                      class="switch is-small"
-                      :checked="!!mapping.output.invert"
-                      @change="
-                        mapping.output.invert = mapping.output.invert ? 0 : 1
-                      "
-                    />
-                    <label class="py-0" :for="'output-invert-' + index">
-                      Invert
-                    </label>
-                  </div>
+                <div class="column">
+                  <label class="label is-small">Protocol</label>
+                  <input-select
+                    v-model.number="mapping.output.protocol"
+                    class="is-fullwidth"
+                    :options="protocolOptionsForOutput(mapping.output)"
+                    @update:model-value="
+                      onProtocolChange(mapping.output, $event)
+                    "
+                  ></input-select>
+                </div>
+                <div v-if="hasConfigurablePwm(mapping.output)" class="column">
+                  <label class="label is-small">PWM Frequency</label>
+                  <input-select
+                    v-model.number="mapping.output.rate_hz"
+                    class="is-fullwidth"
+                    :options="pwmOptions"
+                  ></input-select>
                 </div>
               </div>
-              <div class="column is-6-desktop is-12-tablet">
-                <label class="label is-small">Mixes</label>
+              <div class="columns is-mobile is-variable is-3">
                 <div
-                  v-for="(rule, ruleIndex) in mapping.rules"
-                  :key="'output-rule-' + index + '-' + ruleIndex"
-                  class="columns is-mobile is-variable is-2 mb-1"
+                  v-if="hasConfigurablePwm(mapping.output)"
+                  class="column is-narrow invert-column"
                 >
-                  <div v-if="usesWingSource(rule)" class="column is-3">
-                    <input
-                      class="input"
-                      type="number"
-                      step="1"
-                      min="-100"
-                      max="100"
-                      :value="weightPercent(rule)"
-                      @input="setWeightPercent(rule, $event)"
-                    />
-                  </div>
-                  <div class="column">
-                    <input-select
-                      :model-value="rule.source"
-                      class="is-fullwidth"
-                      :options="mixSourceOptions"
-                      @update:model-value="
-                        setMixerRuleSource(mapping, rule, $event)
-                      "
-                    ></input-select>
-                  </div>
-                  <div v-if="usesSourceIndex(rule)" class="column is-3">
-                    <input-select
-                      v-model.number="rule.source_index"
-                      class="is-fullwidth"
-                      :options="rxChannelOptions"
-                    ></input-select>
-                  </div>
-                  <div class="column is-narrow mix-remove-column">
-                    <button
-                      class="button is-small is-light"
-                      type="button"
-                      @click="removeMixerRule(mapping, rule)"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                  <input
+                    :id="'output-invert-' + index"
+                    type="checkbox"
+                    class="switch is-small"
+                    :checked="!!mapping.output.invert"
+                    @change="
+                      mapping.output.invert = mapping.output.invert ? 0 : 1
+                    "
+                  />
+                  <label class="py-0" :for="'output-invert-' + index">
+                    Invert
+                  </label>
                 </div>
-                <input-select
-                  v-if="mapping.rules.length === 0"
-                  :model-value="mapping.rule.source"
-                  class="is-fullwidth"
-                  :options="mixSourceOptions"
-                  @update:model-value="setMappingSource(mapping, $event)"
-                ></input-select>
-                <button
-                  v-if="mapping.rules.length > 0"
-                  class="button is-small mt-1"
-                  type="button"
-                  @click="addMixerRuleToOutput(mapping)"
-                >
-                  Add Source
-                </button>
               </div>
-            </template>
-            <template v-else>
-              <div class="column is-3-desktop is-4-tablet is-12-mobile">
-                <label class="label is-small">Source</label>
-                <input-select
-                  :model-value="mapping.rule.source"
-                  class="is-fullwidth"
-                  :options="sourceOptions"
-                  @update:model-value="setMappingSource(mapping, $event)"
-                ></input-select>
-              </div>
-              <div class="column">
-                <label class="label is-small">Protocol</label>
-                <input-select
-                  v-model.number="mapping.output.protocol"
-                  class="is-fullwidth"
-                  :options="protocolOptionsForOutput(mapping.output)"
-                  @update:model-value="onProtocolChange(mapping.output, $event)"
-                ></input-select>
-              </div>
-              <div v-if="usesSourceIndex(mapping.rule)" class="column">
-                <label class="label is-small">Channel</label>
-                <input-select
-                  v-model.number="mapping.rule.source_index"
-                  class="is-fullwidth"
-                  :options="rxChannelOptions"
-                ></input-select>
-              </div>
-              <div v-if="usesWingSource(mapping.rule)" class="column">
-                <label class="label is-small">Weight %</label>
-                <input
-                  class="input"
-                  type="number"
-                  step="1"
-                  min="-100"
-                  max="100"
-                  :value="weightPercent(mapping.rule)"
-                  @input="setWeightPercent(mapping.rule, $event)"
-                />
-              </div>
-              <div class="column">
-                <label class="label is-small">Output</label>
-                <input-select
-                  v-model.number="mapping.output.target_output"
-                  class="is-fullwidth"
-                  :options="outputOptions"
-                  @update:model-value="normalizeOutput(mapping.output)"
-                ></input-select>
-              </div>
-              <div v-if="hasPwmFrequency(mapping.output)" class="column">
-                <label class="label is-small">PWM Frequency</label>
-                <input-select
-                  v-model.number="mapping.output.rate_hz"
-                  class="is-fullwidth"
-                  :options="pwmOptions"
-                ></input-select>
-              </div>
+            </div>
+            <div class="column is-6-desktop is-12-tablet">
+              <label class="label is-small">Mixes</label>
               <div
-                v-if="hasOutputInvert(mapping.output)"
-                class="column is-narrow invert-column"
+                v-for="(rule, ruleIndex) in mapping.rules"
+                :key="'output-rule-' + index + '-' + ruleIndex"
+                class="columns is-mobile is-variable is-2 mb-1"
               >
-                <input
-                  :id="'output-invert-' + index"
-                  type="checkbox"
-                  class="switch is-small"
-                  :checked="!!mapping.output.invert"
-                  @change="
-                    mapping.output.invert = mapping.output.invert ? 0 : 1
-                  "
-                />
-                <label class="py-0" :for="'output-invert-' + index">
-                  Invert
-                </label>
+                <div v-if="usesWeightedSource(rule)" class="column is-3">
+                  <input
+                    class="input"
+                    type="number"
+                    step="1"
+                    min="-100"
+                    max="100"
+                    :value="rule.weight ?? 100"
+                    @input="setRuleWeight(rule, $event)"
+                  />
+                </div>
+                <div class="column">
+                  <input-select
+                    :model-value="rule.source"
+                    class="is-fullwidth"
+                    :options="mixSourceOptions"
+                    @update:model-value="
+                      setMixerRuleSource(mapping, rule, $event)
+                    "
+                  ></input-select>
+                </div>
+                <div v-if="usesSourceIndex(rule)" class="column is-3">
+                  <input-select
+                    v-model.number="rule.source_index"
+                    class="is-fullwidth"
+                    :options="rxChannelOptions"
+                  ></input-select>
+                </div>
+                <div class="column is-narrow mix-remove-column">
+                  <button
+                    class="button is-small is-light"
+                    type="button"
+                    @click="removeMixerRule(mapping, rule)"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-              <div class="column is-narrow remove-column">
-                <button
-                  class="button is-small is-light"
-                  type="button"
-                  @click="removeMapping(mapping)"
-                >
-                  Remove
-                </button>
-              </div>
-            </template>
+              <input-select
+                v-if="mapping.rules.length === 0"
+                :model-value="mapping.rule.source"
+                class="is-fullwidth"
+                :options="mixSourceOptions"
+                @update:model-value="setMappingSource(mapping, $event)"
+              ></input-select>
+              <button
+                v-if="mapping.rules.length > 0"
+                class="button is-small mt-1"
+                type="button"
+                @click="addMixerRuleToOutput(mapping)"
+              >
+                Add Source
+              </button>
+              <button
+                class="button is-small is-light mt-1 ml-1"
+                type="button"
+                @click="removeMapping(mapping)"
+              >
+                Remove
+              </button>
+            </div>
           </div>
 
           <button class="button is-small" type="button" @click="addMapping">
-            {{ info.is_wing ? "Add Output" : "Add Mapping" }}
+            Add Output
           </button>
         </div>
 
@@ -441,7 +353,7 @@
 import { defineComponent } from "vue";
 import { useConstantStore } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
-import { useProfileStore } from "@/store/profile";
+import { mergeFixedMotorMixer, useProfileStore } from "@/store/profile";
 import { useTargetStore } from "@/store/target";
 import { output_protocol_t, output_source_t } from "@/store/types";
 
@@ -475,40 +387,28 @@ export default defineComponent({
         sources.includes(rule.source),
       );
 
-      if (this.info.is_wing) {
-        return this.profile.outputs
-          .map((output, outputIndex) => {
-            if (!this.outputConfigured(output)) {
-              return null;
-            }
-            const outputRules = rules.filter(
-              (rule) => rule.output_index === outputIndex,
-            );
-            return {
-              rule:
-                outputRules[0] ||
-                this.createMixerRule({
-                  output_index: outputIndex,
-                  source: output_source_t.OUTPUT_SOURCE_NONE,
-                }),
-              rules: outputRules,
-              output,
-              outputIndex,
-              placeholder: outputRules.length === 0,
-            };
-          })
-          .filter(Boolean);
-      }
-
-      const mappings = rules
-        .filter((rule) => sources.includes(rule.source))
-        .map((rule) => ({
-          rule,
-          rules: [rule],
-          output: this.outputForIndex(rule.output_index),
-          outputIndex: rule.output_index,
-        }));
-      return mappings;
+      return this.profile.outputs
+        .map((output, outputIndex) => {
+          if (!this.isOutputConfigured(output)) {
+            return null;
+          }
+          const outputRules = rules.filter(
+            (rule) => rule.output_index === outputIndex,
+          );
+          return {
+            rule:
+              outputRules[0] ||
+              this.newMixerRule({
+                output_index: outputIndex,
+                source: output_source_t.OUTPUT_SOURCE_NONE,
+              }),
+            rules: outputRules,
+            output,
+            outputIndex,
+            placeholder: outputRules.length === 0,
+          };
+        })
+        .filter(Boolean);
     },
     motorOutputRows() {
       return this.motorOutputSources.map((row) => ({
@@ -639,17 +539,23 @@ export default defineComponent({
     },
     propsOut: {
       get() {
-        if (this.profile.has_legacy_motor_outputs) {
-          return Boolean(this.profile.motor?.invert_yaw);
-        }
-        const yawWeight = this.yawWeightForMotor(0);
-        return yawWeight === 0 ? false : yawWeight < 0;
+        return this.profile.has_legacy_motor_outputs
+          ? Boolean(this.profile.motor?.invert_yaw)
+          : this.profile.mixer.some(
+              (rule) =>
+                rule.output_index === 0 &&
+                rule.source === output_source_t.OUTPUT_SOURCE_YAW &&
+                rule.weight < 0,
+            );
       },
       set(propsOut) {
         if (this.profile.has_legacy_motor_outputs) {
           this.profile.motor.invert_yaw = propsOut ? 1 : 0;
         } else {
-          this.setPropDirection(propsOut);
+          this.profile.mixer = mergeFixedMotorMixer(
+            this.profile.mixer,
+            propsOut,
+          );
         }
       },
     },
@@ -697,36 +603,28 @@ export default defineComponent({
     },
   },
   created() {
-    if (this.info.is_rover || this.info.is_wing) {
-      this.normalizeExistingOutputs();
-      if (this.info.is_rover) {
-        this.ensureDefaultMappings();
+    if (this.info.is_multi) {
+      if (this.profile.has_legacy_motor_outputs) {
+        return;
       }
+      this.motorOutputSources.forEach((row) => {
+        this.fixedMotorOutput(row.motor - 1);
+      });
+      this.profile.mixer = mergeFixedMotorMixer(
+        this.profile.mixer,
+        this.propsOut,
+      );
     } else {
-      this.ensureFixedMotorOutputs();
+      this.profile.outputs.forEach((output) => this.normalizeOutput(output));
     }
   },
   methods: {
     addMapping() {
-      if (this.info.is_wing) {
-        const fallbackIndex = Array.from(
-          { length: this.profile.outputs.length + 1 },
-          (_, i) => i,
-        ).find((index) => !this.outputConfigured(this.profile.outputs[index]));
-        this.profile.outputs[fallbackIndex] = this.createOutput(fallbackIndex);
-        return;
-      }
-
-      const usedOutputs = this.profile.mixer.map((rule) => rule.output_index);
       const fallbackIndex = Array.from(
-        { length: this.profile.outputs.length },
+        { length: this.profile.outputs.length + 1 },
         (_, i) => i,
-      ).find((index) => !usedOutputs.includes(index));
-      const rule = this.createMixerRule({
-        output_index: fallbackIndex ?? 0,
-      });
-      this.profile.mixer.push(rule);
-      this.ensureOutputForRule(rule);
+      ).find((index) => !this.isOutputConfigured(this.profile.outputs[index]));
+      this.profile.outputs[fallbackIndex] = this.newOutput(fallbackIndex);
     },
     addMixerRuleToOutput(mapping) {
       const usedSources = mapping.rules.map((rule) => rule.source);
@@ -736,7 +634,7 @@ export default defineComponent({
             option.value !== output_source_t.OUTPUT_SOURCE_NONE &&
             !usedSources.includes(option.value),
         )?.value ?? this.rxSource;
-      const rule = this.createMixerRule({
+      const rule = this.newMixerRule({
         output_index: mapping.outputIndex,
         source,
       });
@@ -745,7 +643,7 @@ export default defineComponent({
       mapping.rule = mapping.rules[0];
       mapping.placeholder = false;
     },
-    createMixerRule(overrides = {}) {
+    newMixerRule(overrides = {}) {
       return {
         output_index: 0,
         source: output_source_t.OUTPUT_SOURCE_RX_CHANNEL,
@@ -754,7 +652,7 @@ export default defineComponent({
         ...overrides,
       };
     },
-    createOutput(fallbackIndex, overrides = {}) {
+    newOutput(fallbackIndex, overrides = {}) {
       return {
         target_output: fallbackIndex,
         protocol: output_protocol_t.OUTPUT_PROTOCOL_PWM,
@@ -766,82 +664,73 @@ export default defineComponent({
         ...overrides,
       };
     },
-    outputConfigured(output) {
+    isOutputConfigured(output) {
       return (
         !!output && output.protocol !== output_protocol_t.OUTPUT_PROTOCOL_NONE
       );
     },
-    ensureDefaultMappings() {
-      this.ensureMixerRule({
-        source: output_source_t.OUTPUT_SOURCE_THROTTLE,
-        output_index: 0,
-      });
-      this.ensureMixerRule({
-        source: output_source_t.OUTPUT_SOURCE_YAW,
-        output_index: 1,
-      });
-    },
-    ensureFixedMotorOutput(fallbackIndex) {
-      let output = this.profile.outputs[fallbackIndex];
-      if (!output) {
-        output = this.createOutput(fallbackIndex);
-        this.profile.outputs.push(output);
+    outputSupportsProtocol(targetOutput, protocol) {
+      const caps = this.target.outputs?.[targetOutput]?.caps ?? [];
+      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_DSHOT) {
+        return caps.includes("dshot");
       }
-
+      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_BRUSHED) {
+        return caps.includes("brushed");
+      }
+      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_PWM) {
+        return caps.includes("pwm");
+      }
+      return true;
+    },
+    outputForIndex(outputIndex) {
+      let output = this.profile.outputs[outputIndex];
+      if (!output) {
+        output = this.newOutput(outputIndex);
+        this.profile.outputs[outputIndex] = output;
+      }
+      return output;
+    },
+    fixedMotorOutput(fallbackIndex) {
+      const output = this.outputForIndex(fallbackIndex);
       output.target_output ??= fallbackIndex;
-      output.protocol = this.motorProtocolForTarget(output.target_output);
+      output.protocol = this.outputSupportsProtocol(
+        output.target_output,
+        output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+      )
+        ? output_protocol_t.OUTPUT_PROTOCOL_DSHOT
+        : output_protocol_t.OUTPUT_PROTOCOL_BRUSHED;
       output.invert = 0;
       output.rate_hz = 0;
       output.min = 0;
       output.max = 1000;
       return output;
     },
-    ensureFixedMotorOutputs() {
-      if (!this.info.is_multi || this.profile.has_legacy_motor_outputs) {
-        return;
-      }
-      this.motorOutputSources.forEach((row) => {
-        this.ensureFixedMotorOutput(row.motor - 1);
-      });
-      this.syncFixedMotorMixer(this.propsOut);
+    legacyMotorPins() {
+      return Array.isArray(this.profile.motor?.motor_pins)
+        ? this.profile.motor.motor_pins
+        : [];
     },
-    ensureMixerRule(rule) {
-      if (
-        this.profile.mixer.some(
-          (r) =>
-            r.output_index === rule.output_index &&
-            r.source === rule.source &&
-            (r.source_index ?? 0) === (rule.source_index ?? 0),
-        )
-      ) {
-        return;
-      }
-      const mixerRule = this.createMixerRule(rule);
-      this.profile.mixer.push(mixerRule);
-      this.ensureOutputForRule(mixerRule);
+    legacyMotorOutput(motorIndex) {
+      return {
+        target_output: this.legacyMotorPins()[motorIndex],
+      };
     },
-    ensureOutputForRule(rule) {
-      this.outputForIndex(rule.output_index);
+    motorOutput(motorIndex) {
+      return this.profile.has_legacy_motor_outputs
+        ? this.legacyMotorOutput(motorIndex)
+        : this.fixedMotorOutput(motorIndex);
     },
-    disableOutput(output) {
-      Object.assign(output, {
-        target_output: 0,
-        protocol: output_protocol_t.OUTPUT_PROTOCOL_NONE,
-        invert: 0,
-        trim: 0,
-        min: 0,
-        max: 0,
-        rate_hz: 0,
-      });
+    motorTargetOutput(motorIndex) {
+      return this.profile.has_legacy_motor_outputs
+        ? this.legacyMotorPins()[motorIndex]
+        : this.fixedMotorOutput(motorIndex).target_output;
     },
-    hasOutputInvert(output) {
+    motorTargetOutputLabel(motorIndex) {
+      const targetOutput = this.motorTargetOutput(motorIndex);
+      return Number.isFinite(targetOutput) ? `S${targetOutput + 1}` : "S?";
+    },
+    hasConfigurablePwm(output) {
       return output.protocol !== output_protocol_t.OUTPUT_PROTOCOL_DSHOT;
-    },
-    hasPwmFrequency(output) {
-      return output.protocol !== output_protocol_t.OUTPUT_PROTOCOL_DSHOT;
-    },
-    normalizeExistingOutputs() {
-      this.profile.outputs.forEach((output) => this.normalizeOutput(output));
     },
     normalizeOutput(output) {
       const protocols = this.protocolOptionsForOutput(output).map(
@@ -863,65 +752,9 @@ export default defineComponent({
       output.protocol = protocol;
       this.normalizeOutput(output);
     },
-    legacyMotorPins() {
-      return Array.isArray(this.profile.motor?.motor_pins)
-        ? this.profile.motor.motor_pins
-        : [];
-    },
-    legacyMotorOutput(motorIndex) {
-      return {
-        target_output: this.legacyMotorPins()[motorIndex],
-      };
-    },
-    motorOutput(motorIndex) {
-      return this.profile.has_legacy_motor_outputs
-        ? this.legacyMotorOutput(motorIndex)
-        : this.ensureFixedMotorOutput(motorIndex);
-    },
-    motorTargetOutput(motorIndex) {
-      return this.profile.has_legacy_motor_outputs
-        ? this.legacyMotorPins()[motorIndex]
-        : this.ensureFixedMotorOutput(motorIndex).target_output;
-    },
-    motorTargetOutputLabel(motorIndex) {
-      const targetOutput = this.motorTargetOutput(motorIndex);
-      return Number.isFinite(targetOutput) ? `S${targetOutput + 1}` : "S?";
-    },
-    weightPercent(rule) {
-      return rule.weight ?? 100;
-    },
-    setWeightPercent(rule, event) {
+    setRuleWeight(rule, event) {
       const target = event.target as HTMLInputElement;
       rule.weight = Math.round(Number(target.value || 0));
-    },
-    outputForIndex(outputIndex) {
-      let output = this.profile.outputs[outputIndex];
-      if (!output) {
-        output = this.createOutput(outputIndex);
-        this.profile.outputs.push(output);
-      }
-      return output;
-    },
-    outputSupportsProtocol(targetOutput, protocol) {
-      const caps = this.target.outputs?.[targetOutput]?.caps ?? [];
-      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_DSHOT) {
-        return caps.includes("dshot");
-      }
-      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_BRUSHED) {
-        return caps.includes("brushed");
-      }
-      if (protocol === output_protocol_t.OUTPUT_PROTOCOL_PWM) {
-        return caps.includes("pwm");
-      }
-      return true;
-    },
-    motorProtocolForTarget(targetOutput) {
-      return this.outputSupportsProtocol(
-        targetOutput,
-        output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
-      )
-        ? output_protocol_t.OUTPUT_PROTOCOL_DSHOT
-        : output_protocol_t.OUTPUT_PROTOCOL_BRUSHED;
     },
     protocolOptionsForOutput(output) {
       return [
@@ -952,22 +785,18 @@ export default defineComponent({
       ];
     },
     removeMapping(mapping) {
-      const rule = mapping.rule;
-      const index = this.profile.mixer.indexOf(rule);
-      if (this.info.is_wing) {
-        this.removeMixerRulesForOutput(mapping.outputIndex);
-        this.disableOutput(mapping.output);
-        return;
-      }
-      if (index >= 0) {
-        this.profile.mixer.splice(index, 1);
-        return;
-      }
-
-      if (mapping.placeholder) {
-        this.removeMixerRulesForOutput(mapping.outputIndex);
-        this.disableOutput(mapping.output);
-      }
+      this.profile.mixer = this.profile.mixer.filter(
+        (rule) => rule.output_index !== mapping.outputIndex,
+      );
+      Object.assign(mapping.output, {
+        target_output: 0,
+        protocol: output_protocol_t.OUTPUT_PROTOCOL_NONE,
+        invert: 0,
+        trim: 0,
+        min: 0,
+        max: 0,
+        rate_hz: 0,
+      });
     },
     removeMixerRule(mapping, rule) {
       this.profile.mixer = this.profile.mixer.filter((r) => r !== rule);
@@ -976,23 +805,18 @@ export default defineComponent({
         mapping.rule = mapping.rules[0];
         return;
       }
-      mapping.rule = this.createMixerRule({
+      mapping.rule = this.newMixerRule({
         output_index: mapping.outputIndex,
         source: output_source_t.OUTPUT_SOURCE_NONE,
       });
       mapping.placeholder = true;
-    },
-    removeMixerRulesForOutput(outputIndex) {
-      this.profile.mixer = this.profile.mixer.filter(
-        (r) => r.output_index !== outputIndex,
-      );
     },
     setMappingSource(mapping, source) {
       if (mapping.placeholder) {
         if (source === output_source_t.OUTPUT_SOURCE_NONE) {
           return;
         }
-        const rule = this.createMixerRule({
+        const rule = this.newMixerRule({
           output_index: mapping.outputIndex,
           source,
         });
@@ -1013,9 +837,6 @@ export default defineComponent({
         rule.source_index = 0;
       }
     },
-    setPropDirection(propsOut) {
-      this.syncFixedMotorMixer(propsOut);
-    },
     setMotorOutput(row, targetOutput) {
       if (this.profile.has_legacy_motor_outputs) {
         const pins = [...this.legacyMotorPins()];
@@ -1024,52 +845,16 @@ export default defineComponent({
         return;
       }
       row.output.target_output = targetOutput;
-      this.ensureFixedMotorOutput(row.motor - 1);
-    },
-    syncFixedMotorMixer(propsOut) {
-      const sources = [
-        output_source_t.OUTPUT_SOURCE_ROLL,
-        output_source_t.OUTPUT_SOURCE_PITCH,
-        output_source_t.OUTPUT_SOURCE_YAW,
-      ];
-      const weights = [
-        [100, 100, propsOut ? -100 : 100],
-        [100, -100, propsOut ? 100 : -100],
-        [-100, 100, propsOut ? 100 : -100],
-        [-100, -100, propsOut ? -100 : 100],
-      ];
-
-      this.profile.mixer = this.profile.mixer.filter(
-        (rule) => rule.output_index >= 4 || !sources.includes(rule.source),
-      );
-
-      weights.forEach((motorWeights, outputIndex) => {
-        sources.forEach((source, sourceIndex) => {
-          this.profile.mixer.push(
-            this.createMixerRule({
-              output_index: outputIndex,
-              source,
-              source_index: 0,
-              weight: motorWeights[sourceIndex],
-            }),
-          );
-        });
-      });
+      this.fixedMotorOutput(row.motor - 1);
     },
     usesSourceIndex(output) {
       return output.source === this.rxSource;
     },
-    yawWeightForMotor(outputIndex) {
+    usesWeightedSource(rule) {
       return (
-        this.profile.mixer.find(
-          (rule) =>
-            rule.output_index === outputIndex &&
-            rule.source === output_source_t.OUTPUT_SOURCE_YAW,
-        )?.weight ?? 0
+        rule.source !== output_source_t.OUTPUT_SOURCE_NONE &&
+        rule.source !== this.rxSource
       );
-    },
-    usesWingSource(rule) {
-      return this.info.is_wing && rule.source !== this.rxSource;
     },
   },
 });

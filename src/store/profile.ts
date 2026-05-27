@@ -7,24 +7,24 @@ import semver from "semver";
 import { decodeSemver } from "./util";
 import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
-import type { aux_function_map_t, target_t } from "./types";
+import {
+  output_source_t,
+  type aux_function_map_t,
+  type target_t,
+} from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
-import { useInfoStore } from "./info";
-import { output_source_t } from "./types";
-
-const MULTI_MIXER_SOURCES = [
-  output_source_t.OUTPUT_SOURCE_ROLL,
-  output_source_t.OUTPUT_SOURCE_PITCH,
-  output_source_t.OUTPUT_SOURCE_YAW,
-];
 
 const DEFAULT_MOTOR = {
   digital_idle: 4.5,
 };
 
-function deriveMultiMixer(profile) {
-  const propsOut = Boolean(profile.motor?.invert_yaw);
+export function fixedMotorMixer(propsOut) {
+  const sources = [
+    output_source_t.OUTPUT_SOURCE_ROLL,
+    output_source_t.OUTPUT_SOURCE_PITCH,
+    output_source_t.OUTPUT_SOURCE_YAW,
+  ];
   const weights = [
     [100, 100, propsOut ? -100 : 100],
     [100, -100, propsOut ? 100 : -100],
@@ -32,21 +32,26 @@ function deriveMultiMixer(profile) {
     [-100, -100, propsOut ? -100 : 100],
   ];
 
-  profile.mixer = (profile.mixer || []).filter(
-    (rule) =>
-      rule.output_index >= 4 || !MULTI_MIXER_SOURCES.includes(rule.source),
+  return weights.flatMap((motorWeights, outputIndex) =>
+    sources.map((source, sourceIndex) => ({
+      output_index: outputIndex,
+      source,
+      source_index: 0,
+      weight: motorWeights[sourceIndex],
+    })),
   );
+}
 
-  weights.forEach((motorWeights, outputIndex) => {
-    MULTI_MIXER_SOURCES.forEach((source, sourceIndex) => {
-      profile.mixer.push({
-        output_index: outputIndex,
-        source,
-        source_index: 0,
-        weight: motorWeights[sourceIndex],
-      });
-    });
-  });
+export function mergeFixedMotorMixer(mixer, propsOut) {
+  const fixedRules = fixedMotorMixer(propsOut);
+  const sources = new Set(fixedRules.map((rule) => rule.source));
+
+  return [
+    ...(mixer || []).filter(
+      (rule) => rule.output_index >= 4 || !sources.has(rule.source),
+    ),
+    ...fixedRules,
+  ];
 }
 
 export function mergeDeep(target, source) {
@@ -233,21 +238,25 @@ function migrateProfileVersion(
 
   if (
     semver.lt(profileVersion, "v0.3.0") &&
-    semver.gte(firmwareVersion, "v0.3.0") &&
-    Array.isArray(profile.receiver?.aux)
+    semver.gte(firmwareVersion, "v0.3.0")
   ) {
-    profile.receiver.aux = profile.receiver.aux.map((entry) => {
-      if (typeof entry === "number") {
-        const isOff = entry === 12;
-        const isOn = entry === 13;
-        return {
-          channel: 4 + entry,
-          range_min: isOff || isOn ? 0 : 32768,
-          range_max: 65535,
-        } as aux_function_map_t;
-      }
-      return entry;
-    });
+    const propsOut = Boolean(profile.motor?.invert_yaw);
+    profile.mixer = fixedMotorMixer(propsOut);
+
+    if (Array.isArray(profile.receiver?.aux)) {
+      profile.receiver.aux = profile.receiver.aux.map((entry) => {
+        if (typeof entry === "number") {
+          const isOff = entry === 12;
+          const isOn = entry === 13;
+          return {
+            channel: 4 + entry,
+            range_min: isOff || isOn ? 0 : 32768,
+            range_max: 65535,
+          } as aux_function_map_t;
+        }
+        return entry;
+      });
+    }
   }
 
   return profile;
@@ -256,7 +265,6 @@ function migrateProfileVersion(
 function migrateProfile(profile) {
   const target = useTargetStore();
   const default_profile = useDefaultProfileStore();
-  const info = useInfoStore();
 
   const firmwareVersion = ensureMinVersion(default_profile?.meta?.version);
   const profileVersion = ensureMinVersion(profile?.meta?.version);
@@ -300,9 +308,6 @@ function migrateProfile(profile) {
   coerceProfileByteStrings(p);
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
-  if (info.is_multi && semver.gte(decodeSemver(firmwareVersion), "v0.3.0")) {
-    deriveMultiMixer(p);
-  }
 
   return p;
 }
