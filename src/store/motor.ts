@@ -109,20 +109,18 @@ export const useMotorStore = defineStore("motor", {
       }
 
       const pins = info.is_rover ? ROVER_PINS : MULTI_PINS;
-      const legacyMotorOutputs =
-        !info.is_rover && profile.has_legacy_motor_outputs;
-      return pins.map((p) => {
-        if (legacyMotorOutputs) {
-          const pin = Array.isArray(profile.motor?.motor_pins)
-            ? profile.motor.motor_pins[p.index]
-            : undefined;
-          return {
-            ...p,
-            pin,
-            testIndex: p.index,
-          };
-        }
+      if (!info.is_rover && profile.has_legacy_motor_outputs) {
+        const motorPins = Array.isArray(profile.motor?.motor_pins)
+          ? profile.motor.motor_pins
+          : [];
+        return pins.map((p) => ({
+          ...p,
+          pin: motorPins[p.index],
+          testIndex: p.index,
+        }));
+      }
 
+      return pins.map((p) => {
         const rule = profile.mixer.find((r) => r.source === p.source);
         const output = profile.outputs[p.index];
         const logicalIndex = info.is_rover
