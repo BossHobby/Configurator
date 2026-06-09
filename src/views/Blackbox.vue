@@ -228,7 +228,7 @@ export default defineComponent({
       return this.blackbox.download_blackbox_quic(index).then((url) => {
         const date = new Date().toISOString().substring(0, 10);
         const name = this.profile.meta.name.replace(/\0/g, "");
-        const filename = `${name}_${date}_file_${index}.json`;
+        const filename = `QUIC_${name}_${date}_file_${index}.json`;
 
         this.$refs.downloadAnchor.setAttribute("href", url);
         this.$refs.downloadAnchor.setAttribute("download", filename);
@@ -239,7 +239,7 @@ export default defineComponent({
       return this.blackbox.download_blackbox_btfl(index).then((url) => {
         const date = new Date().toISOString().substring(0, 10);
         const name = this.profile.meta.name.replace(/\0/g, "");
-        const filename = `${name}_${date}_file_${index}.bfl`;
+        const filename = `QUIC_${name}_${date}_file_${index}.bfl`;
 
         this.$refs.downloadAnchor.setAttribute("href", url);
         this.$refs.downloadAnchor.setAttribute("download", filename);
