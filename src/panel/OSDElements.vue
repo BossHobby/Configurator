@@ -294,8 +294,6 @@ export default defineComponent({
         { name: "THROTTLE", enabled: true, text: "  50\x04" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
         { name: "CURRENT", enabled: true, text: "0.00\x9a" },
-        { name: "GPS SATS", enabled: true, text: "\x1e\x1f 12" },
-        { name: "GPS SPEED", enabled: true, text: " 45\x9e" },
       ];
       if (this.profile.profileVersionGt("0.2.2")) {
         elements.push({
@@ -318,11 +316,22 @@ export default defineComponent({
           text: " 0.0\x57",
         });
       }
+      elements.push(
+        { name: "GPS SATS", enabled: true, text: "\x1e\x1f 12" },
+        { name: "GPS SPEED", enabled: true, text: " 45\x9e" },
+      );
       elements.push({
         name: "INCLINOMETER",
         enabled: this.info.is_rover,
         text: "R 12P 18",
       });
+      if (this.profile.profileVersionGt("0.2.7")) {
+        elements.push({
+          name: "CRSF TX POWER",
+          enabled: true,
+          text: " 100mW",
+        });
+      }
       return elements;
     },
     elements() {
