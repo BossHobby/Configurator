@@ -329,7 +329,7 @@ export default defineComponent({
         elements.push({
           name: "CRSF TX POWER",
           enabled: true,
-          text: " 100mW",
+          text: "\x01250MW",
         });
       }
       return elements;

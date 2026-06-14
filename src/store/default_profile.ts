@@ -20,6 +20,16 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       callsign: "",
       elements: [],
       elements_hd: [],
+      profiles: [
+        {
+          callsign: "",
+          elements: [],
+        },
+        {
+          callsign: "",
+          elements: [],
+        },
+      ],
     },
     meta: {
       version: 0,
