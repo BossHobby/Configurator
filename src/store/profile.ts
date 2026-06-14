@@ -19,6 +19,8 @@ const DEFAULT_MOTOR = {
   digital_idle: 4.5,
 };
 
+const OSD_CRSF_TX_POWER_ELEMENT = 18;
+
 export function fixedMotorMixer(propsOut) {
   const sources = [
     output_source_t.OUTPUT_SOURCE_ROLL,
@@ -115,6 +117,16 @@ function ensureMinVersion(version): number {
     version = makeSemver(0, 1, 0);
   }
   return version;
+}
+
+function migrateCrsfTxPowerOsdElement(elements, defaultElements) {
+  const migrated = [...(Array.isArray(elements) ? elements : [])];
+  while (migrated.length <= OSD_CRSF_TX_POWER_ELEMENT) {
+    migrated.push(0);
+  }
+  migrated[OSD_CRSF_TX_POWER_ELEMENT] =
+    defaultElements?.[OSD_CRSF_TX_POWER_ELEMENT] ?? 0;
+  return migrated;
 }
 
 function migrateProfileVersion(
@@ -257,6 +269,20 @@ function migrateProfileVersion(
         return entry;
       });
     }
+  }
+
+  if (
+    semver.lt(profileVersion, "v0.3.1") &&
+    semver.gte(firmwareVersion, "v0.3.1") &&
+    Array.isArray(profile.osd?.profiles)
+  ) {
+    profile.osd.profiles = profile.osd.profiles.map((osdProfile, index) => ({
+      ...osdProfile,
+      elements: migrateCrsfTxPowerOsdElement(
+        osdProfile?.elements,
+        default_profile.osd?.profiles?.[index]?.elements,
+      ),
+    }));
   }
 
   return profile;

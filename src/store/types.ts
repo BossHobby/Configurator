@@ -193,11 +193,17 @@ export interface profile_serial_t {
   gps: number;
 }
 
-export interface profile_osd_t {
-  guac_mode: number;
+export interface profile_osd_profile_t {
   callsign: string;
   elements: number[];
-  elements_hd: number[];
+}
+
+export interface profile_osd_t {
+  guac_mode: number;
+  profiles: profile_osd_profile_t[];
+  callsign?: string;
+  elements?: number[];
+  elements_hd?: number[];
 }
 
 export interface profile_filter_parameter_t {

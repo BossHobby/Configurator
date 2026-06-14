@@ -325,11 +325,11 @@ export default defineComponent({
         enabled: this.info.is_rover,
         text: "R 12P 18",
       });
-      if (this.profile.profileVersionGt("0.2.7")) {
+      if (this.profile.profileVersionGt("0.3.0")) {
         elements.push({
           name: "CRSF TX POWER",
           enabled: true,
-          text: " 100mW",
+          text: "\x01250MW",
         });
       }
       return elements;
