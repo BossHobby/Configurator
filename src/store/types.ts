@@ -286,7 +286,6 @@ export interface profile_output_t {
   trim: number;
   min: number;
   max: number;
-  rate_hz: number;
 }
 
 export interface profile_mixer_rule_t {
@@ -313,6 +312,7 @@ export interface profile_rover_t {
 
 export interface profile_t {
   meta: profile_metadata_t;
+  servo: { pwm_rate_hz: number };
   outputs: profile_output_t[];
   mixer: profile_mixer_rule_t[];
   motor: profile_motor_t;
