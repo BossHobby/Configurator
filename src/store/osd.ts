@@ -46,7 +46,7 @@ export const useOSDStore = defineStore("osd", {
         image.onload = () => {
           resolve(image);
         };
-        image.src = "osd/hdzero_quic.png";
+        image.src = "osd/clarity.png";
       })
         .then((img: any) => createImageBitmap(img))
         .then((img) => {
