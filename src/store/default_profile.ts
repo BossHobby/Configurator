@@ -36,6 +36,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       datetime: 0,
     },
     motor: {},
+    servo: { pwm_rate_hz: 50 },
     rover: {
       pid: {
         kp: 70.0,

@@ -100,6 +100,14 @@
         </div>
 
         <div v-else>
+          <div v-if="profile.servo" class="field">
+            <label class="label">Servo PWM Frequency</label>
+            <input-select
+              v-model.number="profile.servo.pwm_rate_hz"
+              :options="pwmOptions"
+            />
+            <p class="help">Applies to all PWM outputs.</p>
+          </div>
           <div
             v-for="(mapping, index) in mappedOutputs"
             :key="'output-mapping-' + mapping.outputIndex"
@@ -126,14 +134,6 @@
                     @update:model-value="
                       onProtocolChange(mapping.output, $event)
                     "
-                  ></input-select>
-                </div>
-                <div v-if="hasConfigurablePwm(mapping.output)" class="column">
-                  <label class="label is-small">PWM Frequency</label>
-                  <input-select
-                    v-model.number="mapping.output.rate_hz"
-                    class="is-fullwidth"
-                    :options="pwmOptions"
                   ></input-select>
                 </div>
               </div>
@@ -561,7 +561,6 @@ export default defineComponent({
     },
     pwmOptions() {
       return [
-        { value: 0, text: "Default" },
         { value: 50, text: "50 Hz" },
         { value: 60, text: "60 Hz" },
         { value: 125, text: "125 Hz" },
@@ -660,7 +659,6 @@ export default defineComponent({
         trim: 0,
         min: -1000,
         max: 1000,
-        rate_hz: 50,
         ...overrides,
       };
     },
@@ -700,7 +698,6 @@ export default defineComponent({
         ? output_protocol_t.OUTPUT_PROTOCOL_DSHOT
         : output_protocol_t.OUTPUT_PROTOCOL_BRUSHED;
       output.invert = 0;
-      output.rate_hz = 0;
       output.min = 0;
       output.max = 1000;
       return output;
@@ -741,10 +738,9 @@ export default defineComponent({
           output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
         )
           ? output_protocol_t.OUTPUT_PROTOCOL_DSHOT
-          : (protocols[1] ?? output_protocol_t.OUTPUT_PROTOCOL_NONE);
+          : protocols[1] ?? output_protocol_t.OUTPUT_PROTOCOL_NONE;
       }
       if (output.protocol === output_protocol_t.OUTPUT_PROTOCOL_DSHOT) {
-        output.rate_hz = 0;
         output.invert = 0;
       }
     },
@@ -795,7 +791,6 @@ export default defineComponent({
         trim: 0,
         min: 0,
         max: 0,
-        rate_hz: 0,
       });
     },
     removeMixerRule(mapping, rule) {
