@@ -343,6 +343,7 @@ export const useProfileStore = defineStore("profile", {
     semver: "v0.0.0",
     modified: "",
     outputs: [],
+    servo: { pwm_rate_hz: 50 },
     mixer: [],
     serial: {
       rx: 0,
