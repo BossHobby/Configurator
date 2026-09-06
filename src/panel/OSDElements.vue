@@ -7,7 +7,36 @@
     <div class="card-content">
       <div class="content">
         <div class="columns is-multiline">
-          <div class="column is-6">
+          <div class="column is-12">
+            <div class="card">
+              <header class="card-header">
+                <div class="card-header-title">
+                  Preview
+                  <div v-if="!is_hd" class="select ml-4">
+                    <select v-model="preview">
+                      <option>NTSC</option>
+                      <option>PAL</option>
+                    </select>
+                  </div>
+                </div>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <canvas
+                    :width="canvasWidth"
+                    :height="canvasHeight"
+                    ref="canvas"
+                    class="osd-canvas"
+                    @mousedown="drag_start"
+                    @mousemove="drag_move"
+                    @mouseup="drag_drop"
+                    @mouseleave="drag_drop"
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-12">
             <div class="field field-is-2 is-horizontal">
               <div class="field-label">
                 <label class="label"> Profile </label>
@@ -38,7 +67,12 @@
                 </div>
               </div>
             </div>
-
+          </div>
+          <div
+            v-for="(column, columnIndex) of elementColumns"
+            :key="columnIndex"
+            class="column is-12-tablet is-6-desktop"
+          >
             <div class="columns is-mobile mt-4 mb-0">
               <div
                 class="column has-text-centered has-text-weight-semibold px-0 is-4"
@@ -67,13 +101,13 @@
               </div>
             </div>
 
-            <template v-for="(el, i) of elements" :key="i">
+            <template v-for="el of column" :key="el.index">
               <div
                 v-if="el.enabled"
                 class="field mb-2 field-is-2 is-horizontal"
               >
                 <div class="field-label">
-                  <label class="label" for="pid-preset">
+                  <label class="label" :for="'active-' + el.index">
                     {{ el.name }}
                   </label>
                 </div>
@@ -81,34 +115,34 @@
                   <div class="column field">
                     <div class="control is-expanded">
                       <input
-                        :id="'active-' + i"
-                        :name="'active-' + i"
+                        :id="'active-' + el.index"
+                        :name="'active-' + el.index"
                         type="checkbox"
                         class="switch"
                         :checked="el.active == 1"
-                        @input="osd_set(i, 'active', !el.active)"
+                        @input="osd_set(el.index, 'active', !el.active)"
                       />
                       <label
                         class="py-0"
                         style="height: 2em"
-                        :for="'active-' + i"
+                        :for="'active-' + el.index"
                       ></label>
                     </div>
                   </div>
                   <div class="column field">
                     <div class="control is-expanded">
                       <input
-                        :id="'invert-' + i"
-                        :name="'invert-' + i"
+                        :id="'invert-' + el.index"
+                        :name="'invert-' + el.index"
                         type="checkbox"
                         class="switch"
                         :checked="el.invert == 1"
-                        @input="osd_set(i, 'invert', !el.invert)"
+                        @input="osd_set(el.index, 'invert', !el.invert)"
                       />
                       <label
                         class="py-0"
                         style="height: 2em"
-                        :for="'invert-' + i"
+                        :for="'invert-' + el.index"
                       ></label>
                     </div>
                   </div>
@@ -123,7 +157,7 @@
                         :max="limits.width - 1"
                         @input="
                           osd_set(
-                            i,
+                            el.index,
                             is_hd ? 'pos_hd_x' : 'pos_sd_x',
                             $event?.target?.value,
                           )
@@ -142,7 +176,7 @@
                         :max="limits.height - 1"
                         @input="
                           osd_set(
-                            i,
+                            el.index,
                             is_hd ? 'pos_hd_y' : 'pos_sd_y',
                             $event?.target?.value,
                           )
@@ -153,36 +187,6 @@
                 </div>
               </div>
             </template>
-          </div>
-
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <div class="card-header-title">
-                  Preview
-                  <div v-if="!is_hd" class="select ml-4">
-                    <select v-model="preview">
-                      <option>NTSC</option>
-                      <option>PAL</option>
-                    </select>
-                  </div>
-                </div>
-              </header>
-              <div class="card-content">
-                <div class="content">
-                  <canvas
-                    :width="canvasWidth"
-                    :height="canvasHeight"
-                    ref="canvas"
-                    class="osd-canvas"
-                    @mousedown="drag_start"
-                    @mousemove="drag_move"
-                    @mouseup="drag_drop"
-                    @mouseleave="drag_drop"
-                  ></canvas>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -270,11 +274,14 @@ export default defineComponent({
     canvas() {
       return this.$refs.canvas as HTMLCanvasElement;
     },
+    canvasScale() {
+      return this.is_hd ? 2 : 1;
+    },
     canvasWidth() {
-      return this.screen.width * OSD.CHAR_WIDTH;
+      return this.screen.width * OSD.CHAR_WIDTH * this.canvasScale;
     },
     canvasHeight() {
-      return this.screen.height * OSD.CHAR_HEIGHT;
+      return this.screen.height * OSD.CHAR_HEIGHT * this.canvasScale;
     },
     elementOptions() {
       const elements = [
@@ -353,6 +360,11 @@ export default defineComponent({
           };
         });
     },
+    elementColumns() {
+      const enabled = this.elements.filter((el) => el.enabled);
+      const middle = Math.ceil(enabled.length / 2);
+      return [enabled.slice(0, middle), enabled.slice(middle)];
+    },
     callsign: {
       set(val) {
         let str = val.toUpperCase();
@@ -395,8 +407,12 @@ export default defineComponent({
   methods: {
     translateMouse(evt: MouseEvent): Coord2D {
       return {
-        x: evt.offsetX * (this.canvasWidth / this.canvas.clientWidth),
-        y: evt.offsetY * (this.canvasHeight / this.canvas.clientHeight),
+        x:
+          evt.offsetX *
+          (this.canvasWidth / this.canvas.clientWidth / this.canvasScale),
+        y:
+          evt.offsetY *
+          (this.canvasHeight / this.canvas.clientHeight / this.canvasScale),
       };
     },
     translateElemement(coord: Coord2D): Coord2D {
@@ -503,26 +519,17 @@ export default defineComponent({
     ) {
       let length = 0;
       for (let i = 0; i < text.length; i++) {
-        let char = text.charCodeAt(i);
+        const char = text.charCodeAt(i);
         if (char == 0) {
           break;
         }
 
-        const charX = OSD.pixelsWidth(
-          Math.floor(char % 16),
-          OSD.BORDER,
-          this.is_hd,
-        );
-        const charY = OSD.pixelsHeight(
-          Math.floor(char / 16),
-          OSD.BORDER,
-          this.is_hd,
-        );
+        const charX = OSD.pixelsWidth(Math.floor(char % 16));
+        const charY = OSD.pixelsHeight(Math.floor(char / 16));
 
         let bitmap: any = undefined;
         if (this.is_hd) {
           bitmap = this.osd.font_bitmap;
-          char += 256;
         } else {
           bitmap = inverted
             ? this.osd.font_bitmap_inverted
@@ -534,8 +541,8 @@ export default defineComponent({
             bitmap,
             charX,
             charY,
-            OSD.CHAR_WIDTH * (this.is_hd ? 2 : 1),
-            OSD.CHAR_HEIGHT * (this.is_hd ? 2 : 1),
+            OSD.CHAR_WIDTH,
+            OSD.CHAR_HEIGHT,
             coord.x + i * OSD.CHAR_WIDTH,
             coord.y,
             OSD.CHAR_WIDTH,
@@ -564,7 +571,10 @@ export default defineComponent({
         return;
       }
 
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.setTransform(this.canvasScale, 0, 0, this.canvasScale, 0, 0);
+      ctx.imageSmoothingEnabled = false;
 
       for (const [index, el] of this.elements.entries()) {
         if (!el.enabled || !el.active) {
@@ -623,6 +633,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .osd-canvas {
+  display: block;
   width: 100%;
   background-image: url("/osd_background.jpg");
   background-attachment: local;
