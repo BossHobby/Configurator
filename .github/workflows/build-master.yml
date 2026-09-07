@@ -147,11 +147,25 @@ jobs:
     needs: [linux, windows, mac]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
+
+      - name: prepare release notes
+        run: |
+          awk '
+            $0 == "## " tag { in_section = 1; next }
+            in_section && /^## / { exit }
+            in_section && !seen_content && $0 == "" { next }
+            in_section { seen_content = 1 }
+            in_section { print }
+          ' tag="${{ github.ref_name }}" CHANGELOG.md > RELEASE.md
 
       - name: release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: RELEASE.md
           files: |
             quic-config-linux/*
             quic-config-mac/*
