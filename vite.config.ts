@@ -7,7 +7,9 @@ import { execSync } from "child_process";
 import svgLoader from "vite-svg-loader";
 import webfontDownload from "vite-plugin-webfont-dl";
 
-const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd();
+const branch =
+  process.env.GITHUB_REF_NAME ||
+  execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd();
 
 let base = "/";
 
@@ -31,7 +33,7 @@ process.env.VITE_APP_VERSION = require("./package.json").version;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: base,
+  base: process.env.PAGES_BASE || base,
   plugins: [
     vue(),
     svgLoader(),
@@ -39,6 +41,7 @@ export default defineConfig({
       "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
     ]),
     VitePWA({
+      disable: process.env.PAGES_PREVIEW === "true",
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",

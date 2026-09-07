@@ -5,7 +5,7 @@ on:
       - "develop"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+
+      - name: Test Pages publishing
+        run: node --test script/pages.test.mjs
 
       - name: cache node_modules
         uses: actions/cache@v4
@@ -32,29 +35,3 @@ jobs:
         with:
           name: gh-pages
           path: docs
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: checkout gh-pages
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git fetch
-          git checkout gh-pages
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: gh-pages
-          path: develop
-
-      - name: update develop gh-pages
-        run: |
-          git add .
-          git commit -m "GitHub Pages $GITHUB_SHA" || exit 0
-          git remote set-url --push origin https://actions:$GITHUB_TOKEN@github.com/BossHobby/Configurator
-          git push -f

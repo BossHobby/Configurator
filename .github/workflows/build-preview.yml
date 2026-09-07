@@ -1,0 +1,29 @@
+name: build-preview
+on:
+  push:
+    branches-ignore: [master, develop, gh-pages]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: node --test script/pages.test.mjs
+      - run: npm ci
+      - name: Set preview path
+        run: node script/pages.mjs base >> "$GITHUB_ENV"
+      - run: npm run build:gh-pages
+        env:
+          PAGES_PREVIEW: "true"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gh-pages
+          path: docs
+          retention-days: 7

@@ -1,0 +1,69 @@
+name: publish-pages
+on:
+  workflow_run:
+    workflows: [build-master, build-develop, build-preview]
+    types: [completed]
+  delete:
+  workflow_dispatch:
+    inputs:
+      deleted_branch:
+        description: "Deleted branch to clean up (leave empty to republish)"
+        type: string
+        required: false
+
+permissions:
+  actions: read
+  contents: write
+  pages: write
+  id-token: write
+
+# Keep cleanup and every site publication in the same queue. Do not cancel
+# pending deletions when several branches finish building together.
+concurrency:
+  group: publish-pages
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      (github.event_name == 'delete' && github.event.ref_type == 'branch') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # workflow_run and delete execute trusted code from the default branch.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: source
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+      - uses: actions/download-artifact@v4
+        if: github.event_name == 'workflow_run'
+        with:
+          name: gh-pages
+          path: artifact
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Update site and prune deleted branches
+        run: node source/script/pages.mjs publish
+        env:
+          PAGES_SITE: site
+          PAGES_ARTIFACT: artifact
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment
