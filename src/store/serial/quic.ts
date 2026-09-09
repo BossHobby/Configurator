@@ -25,7 +25,7 @@ export enum QuicVal {
   PidRatePresets,
   VtxSettings,
   OSDFont,
-  BLHeliSettings,
+  BLHeliSettings, // deprecated
   BindInfo,
   PerfCounters,
   BlackboxPresets,
@@ -46,6 +46,12 @@ export enum QuicMotor {
   TestSetValue,
   Esc4WayIf,
   Serial,
+  SetDirection,
+}
+
+export enum MotorDirection {
+  Normal,
+  Reversed,
 }
 
 export enum QuicOSD {

@@ -151,9 +151,6 @@
   "motor_pins": {
     "text": "Use this section to change motor positions, useful when using an fc in non standard configuration"
   },
-  "motor_settings": {
-    "text": "Connect a lipo to access esc settings. Change direction of rotation. Not all esc are supported, Blheli-32 does not work"
-  },
   "osd.elements": {
     "text": "Select and position OSD elements, callsign must use upper case",
     "link": "https://docs.bosshobby.com/Features/#osd"
