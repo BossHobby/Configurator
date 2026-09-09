@@ -1,4 +1,4 @@
-import { QuicCmd, QuicMotor, QuicVal } from "./serial/quic";
+import { MotorDirection, QuicCmd, QuicMotor } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { Log } from "@/log";
 import { defineStore } from "pinia";
@@ -98,9 +98,25 @@ export const useMotorStore = defineStore("motor", {
       active: 0,
       value: new Array<number>(),
     },
-    settings: null as any,
+    requested_directions: {} as Record<number, MotorDirection>,
   }),
   getters: {
+    directionPins() {
+      const profile = useProfileStore();
+      return this.pins
+        .filter(
+          (pin) =>
+            profile.outputs[pin.testIndex]?.protocol ===
+            output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
+        )
+        .map((pin) => ({
+          ...pin,
+          requestedDirection:
+            this.requested_directions[
+              profile.outputs[pin.testIndex].target_output
+            ],
+        }));
+    },
     pins() {
       const info = useInfoStore();
       const profile = useProfileStore();
@@ -124,7 +140,7 @@ export const useMotorStore = defineStore("motor", {
         const rule = profile.mixer.find((r) => r.source === p.source);
         const output = profile.outputs[p.index];
         const logicalIndex = info.is_rover
-          ? (rule?.output_index ?? p.index)
+          ? rule?.output_index ?? p.index
           : p.index;
         const mappedOutput = profile.outputs[logicalIndex];
         const index =
@@ -139,54 +155,53 @@ export const useMotorStore = defineStore("motor", {
     },
   },
   actions: {
+    async set_motor_direction(index: number, direction: MotorDirection) {
+      const root = useRootStore();
+      if (this.loading) {
+        return;
+      }
+      const targetOutput = useProfileStore().outputs[index].target_output;
+      this.loading = true;
+      // A failed or timed-out request may still have reached the ESC.
+      delete this.requested_directions[targetOutput];
+      try {
+        await this.fetch_motor_test();
+        const resumeTesting = !!this.test.active;
+        if (resumeTesting) {
+          await serial.command(QuicCmd.Motor, QuicMotor.TestDisable);
+          this.test.active = 0;
+          this.test.value.fill(0);
+        }
+        // Uses the logical output index, matching motor testing. Firmware maps the pin.
+        await serial.command(
+          QuicCmd.Motor,
+          QuicMotor.SetDirection,
+          index,
+          direction,
+        );
+        this.requested_directions[targetOutput] = direction;
+        if (resumeTesting) {
+          await serial.command(QuicCmd.Motor, QuicMotor.TestEnable);
+          await this.fetch_motor_test();
+        }
+        root.append_alert({
+          type: "success",
+          msg: "Direction command sent. Test the motor to verify rotation.",
+        });
+      } catch (err) {
+        Log.error("motor", err);
+        root.append_alert({
+          type: "danger",
+          msg: "Failed to set motor direction.",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
     fetch_motor_test() {
       return serial.command(QuicCmd.Motor, QuicMotor.TestStatus).then((p) => {
         this.test = p.payload[0];
       });
-    },
-    fetch_motor_settings() {
-      const root = useRootStore();
-      this.loading = true;
-
-      return serial
-        .get(QuicVal.BLHeliSettings)
-        .then((settings) => {
-          this.settings = settings;
-        })
-        .catch((err) => {
-          root.append_alert({
-            type: "danger",
-            msg: "Loading motor settings failed!",
-          });
-          Log.error("motor", err);
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    apply_motor_settings(settings) {
-      const root = useRootStore();
-      this.loading = true;
-
-      return serial
-        .set(QuicVal.BLHeliSettings, ...settings)
-        .then(() => {
-          this.settings = settings;
-          root.append_alert({
-            type: "success",
-            msg: "Motor settings applied!",
-          });
-        })
-        .catch((err) => {
-          Log.error("motor", err);
-          root.append_alert({
-            type: "danger",
-            msg: "Failed to apply motor settings!",
-          });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
     },
     async motor_test_toggle() {
       await this.fetch_motor_test();
@@ -204,6 +219,9 @@ export const useMotorStore = defineStore("motor", {
         });
     },
     motor_test_set_value(value) {
+      if (this.loading) {
+        return Promise.resolve();
+      }
       return serial
         .command(QuicCmd.Motor, QuicMotor.TestSetValue, value)
         .then((p) => {
