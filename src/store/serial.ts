@@ -231,6 +231,8 @@ export const useSerialStore = defineStore("serial", {
       } catch (err) {
         Log.error("serial", err);
         this.is_connected = false;
+        stopInterval();
+        await serial.close();
         root.reset_needs_reboot();
         root.append_alert({
           type: "danger",

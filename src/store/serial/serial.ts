@@ -124,7 +124,7 @@ export class Serial {
 
   private transfromClosed?: Promise<void>;
   private errorCallback?: any;
-  private isClosing = false;
+  private closing?: Promise<void>;
 
   public async connect(errorCallback: any = console.warn): Promise<any> {
     const ws = settings.websocketUrl();
@@ -292,11 +292,14 @@ export class Serial {
     return this._command(cmd, progress, undefined, values, false);
   }
 
-  async close() {
-    try {
-      if (this.isClosing) return;
-      this.isClosing = true;
+  close(): Promise<void> {
+    return (this.closing ??= this.closePort().finally(() => {
+      this.closing = undefined;
+    }));
+  }
 
+  private async closePort() {
+    try {
       const errors = (
         await Promise.all(
           [
@@ -326,11 +329,10 @@ export class Serial {
       this.writer = undefined;
 
       this.transfromClosed = undefined;
+      this.transform = undefined;
 
       this.port = undefined;
       this.ws = undefined;
-
-      this.isClosing = false;
     }
   }
 
@@ -435,7 +437,6 @@ export class Serial {
       : undefined;
     try {
       const result = await this.reader?.read().then((r) => r.value);
-      if (timer) clearTimeout(timer);
       return result;
     } catch (e) {
       if (e instanceof TypeError) {
@@ -443,6 +444,8 @@ export class Serial {
       } else {
         throw e;
       }
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   }
 
