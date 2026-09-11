@@ -192,7 +192,7 @@ export default defineComponent({
       const maxChannel = directChannels ? 16 : 12;
       if (channel < 0 || channel >= maxChannel) return null;
       const value = directChannels
-        ? (this.state.rx_channels?.[channel] ?? this.state.aux[channel])
+        ? this.state.rx_channels?.[channel] ?? this.state.aux[channel]
         : this.state.aux[channel];
       if (value === undefined || value === null) return null;
       if (value <= 1) return value ? 100 : 0;
@@ -204,9 +204,18 @@ export default defineComponent({
         const entry = (aux[index] as aux_function_map_t) || {
           channel: 0,
           range_min: 0,
-          range_max: 65535,
+          range_max: 0,
         };
-        aux[index] = { ...entry, channel: value };
+        const nextEntry = { ...entry, channel: value };
+        if (
+          value >= 0 &&
+          value < this.maxSelectableRxChannel() &&
+          entry.range_min === entry.range_max
+        ) {
+          nextEntry.range_min = Math.round(0.7 * 65535);
+          nextEntry.range_max = 65535;
+        }
+        aux[index] = nextEntry;
       } else {
         aux[index] = value as any;
       }
