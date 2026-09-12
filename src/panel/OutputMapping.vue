@@ -100,7 +100,7 @@
         </div>
 
         <div v-else>
-          <div v-if="profile.servo" class="field">
+          <div v-if="profile.profileVersionGt('0.3.0')" class="field">
             <label class="label">Servo PWM Frequency</label>
             <input-select
               v-model.number="profile.servo.pwm_rate_hz"
