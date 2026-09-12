@@ -16,7 +16,11 @@
       <FilterSettings></FilterSettings>
     </div>
     <div
-      v-if="profile.profileVersionGt('0.3.0') && profile.serial.gps !== 0"
+      v-if="
+        info.is_multi &&
+        profile.profileVersionGt('0.3.0') &&
+        profile.serial.gps !== 0
+      "
       class="column is-12"
     >
       <Navigation></Navigation>
