@@ -140,12 +140,18 @@
             </div>
 
             <div
-              v-for="(val, key) in pid_rates"
+              v-for="key in pidTermKeys"
               :key="key"
               class="field field-is-2 is-horizontal"
             >
               <div class="field-label">
-                <label class="label">{{ key }}</label>
+                <label class="label">
+                  {{ key === "kff" ? "FF" : key }}
+                  <tooltip
+                    v-if="key === 'kff'"
+                    text="Wing rate feedforward. 100 gives full output at 1 rad/s requested rotation. Applies to stick and leveling rate targets."
+                  />
+                </label>
               </div>
               <div class="field-body">
                 <div class="field">
@@ -434,6 +440,11 @@ export default defineComponent({
     };
   },
   computed: {
+    pidTermKeys() {
+      return Object.keys(this.pid_rates).filter(
+        (key) => key !== "kff" || this.info.is_wing,
+      );
+    },
     pid_rates: {
       get() {
         return this.profile.current_pid_rate;

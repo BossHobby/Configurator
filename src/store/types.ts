@@ -88,6 +88,7 @@ export interface pid_rate_t {
   kp: vec3_t;
   ki: vec3_t;
   kd: vec3_t;
+  kff: vec3_t;
 }
 
 export interface angle_pid_rate_t {
@@ -231,23 +232,25 @@ export interface profile_blackbox_t {
   sample_rate_hz: number;
 }
 
+export interface profile_wing_autolaunch_t {
+  accel_threshold: number;
+  velocity_threshold: number;
+  max_altitude: number;
+  idle_throttle: number;
+  throttle: number;
+  pitch_angle: number;
+  stick_deadband: number;
+  detect_time_ms: number;
+  idle_delay_ms: number;
+  motor_delay_ms: number;
+  spinup_ms: number;
+  min_time_ms: number;
+  timeout_ms: number;
+  finish_ms: number;
+}
+
 export interface profile_wing_t {
-  autotrim_threshold: number;
-  autotrim_step: number;
-  autolaunch_accel_threshold: number;
-  autolaunch_velocity_threshold: number;
-  autolaunch_max_altitude: number;
-  autolaunch_idle_throttle: number;
-  autolaunch_throttle: number;
-  autolaunch_pitch_angle: number;
-  autolaunch_stick_deadband: number;
-  autolaunch_detect_time_ms: number;
-  autolaunch_idle_delay_ms: number;
-  autolaunch_motor_delay_ms: number;
-  autolaunch_spinup_ms: number;
-  autolaunch_min_time_ms: number;
-  autolaunch_timeout_ms: number;
-  autolaunch_finish_ms: number;
+  autolaunch: profile_wing_autolaunch_t;
 }
 
 export interface profile_navigation_t {
