@@ -126,34 +126,21 @@ export default defineComponent({
       },
     }),
     hasRanges(): boolean {
-      return this.profile.profileVersionGt("0.2.4") && this.isMapFormat();
+      return !this.default_profile.has_legacy_aux;
     },
   },
   methods: {
-    isMapFormat(): boolean {
-      const aux = this.profile.receiver.aux;
-      if (!aux || aux.length === 0) return false;
-      return (
-        typeof aux[0] === "object" && aux[0] !== null && "channel" in aux[0]
-      );
-    },
     getAuxEntry(index: number): aux_function_map_t | null {
-      const aux = this.profile.receiver.aux;
-      if (!aux || !aux[index]) return null;
-      if (
-        typeof aux[index] === "object" &&
-        aux[index] !== null &&
-        "channel" in aux[index]
-      ) {
-        return aux[index] as aux_function_map_t;
-      }
-      return null;
+      if (this.default_profile.has_legacy_aux) return null;
+      return (this.profile.receiver.aux[index] as aux_function_map_t) || null;
     },
     channelForIndex(index: number): number {
       const entry = this.getAuxEntry(index);
       if (entry) return entry.channel;
       const aux = this.profile.receiver.aux;
-      if (aux && typeof aux[index] === "number") return aux[index];
+      if (this.default_profile.has_legacy_aux && aux[index] !== undefined) {
+        return aux[index] as number;
+      }
       return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
     },
     auxChannelOptions(index: number): Array<{ text: string; value: number }> {
@@ -200,7 +187,7 @@ export default defineComponent({
     },
     setChannel(index: number, value: number) {
       const aux = [...this.profile.receiver.aux];
-      if (!this.default_profile.has_legacy_aux && this.isMapFormat()) {
+      if (!this.default_profile.has_legacy_aux) {
         const entry = (aux[index] as aux_function_map_t) || {
           channel: 0,
           range_min: 0,
