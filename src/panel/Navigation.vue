@@ -8,10 +8,6 @@
     </header>
 
     <div class="card-content">
-      <div class="notification is-warning" v-if="!gpsConfigured">
-        Configure a GPS serial port before enabling Return To Home.
-      </div>
-
       <div class="content column-narrow field-is-5">
         <div class="field is-horizontal">
           <div class="field-label">
@@ -181,9 +177,6 @@ export default defineComponent({
       set(value: number) {
         this.profile.navigation.rth_cruise_speed = value / 3.6;
       },
-    },
-    gpsConfigured() {
-      return this.profile.serial.gps !== 0;
     },
   },
 });

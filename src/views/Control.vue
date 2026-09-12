@@ -16,7 +16,7 @@
       <FilterSettings></FilterSettings>
     </div>
     <div
-      v-if="profile.navigation.rth_altitude !== undefined"
+      v-if="profile.profileVersionGt('0.2.7') && profile.serial.gps !== 0"
       class="column is-12"
     >
       <Navigation></Navigation>
