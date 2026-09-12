@@ -6,48 +6,6 @@
 
     <div class="card-content">
       <div class="content column-narrow field-is-5">
-        <h4>Autotrim</h4>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">I-Term Threshold</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  v-model.number="profile.wing.autotrim_threshold"
-                  class="input"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Trim Step (%)</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  v-model.number="autotrimStepPct"
-                  class="input"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="10"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         <h4>Autolaunch</h4>
 
         <div class="field is-horizontal">
@@ -58,7 +16,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  v-model.number="profile.wing.autolaunch_accel_threshold"
+                  v-model.number="profile.wing.autolaunch.accel_threshold"
                   class="input"
                   type="number"
                   step="0.1"
@@ -78,7 +36,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  v-model.number="profile.wing.autolaunch_velocity_threshold"
+                  v-model.number="profile.wing.autolaunch.velocity_threshold"
                   class="input"
                   type="number"
                   step="0.5"
@@ -98,7 +56,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  v-model.number="profile.wing.autolaunch_max_altitude"
+                  v-model.number="profile.wing.autolaunch.max_altitude"
                   class="input"
                   type="number"
                   step="1"
@@ -159,7 +117,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  v-model.number="profile.wing.autolaunch_pitch_angle"
+                  v-model.number="profile.wing.autolaunch.pitch_angle"
                   class="input"
                   type="number"
                   step="1"
@@ -195,7 +153,7 @@
           <div class="column">
             <label class="label">Detect Time (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_detect_time_ms"
+              v-model.number="profile.wing.autolaunch.detect_time_ms"
               class="input"
               type="number"
               step="10"
@@ -205,7 +163,7 @@
           <div class="column">
             <label class="label">Idle Delay (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_idle_delay_ms"
+              v-model.number="profile.wing.autolaunch.idle_delay_ms"
               class="input"
               type="number"
               step="50"
@@ -218,7 +176,7 @@
           <div class="column">
             <label class="label">Motor Delay (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_motor_delay_ms"
+              v-model.number="profile.wing.autolaunch.motor_delay_ms"
               class="input"
               type="number"
               step="50"
@@ -228,7 +186,7 @@
           <div class="column">
             <label class="label">Spinup (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_spinup_ms"
+              v-model.number="profile.wing.autolaunch.spinup_ms"
               class="input"
               type="number"
               step="50"
@@ -241,7 +199,7 @@
           <div class="column">
             <label class="label">Min Launch Time (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_min_time_ms"
+              v-model.number="profile.wing.autolaunch.min_time_ms"
               class="input"
               type="number"
               step="100"
@@ -251,7 +209,7 @@
           <div class="column">
             <label class="label">Timeout (ms)</label>
             <input
-              v-model.number="profile.wing.autolaunch_timeout_ms"
+              v-model.number="profile.wing.autolaunch.timeout_ms"
               class="input"
               type="number"
               step="100"
@@ -268,7 +226,7 @@
             <div class="field">
               <div class="control is-expanded">
                 <input
-                  v-model.number="profile.wing.autolaunch_finish_ms"
+                  v-model.number="profile.wing.autolaunch.finish_ms"
                   class="input"
                   type="number"
                   step="50"
@@ -295,40 +253,32 @@ export default defineComponent({
     };
   },
   computed: {
-    autotrimStepPct: {
-      get(): number {
-        return Math.round((this.profile.wing.autotrim_step || 0) * 1000) / 10;
-      },
-      set(val: number) {
-        this.profile.wing.autotrim_step = Math.max(0, (val || 0) / 100);
-      },
-    },
     autolaunchIdleThrottlePct: {
       get(): number {
         return Math.round(
-          (this.profile.wing.autolaunch_idle_throttle || 0) * 100,
+          (this.profile.wing.autolaunch.idle_throttle || 0) * 100,
         );
       },
       set(val: number) {
-        this.profile.wing.autolaunch_idle_throttle = this.clampPercent(val);
+        this.profile.wing.autolaunch.idle_throttle = this.clampPercent(val);
       },
     },
     autolaunchThrottlePct: {
       get(): number {
-        return Math.round((this.profile.wing.autolaunch_throttle || 0) * 100);
+        return Math.round((this.profile.wing.autolaunch.throttle || 0) * 100);
       },
       set(val: number) {
-        this.profile.wing.autolaunch_throttle = this.clampPercent(val);
+        this.profile.wing.autolaunch.throttle = this.clampPercent(val);
       },
     },
     autolaunchStickDeadbandPct: {
       get(): number {
         return Math.round(
-          (this.profile.wing.autolaunch_stick_deadband || 0) * 100,
+          (this.profile.wing.autolaunch.stick_deadband || 0) * 100,
         );
       },
       set(val: number) {
-        this.profile.wing.autolaunch_stick_deadband = this.clampPercent(val);
+        this.profile.wing.autolaunch.stick_deadband = this.clampPercent(val);
       },
     },
   },

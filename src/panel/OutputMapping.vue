@@ -89,7 +89,7 @@
                     <input-select
                       v-model.number="row.output.target_output"
                       class="is-fullwidth"
-                      :options="outputOptions"
+                      :options="outputOptionsFor(row.output)"
                       @update:model-value="setMotorOutput(row, $event)"
                     ></input-select>
                   </div>
@@ -100,29 +100,21 @@
         </div>
 
         <div v-else>
-          <div v-if="profile.profileVersionGt('0.3.0')" class="field">
-            <label class="label">Servo PWM Frequency</label>
-            <input-select
-              v-model.number="profile.servo.pwm_rate_hz"
-              :options="pwmOptions"
-            />
-            <p class="help">Applies to all PWM outputs.</p>
-          </div>
           <div
             v-for="(mapping, index) in mappedOutputs"
             :key="'output-mapping-' + mapping.outputIndex"
-            class="columns is-mobile is-variable is-4 is-multiline mb-2 output-row"
+            class="output-row"
           >
             <div
               class="column is-6-desktop is-12-tablet output-settings-column"
             >
-              <div class="columns is-mobile is-variable is-3 mb-2">
+              <div class="output-fields">
                 <div class="column">
                   <label class="label is-small">Output</label>
                   <input-select
                     v-model.number="mapping.output.target_output"
                     class="is-fullwidth"
-                    :options="outputOptions"
+                    :options="outputOptionsFor(mapping.output)"
                   ></input-select>
                 </div>
                 <div class="column">
@@ -137,7 +129,7 @@
                   ></input-select>
                 </div>
               </div>
-              <div class="columns is-mobile is-variable is-3">
+              <div class="output-actions">
                 <div
                   v-if="hasConfigurablePwm(mapping.output)"
                   class="column is-narrow invert-column"
@@ -155,6 +147,13 @@
                     Invert
                   </label>
                 </div>
+                <button
+                  class="button is-small is-light"
+                  type="button"
+                  @click="removeMapping(mapping)"
+                >
+                  Remove Output
+                </button>
               </div>
             </div>
             <div class="column is-6-desktop is-12-tablet">
@@ -162,7 +161,7 @@
               <div
                 v-for="(rule, ruleIndex) in mapping.rules"
                 :key="'output-rule-' + index + '-' + ruleIndex"
-                class="columns is-mobile is-variable is-2 mb-1"
+                class="mix-fields"
               >
                 <div v-if="usesWeightedSource(rule)" class="column is-3">
                   <input
@@ -211,23 +210,21 @@
               ></input-select>
               <button
                 v-if="mapping.rules.length > 0"
-                class="button is-small mt-1"
+                class="button is-small"
                 type="button"
                 @click="addMixerRuleToOutput(mapping)"
               >
                 Add Source
               </button>
-              <button
-                class="button is-small is-light mt-1 ml-1"
-                type="button"
-                @click="removeMapping(mapping)"
-              >
-                Remove
-              </button>
             </div>
           </div>
 
-          <button class="button is-small" type="button" @click="addMapping">
+          <button
+            class="button is-small"
+            type="button"
+            :disabled="outputOptionsFor().length === 0"
+            @click="addMapping"
+          >
             Add Output
           </button>
         </div>
@@ -337,6 +334,30 @@
                       step="1"
                       min="0"
                       max="100"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="!info.is_multi && profile.profileVersionGt('0.3.0')"
+            class="column is-6-desktop is-12-tablet"
+          >
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label" for="servo-pwm-frequency">
+                  Servo PWM Frequency
+                </label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <input-select
+                      id="servo-pwm-frequency"
+                      v-model.number="profile.servo.pwm_rate_hz"
+                      class="is-fullwidth"
+                      :options="pwmOptions"
                     />
                   </div>
                 </div>
@@ -564,7 +585,7 @@ export default defineComponent({
         { value: 50, text: "50 Hz" },
         { value: 60, text: "60 Hz" },
         { value: 125, text: "125 Hz" },
-        { value: 165, text: "165 Hz" },
+        { value: 150, text: "150 Hz" },
         { value: 250, text: "250 Hz" },
         { value: 333, text: "333 Hz" },
       ];
@@ -618,12 +639,29 @@ export default defineComponent({
     }
   },
   methods: {
+    outputOptionsFor(currentOutput = undefined) {
+      const used = new Set(
+        this.profile.outputs
+          .filter(
+            (output) =>
+              output !== currentOutput && this.isOutputConfigured(output),
+          )
+          .map((output) => output.target_output),
+      );
+      return this.outputOptions.filter(
+        (option) =>
+          option.value === currentOutput?.target_output ||
+          !used.has(option.value),
+      );
+    },
     addMapping() {
+      const available = this.outputOptionsFor()[0];
+      if (!available) return;
       const fallbackIndex = Array.from(
         { length: this.profile.outputs.length + 1 },
         (_, i) => i,
       ).find((index) => !this.isOutputConfigured(this.profile.outputs[index]));
-      this.profile.outputs[fallbackIndex] = this.newOutput(fallbackIndex);
+      this.profile.outputs[fallbackIndex] = this.newOutput(available.value);
     },
     addMixerRuleToOutput(mapping) {
       const usedSources = mapping.rules.map((rule) => rule.source);
@@ -857,26 +895,62 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .output-row {
-  padding-bottom: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--bulma-border-weak);
 }
 
-.invert-column {
-  min-width: 8rem;
-  padding-top: 1.9rem;
+.output-row > .column,
+.output-fields > .column,
+.mix-fields > .column {
+  padding: 0;
+  width: auto;
+  min-width: 0;
 }
 
-.output-remove-column,
-.mix-remove-column {
-  align-self: flex-end;
-  padding-bottom: 12px;
+.output-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.output-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+}
+
+.output-actions > .button {
+  margin-left: auto;
+}
+
+.output-row .label {
+  margin-bottom: 0.5rem;
 }
 
 .output-settings-column .invert-column {
-  padding-top: 0.5rem;
+  padding: 0;
 }
 
-.remove-column {
-  padding-top: 1.7rem;
+.mix-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mix-fields > .is-3 {
+  flex: 0 0 5rem;
+}
+
+.mix-fields > .is-narrow {
+  flex: none;
 }
 
 .prop-direction-graphic {
@@ -920,17 +994,10 @@ export default defineComponent({
   margin-top: 1rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .output-row {
-    display: block;
-  }
-
-  .invert-column {
-    padding-top: 0.75rem;
-  }
-
-  .remove-column {
-    padding-top: 0.25rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
 </style>
