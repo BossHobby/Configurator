@@ -407,6 +407,27 @@ export interface target_output_t {
   caps: string[];
 }
 
+export interface target_serial_defaults_t {
+  rx?: number;
+  smart_audio?: number;
+  hdzero?: number;
+  gps?: number;
+}
+
+export interface target_receiver_defaults_t {
+  protocol: "crsf" | "sbus";
+}
+
+export interface target_vtx_defaults_t {
+  protocol: "smart_audio" | "tramp";
+}
+
+export interface target_defaults_t {
+  serial?: target_serial_defaults_t;
+  receiver?: target_receiver_defaults_t;
+  vtx?: target_vtx_defaults_t;
+}
+
 export interface target_t {
   name: string;
 
@@ -433,6 +454,8 @@ export interface target_t {
   motor_pins: gpio_pins_t[];
   outputs: target_output_t[];
   vehicles?: number;
+
+  defaults?: target_defaults_t;
 }
 
 export enum target_feature_t {
