@@ -1,24 +1,16 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Model</p>
-      <spinner-btn
-        class="card-header-button is-primary"
-        @click="root.cal_imu()"
-      >
-        calibrate
-      </spinner-btn>
-    </header>
-    <div class="card-content">
-      <div class="content">
-        <div id="container" style="height: 30vh; width: 100%"></div>
-        <small class="float-right">Model: TKS GT20 by Tarkusx</small>
-      </div>
-    </div>
-  </div>
+  <Panel title="Board Orientation">
+    <template #actions
+      ><spinner-btn @click="root.cal_imu()"
+        >Calibrate accelerometer</spinner-btn
+      ></template
+    >
+    <div id="container" class="h-48 w-full"></div>
+    <p class="mt-2 text-right text-xs text-muted">Model: TKS GT20 by Tarkusx</p>
+  </Panel>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent, getCurrentInstance } from "vue";
 import {
   BoxGeometry,
@@ -38,6 +30,7 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "GyroModel",
+  components: { Panel },
   setup() {
     return {
       frameRequest: -1,
@@ -89,7 +82,9 @@ export default defineComponent({
       this.scene.add(cube);
 
       const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync("gt20.glb");
+      const gltf = await loader.loadAsync(
+        `${import.meta.env.BASE_URL}gt20.glb`,
+      );
       this.model = gltf.scene.children[0];
       this.scene.add(this.model);
 

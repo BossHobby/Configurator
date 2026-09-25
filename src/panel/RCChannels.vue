@@ -1,88 +1,98 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">RC Channels</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content">
-        <div class="field field-is-2 is-horizontal mb-6">
-          <div class="field-label">
-            <label class="label">
-              Channel Mapping
-              <tooltip entry="receiver.role_map" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  v-model.number="selectedPreset"
-                  class="is-fullwidth"
-                  :options="receiverChannelMappingOptions"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="rx-role-list">
-          <section
-            v-for="(_, i) in channelNames"
-            :key="'role-' + i"
-            class="box py-3 mb-3"
-          >
-            <div class="columns is-vcentered is-variable is-4 mb-0">
-              <div class="column is-3">
-                <label class="label mb-1" :for="`role-channel-${i}`">
-                  {{ channelNames[i] }}
-                  <tooltip entry="receiver.role_map" />
-                </label>
-                <div class="field aux-channel-field mb-2">
-                  <input-select
-                    :id="`role-channel-${i}`"
-                    :model-value="roleMap(i).channel"
-                    class="aux-channel-select"
-                    :options="rxChannelOptions"
-                    @update:modelValue="setRoleField(i, 'channel', $event)"
-                  ></input-select>
-                </div>
-              </div>
-
-              <div class="column">
-                <rc-calibration-control
-                  :min="roleMap(i).min"
-                  :center="roleMap(i).center"
-                  :max="roleMap(i).max"
-                  :current="sourceChannelValue(i)"
-                  @update:min="setRoleField(i, 'min', $event)"
-                  @update:center="setRoleField(i, 'center', $event)"
-                  @update:max="setRoleField(i, 'max', $event)"
-                />
-              </div>
-            </div>
-          </section>
-        </div>
-        <div class="columns is-mobile mt-5">
-          <div class="column is-8 wizard">
-            Stick Calibration Wizard <br />
-            {{ wizardStates[state.stick_calibration_wizard] }} <br />
-            <span v-if="timerCount">Continuing in {{ timerCount }}s..</span>
-          </div>
-          <div class="column is-4">
-            <spinner-btn
-              class="is-pulled-right is-primary"
-              @click="root.cal_sticks()"
-            >
-              Calibrate
-            </spinner-btn>
-          </div>
-        </div>
+  <div
+    class="grid items-stretch gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+  >
+    <Panel title="Live Channels" description="Live receiver input">
+      <div class="space-y-4">
+        <ChannelMeter
+          v-for="(name, i) in channelNames"
+          :key="name"
+          :label="name"
+          :value="channelValues[i] ?? 0"
+          :min="name === 'Throttle' && !info.is_rover ? 0 : -1"
+          :max="1"
+        />
       </div>
-    </div>
+    </Panel>
+    <Panel title="Channel Mapping">
+      <template #actions
+        ><input-select
+          v-model.number="selectedPreset"
+          aria-label="Channel order preset"
+          :options="receiverChannelMappingOptions"
+          class="w-28"
+      /></template>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs tabular-nums">
+          <thead>
+            <tr class="border-b border-line text-muted">
+              <th class="pb-2 text-left font-normal">Axis</th>
+              <th class="pb-2 text-left font-normal">Channel</th>
+              <th class="pb-2 text-right font-normal">Min</th>
+              <th class="pb-2 text-right font-normal">Center</th>
+              <th class="pb-2 text-right font-normal">Max</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(name, i) in channelNames"
+              :key="name"
+              class="border-b border-line"
+            >
+              <th class="py-1.5 pr-3 text-left font-medium">{{ name }}</th>
+              <td class="py-1.5 pr-3">
+                <input-select
+                  :model-value="roleMap(i).channel"
+                  :aria-label="name + ' channel'"
+                  :options="rxChannelOptions"
+                  class="w-24"
+                  @update:model-value="setRoleField(i, 'channel', $event)"
+                />
+              </td>
+              <td class="px-2 text-right">{{ roleMap(i).min.toFixed(2) }}</td>
+              <td class="px-2 text-right">
+                {{ roleMap(i).center.toFixed(2) }}
+              </td>
+              <td class="pl-2 text-right">{{ roleMap(i).max.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <details class="mt-3">
+        <summary class="cursor-pointer text-xs text-muted">
+          Channel calibration
+        </summary>
+        <div class="mt-4 space-y-5">
+          <div v-for="(name, i) in channelNames" :key="name">
+            <p class="mb-2 text-xs font-medium">{{ name }}</p>
+            <rc-calibration-control
+              :label="name"
+              :min="roleMap(i).min"
+              :center="roleMap(i).center"
+              :max="roleMap(i).max"
+              :current="sourceChannelValue(i)"
+              @update:min="setRoleField(i, 'min', $event)"
+              @update:center="setRoleField(i, 'center', $event)"
+              @update:max="setRoleField(i, 'max', $event)"
+            />
+          </div>
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 text-xs text-muted"
+          >
+            <p>
+              Stick calibration ·
+              {{ wizardStates[state.stick_calibration_wizard] || "Ready"
+              }}<span v-if="timerCount">
+                · Continuing in {{ timerCount }}s</span
+              >
+            </p>
+            <spinner-btn @click="root.cal_sticks()">Calibrate</spinner-btn>
+          </div>
+        </div>
+      </details>
+    </Panel>
   </div>
 </template>
-
 <script lang="ts">
 import { StickWizardState } from "@/store/constants";
 import { defineComponent } from "vue";
@@ -91,11 +101,13 @@ import { useProfileStore } from "@/store/profile";
 import { useRootStore } from "@/store/root";
 import { useInfoStore } from "@/store/info";
 import type { rx_role_map_t } from "@/store/types";
+import Panel from "@/components/ui/Panel.vue";
+import ChannelMeter from "@/components/ui/ChannelMeter.vue";
 import RcCalibrationControl from "@/components/RcCalibrationControl.vue";
 
 export default defineComponent({
   name: "RCChannels",
-  components: { RcCalibrationControl },
+  components: { RcCalibrationControl, Panel, ChannelMeter },
   setup() {
     return {
       root: useRootStore(),
@@ -146,7 +158,7 @@ export default defineComponent({
     rxChannelOptions() {
       return Array.from({ length: 16 }, (_, i) => ({
         value: i,
-        text: `CHANNEL_${i + 1}`,
+        text: `CH${i + 1}`,
       }));
     },
     selectedPreset: {
@@ -178,37 +190,6 @@ export default defineComponent({
           max: 1,
         }));
       },
-    },
-  },
-  methods: {
-    defaultRoleMap(index: number): rx_role_map_t {
-      return {
-        channel: index,
-        min: -1,
-        center: 0,
-        max: 1,
-      };
-    },
-    roleMap(index: number): rx_role_map_t {
-      return (
-        this.profile.receiver.role_map?.[index] || this.defaultRoleMap(index)
-      );
-    },
-    setRoleField(index: number, field: keyof rx_role_map_t, value: number) {
-      const roleMap = [...(this.profile.receiver.role_map || [])];
-      const numericValue = Number(value);
-      roleMap[index] = {
-        ...this.defaultRoleMap(index),
-        ...roleMap[index],
-        [field]: field === "channel" ? Math.trunc(numericValue) : numericValue,
-      };
-      this.profile.receiver = { ...this.profile.receiver, role_map: roleMap };
-    },
-    sourceChannelValue(index: number): number {
-      const channel = this.roleMap(index).channel;
-      const raw = this.state.rx_channels?.[channel];
-      if (raw === undefined || raw === null) return 0;
-      return Math.max(-1, Math.min(1, (Number(raw) / 65535) * 2 - 1));
     },
   },
   watch: {
@@ -245,25 +226,36 @@ export default defineComponent({
       immediate: true,
     },
   },
+  methods: {
+    defaultRoleMap(index: number): rx_role_map_t {
+      return {
+        channel: index,
+        min: -1,
+        center: 0,
+        max: 1,
+      };
+    },
+    roleMap(index: number): rx_role_map_t {
+      return (
+        this.profile.receiver.role_map?.[index] || this.defaultRoleMap(index)
+      );
+    },
+    setRoleField(index: number, field: keyof rx_role_map_t, value: number) {
+      const roleMap = [...(this.profile.receiver.role_map || [])];
+      const numericValue = Number(value);
+      roleMap[index] = {
+        ...this.defaultRoleMap(index),
+        ...roleMap[index],
+        [field]: field === "channel" ? Math.trunc(numericValue) : numericValue,
+      };
+      this.profile.receiver = { ...this.profile.receiver, role_map: roleMap };
+    },
+    sourceChannelValue(index: number): number {
+      const channel = this.roleMap(index).channel;
+      const raw = this.state.rx_channels?.[channel];
+      if (raw === undefined || raw === null) return 0;
+      return Math.max(-1, Math.min(1, (Number(raw) / 65535) * 2 - 1));
+    },
+  },
 });
 </script>
-
-<style lang="scss" scoped>
-.rx-role-list .box {
-  box-shadow: none;
-  border: 1px solid var(--bulma-border, #dbdbdb);
-}
-
-.aux-channel-field :deep(.select),
-.aux-channel-field :deep(select) {
-  max-width: 100%;
-}
-
-.aux-channel-select {
-  display: inline-block;
-}
-
-.wizard {
-  font-size: 1.25rem;
-}
-</style>

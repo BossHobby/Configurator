@@ -1,25 +1,27 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Navigation</p>
-      <small class="card-header-icon" v-if="state.gps_lock">
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Navigation</p>
+      <small class="shrink-0 text-muted" v-if="state.gps_lock">
         {{ state.home_distance.toFixed(0) }}m home
       </small>
     </header>
 
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Failsafe RTH</label>
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="form-row">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">Failsafe RTH</label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
                 <input
                   id="rth_on_failsafe"
                   type="checkbox"
-                  class="switch"
+                  class="form-switch"
                   v-model="profile.navigation.rth_on_failsafe"
                 />
                 <label for="rth_on_failsafe"></label>
@@ -28,8 +30,8 @@
           </div>
         </div>
 
-        <div class="columns">
-          <div class="column">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 col-span-12 md:col-span-6">
             <number-field
               label="RTH Climb Height"
               unit="m"
@@ -45,7 +47,7 @@
               v-model="cruiseSpeedKph"
             />
           </div>
-          <div class="column">
+          <div class="min-w-0 col-span-12 md:col-span-6">
             <number-field
               label="Min Throttle"
               unit="%"
@@ -95,15 +97,15 @@ const NumberField = defineComponent({
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     return () =>
-      h("div", { class: "field is-horizontal" }, [
-        h("div", { class: "field-label" }, [
-          h("label", { class: "label" }, props.label),
+      h("div", { class: "form-row" }, [
+        h("div", { class: "form-label" }, [
+          h("label", { class: "text-sm font-medium text-ink" }, props.label),
         ]),
-        h("div", { class: "field-body" }, [
-          h("div", { class: "field has-addons" }, [
-            h("div", { class: "control is-expanded" }, [
+        h("div", { class: "flex min-w-0 items-center gap-3" }, [
+          h("div", { class: "flex min-w-0 flex-1 items-center gap-2" }, [
+            h("div", { class: "min-w-0 flex-1" }, [
               h("input", {
-                class: "input",
+                class: "form-input",
                 type: "number",
                 step: props.step,
                 min: props.min,
@@ -118,8 +120,15 @@ const NumberField = defineComponent({
               }),
             ]),
             props.unit
-              ? h("p", { class: "control" }, [
-                  h("span", { class: "button is-static" }, props.unit),
+              ? h("p", { class: "shrink-0" }, [
+                  h(
+                    "span",
+                    {
+                      class:
+                        "rounded-md border border-line bg-subtle px-3 py-2 text-sm text-muted",
+                    },
+                    props.unit,
+                  ),
                 ])
               : null,
           ]),

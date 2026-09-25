@@ -10,7 +10,7 @@ import InputSelect from "./components/InputSelect.vue";
 import FontAwesomeIcon from "./mixin/icons";
 import { ModalPlugin } from "./mixin/modal";
 
-import "./style.scss";
+import "./style.css";
 import "./mixin/chart.ts";
 
 const app = createApp(App);

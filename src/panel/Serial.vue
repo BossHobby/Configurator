@@ -1,103 +1,33 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Serial</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              RX
-              <tooltip entry="serial.rx" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="rx"
-                  v-model.number="profile.serial.rx"
-                  class="is-fullwidth"
-                  :options="serialPorts"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              VTX
-              <tooltip entry="serial.smart_audio" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="smart-audio"
-                  v-model.number="profile.serial.smart_audio"
-                  class="is-fullwidth"
-                  :options="serialPorts"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Digital VTX
-              <tooltip entry="serial.digital_vtx" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="digital_vtx"
-                  v-model.number="profile.serial.hdzero"
-                  class="is-fullwidth"
-                  :options="serialPorts"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="field is-horizontal"
-          v-if="profile.profileVersionGt('0.2.6')"
-        >
-          <div class="field-label">
-            <label class="label">
-              GPS
-              <tooltip entry="serial.gps" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="gps"
-                  v-model.number="profile.serial.gps"
-                  class="is-fullwidth"
-                  :options="serialPorts"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <Panel title="Serial Ports">
+    <div class="grid grid-cols-1 gap-4">
+      <FieldSelect
+        v-model="profile.serial.rx"
+        label="Receiver (RX)"
+        :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"
+      />
+      <FieldSelect
+        v-model="profile.serial.smart_audio"
+        label="VTX"
+        :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"
+      />
+      <FieldSelect
+        v-model="profile.serial.hdzero"
+        label="Digital VTX"
+        :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"
+      />
+      <FieldSelect
+        v-if="profile.profileVersionGt('0.2.6')"
+        v-model="profile.serial.gps"
+        label="GPS"
+        :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"
+      />
     </div>
-  </div>
+  </Panel>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import FieldSelect from "@/components/ui/Select.vue";
 import { defineComponent } from "vue";
 import { useProfileStore } from "@/store/profile";
 import { useRootStore } from "@/store/root";
@@ -105,6 +35,7 @@ import { useTargetStore } from "@/store/target";
 
 export default defineComponent({
   name: "Serial",
+  components: { Panel, FieldSelect },
   setup() {
     return {
       root: useRootStore(),

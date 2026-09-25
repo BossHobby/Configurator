@@ -1,13 +1,15 @@
 <template>
   <form @submit="onSubmit">
-    <div class="card">
-      <div class="card-header">
-        <p class="card-header-title">
+    <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+      <div
+        class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+      >
+        <p class="text-sm font-semibold">
           Flash
           <tooltip entry="flash.reset" />
         </p>
         <spinner-btn
-          class="card-header-button is-info"
+          class="form-button text-accent"
           type="button"
           @click="resetToBootloader()"
         >
@@ -15,16 +17,16 @@
         </spinner-btn>
       </div>
 
-      <div class="card-content field-is-3">
-        <div v-if="currentTarget" class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label"> Current Target </label>
+      <div class="p-4">
+        <div v-if="currentTarget" class="form-row">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink"> Current Target </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 <input
-                  class="input is-static"
+                  class="form-input bg-subtle"
                   :value="currentTarget"
                   readonly
                 />
@@ -33,16 +35,16 @@
           </div>
         </div>
 
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">
+        <div class="form-row">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Source <tooltip entry="flash.source" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
                   <input-select
                     v-model="source"
                     :options="sourceOptions"
@@ -55,35 +57,34 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'local'">
-          <div class="field-label is-medium">
-            <label class="label">
+        <div class="form-row" v-if="source == 'local'">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               File
               <tooltip entry="flash.file-local" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div
-                class="file is-boxed is-medium"
-                :class="{ 'has-name': file }"
-              >
-                <label class="file-label">
-                  <span class="file-cta">
-                    <span class="file-icon">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="relative">
+                <label class="inline-flex flex-wrap items-center gap-3">
+                  <span class="form-button">
+                    <span class="mr-2">
                       <font-awesome-icon icon="fa-solid fa-upload" />
                     </span>
-                    <span class="file-label"> Choose a file… </span>
+                    <span class="inline-flex flex-wrap items-center gap-3">
+                      Choose a file…
+                    </span>
                   </span>
                   <input
-                    class="file-input"
+                    class="absolute inset-0 opacity-0 cursor-pointer"
                     type="file"
                     @change="updateFile()"
                     ref="file"
                     accept=".hex"
                     :disabled="loading"
                   />
-                  <span v-if="file" class="file-name">
+                  <span v-if="file" class="text-sm text-muted">
                     {{ file.name }}
                   </span>
                 </label>
@@ -92,17 +93,17 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'branch'">
-          <div class="field-label is-normal">
-            <label class="label">
+        <div class="form-row" v-if="source == 'branch'">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Branch
               <tooltip entry="flash.file-branch" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
                   <input-select
                     v-model="branch"
                     :options="branchOptions"
@@ -114,17 +115,17 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'pull_request'">
-          <div class="field-label is-normal">
-            <label class="label">
+        <div class="form-row" v-if="source == 'pull_request'">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Pull Request
               <tooltip entry="flash.file-pull-request" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
                   <input-select
                     v-model="pullRequest"
                     :options="pullRequestOptions"
@@ -137,20 +138,20 @@
         </div>
 
         <div
-          class="field is-horizontal"
+          class="form-row"
           v-if="source == 'branch' || source == 'pull_request'"
         >
-          <div class="field-label is-normal">
-            <label class="label">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Commit
               <tooltip entry="flash.file-commit" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
                 <input
-                  class="input is-fullwidth is-static"
+                  class="form-input w-full bg-subtle"
                   type="text"
                   :value="commitHash"
                 />
@@ -159,17 +160,17 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'release'">
-          <div class="field-label is-normal">
-            <label class="label">
+        <div class="form-row" v-if="source == 'release'">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Release
               <tooltip entry="flash.file-release" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
                   <input-select
                     v-model="release"
                     :options="releaseOptions"
@@ -182,16 +183,16 @@
         </div>
 
         <div
-          class="field is-horizontal"
+          class="form-row"
           v-if="source != 'local' && isRuntimeTarget && supportsVehicles"
         >
-          <div class="field-label is-normal">
-            <label class="label"> Vehicle </label>
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink"> Vehicle </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
                   <input-select
                     v-model="vehicle"
                     :options="vehicleOptions"
@@ -203,26 +204,23 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="source != 'local'">
-          <div class="field-label is-normal">
-            <label class="label">
+        <div class="form-row" v-if="source != 'local'">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Target
               <tooltip entry="flash.file-remote" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <div
-                    class="dropdown"
-                    :class="{ 'is-active': dropdownActive || dropdownHover }"
-                  >
-                    <div class="dropdown-trigger">
-                      <div class="field">
-                        <p class="control is-expanded has-icons-right">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0">
+                <div class="min-w-0 w-full">
+                  <div class="relative w-full">
+                    <div class="w-full">
+                      <div class="min-w-0 flex-1">
+                        <p class="min-w-0 flex-1">
                           <input
-                            class="input is-fullwidth"
+                            class="form-input w-full"
                             type="search"
                             placeholder="Search..."
                             v-model="targetSearch"
@@ -234,19 +232,20 @@
                       </div>
                     </div>
                     <div
-                      class="dropdown-menu"
+                      v-show="dropdownActive || dropdownHover"
+                      class="absolute left-0 right-0 top-full z-50 mt-1 overflow-auto rounded-md border border-line bg-panel shadow-lg"
                       style="overflow-y: auto; max-height: 50vh"
                       role="menu"
                       @mouseover="dropdownHover = true"
                       @mouseleave="dropdownHover = false"
                     >
-                      <div class="dropdown-content">
+                      <div class="py-1">
                         <a
                           v-for="o of targetOptions"
                           :key="o.value"
                           :value="o.value"
-                          class="dropdown-item"
-                          :class="{ 'is-active': target == o }"
+                          class="block w-full cursor-pointer px-3 py-2 text-sm hover:bg-active"
+                          :class="{ 'bg-active text-accent': target == o }"
                           @click.prevent="selectTarget(o)"
                         >
                           {{ o.text }}
@@ -260,11 +259,15 @@
           </div>
         </div>
 
-        <div v-for="(v, k) in progress" :key="k" class="columns my-2 mx-2">
-          <div class="column is-2">{{ k }}</div>
-          <div class="column is-10">
+        <div
+          v-for="(v, k) in progress"
+          :key="k"
+          class="grid grid-cols-12 gap-4 my-2 mx-2"
+        >
+          <div class="min-w-0 col-span-12 md:col-span-2">{{ k }}</div>
+          <div class="min-w-0 col-span-12 md:col-span-10">
             <progress
-              class="progress is-primary"
+              class="h-2 w-full overflow-hidden rounded-full accent-accent bg-accent text-on-accent border-transparent"
               height="20px"
               :value="v.current"
               :max="v.total"
@@ -272,13 +275,10 @@
           </div>
         </div>
       </div>
-      <footer class="card-footer">
-        <spinner-btn
-          class="card-footer-item"
-          :class="{ 'is-loading': loading }"
-          :disabled="!canFlash"
-          type="submit"
-        >
+      <footer
+        class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+      >
+        <spinner-btn :aria-busy="loading" :disabled="!canFlash" type="submit">
           Flash
         </spinner-btn>
       </footer>

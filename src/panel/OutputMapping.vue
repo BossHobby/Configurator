@@ -1,18 +1,20 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Outputs</p>
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Outputs</p>
       <tooltip
-        class="card-header-icon"
+        class="shrink-0 text-muted"
         text="Configure output routing. Multirotors use fixed motor sources; rovers and wings can map motors, servos, and RX channels."
         size="lg"
       />
     </header>
 
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div v-if="info.is_multi" class="columns is-variable is-5">
-          <div class="column is-5 has-text-centered">
+    <div class="p-4">
+      <div class="space-y-4">
+        <div v-if="info.is_multi" class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 text-center col-span-12 md:col-span-5">
             <h4>Props {{ propsOut ? "Out" : "In" }}</h4>
 
             <svg
@@ -54,18 +56,20 @@
             </svg>
           </div>
 
-          <div class="column">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label"> Prop Direction </label>
+          <div class="min-w-0 col-span-12 md:col-span-7">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
+                  Prop Direction
+                </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="invert-yaw"
                       v-model.number="propDirectionMode"
-                      class="is-fullwidth"
+                      class="w-full"
                       :options="invertYawModes"
                     />
                   </div>
@@ -76,19 +80,19 @@
             <div
               v-for="row in motorOutputRows"
               :key="'motor-output-' + row.motor"
-              class="field is-horizontal"
+              class="form-row"
             >
-              <div class="field-label">
-                <label class="label"
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink"
                   >M{{ row.motor }} ({{ row.position }})</label
                 >
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       v-model.number="row.output.target_output"
-                      class="is-fullwidth"
+                      class="w-full"
                       :options="outputOptionsFor(row.output)"
                       @update:model-value="setMotorOutput(row, $event)"
                     ></input-select>
@@ -105,23 +109,25 @@
             :key="'output-mapping-' + mapping.outputIndex"
             class="output-row"
           >
-            <div
-              class="column is-6-desktop is-12-tablet output-settings-column"
-            >
+            <div class="min-w-0 output-settings-column">
               <div class="output-fields">
-                <div class="column">
-                  <label class="label is-small">Output</label>
+                <div class="min-w-0">
+                  <label class="text-sm font-medium text-ink text-xs"
+                    >Output</label
+                  >
                   <input-select
                     v-model.number="mapping.output.target_output"
-                    class="is-fullwidth"
+                    class="w-full"
                     :options="outputOptionsFor(mapping.output)"
                   ></input-select>
                 </div>
-                <div class="column">
-                  <label class="label is-small">Protocol</label>
+                <div class="min-w-0">
+                  <label class="text-sm font-medium text-ink text-xs"
+                    >Protocol</label
+                  >
                   <input-select
                     v-model.number="mapping.output.protocol"
-                    class="is-fullwidth"
+                    class="w-full"
                     :options="protocolOptionsForOutput(mapping.output)"
                     @update:model-value="
                       onProtocolChange(mapping.output, $event)
@@ -132,12 +138,12 @@
               <div class="output-actions">
                 <div
                   v-if="hasConfigurablePwm(mapping.output)"
-                  class="column is-narrow invert-column"
+                  class="min-w-0 invert-column"
                 >
                   <input
                     :id="'output-invert-' + index"
                     type="checkbox"
-                    class="switch is-small"
+                    class="form-switch text-xs"
                     :checked="!!mapping.output.invert"
                     @change="
                       mapping.output.invert = mapping.output.invert ? 0 : 1
@@ -148,7 +154,7 @@
                   </label>
                 </div>
                 <button
-                  class="button is-small is-light"
+                  class="form-button text-xs"
                   type="button"
                   @click="removeMapping(mapping)"
                 >
@@ -156,16 +162,16 @@
                 </button>
               </div>
             </div>
-            <div class="column is-6-desktop is-12-tablet">
-              <label class="label is-small">Mixes</label>
+            <div class="min-w-0">
+              <label class="text-sm font-medium text-ink text-xs">Mixes</label>
               <div
                 v-for="(rule, ruleIndex) in mapping.rules"
                 :key="'output-rule-' + index + '-' + ruleIndex"
                 class="mix-fields"
               >
-                <div v-if="usesWeightedSource(rule)" class="column is-3">
+                <div v-if="usesWeightedSource(rule)" class="min-w-0">
                   <input
-                    class="input"
+                    class="form-input"
                     type="number"
                     step="1"
                     min="-100"
@@ -174,26 +180,26 @@
                     @input="setRuleWeight(rule, $event)"
                   />
                 </div>
-                <div class="column">
+                <div class="min-w-0">
                   <input-select
                     :model-value="rule.source"
-                    class="is-fullwidth"
+                    class="w-full"
                     :options="mixSourceOptions"
                     @update:model-value="
                       setMixerRuleSource(mapping, rule, $event)
                     "
                   ></input-select>
                 </div>
-                <div v-if="usesSourceIndex(rule)" class="column is-3">
+                <div v-if="usesSourceIndex(rule)" class="min-w-0">
                   <input-select
                     v-model.number="rule.source_index"
-                    class="is-fullwidth"
+                    class="w-full"
                     :options="rxChannelOptions"
                   ></input-select>
                 </div>
-                <div class="column is-narrow mix-remove-column">
+                <div class="min-w-0 mix-remove-column">
                   <button
-                    class="button is-small is-light"
+                    class="form-button text-xs"
                     type="button"
                     @click="removeMixerRule(mapping, rule)"
                   >
@@ -204,13 +210,13 @@
               <input-select
                 v-if="mapping.rules.length === 0"
                 :model-value="mapping.rule.source"
-                class="is-fullwidth"
+                class="w-full"
                 :options="mixSourceOptions"
                 @update:model-value="setMappingSource(mapping, $event)"
               ></input-select>
               <button
                 v-if="mapping.rules.length > 0"
-                class="button is-small"
+                class="form-button text-xs"
                 type="button"
                 @click="addMixerRuleToOutput(mapping)"
               >
@@ -220,7 +226,7 @@
           </div>
 
           <button
-            class="button is-small"
+            class="form-button text-xs"
             type="button"
             :disabled="outputOptionsFor().length === 0"
             @click="addMapping"
@@ -229,22 +235,22 @@
           </button>
         </div>
 
-        <div class="columns is-multiline is-variable is-5 settings-grid">
-          <div class="column is-6-desktop is-12-tablet">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">
+        <div class="grid grid-cols-12 gap-4 settings-grid">
+          <div class="min-w-0 col-span-12 md:col-span-12 lg:col-span-6">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
                   Digital Idle
                   <tooltip entry="motor.digital_idle" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
                       id="digital-idle"
                       v-model.number="profile.motor.digital_idle"
-                      class="input"
+                      class="form-input"
                       type="number"
                       step="0.5"
                       min="0"
@@ -262,22 +268,22 @@
               info.quic_protocol_version > 1 &&
               info.has_feature(constants.Features.BRUSHLESS)
             "
-            class="column is-6-desktop is-12-tablet"
+            class="min-w-0 col-span-12 md:col-span-12 lg:col-span-6"
           >
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
                   DShot Time
                   <tooltip entry="motor.dshot_time" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="dshot-time"
                       v-model="profile.motor.dshot_time"
-                      class="is-fullwidth"
+                      class="w-full"
                       :options="dshotTimes"
                     ></input-select>
                   </div>
@@ -286,21 +292,24 @@
             </div>
           </div>
 
-          <div v-if="info.is_multi" class="column is-6-desktop is-12-tablet">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">
+          <div
+            v-if="info.is_multi"
+            class="min-w-0 col-span-12 md:col-span-12 lg:col-span-6"
+          >
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
                   Turtle Throttle Percent
                   <tooltip entry="motor.turtle_throttle_percent" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
                       id="turtle-throttle-percent"
                       v-model.number="profile.motor.turtle_throttle_percent"
-                      class="input"
+                      class="form-input"
                       type="number"
                       step="1"
                       min="0"
@@ -314,22 +323,22 @@
 
           <div
             v-if="profile.profileVersionGt('0.2.0')"
-            class="column is-6-desktop is-12-tablet"
+            class="min-w-0 col-span-12 md:col-span-12 lg:col-span-6"
           >
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
                   Motor Limit Percent
                   <tooltip entry="motor.motor_limit" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
                       id="motor-limit-percent"
                       v-model.number="profile.motor.motor_limit"
-                      class="input"
+                      class="form-input"
                       type="number"
                       step="1"
                       min="0"
@@ -342,21 +351,24 @@
           </div>
           <div
             v-if="!info.is_multi && profile.profileVersionGt('0.3.0')"
-            class="column is-6-desktop is-12-tablet"
+            class="min-w-0 col-span-12 md:col-span-12 lg:col-span-6"
           >
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="servo-pwm-frequency">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="servo-pwm-frequency"
+                >
                   Servo PWM Frequency
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="servo-pwm-frequency"
                       v-model.number="profile.servo.pwm_rate_hz"
-                      class="is-fullwidth"
+                      class="w-full"
                       :options="pwmOptions"
                     />
                   </div>
@@ -776,7 +788,7 @@ export default defineComponent({
           output_protocol_t.OUTPUT_PROTOCOL_DSHOT,
         )
           ? output_protocol_t.OUTPUT_PROTOCOL_DSHOT
-          : protocols[1] ?? output_protocol_t.OUTPUT_PROTOCOL_NONE;
+          : (protocols[1] ?? output_protocol_t.OUTPUT_PROTOCOL_NONE);
       }
       if (output.protocol === output_protocol_t.OUTPUT_PROTOCOL_DSHOT) {
         output.invert = 0;
@@ -900,12 +912,12 @@ export default defineComponent({
   gap: 2rem;
   padding-bottom: 1.5rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--bulma-border-weak);
+  border-bottom: 1px solid var(--ui-line);
 }
 
-.output-row > .column,
-.output-fields > .column,
-.mix-fields > .column {
+.output-row > div,
+.output-fields > div,
+.mix-fields > div {
   padding: 0;
   width: auto;
   min-width: 0;
@@ -926,11 +938,11 @@ export default defineComponent({
   min-height: 2rem;
 }
 
-.output-actions > .button {
+.output-actions > button {
   margin-left: auto;
 }
 
-.output-row .label {
+.output-row label {
   margin-bottom: 0.5rem;
 }
 
@@ -945,16 +957,18 @@ export default defineComponent({
   margin-bottom: 0.75rem;
 }
 
-.mix-fields > .is-3 {
+.mix-fields > :first-child {
   flex: 0 0 5rem;
 }
 
-.mix-fields > .is-narrow {
+.mix-fields > .mix-remove-column {
   flex: none;
 }
 
 .prop-direction-graphic {
-  max-width: 400px;
+  display: block;
+  margin-inline: auto;
+  max-width: 260px;
   width: 100%;
 }
 
@@ -971,7 +985,7 @@ export default defineComponent({
 }
 
 .prop-marker circle {
-  stroke: #62a834;
+  stroke: var(--ui-accent);
 }
 
 .prop-marker path {
@@ -980,11 +994,11 @@ export default defineComponent({
 }
 
 .motor-label {
-  fill: #363636;
+  fill: var(--ui-ink);
   font-size: 8px;
   font-weight: 700;
   paint-order: stroke;
-  stroke: #fff;
+  stroke: var(--ui-panel);
   stroke-linejoin: round;
   stroke-width: 3px;
   text-anchor: middle;

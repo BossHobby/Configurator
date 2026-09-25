@@ -1,11 +1,28 @@
 <!doctype html>
-<html lang="en" class="theme-dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
-    />
+    <script>
+      try {
+        const stored = localStorage.getItem("appearance");
+        const legacy = localStorage.getItem("dark-mode");
+        const preference = ["light", "dark", "system"].includes(stored)
+          ? stored
+          : legacy === "true"
+            ? "dark"
+            : legacy === "false"
+              ? "light"
+              : "system";
+        const theme =
+          preference === "system"
+            ? matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : preference;
+        document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>QUICKSILVER Configurator</title>
     <meta
       name="description"

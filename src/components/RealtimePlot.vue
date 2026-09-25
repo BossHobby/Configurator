@@ -1,14 +1,15 @@
 <template>
   <Scatter
     v-if="chartData"
+    ref="chart"
     :data="chartData"
     :options="chartOptions"
-    ref="chart"
   />
 </template>
 
 <script lang="ts">
 import type { ChartOptions } from "chart.js";
+import { useChartTheme } from "@/ui/useChartTheme";
 import { defineComponent } from "vue";
 import { Scatter } from "vue-chartjs";
 
@@ -16,6 +17,9 @@ export default defineComponent({
   name: "RealtimePlot",
   components: { Scatter },
   props: ["title", "time", "input", "axis", "transform"],
+  setup() {
+    return { chartTheme: useChartTheme() };
+  },
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
@@ -38,7 +42,13 @@ export default defineComponent({
           },
         },
         scales: {
+          y: {
+            ticks: { color: this.chartTheme.text },
+            grid: { color: this.chartTheme.grid },
+          },
           x: {
+            ticks: { color: this.chartTheme.text },
+            grid: { color: this.chartTheme.grid },
             type: "time",
             time: {
               unit: "second",
@@ -49,7 +59,15 @@ export default defineComponent({
           },
         },
         plugins: {
+          legend: {
+            labels: {
+              color: this.chartTheme.text,
+              usePointStyle: true,
+              boxWidth: 8,
+            },
+          },
           title: {
+            color: this.chartTheme.text,
             display: true,
             text: this.title,
           },
@@ -73,41 +91,10 @@ export default defineComponent({
       };
     },
   },
-  methods: {
-    updateChartData() {
-      let datasets = [] as any[];
-
-      if (Array.isArray(this.axis)) {
-        datasets = this.axis.map((l, i) => {
-          return {
-            label: l,
-            data: this.datasets[i] || [],
-            fill: false,
-            borderColor: this.colors[i],
-            showLine: true,
-            interpolate: true,
-          };
-        });
-      } else {
-        datasets = [
-          {
-            label: this.axis,
-            data: this.datasets[0] || [],
-            fill: false,
-            borderColor: this.colors[0],
-            showLine: true,
-            interpolate: true,
-          },
-        ];
-      }
-
-      this.chartData = {
-        labels: [],
-        datasets,
-      };
-    },
-  },
   watch: {
+    chartTheme() {
+      this.updateChartData();
+    },
     input(values) {
       const transform = this.transform || ((v) => v);
       const time = this.time || Date.now();
@@ -156,6 +143,40 @@ export default defineComponent({
     },
     transform() {
       this.updateChartData();
+    },
+  },
+  methods: {
+    updateChartData() {
+      let datasets = [] as any[];
+
+      if (Array.isArray(this.axis)) {
+        datasets = this.axis.map((l, i) => {
+          return {
+            label: l,
+            data: this.datasets[i] || [],
+            fill: false,
+            borderColor: this.chartTheme.series[i],
+            showLine: true,
+            interpolate: true,
+          };
+        });
+      } else {
+        datasets = [
+          {
+            label: this.axis,
+            data: this.datasets[0] || [],
+            fill: false,
+            borderColor: this.chartTheme.series[0],
+            showLine: true,
+            interpolate: true,
+          },
+        ];
+      }
+
+      this.chartData = {
+        labels: [],
+        datasets,
+      };
     },
   },
 });

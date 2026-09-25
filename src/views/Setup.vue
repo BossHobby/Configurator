@@ -1,37 +1,12 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <GyroModel></GyroModel>
+  <div class="space-y-4">
+    <div class="grid items-stretch gap-4 lg:grid-cols-2">
+      <GyroModel /><BoardOrientationSettings /><Voltage /><Serial />
     </div>
-    <div class="column is-12">
-      <BoardOrientationSettings></BoardOrientationSettings>
-    </div>
-  </div>
-  <div class="columns">
-    <div class="column is-6">
-      <Voltage></Voltage>
-    </div>
-    <div class="column is-6">
-      <Serial></Serial>
-    </div>
-  </div>
-  <div class="columns">
-    <div class="column is-12">
-      <VTX
-        v-if="profile.serial.smart_audio != 0 || profile.serial.hdzero != 0"
-      ></VTX>
-    </div>
-  </div>
-  <div
-    class="columns"
-    v-if="profile.profileVersionGt('0.2.6') && profile.serial.gps != 0"
-  >
-    <div class="column is-12">
-      <GPS></GPS>
-    </div>
+    <VTX v-if="profile.serial.smart_audio != 0 || profile.serial.hdzero != 0" />
+    <GPS v-if="profile.profileVersionGt('0.2.6') && profile.serial.gps != 0" />
   </div>
 </template>
-
 <script lang="ts">
 import { defineComponent } from "vue";
 import BoardOrientationSettings from "@/panel/BoardOrientationSettings.vue";

@@ -1,10 +1,18 @@
 <template>
   <button
-    class="button"
-    :class="{ 'is-loading': loading }"
+    class="form-button"
+    :aria-busy="loading"
     v-bind="filteredAttrs"
+    :disabled="
+      loading || ($attrs.disabled !== undefined && $attrs.disabled !== false)
+    "
     @click="clickHandler"
   >
+    <span
+      v-if="loading"
+      aria-hidden="true"
+      class="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+    />
     <slot></slot>
   </button>
 </template>

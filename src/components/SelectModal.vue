@@ -1,17 +1,21 @@
 <template>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Select {{ title }}</p>
+  <div
+    class="relative z-10 flex max-h-[85dvh] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-line bg-panel text-ink shadow-xl"
+  >
+    <header
+      class="flex items-center justify-between gap-4 border-b border-line p-4"
+    >
+      <p class="text-lg font-semibold">Select {{ title }}</p>
       <button
-        class="delete has-background-primary"
+        class="form-dismiss"
         aria-label="close"
         @click="$emit('close')"
       ></button>
     </header>
-    <section class="modal-card-body">
-      <div class="select is-fullwidth is-multiple select-list">
-        <div class="control">
-          <select v-model="value" size="8">
+    <section class="min-h-0 overflow-y-auto p-4">
+      <div class="min-w-0 w-full select-list">
+        <div class="min-w-0">
+          <select class="form-input" v-model="value" size="8">
             <option v-for="o of options" :key="o.value" :value="o.value">
               {{ o.text }}
             </option>
@@ -19,11 +23,14 @@
         </div>
       </div>
     </section>
-    <footer class="modal-card-foot">
-      <div class="buttons is-justify-content-space-between" style="width: 100%">
-        <button class="button" @click="$emit('close')">Cancel</button>
+    <footer class="border-t border-line p-4">
+      <div
+        class="flex flex-wrap items-center gap-2 justify-between"
+        style="width: 100%"
+      >
+        <button class="form-button" @click="$emit('close')">Cancel</button>
         <button
-          class="button is-success"
+          class="form-button text-accent"
           :disabled="value == undefined"
           @click="$emit('close', value)"
         >

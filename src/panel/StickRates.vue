@@ -1,26 +1,28 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Rates</p>
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Rates</p>
     </header>
 
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="profile">
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink" for="profile">
                   Profile
                   <tooltip entry="rate.profile" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="profile"
-                      class="is-fullwidth"
+                      class="w-full"
                       v-model.number="profile.rate.profile"
                       :options="rateProfiles"
                       @change="update()"
@@ -30,19 +32,19 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="rate-mode">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink" for="rate-mode">
                   Mode
                   <tooltip entry="rate.mode" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="rate-mode"
-                      class="is-fullwidth"
+                      class="w-full"
                       v-model.number="currentMode"
                       :options="rateModes"
                       @change="update()"
@@ -52,47 +54,53 @@
               </div>
             </div>
 
-            <div class="card mt-5 mb-6">
-              <header class="card-header">
-                <p class="card-header-title">
+            <div
+              class="min-w-0 rounded-lg border border-line bg-panel text-ink mt-5 mb-6"
+            >
+              <header
+                class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+              >
+                <p class="text-sm font-semibold">
                   {{ currentModeText }}
                 </p>
               </header>
 
-              <div class="card-content">
-                <div class="content">
-                  <div class="columns is-mobile is-multiline">
-                    <div class="column is-offset-4 is-8">
-                      <div class="columns is-mobile is-multiline">
-                        <div class="column is-4">
+              <div class="p-4">
+                <div class="space-y-4">
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="min-w-0 col-start-5 md:col-start-5 col-span-8">
+                      <div class="grid grid-cols-12 gap-4">
+                        <div class="min-w-0 col-span-4">
                           <h6>Roll</h6>
                         </div>
-                        <div class="column is-4">
+                        <div class="min-w-0 col-span-4">
                           <h6>Pitch</h6>
                         </div>
-                        <div class="column is-4">
+                        <div class="min-w-0 col-span-4">
                           <h6>Yaw</h6>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div
-                    class="columns is-mobile is-multiline"
+                    class="grid grid-cols-12 gap-4"
                     v-for="(val, index) in currentProfile.rate"
                     :key="rateLabel[index]"
                   >
-                    <div class="column is-4">
+                    <div class="min-w-0 col-span-4">
                       <label :for="`${currentModeText}-${rateLabel[index]}`">{{
                         rateLabel[index]
                       }}</label>
                     </div>
-                    <div class="column field-body">
-                      <div class="field">
-                        <div class="control is-expanded">
-                          <div class="columns is-mobile is-multiline">
-                            <div class="column is-4">
+                    <div
+                      class="min-w-0 flex flex-1 flex-wrap items-center gap-3 col-span-8"
+                    >
+                      <div class="min-w-0 flex-1">
+                        <div class="min-w-0 flex-1">
+                          <div class="grid grid-cols-12 gap-4">
+                            <div class="min-w-0 col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentModeText}-${rateLabel[index]}-roll`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
@@ -102,9 +110,9 @@
                                 @input="update()"
                               />
                             </div>
-                            <div class="column is-4">
+                            <div class="min-w-0 col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentModeText}-${rateLabel[index]}-pitch`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
@@ -114,9 +122,9 @@
                                 @input="update()"
                               />
                             </div>
-                            <div class="column is-4">
+                            <div class="min-w-0 col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentModeText}-${rateLabel[index]}-yaw`"
                                 type="number"
                                 :step="rateStep[currentMode][index]"
@@ -135,18 +143,21 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="level-max-angle">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="level-max-angle"
+                >
                   LevelMaxAngle
                   <tooltip entry="rate.level_max_angle" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
-                      class="input"
+                      class="form-input"
                       id="level-max-angle"
                       type="number"
                       step="5"
@@ -157,18 +168,21 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="sticks-deadband">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="sticks-deadband"
+                >
                   SticksDeadband
                   <tooltip entry="rate.sticks_deadband" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
-                      class="input"
+                      class="form-input"
                       step="0.01"
                       id="sticks-deadband"
                       type="number"
@@ -180,7 +194,7 @@
             </div>
           </div>
 
-          <div class="column is-6">
+          <div class="min-w-0 col-span-12 md:col-span-6">
             <LineChart
               :title="'Rates'"
               :labels="plot.labels"
@@ -191,13 +205,11 @@
       </div>
     </div>
 
-    <footer class="card-footer">
-      <spinner-btn class="card-footer-item" @click="downloadRates">
-        Save Rates
-      </spinner-btn>
-      <spinner-btn class="card-footer-item" @click="uploadRates">
-        Load Rates
-      </spinner-btn>
+    <footer
+      class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+    >
+      <spinner-btn @click="downloadRates"> Save Rates </spinner-btn>
+      <spinner-btn @click="uploadRates"> Load Rates </spinner-btn>
     </footer>
 
     <input accept=".yaml" type="file" ref="file" style="display: none" />

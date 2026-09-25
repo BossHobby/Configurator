@@ -4,10 +4,20 @@
       <div
         v-for="alert of root.alerts"
         :key="alert.id"
-        class="notification"
-        :class="['is-' + alert.type]"
+        class="relative rounded-lg border border-current bg-panel p-4 pr-10"
+        :class="
+          alert.type === 'danger'
+            ? 'text-danger'
+            : alert.type === 'warning'
+              ? 'text-warning'
+              : 'text-accent'
+        "
       >
-        <button class="delete" @click="dismiss(alert.id)"></button>
+        <button
+          class="form-dismiss absolute right-2 top-2"
+          aria-label="Dismiss notification"
+          @click="dismiss(alert.id)"
+        ></button>
         {{ alert.msg }}
       </div>
     </TransitionGroup>

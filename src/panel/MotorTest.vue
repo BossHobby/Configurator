@@ -1,37 +1,42 @@
 <template>
-  <div v-if="motor.test" class="card">
-    <header class="card-header">
-      <p class="card-header-title">
+  <div
+    v-if="motor.test"
+    class="min-w-0 rounded-lg border border-line bg-panel text-ink"
+  >
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">
         {{ testTitle }}
       </p>
-      <small class="card-header-icon">
+      <small class="shrink-0 text-muted">
         {{ state.vbat.toFixed(2) }}V <br />
         {{ state.ibat_filtered.toFixed(2) }}mA
       </small>
-      <tooltip class="card-header-icon" entry="motor.test" size="lg" />
+      <tooltip class="shrink-0 text-muted" entry="motor.test" size="lg" />
     </header>
 
-    <div class="card-content">
-      <div class="content">
+    <div class="p-4">
+      <div class="space-y-4">
         <template v-if="outputTestPins.length">
           <div
             v-for="m in outputTestPins"
             :key="'motor-test-' + m.source"
-            class="field field-is-2 is-horizontal mb-5"
+            class="form-row mb-5"
           >
-            <div class="field-label">
-              <label class="label">{{ m.label }}</label>
-              <p v-if="m.direction" class="help">
+            <div class="form-label">
+              <label class="text-sm font-medium text-ink">{{ m.label }}</label>
+              <p v-if="m.direction" class="mt-1 text-xs text-muted">
                 {{ directionLabel(m.direction.requestedDirection) }}
               </p>
             </div>
-            <div class="field-body">
-              <div class="field has-addons">
-                <div class="control is-expanded">
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div class="min-w-0 flex-1 flex items-center gap-2">
+                <div class="min-w-0 flex-1">
                   <input
                     :id="m.id"
                     :value="getValuePercent(m.testIndex)"
-                    class="input"
+                    class="form-input"
                     :disabled="motor.loading || !motor.test.active"
                     type="range"
                     step="1"
@@ -45,11 +50,11 @@
                     "
                   />
                 </div>
-                <div class="control">
+                <div class="min-w-0">
                   <input
                     :id="m.id + '-num'"
                     :value="formatValuePercent(m.testIndex)"
-                    class="input"
+                    class="form-input"
                     :disabled="motor.loading || !motor.test.active"
                     type="text"
                     @change="
@@ -63,8 +68,8 @@
                   />
                 </div>
               </div>
-              <div v-if="m.direction" class="field">
-                <div class="buttons">
+              <div v-if="m.direction" class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
                   <spinner-btn
                     :disabled="motor.loading"
                     @click="
@@ -87,21 +92,17 @@
           </div>
         </template>
         <template v-else>
-          <div class="is-size-5 has-text-centered has-text-weight-semibold">
+          <div class="text-lg text-center font-semibold">
             {{ testTitle + " disabled" }}
           </div>
         </template>
       </div>
     </div>
 
-    <footer class="card-footer">
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
-      <spinner-btn
-        class="card-footer-item"
-        :disabled="motor.loading"
-        @click="motor.motor_test_toggle()"
-      >
+    <footer
+      class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+    >
+      <spinner-btn :disabled="motor.loading" @click="motor.motor_test_toggle()">
         {{ motor.test.active ? "Disable" : "Enable" }}
       </spinner-btn>
     </footer>

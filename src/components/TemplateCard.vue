@@ -1,53 +1,59 @@
 <template>
-  <div v-if="tmpl" class="card my-5">
-    <div class="card-content">
-      <p class="title">
-        <span class="is-3">
+  <div
+    v-if="tmpl"
+    class="min-w-0 rounded-lg border border-line bg-panel text-ink my-5"
+  >
+    <div class="p-4">
+      <p class="text-xl font-semibold">
+        <span class="text-lg">
           {{ tmpl.name }}
         </span>
 
-        <span
-          class="is-size-5 has-text-weight-normal has-text-grey-lighter is-pulled-right"
-        >
+        <span class="text-lg font-normal text-muted float-right">
           <font-awesome-icon icon="fa-regular fa-pen-to-square" fixed-width />
           by {{ tmpl.author }}
         </span>
       </p>
 
-      <article class="media">
-        <figure class="media-left">
-          <p class="image" style="width: 300px">
+      <article class="flex flex-col gap-5 lg:flex-row">
+        <figure class="shrink-0">
+          <p class="w-full max-w-64">
             <img :src="tmpl.image" />
           </p>
         </figure>
-        <div class="media-content">
+        <div class="min-w-0 flex-1">
           <p class="m-2">{{ tmpl.desc }}</p>
           <hr />
 
-          <div v-for="o of tmpl.options" class="field is-horizontal">
-            <div class="field-label is-medium is-align-self-flex-start">
-              <label class="label">
-                <span class="is-size-5">{{ o.title }}</span>
+          <div v-for="o of tmpl.options" class="form-row">
+            <div class="form-label self-start">
+              <label class="text-sm font-medium text-ink">
+                <span class="text-lg">{{ o.title }}</span>
                 <tooltip :text="o.desc" />
               </label>
             </div>
-            <div class="field-body is-flex-grow-2">
-              <div class="field">
-                <div class="control mb-2">
-                  <div class="select is-fullwidth">
-                    <select v-model="selected[o.name]">
+            <div
+              class="flex min-w-0 flex-1 flex-wrap items-center gap-3 grow-2"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="min-w-0 mb-2">
+                  <div class="min-w-0 w-full">
+                    <select class="form-input" v-model="selected[o.name]">
                       <option v-for="e of o.entries" :value="e.name">
                         {{ e.title }}
                       </option>
                     </select>
                   </div>
                 </div>
-                <p v-if="!selected[o.name]" class="help is-danger">
+                <p
+                  v-if="!selected[o.name]"
+                  class="mt-1 text-xs text-danger"
+                >
                   Please select an option!
                 </p>
                 <p
                   v-if="selectedValues[o.name]?.desc"
-                  class="help has-text-grey-light"
+                  class="mt-1 text-xs text-muted"
                 >
                   {{ selectedValues[o.name]?.desc }}
                 </p>
@@ -57,12 +63,11 @@
         </div>
       </article>
     </div>
-    <footer class="card-footer">
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
+    <footer
+      class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+    >
       <spinner-btn
-        class="card-footer-item is-primary"
+        class="bg-accent text-on-accent border-transparent"
         @click="applyTemplate()"
         :disabled="!formValid"
       >
@@ -205,10 +210,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style>
-.is-256x256 {
-  height: 256px;
-  width: 256px;
-}
-</style>

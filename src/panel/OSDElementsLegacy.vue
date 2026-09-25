@@ -1,72 +1,73 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Elements</p>
-      <tooltip class="card-header-icon" entry="osd.elements" size="lg" />
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Elements</p>
+      <tooltip class="shrink-0 text-muted" entry="osd.elements" size="lg" />
     </header>
-    <div class="card-content">
-      <div class="content">
-        <div class="columns is-multiline">
-          <div class="column is-6">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label"> Callsign Text </label>
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">
+                  Callsign Text
+                </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input class="input" type="text" v-model="callsign" />
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
+                    <input class="form-input" type="text" v-model="callsign" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="columns mt-4 mb-0">
+            <div class="grid grid-cols-12 gap-4 mt-4 mb-0">
               <div
-                class="column has-text-centered has-text-weight-semibold px-0 is-4"
+                class="min-w-0 text-center font-semibold px-0 col-span-12 md:col-span-4"
               >
                 Element
               </div>
               <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
+                class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
               >
                 Active
               </div>
               <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
+                class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
               >
                 Invert
               </div>
               <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
+                class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
               >
                 X
               </div>
               <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
+                class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
               >
                 Y
               </div>
             </div>
 
             <template v-for="(el, i) of elements" :key="i">
-              <div
-                v-if="el.enabled"
-                class="field mb-2 field-is-2 is-horizontal"
-              >
-                <div class="field-label">
-                  <label class="label" for="pid-preset">
+              <div v-if="el.enabled" class="form-row mb-2">
+                <div class="form-label">
+                  <label class="text-sm font-medium text-ink" for="pid-preset">
                     {{ el.name }}
                   </label>
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'active-' + i"
                         :name="'active-' + i"
                         type="checkbox"
-                        class="switch"
+                        class="form-switch"
                         :checked="el.active == 1"
                         @input="osd_set(i, 'active', !el.active)"
                       />
@@ -77,13 +78,13 @@
                       ></label>
                     </div>
                   </div>
-                  <div class="field">
-                    <div class="control is-expanded">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'invert-' + i"
                         :name="'invert-' + i"
                         type="checkbox"
-                        class="switch"
+                        class="form-switch"
                         :checked="el.invert == 1"
                         @input="osd_set(i, 'invert', !el.invert)"
                       />
@@ -94,10 +95,10 @@
                       ></label>
                     </div>
                   </div>
-                  <div class="field" style="align-self: center">
-                    <div class="control is-expanded">
+                  <div class="min-w-0 flex-1" style="align-self: center">
+                    <div class="min-w-0 flex-1">
                       <input
-                        class="input"
+                        class="form-input"
                         type="number"
                         step="1"
                         :value="el.pos.x"
@@ -107,10 +108,10 @@
                       />
                     </div>
                   </div>
-                  <div class="field" style="align-self: center">
-                    <div class="control is-expanded">
+                  <div class="min-w-0 flex-1" style="align-self: center">
+                    <div class="min-w-0 flex-1">
                       <input
-                        class="input"
+                        class="form-input"
                         type="number"
                         step="1"
                         :value="el.pos.y"
@@ -125,21 +126,25 @@
             </template>
           </div>
 
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <div class="card-header-title">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div
+              class="min-w-0 rounded-lg border border-line bg-panel text-ink"
+            >
+              <header
+                class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+              >
+                <div class="text-sm font-semibold">
                   Preview
-                  <div v-if="!is_hd" class="select ml-4">
-                    <select v-model="preview">
+                  <div v-if="!is_hd" class="min-w-0 ml-4">
+                    <select class="form-input" v-model="preview">
                       <option>NTSC</option>
                       <option>PAL</option>
                     </select>
                   </div>
                 </div>
               </header>
-              <div class="card-content">
-                <div class="content">
+              <div class="p-4">
+                <div class="space-y-4">
                   <canvas
                     :width="canvasWidth"
                     :height="canvasHeight"

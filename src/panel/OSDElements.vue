@@ -1,200 +1,124 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Elements</p>
-      <tooltip class="card-header-icon" entry="osd.elements" size="lg" />
-    </header>
-    <div class="card-content">
-      <div class="content">
-        <div class="columns is-multiline">
-          <div class="column is-12">
-            <div class="card">
-              <header class="card-header">
-                <div class="card-header-title">
-                  Preview
-                  <div v-if="!is_hd" class="select ml-4">
-                    <select v-model="preview">
-                      <option>NTSC</option>
-                      <option>PAL</option>
-                    </select>
-                  </div>
-                </div>
-              </header>
-              <div class="card-content">
-                <div class="content">
-                  <canvas
-                    :width="canvasWidth"
-                    :height="canvasHeight"
-                    ref="canvas"
-                    class="osd-canvas"
-                    @mousedown="drag_start"
-                    @mousemove="drag_move"
-                    @mouseup="drag_drop"
-                    @mouseleave="drag_drop"
-                  ></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-12">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label"> Profile </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="font-file"
-                      class="is-fullwidth"
-                      v-model="osdProfile"
-                      :options="osdProfileOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label"> Callsign Text </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input class="input" type="text" v-model="callsign" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <div class="space-y-4">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <FieldSelect
+        v-model="osdProfile"
+        label="OSD profile"
+        :options="
+          osdProfileOptions.map((o) => ({ label: o.text, value: o.value }))
+        "
+      />
+      <FieldSelect
+        v-if="!is_hd"
+        v-model="preview"
+        label="Preview format"
+        :options="[
+          { label: 'NTSC', value: 'NTSC' },
+          { label: 'PAL', value: 'PAL' },
+        ]"
+      />
+      <div v-else>
+        <p class="mb-1.5 text-xs text-muted">Display</p>
+        <p class="rounded-md border border-line bg-subtle px-3 py-2 text-sm">
+          Digital · {{ limits.width }} × {{ limits.height }}
+        </p>
+      </div>
+      <label class="text-xs text-muted"
+        >Callsign<input
+          v-model="callsign"
+          maxlength="36"
+          class="mt-1.5 min-h-9 w-full rounded-md border border-line bg-subtle px-3 py-2 text-sm text-ink"
+      /></label>
+    </div>
+    <div class="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
+      <Panel
+        title="Preview"
+        description="Simulated OSD · drag an element to reposition it"
+      >
+        <canvas
+          ref="canvas"
+          :width="canvasWidth"
+          :height="canvasHeight"
+          class="osd-canvas"
+          aria-label="OSD layout preview; use the position fields to move elements with the keyboard"
+          @mousedown="drag_start"
+          @mousemove="drag_move"
+          @mouseup="drag_drop"
+          @mouseleave="drag_drop"
+        ></canvas>
+      </Panel>
+      <Panel
+        title="Elements"
+        :description="`${availableElements.length} available · ${availableElements.filter((el) => el.active).length} visible`"
+      >
+        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2">
           <div
-            v-for="(column, columnIndex) of elementColumns"
-            :key="columnIndex"
-            class="column is-12-tablet is-6-desktop"
+            v-for="el in availableElements"
+            :key="el.index"
+            class="flex items-center gap-2 rounded px-2 py-1"
+            :class="selectedIndex === el.index ? 'bg-active' : ''"
           >
-            <div class="columns is-mobile mt-4 mb-0">
-              <div
-                class="column has-text-centered has-text-weight-semibold px-0 is-4"
-              >
-                Element
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Active
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Invert
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                X
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Y
-              </div>
-            </div>
-
-            <template v-for="el of column" :key="el.index">
-              <div
-                v-if="el.enabled"
-                class="field mb-2 field-is-2 is-horizontal"
-              >
-                <div class="field-label">
-                  <label class="label" :for="'active-' + el.index">
-                    {{ el.name }}
-                  </label>
-                </div>
-                <div class="field-body columns is-mobile">
-                  <div class="column field">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'active-' + el.index"
-                        :name="'active-' + el.index"
-                        type="checkbox"
-                        class="switch"
-                        :checked="el.active == 1"
-                        @input="osd_set(el.index, 'active', !el.active)"
-                      />
-                      <label
-                        class="py-0"
-                        style="height: 2em"
-                        :for="'active-' + el.index"
-                      ></label>
-                    </div>
-                  </div>
-                  <div class="column field">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'invert-' + el.index"
-                        :name="'invert-' + el.index"
-                        type="checkbox"
-                        class="switch"
-                        :checked="el.invert == 1"
-                        @input="osd_set(el.index, 'invert', !el.invert)"
-                      />
-                      <label
-                        class="py-0"
-                        style="height: 2em"
-                        :for="'invert-' + el.index"
-                      ></label>
-                    </div>
-                  </div>
-                  <div class="column field" style="align-self: center">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        type="number"
-                        step="1"
-                        :value="el.pos.x"
-                        min="0"
-                        :max="limits.width - 1"
-                        @input="
-                          osd_set(
-                            el.index,
-                            is_hd ? 'pos_hd_x' : 'pos_sd_x',
-                            $event?.target?.value,
-                          )
-                        "
-                      />
-                    </div>
-                  </div>
-                  <div class="column field" style="align-self: center">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        type="number"
-                        step="1"
-                        :value="el.pos.y"
-                        min="0"
-                        :max="limits.height - 1"
-                        @input="
-                          osd_set(
-                            el.index,
-                            is_hd ? 'pos_hd_y' : 'pos_sd_y',
-                            $event?.target?.value,
-                          )
-                        "
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
+            <input
+              type="checkbox"
+              :checked="el.active === 1"
+              :aria-label="'Show ' + el.name"
+              class="size-4 accent-accent"
+              @change="osd_set(el.index, 'active', !el.active)"
+            />
+            <button
+              type="button"
+              class="min-h-7 flex-1 text-left text-xs"
+              :aria-pressed="selectedIndex === el.index"
+              @click="selectedIndex = el.index"
+            >
+              {{ elementLabel(el.name) }}
+            </button>
           </div>
         </div>
-      </div>
+        <div
+          v-if="selectedElement"
+          class="mt-4 space-y-3 border-t border-line pt-4"
+        >
+          <h3 class="text-sm font-semibold capitalize">
+            {{ elementLabel(selectedElement.name) }}
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-xs text-muted"
+              >Position X<input
+                type="number"
+                min="0"
+                :max="limits.width - 1"
+                step="1"
+                :value="selectedElement.pos.x"
+                class="mt-1 min-h-9 w-full rounded-md border border-line bg-subtle px-2 text-sm text-ink"
+                @change="setPosition('x', $event)"
+            /></label>
+            <label class="text-xs text-muted"
+              >Position Y<input
+                type="number"
+                min="0"
+                :max="limits.height - 1"
+                step="1"
+                :value="selectedElement.pos.y"
+                class="mt-1 min-h-9 w-full rounded-md border border-line bg-subtle px-2 text-sm text-ink"
+                @change="setPosition('y', $event)"
+            /></label>
+          </div>
+          <Toggle
+            :model-value="selectedElement.invert === 1"
+            label="Invert text"
+            @update:model-value="osd_set(selectedIndex, 'invert', $event)"
+          />
+        </div>
+      </Panel>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import FieldSelect from "@/components/ui/Select.vue";
+import Toggle from "@/components/ui/Toggle.vue";
 import { defineComponent } from "vue";
 import { OSD } from "@/store/util/osd";
 import { useInfoStore } from "@/store/info";
@@ -228,6 +152,7 @@ function roundRect(
 
 export default defineComponent({
   name: "OSDElements",
+  components: { Panel, FieldSelect, Toggle },
   setup() {
     return {
       info: useInfoStore(),
@@ -237,6 +162,7 @@ export default defineComponent({
   },
   data() {
     return {
+      selectedIndex: 0,
       preview: "NTSC",
       osdProfile: 0,
       osdProfileOptions: [
@@ -251,6 +177,12 @@ export default defineComponent({
     };
   },
   computed: {
+    availableElements() {
+      return this.elements.filter((el) => el.enabled);
+    },
+    selectedElement() {
+      return this.elements.find((el) => el.index === this.selectedIndex);
+    },
     is_hd() {
       return this.profile.serial.hdzero > 0;
     },
@@ -408,7 +340,24 @@ export default defineComponent({
       });
     },
   },
+  mounted() {
+    Promise.resolve()
+      .then(() => {
+        if (this.is_hd) {
+          return this.osd.fetch_hd_osd_font();
+        }
+      })
+      .then((_) => this.draw_canvas());
+  },
   methods: {
+    elementLabel(name: string) {
+      const label = name
+        .toLowerCase()
+        .replace(/\b(rssi|gps|crsf|vtx|osd)\b/g, (acronym) =>
+          acronym.toUpperCase(),
+        );
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    },
     translateMouse(evt: MouseEvent): Coord2D {
       return {
         x:
@@ -451,6 +400,7 @@ export default defineComponent({
 
       const el = this.findElement(mouse);
       if (el != null) {
+        this.selectedIndex = el.index;
         const coord = this.translateElemement(el.pos);
         const colOffset = mouse.x - coord.x;
         this.drag = {
@@ -503,6 +453,16 @@ export default defineComponent({
         colOffset: 0,
         coord: { x: 0, y: 0 } as Coord2D,
       };
+    },
+    setPosition(axis: "x" | "y", event: Event) {
+      const value = (event.target as HTMLInputElement).valueAsNumber;
+      if (!Number.isFinite(value)) return;
+      const max = (axis === "x" ? this.limits.width : this.limits.height) - 1;
+      this.osd_set(
+        this.selectedIndex,
+        `pos_${this.is_hd ? "hd" : "sd"}_${axis}`,
+        Math.max(0, Math.min(max, Math.round(value))),
+      );
     },
     osd_set(i, attr, val) {
       const elements = this.currentProfile.elements;
@@ -557,7 +517,7 @@ export default defineComponent({
         length++;
       }
 
-      ctx.strokeStyle = "#000";
+      ctx.strokeStyle = "#526563";
       ctx.lineWidth = 1;
       roundRect(
         ctx,
@@ -623,24 +583,18 @@ export default defineComponent({
       return null;
     },
   },
-  mounted() {
-    Promise.resolve()
-      .then(() => {
-        if (this.is_hd) {
-          return this.osd.fetch_hd_osd_font();
-        }
-      })
-      .then((_) => this.draw_canvas());
-  },
 });
 </script>
 
 <style lang="scss" scoped>
 .osd-canvas {
   display: block;
-  width: 100%;
-  background-image: url("/osd_background.jpg");
-  background-attachment: local;
-  background-size: cover;
+  width: auto;
+  max-width: 100%;
+  max-height: 45dvh;
+  margin-inline: auto;
+  background: #101a1c;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
 }
 </style>

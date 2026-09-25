@@ -1,27 +1,31 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Font</p>
-      <tooltip class="card-header-icon" entry="osd.font" size="lg" />
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">OSD Font</p>
+      <tooltip class="shrink-0 text-muted" entry="osd.font" size="lg" />
     </header>
 
-    <div class="card-content">
-      <div class="content">
-        <div class="field field-is-4 is-horizontal">
-          <div class="field-label">
-            <label class="label"> Full OSD font to upload </label>
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="form-row">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
+              Full OSD font to upload
+            </label>
           </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <p class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1 flex items-center gap-2">
+              <p class="min-w-0 flex-1">
                 <input-select
                   id="font-file"
-                  class="is-fullwidth"
+                  class="w-full"
                   v-model="current_font_file"
                   :options="fontFiles"
                 ></input-select>
               </p>
-              <p class="control">
+              <p class="min-w-0">
                 <spinner-btn
                   class="float-right"
                   @click="apply_osd_font(current_font_file)"
@@ -34,17 +38,17 @@
         </div>
 
         <form ref="form">
-          <div class="field field-is-4 is-horizontal">
-            <div class="field-label">
-              <label class="label">
+          <div class="form-row">
+            <div class="form-label">
+              <label class="text-sm font-medium text-ink">
                 Custom Logo <br />
                 288x72 Black/White/Transparent PNG
               </label>
             </div>
-            <div class="field-body">
-              <div class="field has-addons">
-                <p class="control is-expanded"></p>
-                <p class="control">
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div class="min-w-0 flex-1 flex items-center gap-2">
+                <p class="min-w-0 flex-1"></p>
+                <p class="min-w-0">
                   <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
                 </p>
               </div>
@@ -52,41 +56,49 @@
           </div>
         </form>
 
-        <div class="columns mt-5">
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <p class="card-header-title">Preview</p>
+        <div class="grid grid-cols-12 gap-4 mt-5">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div
+              class="min-w-0 rounded-lg border border-line bg-panel text-ink"
+            >
+              <header
+                class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+              >
+                <p class="text-sm font-semibold">Preview</p>
               </header>
 
-              <div class="card-content">
-                <div class="content">
-                  <figure class="image m-0">
+              <div class="p-4">
+                <div class="space-y-4">
+                  <figure class="block m-0">
                     <img :src="'osd/' + current_font_file" />
                   </figure>
                 </div>
               </div>
             </div>
           </div>
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <p class="card-header-title">Current</p>
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div
+              class="min-w-0 rounded-lg border border-line bg-panel text-ink"
+            >
+              <header
+                class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+              >
+                <p class="text-sm font-semibold">Current</p>
               </header>
-              <div class="card-content">
-                <div class="content">
-                  <figure class="image m-0">
+              <div class="p-4">
+                <div class="space-y-4">
+                  <figure class="block m-0">
                     <img :src="imageSource" />
                   </figure>
                   <canvas
                     ref="canvas"
-                    class="mx-5 mt-3 is-hidden"
+                    class="mx-5 mt-3 hidden"
                     width="209"
                     height="305"
                   ></canvas>
                   <canvas
                     ref="logoCanvas"
-                    class="mx-5 mt-3 is-hidden"
+                    class="mx-5 mt-3 hidden"
                     width="288"
                     height="72"
                   ></canvas>

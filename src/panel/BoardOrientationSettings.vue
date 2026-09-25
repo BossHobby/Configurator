@@ -1,67 +1,41 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Board Orientation</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Flip Gyro
-              <tooltip entry="motor.flip_gyro" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="gyro-flip"
-                  v-model="gyroFlip"
-                  type="checkbox"
-                  class="switch"
-                />
-                <label class="py-0" style="height: 2em" for="gyro-flip"></label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Gyro Orientation
-              <tooltip entry="motor.gyro_orientation" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  id="gyro-orientation"
-                  v-model="gyroOrientation"
-                  class="is-fullwidth"
-                  :options="gyroOrientations"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
+  <Panel title="Orientation Settings">
+    <div class="space-y-5">
+      <div class="text-sm text-muted">
+        Gyro
+        <span class="float-right font-medium text-ink">{{
+          info.gyro_name
+        }}</span>
       </div>
+      <FieldSelect
+        v-model="gyroOrientation"
+        label="Gyro orientation"
+        :options="
+          gyroOrientations.map((o) => ({
+            value: o.value,
+            label: o.text.replace('ROTATE_', '').replaceAll('_', ' '),
+          }))
+        "
+      />
+      <Toggle v-model="gyroFlip" label="Flip board (180°)" />
     </div>
-  </div>
+  </Panel>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import FieldSelect from "@/components/ui/Select.vue";
+import Toggle from "@/components/ui/Toggle.vue";
+import { useInfoStore } from "@/store/info";
 import { defineComponent } from "vue";
 import { useConstantStore } from "@/store/constants";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "BoardOrientationSettings",
+  components: { Panel, FieldSelect, Toggle },
   setup() {
     return {
+      info: useInfoStore(),
       constants: useConstantStore(),
       profile: useProfileStore(),
     };

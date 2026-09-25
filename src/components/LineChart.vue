@@ -1,16 +1,20 @@
 <template>
-  <LineChart :data="chartData" :options="chartOptions" ref="chart" />
+  <ChartLine ref="chart" :data="chartData" :options="chartOptions" />
 </template>
 
 <script lang="ts">
 import type { ChartOptions } from "chart.js";
+import { useChartTheme } from "@/ui/useChartTheme";
 import { defineComponent } from "vue";
 import { Line } from "vue-chartjs";
 
 export default defineComponent({
-  name: "line-chart",
-  components: { LineChart: Line },
+  name: "LineChart",
+  components: { ChartLine: Line },
   props: ["title", "axis", "labels"],
+  setup() {
+    return { chartTheme: useChartTheme() };
+  },
   data() {
     return {
       colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
@@ -24,7 +28,7 @@ export default defineComponent({
           return {
             label: a.label,
             data: a.data,
-            borderColor: this.colors[i],
+            borderColor: this.chartTheme.series[i],
             fill: false,
             radius: 1,
             pointRadius: 0,
@@ -43,13 +47,27 @@ export default defineComponent({
         },
 
         scales: {
+          y: {
+            ticks: { color: this.chartTheme.text },
+            grid: { color: this.chartTheme.grid },
+          },
           x: {
+            ticks: { color: this.chartTheme.text },
+            grid: { color: this.chartTheme.grid },
             type: "linear",
           },
         },
 
         plugins: {
+          legend: {
+            labels: {
+              color: this.chartTheme.text,
+              usePointStyle: true,
+              boxWidth: 8,
+            },
+          },
           title: {
+            color: this.chartTheme.text,
             display: true,
             text: this.title,
           },

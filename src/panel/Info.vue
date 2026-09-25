@@ -1,32 +1,24 @@
 <template>
-  <section class="hero is-primary">
-    <div class="hero-body">
-      <div class="columns">
-        <div class="column is-2 p-0">
-          <LogoClean class="logo logo-animation" viewBox="-5 -5 160 160" />
-        </div>
-        <div class="column">
-          <p class="title">
-            QUICKSILVER
-            <small class="text-muted">{{ appVersion }}</small>
-          </p>
-          <p class="subtitle">
-            Checkout our
-            <a
-              target="_blank"
-              href="https://docs.bosshobby.com/"
-              style="font-weight: bold"
-            >
-              Docs</a
-            >
-            for help on getting started.
-          </p>
-          <p v-if="updateAvailable" class="subtitle">New Version available!</p>
-          <spinner-btn v-if="updateAvailable" @click="doUpdate">
-            Update Now
-          </spinner-btn>
-        </div>
-      </div>
+  <section class="rounded-lg border border-line bg-panel p-6">
+    <p class="mb-2 text-xs font-medium uppercase tracking-widest text-muted">
+      QUICKSILVER Configurator · {{ appVersion }}
+    </p>
+    <h1 class="text-2xl font-semibold text-ink">Ready for Your Next Flight</h1>
+    <p class="mt-3 max-w-xl text-sm text-muted">
+      Connect your flight controller to configure your craft, check receiver
+      inputs, and tune its response.
+    </p>
+    <div class="mt-5 flex flex-wrap items-center gap-4">
+      <a
+        href="https://docs.bosshobby.com/"
+        target="_blank"
+        rel="noreferrer"
+        class="text-sm font-medium text-accent"
+        >Getting started ↗</a
+      >
+      <spinner-btn v-if="updateAvailable" @click="doUpdate"
+        >Update available · Install</spinner-btn
+      >
     </div>
   </section>
 </template>

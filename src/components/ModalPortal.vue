@@ -1,7 +1,10 @@
 <template>
   <div class="modal-portal">
-    <div v-if="$modal.isShown" class="modal is-active">
-      <div class="modal-background"></div>
+    <div
+      v-if="$modal.isShown"
+      class="fixed inset-0 z-[10000] flex items-center justify-center p-4"
+    >
+      <div class="absolute inset-0 bg-workspace/85"></div>
       <component
         :is="$modal.component"
         v-bind="$modal.props"

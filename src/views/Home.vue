@@ -1,12 +1,5 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <Info></Info>
-    </div>
-    <div class="column is-12">
-      <Flash></Flash>
-    </div>
-  </div>
+  <div class="space-y-4"><Info /><Flash /></div>
 </template>
 
 <script lang="ts">

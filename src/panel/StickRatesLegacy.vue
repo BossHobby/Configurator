@@ -1,26 +1,28 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Rates</p>
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Rates</p>
     </header>
 
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="rate-mode">
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink" for="rate-mode">
                   Mode
                   <tooltip entry="rate.mode" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="rate-mode"
-                      class="is-fullwidth"
+                      class="w-full"
                       v-model.number="profile.rate.mode"
                       :options="rateModes"
                       @change="update()"
@@ -30,49 +32,57 @@
               </div>
             </div>
 
-            <div class="card mt-5 mb-6">
-              <header class="card-header">
-                <p class="card-header-title">
+            <div
+              class="min-w-0 rounded-lg border border-line bg-panel text-ink mt-5 mb-6"
+            >
+              <header
+                class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+              >
+                <p class="text-sm font-semibold">
                   {{ currentMode.text }}
                 </p>
               </header>
 
-              <div class="card-content">
-                <div class="content">
-                  <div class="columns is-multiline">
-                    <div class="column is-offset-4 is-8">
-                      <div class="columns is-multiline">
-                        <div class="column is-4">
+              <div class="p-4">
+                <div class="space-y-4">
+                  <div class="grid grid-cols-12 gap-4">
+                    <div
+                      class="min-w-0 md:col-start-5 col-span-12 md:col-span-8"
+                    >
+                      <div class="grid grid-cols-12 gap-4">
+                        <div class="min-w-0 col-span-12 md:col-span-4">
                           <h6>Roll</h6>
                         </div>
-                        <div class="column is-4">
+                        <div class="min-w-0 col-span-12 md:col-span-4">
                           <h6>Pitch</h6>
                         </div>
-                        <div class="column is-4">
+                        <div class="min-w-0 col-span-12 md:col-span-4">
                           <h6>Yaw</h6>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div
-                    class="columns is-multiline"
+                    class="grid grid-cols-12 gap-4"
                     v-for="(val, key) in profile.rate[
                       currentMode.text.toLowerCase()
                     ]"
                     :key="key"
                   >
-                    <div class="column is-4">
+                    <div class="min-w-0 col-span-12 md:col-span-4">
                       <label :for="`${currentMode.text}-${key}`">
                         {{ key }}
                       </label>
                     </div>
-                    <div class="field-body">
-                      <div class="field">
-                        <div class="control is-expanded">
-                          <div class="columns is-multiline">
-                            <div class="column is-4">
+                    <div
+                      class="flex min-w-0 flex-1 flex-wrap items-center gap-3"
+                    >
+                      <div class="min-w-0 flex-1">
+                        <div class="min-w-0 flex-1">
+                          <div class="grid grid-cols-12 gap-4">
+                            <div class="min-w-0 col-span-12 md:col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentMode.text}-${key}-roll`"
                                 type="number"
                                 step="10"
@@ -83,9 +93,9 @@
                                 "
                               />
                             </div>
-                            <div class="column is-4">
+                            <div class="min-w-0 col-span-12 md:col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentMode.text}-${key}-pitch`"
                                 type="number"
                                 step="10"
@@ -96,9 +106,9 @@
                                 "
                               />
                             </div>
-                            <div class="column is-4">
+                            <div class="min-w-0 col-span-12 md:col-span-4">
                               <input
-                                class="input"
+                                class="form-input"
                                 :id="`${currentMode.text}-${key}-yaw`"
                                 type="number"
                                 step="10"
@@ -118,18 +128,21 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="level-max-angle">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="level-max-angle"
+                >
                   LevelMaxAngle
                   <tooltip entry="rate.level_max_angle" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
-                      class="input"
+                      class="form-input"
                       id="level-max-angle"
                       type="number"
                       step="5"
@@ -140,18 +153,21 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="low-rate-mulitplier">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="low-rate-mulitplier"
+                >
                   LowRateMulitplier
                   <tooltip entry="rate.low_rate_mulitplier" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
-                      class="input"
+                      class="form-input"
                       id="low-rate-mulitplier"
                       type="number"
                       step="0.05"
@@ -162,18 +178,21 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="sticks-deadband">
+            <div class="form-row">
+              <div class="form-label">
+                <label
+                  class="text-sm font-medium text-ink"
+                  for="sticks-deadband"
+                >
                   SticksDeadband
                   <tooltip entry="rate.sticks_deadband" />
                 </label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input
-                      class="input"
+                      class="form-input"
                       step="0.01"
                       id="sticks-deadband"
                       type="number"
@@ -184,7 +203,7 @@
               </div>
             </div>
           </div>
-          <div class="column is-6">
+          <div class="min-w-0 col-span-12 md:col-span-6">
             <LineChart
               v-if="profile.rate.silverware.acro_expo"
               :title="(plotLowRates ? 'Low ' : '') + 'Rates'"
@@ -195,7 +214,7 @@
               id="plotLowRates"
               name="plotLowRates"
               type="checkbox"
-              class="switch"
+              class="form-switch"
               v-model="plotLowRates"
             />
             <label for="plotLowRates">Plot LowRates</label>

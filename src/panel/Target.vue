@@ -1,125 +1,42 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Target</p>
-    </header>
-    <div class="card-content">
-      <div class="content column-narrow field-is-2">
-        <template v-if="info.quic_semver_gte('0.2.0')">
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label" for="name">Name</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <input
-                    class="input is-static"
-                    :value="target.name"
-                    readonly
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label" for="name">MCU</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <input class="input is-static" :value="info.mcu" readonly />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label" for="vehicle-type">Vehicle</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <input
-                    id="vehicle-type"
-                    class="input is-static"
-                    :value="vehicleType"
-                    readonly
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label" for="name">Name</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control">
-                  <input
-                    class="input is-static"
-                    :value="info.target_name"
-                    readonly
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <div class="field is-horizontal" v-if="info.gyro_id != null">
-          <div class="field-label">
-            <label class="label">Gyro</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input is-static"
-                  :value="info.gyro_name"
-                  readonly
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="info.features != null">
-          <div class="field-label">
-            <label class="label">Features</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input is-static" :value="features" readonly />
-              </div>
-            </div>
-          </div>
-        </div>
+  <Panel title="Flight Controller" class="flex flex-col">
+    <dl class="mb-5 grid gap-4 sm:grid-cols-2">
+      <div>
+        <dt class="mb-1 text-xs text-muted">Target</dt>
+        <dd class="text-sm">
+          {{ info.quic_semver_gte("0.2.0") ? target.name : info.target_name }}
+        </dd>
       </div>
+      <div v-if="info.quic_semver_gte('0.2.0')">
+        <dt class="mb-1 text-xs text-muted">MCU</dt>
+        <dd class="text-sm">{{ info.mcu }}</dd>
+      </div>
+      <div v-if="info.quic_semver_gte('0.2.0')">
+        <dt class="mb-1 text-xs text-muted">Vehicle</dt>
+        <dd class="text-sm">{{ vehicleType }}</dd>
+      </div>
+      <div>
+        <dt class="mb-1 text-xs text-muted">Gyro</dt>
+        <dd class="text-sm">{{ info.gyro_name }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="mb-1 text-xs text-muted">Features</dt>
+        <dd class="text-sm">{{ features }}</dd>
+      </div>
+    </dl>
+    <div
+      v-if="info.quic_semver_gte('0.2.0')"
+      class="mt-auto flex gap-2 border-t border-line pt-4"
+    >
+      <spinner-btn @click="downloadTarget">Save target</spinner-btn>
+      <spinner-btn @click="uploadTarget">Load target</spinner-btn>
     </div>
-
-    <footer v-if="info.quic_semver_gte('0.2.0')" class="card-footer">
-      <spinner-btn class="card-footer-item" @click="downloadTarget">
-        Save Target
-      </spinner-btn>
-      <spinner-btn class="card-footer-item" @click="uploadTarget">
-        Load Target
-      </spinner-btn>
-    </footer>
-
-    <input accept=".yaml" type="file" ref="file" style="display: none" />
-    <a ref="downloadAnchor" target="_blank"></a>
-  </div>
+    <input ref="file" accept=".yaml" type="file" hidden />
+    <a ref="downloadAnchor" target="_blank" hidden></a>
+  </Panel>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { useConstantStore } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
 import { useTargetStore } from "@/store/target";
@@ -130,6 +47,7 @@ import YAML from "yaml";
 
 export default defineComponent({
   name: "Target",
+  components: { Panel },
   setup() {
     const constants = useConstantStore();
 

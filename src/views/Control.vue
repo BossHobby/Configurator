@@ -1,18 +1,18 @@
 <template>
-  <div class="columns is-multiline">
-    <div v-if="!info.is_rover" class="column is-12">
+  <div class="space-y-4">
+    <div v-if="!info.is_rover">
       <StickRatesLegacy
         v-if="default_profile.has_legacy_stickrates"
       ></StickRatesLegacy>
       <StickRates v-else></StickRates>
     </div>
-    <div class="column is-12">
+    <div>
       <ThrottleSettings></ThrottleSettings>
     </div>
-    <div class="column is-12">
+    <div>
       <PIDRates></PIDRates>
     </div>
-    <div class="column is-12">
+    <div>
       <FilterSettings></FilterSettings>
     </div>
     <div
@@ -21,14 +21,13 @@
         profile.profileVersionGt('0.3.0') &&
         profile.serial.gps !== 0
       "
-      class="column is-12"
     >
       <Navigation></Navigation>
     </div>
-    <div v-if="info.is_rover" class="column is-12">
+    <div v-if="info.is_rover">
       <RoverSettings></RoverSettings>
     </div>
-    <div v-if="info.is_wing" class="column is-12">
+    <div v-if="info.is_wing">
       <WingSettings></WingSettings>
     </div>
   </div>

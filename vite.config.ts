@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from "url";
 
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { execSync } from "child_process";
 import svgLoader from "vite-svg-loader";
@@ -36,6 +37,7 @@ export default defineConfig({
   base: process.env.PAGES_BASE || base,
   plugins: [
     vue(),
+    tailwindcss(),
     svgLoader(),
     webfontDownload([
       "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",

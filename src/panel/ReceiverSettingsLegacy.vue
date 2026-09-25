@@ -1,45 +1,47 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Receiver</p>
-      <spinner-btn class="card-header-button is-warning" @click="reset"
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Receiver</p>
+      <spinner-btn class="form-button text-warning" @click="reset"
         >Reset</spinner-btn
       >
     </header>
 
-    <div class="card-content">
-      <div class="content field-is-2">
+    <div class="p-4">
+      <div class="space-y-4">
         <div
-          class="field is-horizontal"
+          class="form-row"
           v-if="info.rx_protocol && !profile.receiver.protocol"
         >
-          <div class="field-label">
-            <label class="label">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Protocol
               <tooltip entry="receiver.protocol" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 {{ protoNames[info.rx_protocol] }}
               </div>
             </div>
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="profile.receiver.protocol">
-          <div class="field-label">
-            <label class="label">
+        <div class="form-row" v-if="profile.receiver.protocol">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Protocol
               <tooltip entry="receiver.protocol" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 <input-select
-                  class="is-fullwidth"
+                  class="w-full"
                   v-model.number="profile.receiver.protocol"
                   :options="protocolOptions"
                 ></input-select>
@@ -48,18 +50,18 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 3">
-          <div class="field-label">
-            <label class="label">
+        <div class="form-row" v-if="info.quic_protocol_version > 3">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               LQI Source
               <tooltip entry="receiver.lqi_source" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 <input-select
-                  class="is-fullwidth"
+                  class="w-full"
                   v-model.number="profile.receiver.lqi_source"
                   :options="lqiSourceNames"
                 ></input-select>
@@ -68,101 +70,109 @@
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">
+        <div class="form-row" v-if="info.quic_protocol_version > 2">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">
               Bind Saved
               <tooltip entry="receiver.bind_saved" />
             </label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 {{ bind.info.bind_saved ? "yes" : "no" }}
               </div>
             </div>
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">RSSI</label>
+        <div class="form-row" v-if="info.quic_protocol_version > 2">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">RSSI</label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ state.rx_rssi }}</div>
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">{{ state.rx_rssi }}</div>
             </div>
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">Status</label>
+        <div class="form-row" v-if="info.quic_protocol_version > 2">
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">Status</label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ protoStatus }}</div>
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">{{ protoStatus }}</div>
             </div>
           </div>
         </div>
 
         <div
-          class="field is-horizontal"
+          class="form-row"
           v-if="
             info.quic_protocol_version > 2 &&
             rx_protocol == RXProtocol.UNIFIED_SERIAL
           "
         >
-          <div class="field-label">
-            <label class="label">Serial Protocol</label>
+          <div class="form-label">
+            <label class="text-sm font-medium text-ink">Serial Protocol</label>
           </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ serialProtoStatus }}</div>
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">{{ serialProtoStatus }}</div>
             </div>
           </div>
         </div>
 
         <div
-          class="card mt-4"
+          class="min-w-0 rounded-lg border border-line bg-panel text-ink mt-4"
           v-if="bind.info.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
         >
-          <header class="card-header">
-            <p class="card-header-title">ExpressLRS</p>
+          <header
+            class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+          >
+            <p class="text-sm font-semibold">ExpressLRS</p>
           </header>
-          <div class="card-content">
-            <div class="content">
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Switch Mode</label>
+          <div class="p-4">
+            <div class="space-y-4">
+              <div class="form-row">
+                <div class="form-label">
+                  <label class="text-sm font-medium text-ink"
+                    >Switch Mode</label
+                  >
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsSwitchMode }}</div>
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0 flex-1">{{ elrsSwitchMode }}</div>
                   </div>
                 </div>
               </div>
 
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Current Bind Phrase</label>
+              <div class="form-row">
+                <div class="form-label">
+                  <label class="text-sm font-medium text-ink"
+                    >Current Bind Phrase</label
+                  >
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsBindPhrase }}</div>
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0 flex-1">{{ elrsBindPhrase }}</div>
                   </div>
                 </div>
               </div>
 
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">New Bind Phrase</label>
+              <div class="form-row">
+                <div class="form-label">
+                  <label class="text-sm font-medium text-ink"
+                    >New Bind Phrase</label
+                  >
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0 flex-1">
                       <input
-                        class="input"
+                        class="form-input"
                         id="name"
                         type="text"
                         v-model="elrsBindPhraseInput"
@@ -174,10 +184,10 @@
             </div>
           </div>
 
-          <footer class="card-footer">
-            <span class="card-footer-item"></span>
+          <footer
+            class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+          >
             <spinner-btn
-              class="card-footer-item"
               @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
               :disabled="elrsBindPhraseInput.length < 2"
             >
@@ -186,29 +196,34 @@
           </footer>
         </div>
 
-        <div class="card mt-4" v-if="bind.info.raw && isSpiProtocol">
-          <header class="card-header">
-            <p class="card-header-title">Bind Data</p>
+        <div
+          class="min-w-0 rounded-lg border border-line bg-panel text-ink mt-4"
+          v-if="bind.info.raw && isSpiProtocol"
+        >
+          <header
+            class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+          >
+            <p class="text-sm font-semibold">Bind Data</p>
           </header>
 
-          <div class="card-content">
-            <div class="content has-text-centered">
+          <div class="p-4">
+            <div class="space-y-4 text-center">
               Save and load bind information for spi protocols.<br />
               Requires reboot after load.
             </div>
           </div>
 
-          <footer class="card-footer">
-            <spinner-btn class="card-footer-item" @click="downloadBindData">
+          <footer
+            class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+          >
+            <spinner-btn @click="downloadBindData">
               Save Bind Data
             </spinner-btn>
-            <spinner-btn class="card-footer-item" @click="uploadBindData">
-              Load Bind Data
-            </spinner-btn>
+            <spinner-btn @click="uploadBindData"> Load Bind Data </spinner-btn>
           </footer>
 
           <input
-            class="input"
+            class="form-input"
             accept=".base64"
             type="file"
             ref="file"
@@ -217,8 +232,8 @@
           <a ref="downloadAnchor" target="_blank"></a>
         </div>
 
-        <div class="columns mt-4">
-          <div class="column is-12 has-text-centered">
+        <div class="grid grid-cols-12 gap-4 mt-4">
+          <div class="min-w-0 text-center col-span-12 md:col-span-12">
             <small>
               When binding via your transmitter, save bind by moving your right
               transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle

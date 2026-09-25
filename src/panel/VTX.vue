@@ -1,28 +1,37 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">VTX</p>
-      <div class="card-header-icon">
-        <span class="tag" :class="vtxStatusClass">{{ vtxStatusText }}</span>
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">VTX</p>
+      <div class="shrink-0 text-muted">
+        <span
+          class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs"
+          :class="vtxStatusClass"
+          >{{ vtxStatusText }}</span
+        >
       </div>
     </header>
 
-    <div class="card-content">
-      <div class="columns">
-        <div class="column field-is-3">
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Protocol</label>
+    <div class="p-4">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="form-row">
+            <div class="form-label">
+              <label class="text-sm font-medium text-ink">Protocol</label>
             </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="min-w-0 flex-1">
                   <input-select
                     id="vtx-protocol"
                     v-model.number="desiredVtx.protocol"
                     :options="vtxProtocolOptions"
                   ></input-select>
-                  <p v-if="desiredVtx.protocol == 0" class="help is-warning">
+                  <p
+                    v-if="desiredVtx.protocol == 0"
+                    class="mt-1 text-xs text-muted text-warning"
+                  >
                     Please select a VTX protocol
                   </p>
                 </div>
@@ -30,25 +39,32 @@
             </div>
           </div>
 
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Detected</label>
+          <div class="form-row">
+            <div class="form-label">
+              <label class="text-sm font-medium text-ink">Detected</label>
             </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="min-w-0 flex-1">
                   <template v-if="vtx.status.protocol">
-                    <span class="tag is-medium is-success">
+                    <span
+                      class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-accent"
+                    >
                       {{ protocolNames[vtx.status.protocol] }}
                     </span>
                     <span v-if="detectedFrequency">
-                      <span class="tag is-medium is-info ml-2">
+                      <span
+                        class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-accent ml-2"
+                      >
                         {{ detectedFrequency }} MHz
                       </span>
                     </span>
                   </template>
                   <template v-else>
-                    <span class="tag is-medium is-warning">Not detected</span>
+                    <span
+                      class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-warning"
+                      >Not detected</span
+                    >
                   </template>
                 </div>
               </div>
@@ -56,13 +72,13 @@
           </div>
 
           <template v-if="desiredVtx.protocol">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Band</label>
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">Band</label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="vtx-band"
                       v-model.number="desiredVtx.band"
@@ -73,13 +89,13 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Channel</label>
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">Channel</label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="vtx-channel"
                       v-model.number="desiredVtx.channel"
@@ -90,13 +106,13 @@
               </div>
             </div>
 
-            <div v-if="desiredVtx.pit_mode != 2" class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Pit Mode</label>
+            <div v-if="desiredVtx.pit_mode != 2" class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">Pit Mode</label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="vtx-pit-mode"
                       v-model.number="desiredVtx.pit_mode"
@@ -107,13 +123,13 @@
               </div>
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Power</label>
+            <div class="form-row">
+              <div class="form-label">
+                <label class="text-sm font-medium text-ink">Power</label>
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                     <input-select
                       id="vtx-power-level"
                       v-model.number="desiredVtx.power_level"
@@ -126,27 +142,27 @@
           </template>
         </div>
 
-        <div class="column">
+        <div class="min-w-0 col-span-12 md:col-span-6">
           <div v-if="desiredVtx.protocol && desiredVtx.power_table">
             <template v-if="desiredPowerTableRows.length">
-              <div class="columns">
-                <div class="column is-2"></div>
-                <div class="column is-5">
-                  <div class="columns is-mobile">
-                    <div class="column">
+              <div class="grid grid-cols-12 gap-4">
+                <div class="min-w-0 col-span-12 md:col-span-2"></div>
+                <div class="min-w-0 col-span-12 md:col-span-5">
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="min-w-0 col-span-6">
                       <h6>Label</h6>
                     </div>
-                    <div class="column">
+                    <div class="min-w-0 col-span-6">
                       <h6>Detected</h6>
                     </div>
                   </div>
                 </div>
-                <div class="column is-5">
-                  <div class="columns is-mobile">
-                    <div class="column">
+                <div class="min-w-0 col-span-12 md:col-span-5">
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="min-w-0 col-span-6">
                       <h6>Value</h6>
                     </div>
-                    <div class="column">
+                    <div class="min-w-0 col-span-6">
                       <h6>Detected</h6>
                     </div>
                   </div>
@@ -155,27 +171,29 @@
               <div
                 v-for="index in desiredPowerTableRows"
                 :key="index"
-                class="columns is-vcentered"
+                class="grid grid-cols-12 gap-4 items-center"
               >
-                <div class="column is-2">
-                  <label class="label">Level {{ index + 1 }}</label>
+                <div class="min-w-0 col-span-12 md:col-span-2">
+                  <label class="text-sm font-medium text-ink"
+                    >Level {{ index + 1 }}</label
+                  >
                 </div>
-                <div class="column is-5">
-                  <div class="field has-addons">
-                    <div class="control is-expanded">
+                <div class="min-w-0 col-span-12 md:col-span-5">
+                  <div class="min-w-0 flex-1 flex items-center gap-2">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'power-level-label-' + index"
                         v-model.text="desiredVtx.power_table.labels[index]"
-                        class="input"
+                        class="form-input"
                         type="text"
                         maxlength="3"
                         @focus="ensureDesiredPowerTable(index)"
                       />
                     </div>
-                    <div class="control is-expanded">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'runtime-power-level-label-' + index"
-                        class="input"
+                        class="form-input"
                         type="text"
                         :value="runtimePowerLabel(index)"
                         disabled
@@ -184,13 +202,13 @@
                     </div>
                   </div>
                 </div>
-                <div class="column is-5">
-                  <div class="field has-addons">
-                    <div class="control is-expanded">
+                <div class="min-w-0 col-span-12 md:col-span-5">
+                  <div class="min-w-0 flex-1 flex items-center gap-2">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'power-level-value-' + index"
                         v-model.number="desiredVtx.power_table.values[index]"
-                        class="input"
+                        class="form-input"
                         type="number"
                         step="0.1"
                         min="0"
@@ -198,10 +216,10 @@
                         @focus="ensureDesiredPowerTable(index)"
                       />
                     </div>
-                    <div class="control is-expanded">
+                    <div class="min-w-0 flex-1">
                       <input
                         :id="'runtime-power-level-value-' + index"
-                        class="input"
+                        class="form-input"
                         type="number"
                         :value="detectedPowerValue(index)"
                         disabled
@@ -215,11 +233,11 @@
 
             <div
               v-if="showLoadDetectedPowerTable"
-              class="field is-grouped is-justify-content-flex-end"
+              class="min-w-0 flex-1 flex flex-wrap gap-3 justify-end"
             >
-              <div class="control">
+              <div class="min-w-0">
                 <button
-                  class="button is-small is-info is-light"
+                  class="form-button text-xs text-accent"
                   type="button"
                   @click="loadDetectedPowerTable()"
                 >
@@ -232,10 +250,12 @@
       </div>
     </div>
 
-    <footer v-if="isLegacyVtx" class="card-footer">
-      <span class="card-footer-item"></span>
+    <footer
+      v-if="isLegacyVtx"
+      class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+    >
       <spinner-btn
-        class="card-footer-item is-primary"
+        class="bg-accent text-on-accent border-transparent"
         @click="applyVtxSettings()"
       >
         Apply
@@ -285,7 +305,7 @@ export default defineComponent({
       return this.vtx.status.protocol ? "Detected" : "Not detected";
     },
     vtxStatusClass() {
-      return this.vtx.status.protocol ? "is-success" : "is-warning";
+      return this.vtx.status.protocol ? "text-accent" : "text-warning";
     },
     displayValueEdit() {
       return this.desiredVtx?.protocol == 1;

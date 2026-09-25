@@ -1,33 +1,39 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Serial Passthrough</p>
-      <tooltip class="card-header-icon" entry="serial_passthrough" size="lg" />
+  <div class="min-w-0 rounded-lg border border-line bg-panel text-ink">
+    <header
+      class="flex items-center justify-between gap-3 px-4 py-3 border-b border-line"
+    >
+      <p class="text-sm font-semibold">Serial Passthrough</p>
+      <tooltip
+        class="shrink-0 text-muted"
+        entry="serial_passthrough"
+        size="lg"
+      />
     </header>
 
-    <div class="card-content">
-      <div class="content">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field">
-              <label class="label">Serial Port</label>
-              <div class="control is-expanded">
+    <div class="p-4">
+      <div class="space-y-4">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div class="min-w-0 flex-1">
+              <label class="text-sm font-medium text-ink">Serial Port</label>
+              <div class="min-w-0 flex-1">
                 <input-select
                   v-model.number="serial_port"
-                  class="is-fullwidth"
+                  class="w-full"
                   :options="serialPorts"
                 />
               </div>
             </div>
           </div>
 
-          <div class="column is-6">
-            <div class="field">
-              <label class="label">Preset</label>
-              <div class="control is-expanded">
+          <div class="min-w-0 col-span-12 md:col-span-6">
+            <div class="min-w-0 flex-1">
+              <label class="text-sm font-medium text-ink">Preset</label>
+              <div class="min-w-0 flex-1">
                 <input-select
                   v-model="preset"
-                  class="is-fullwidth"
+                  class="w-full"
                   :options="presetOptions"
                 />
               </div>
@@ -37,11 +43,10 @@
       </div>
     </div>
 
-    <footer class="card-footer">
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
+    <footer
+      class="flex flex-wrap items-center justify-end gap-2 border-t border-line p-3"
+    >
       <spinner-btn
-        class="card-footer-item"
         :disabled="serial_port == 0 || preset == null"
         @click="start_passthrough"
       >

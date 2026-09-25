@@ -1,13 +1,13 @@
 <template>
   <div class="rc-calibration-control">
-    <div class="rc-calibration-values is-size-7">
+    <div class="rc-calibration-values text-xs">
       <span class="rc-calibration-value">Min {{ displayValue(minValue) }}</span>
       <span class="rc-calibration-value"
         >Center {{ displayValue(centerValue) }}</span
       >
       <span
         v-if="currentValue !== null"
-        class="rc-calibration-value is-current"
+        class="rc-calibration-value current-reading"
       >
         Current {{ displayValue(currentValue) }}
       </span>
@@ -38,6 +38,7 @@
         type="range"
         min="-100"
         max="100"
+        :aria-label="label + ' min'"
         :value="percentInputValue(minValue)"
         @input="setMin($event)"
       />
@@ -46,6 +47,7 @@
         type="range"
         min="-100"
         max="100"
+        :aria-label="label + ' center'"
         :value="percentInputValue(centerValue)"
         @input="setCenter($event)"
       />
@@ -54,12 +56,13 @@
         type="range"
         min="-100"
         max="100"
+        :aria-label="label + ' max'"
         :value="percentInputValue(maxValue)"
         @input="setMax($event)"
       />
     </div>
 
-    <div class="rc-calibration-ticks is-size-7">
+    <div class="rc-calibration-ticks text-xs">
       <span
         v-for="tick in ticks"
         :key="tick.value"
@@ -78,6 +81,7 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "RcCalibrationControl",
   props: {
+    label: { type: String, default: "Channel calibration" },
     min: { type: Number, required: true },
     center: { type: Number, required: true },
     max: { type: Number, required: true },
@@ -156,12 +160,12 @@ export default defineComponent({
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.35rem;
-  color: var(--bulma-text, #4a4a4a);
+  color: var(--ui-ink);
   font-weight: 600;
 }
 
-.rc-calibration-value.is-current {
-  color: var(--bulma-danger, #ff3860);
+.rc-calibration-value.current-reading {
+  color: var(--ui-danger);
 }
 
 .rc-calibration-track {
@@ -177,7 +181,7 @@ export default defineComponent({
   top: 0.75rem;
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--bulma-border, #dbdbdb);
+  background: var(--ui-line);
 }
 
 .rc-calibration-fill {
@@ -185,7 +189,7 @@ export default defineComponent({
   top: 0.75rem;
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--bulma-primary, #00d1b2);
+  background: var(--ui-accent);
   z-index: 1;
 }
 
@@ -212,14 +216,14 @@ export default defineComponent({
   top: 0.29rem;
   width: 0.35rem;
   height: 1.28rem;
-  background: var(--bulma-link, #485fc7);
+  background: var(--ui-accent);
 }
 
 .rc-calibration-current {
   top: 0.14rem;
   width: 0.25rem;
   height: 1.58rem;
-  background: var(--bulma-danger, #ff3860);
+  background: var(--ui-danger);
 }
 
 .rc-calibration-input {
@@ -250,7 +254,7 @@ export default defineComponent({
   width: 1rem;
   height: 1rem;
   margin-top: 0.36rem;
-  border: 2px solid var(--bulma-primary, #00d1b2);
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
   background: white;
   cursor: grab;
@@ -260,7 +264,7 @@ export default defineComponent({
   pointer-events: auto;
   width: 1rem;
   height: 1rem;
-  border: 2px solid var(--bulma-primary, #00d1b2);
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
   background: white;
   cursor: grab;
@@ -270,7 +274,7 @@ export default defineComponent({
   position: relative;
   height: 1.15rem;
   margin-top: 0.05rem;
-  color: var(--bulma-text, #4a4a4a);
+  color: var(--ui-ink);
   font-weight: 600;
 }
 

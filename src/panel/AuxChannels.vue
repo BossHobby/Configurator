@@ -1,90 +1,48 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Aux Channels</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content">
-        <div class="aux-list">
-          <section v-for="f in auxFunctions" :key="f.key" class="box py-3 mb-3">
-            <div
-              v-if="default_profile.has_legacy_aux"
-              class="field is-horizontal mb-0"
-            >
-              <div class="field-label">
-                <label
-                  class="label"
-                  :for="f.key"
-                  :class="classForIndex(f.index)"
-                >
-                  {{ functionLabel(f.key) }}
-                  <tooltip :entry="'channel.' + f.key.toLowerCase()" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      :id="f.key"
-                      :model-value="channelForIndex(f.index)"
-                      class="is-fullwidth"
-                      :options="auxChannelOptions(f.index)"
-                      @update:modelValue="setChannel(f.index, $event)"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="columns is-vcentered is-variable is-4 mb-0">
-              <div class="column is-3">
-                <label
-                  class="label mb-1"
-                  :for="f.key"
-                  :class="classForIndex(f.index)"
-                >
-                  {{ functionLabel(f.key) }}
-                  <tooltip :entry="'channel.' + f.key.toLowerCase()" />
-                </label>
-                <div class="field aux-channel-field mb-0">
-                  <input-select
-                    :id="f.key"
-                    :model-value="channelForIndex(f.index)"
-                    class="aux-channel-select"
-                    :options="auxChannelOptions(f.index)"
-                    @update:modelValue="setChannel(f.index, $event)"
-                  ></input-select>
-                </div>
-              </div>
-
-              <div class="column">
-                <aux-range-control
-                  v-if="
-                    hasRanges &&
-                    channelForIndex(f.index) < maxSelectableRxChannel()
-                  "
-                  :min="rangePercent(f.index, 'min')"
-                  :max="rangePercent(f.index, 'max')"
-                  :current="currentAuxPercent(channelForIndex(f.index))"
-                  @update:min="setRangeMin(f.index, $event)"
-                  @update:max="setRangeMax(f.index, $event)"
-                />
-                <div v-else class="help aux-range-help">
-                  Range is not used for OFF / ON channels.
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
+  <Panel title="AUX Functions">
+    <div class="divide-y divide-line">
+      <section
+        v-for="f in auxFunctions"
+        :key="f.key"
+        class="grid grid-cols-1 items-center gap-4 py-3 lg:grid-cols-[12rem_12rem_minmax(0,1fr)]"
+      >
+        <label :for="f.key" class="text-sm font-medium text-ink">
+          <span
+            class="mr-1 inline-block size-2 rounded-full"
+            :class="classForIndex(f.index)"
+            aria-hidden="true" />
+          {{ functionLabel(f.key) }}
+          <tooltip :entry="'channel.' + f.key.toLowerCase()"
+        /></label>
+        <input-select
+          :id="f.key"
+          :model-value="channelForIndex(f.index)"
+          :options="auxChannels"
+          @update:model-value="setChannel(f.index, $event)"
+        />
+        <aux-range-control
+          v-if="
+            hasRanges && channelForIndex(f.index) < maxSelectableRxChannel()
+          "
+          :label="functionLabel(f.key)"
+          :min="rangePercent(f.index, 'min')"
+          :max="rangePercent(f.index, 'max')"
+          :current="currentAuxPercent(channelForIndex(f.index))"
+          @update:min="setRangeMin(f.index, $event)"
+          @update:max="setRangeMax(f.index, $event)"
+        />
+        <p v-else-if="hasRanges" class="text-xs text-muted">
+          Activation range does not apply to Always off / Always on.
+        </p>
+      </section>
     </div>
-  </div>
+  </Panel>
 </template>
-
 <script lang="ts">
 import { defineComponent } from "vue";
+import { receiverChannelPercent, auxRangeActive } from "@/ui/receiver";
 import { $enum } from "ts-enum-util";
+import Panel from "@/components/ui/Panel.vue";
 import AuxRangeControl from "@/components/AuxRangeControl.vue";
 import { useConstantStore } from "@/store/constants";
 import { useDefaultProfileStore } from "@/store/default_profile";
@@ -95,7 +53,7 @@ import type { aux_function_map_t } from "@/store/types";
 
 export default defineComponent({
   name: "AuxChannels",
-  components: { AuxRangeControl },
+  components: { AuxRangeControl, Panel },
   setup() {
     return {
       default_profile: useDefaultProfileStore(),
@@ -108,7 +66,13 @@ export default defineComponent({
       auxChannels: (state) => {
         return $enum(state.AuxChannels).map((value, key) => {
           return {
-            text: key,
+            text: key.startsWith("CHANNEL_")
+              ? key.replace("CHANNEL_", "Channel ")
+              : key === "OFF"
+                ? "Always off"
+                : key === "ON"
+                  ? "Always on"
+                  : key,
             value,
           };
         });
@@ -143,26 +107,21 @@ export default defineComponent({
       }
       return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
     },
-    auxChannelOptions(index: number): Array<{ text: string; value: number }> {
-      if (!this.profile.profileVersionGt("0.2.5")) return this.auxChannels;
-
-      const selected = this.channelForIndex(index);
-      const roleChannels = new Set(
-        (this.profile.receiver.role_map || [])
-          .map((role) => role.channel)
-          .filter((channel) => channel >= 0 && channel < 16),
-      );
-
-      return this.auxChannels.filter((option) => {
-        if (option.value >= 16) return true;
-        return option.value === selected || !roleChannels.has(option.value);
-      });
-    },
     maxSelectableRxChannel(): number {
       return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
     },
     functionLabel(key: string): string {
-      return key.replace(/^AUX_/, "").replaceAll("_", " ");
+      const labels: Record<string, string> = {
+        AUX_LEVELMODE: "Level mode",
+        AUX_RACEMODE: "Race mode",
+        AUX_ACROMODE: "Acro mode",
+        AUX_BUZZER_ENABLE: "Buzzer",
+        AUX_RSSI: "RSSI",
+        AUX_FPV_SWITCH: "FPV switch",
+        AUX_OSD_PROFILE: "OSD profile",
+      };
+      const label = key.replace(/^AUX_/, "").replaceAll("_", " ").toLowerCase();
+      return labels[key] || label.charAt(0).toUpperCase() + label.slice(1);
     },
     rangePercent(index: number, field: "min" | "max"): number {
       const entry = this.getAuxEntry(index);
@@ -179,11 +138,11 @@ export default defineComponent({
       const maxChannel = directChannels ? 16 : 12;
       if (channel < 0 || channel >= maxChannel) return null;
       const value = directChannels
-        ? this.state.rx_channels?.[channel] ?? this.state.aux[channel]
+        ? (this.state.rx_channels?.[channel] ?? this.state.aux[channel])
         : this.state.aux[channel];
       if (value === undefined || value === null) return null;
-      if (value <= 1) return value ? 100 : 0;
-      return Math.round((value / 65535) * 100);
+      if (!directChannels && value <= 1) return value ? 100 : 0;
+      return receiverChannelPercent(value);
     },
     setChannel(index: number, value: number) {
       const aux = [...this.profile.receiver.aux];
@@ -244,8 +203,11 @@ export default defineComponent({
       if (this.default_profile.has_legacy_aux) {
         return current > 0 ? "aux-function-on" : "aux-function-off";
       }
-      return current >= this.rangePercent(index, "min") &&
-        current <= this.rangePercent(index, "max")
+      const entry = this.getAuxEntry(index);
+      const raw = this.profile.profileVersionGt("0.2.5")
+        ? this.state.rx_channels?.[channel]
+        : this.state.aux[channel];
+      return entry && auxRangeActive(raw, entry.range_min, entry.range_max)
         ? "aux-function-on"
         : "aux-function-off";
     },
@@ -254,29 +216,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.aux-list .box {
-  box-shadow: none;
-  border: 1px solid var(--bulma-border, #dbdbdb);
-}
-
-.aux-channel-field :deep(.select),
-.aux-channel-field :deep(select) {
-  max-width: 100%;
-}
-
-.aux-channel-select {
-  display: inline-block;
-}
-
-.aux-range-help {
-  color: var(--bulma-text, currentColor);
-}
-
 .aux-function-off {
-  color: var(--bulma-danger, #ff3860);
+  background: var(--ui-muted);
 }
-
 .aux-function-on {
-  color: var(--bulma-primary, #00d1b2);
+  background: var(--ui-accent);
 }
 </style>

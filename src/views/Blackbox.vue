@@ -1,174 +1,99 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <div class="card" v-if="info.quic_semver_gt('0.1.2')">
-        <div class="card-header">
-          <p class="card-header-title">Blackbox Settings</p>
+  <div class="grid items-stretch gap-4 lg:grid-cols-2">
+    <Panel v-if="info.quic_semver_gt('0.1.2')" title="Recording Settings">
+      <div class="space-y-4">
+        <div class="flex items-end gap-2">
+          <FieldSelect
+            v-model="current_preset"
+            class="flex-1"
+            label="Preset"
+            :options="
+              blackboxPresets.map((o) => ({ label: o.text, value: o.value }))
+            "
+          /><spinner-btn
+            :disabled="current_preset === -1"
+            @click="load_preset(current_preset)"
+            >Load</spinner-btn
+          >
         </div>
-        <div class="card-content">
-          <div class="content column-narrow">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label" for="pid-preset"> Preset </label>
-              </div>
-              <div class="field-body">
-                <div class="field has-addons">
-                  <div class="control">
-                    <input-select
-                      id="blackbox-preset"
-                      v-model.number="current_preset"
-                      :options="blackboxPresets"
-                    ></input-select>
-                  </div>
-                  <div class="control">
-                    <spinner-btn
-                      @click="load_preset(current_preset)"
-                      :disabled="current_preset == -1"
-                    >
-                      Load
-                    </spinner-btn>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label">Log Rate</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="blackbox-log-rate"
-                      v-model.number="profile.blackbox.sample_rate_hz"
-                      :options="logRateOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label">Debug Mode</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="blackbox-debug-mode"
-                      v-model.number="debugMode"
-                      :options="debugModeOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label is-align-self-flex-start pt-2">
-                <label class="label">Fields</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      v-for="f of blackboxFields"
-                      :key="f"
-                      class="input is-static"
-                      :value="f"
-                      readonly
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <FieldSelect
+            v-model="profile.blackbox.sample_rate_hz"
+            label="Log rate"
+            :options="
+              logRateOptions.map((o) => ({ label: o.text, value: o.value }))
+            "
+          />
+          <FieldSelect
+            v-model="debugMode"
+            label="Debug mode"
+            :options="
+              debugModeOptions.map((o) => ({ label: o.text, value: o.value }))
+            "
+          />
         </div>
-      </div>
-    </div>
-
-    <div class="column is-12">
-      <div class="card" v-if="blackbox.list">
-        <div class="card-header">
-          <p class="card-header-title">Blackbox Files</p>
-          <div class="blackbox-progress has-text-right">
-            <progress
-              class="progress my-0 is-danger"
-              :value="usedSize"
-              :max="(blackbox.list.flash_size || 1) * 1024"
-            ></progress>
-            <h6>
-              Used:
-              {{ humanFileSize(usedSize) }} /
-              {{ humanFileSize(blackbox.list.flash_size * 1024) }}
-            </h6>
-          </div>
-        </div>
-
-        <div class="card-content">
-          <div class="content">
-            <div
-              v-for="(file, index) in blackbox.list.files"
-              :key="index"
-              class="is-flex is-align-items-center"
+        <div>
+          <p class="mb-2 text-xs text-muted">Recorded fields</p>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="field in blackboxFields"
+              :key="field"
+              class="rounded border border-line bg-subtle px-2 py-1 text-xs"
+              >{{ field }}</span
             >
-              <div class="mr-4 is-size-6">
-                File {{ index + 1 }}: {{ humanFileSize(file.size) }}
-              </div>
-              <spinner-btn
-                class="is-small my-2 mx-2"
-                @click="download_btfl(index)"
-              >
-                <font-awesome-icon
-                  icon="fa-solid fa-download"
-                  size="lg"
-                  class="mr-2"
-                  fixed-width
-                />
-                BTFL
-              </spinner-btn>
-              <spinner-btn
-                class="is-small my-2 mx-2"
-                @click="download_quic(index)"
-              >
-                <font-awesome-icon
-                  icon="fa-solid fa-download"
-                  size="lg"
-                  class="mr-2"
-                  fixed-width
-                />
-                QUIC
-              </spinner-btn>
-            </div>
-            <a ref="downloadAnchor" target="_blank"></a>
-            <div v-if="blackbox.progress">
-              Downloading {{ humanFileSize(blackbox.speed || 0) }}/s...
-              <progress
-                class="progress is-info my-0"
-                :value="blackbox.progress"
-                max="1"
-              ></progress>
-            </div>
           </div>
         </div>
-
-        <footer class="card-footer">
-          <span class="card-footer-item">
-            {{ blackbox?.list?.files?.length || 0 }} Files
-          </span>
-          <span class="card-footer-item"></span>
-          <spinner-btn class="card-footer-item is-danger" @click="reset()">
-            Reset
-          </spinner-btn>
-        </footer>
       </div>
-    </div>
+    </Panel>
+    <Panel v-if="blackbox.list" title="Flight Logs">
+      <p class="mb-2 text-xs text-muted">
+        {{ humanFileSize(usedSize) }} of
+        {{ humanFileSize(blackbox.list.flash_size * 1024) }} used
+      </p>
+      <progress
+        class="h-2 w-full accent-accent"
+        :value="usedSize"
+        :max="(blackbox.list.flash_size || 1) * 1024"
+        aria-label="Blackbox storage used"
+      ></progress>
+      <div
+        v-if="!blackbox.list.files?.length"
+        class="py-8 text-center text-sm text-muted"
+      >
+        No recorded flights on this controller.
+      </div>
+      <div
+        v-for="(file, index) in blackbox.list.files"
+        :key="index"
+        class="flex flex-wrap items-center gap-2 border-b border-line py-3"
+      >
+        <span class="mr-auto text-sm"
+          >Flight {{ index + 1 }} · {{ humanFileSize(file.size) }}</span
+        >
+        <spinner-btn @click="download_btfl(index)">BTFL</spinner-btn
+        ><spinner-btn @click="download_quic(index)">QUIC</spinner-btn>
+      </div>
+      <a ref="downloadAnchor" target="_blank" hidden></a>
+      <div v-if="blackbox.progress" class="mt-4 text-xs text-muted">
+        Downloading {{ humanFileSize(blackbox.speed || 0) }}/s…<progress
+          class="w-full accent-accent"
+          :value="blackbox.progress"
+          max="1"
+        ></progress>
+      </div>
+      <div
+        class="mt-4 flex items-center justify-between border-t border-line pt-4"
+      >
+        <span class="text-xs text-muted"
+          >{{ blackbox.list.files?.length || 0 }} files</span
+        ><spinner-btn @click="reset()">Erase logs</spinner-btn>
+      </div>
+    </Panel>
   </div>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import FieldSelect from "@/components/ui/Select.vue";
 import { humanFileSize } from "@/mixin/filters";
 import {
   useBlackboxStore,
@@ -183,7 +108,8 @@ import { $enum } from "ts-enum-util";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "blackbox",
+  name: "Blackbox",
+  components: { Panel, FieldSelect },
   setup() {
     return {
       blackbox: useBlackboxStore(),
@@ -277,6 +203,12 @@ export default defineComponent({
       ];
     },
   },
+  created() {
+    this.blackbox.list_blackbox();
+    if (this.info.quic_semver_gt("0.1.2")) {
+      this.blackbox.fetch_presets();
+    }
+  },
   methods: {
     humanFileSize,
     reset() {
@@ -326,12 +258,6 @@ export default defineComponent({
       }
       this.current_preset = -1;
     },
-  },
-  created() {
-    this.blackbox.list_blackbox();
-    if (this.info.quic_semver_gt("0.1.2")) {
-      this.blackbox.fetch_presets();
-    }
   },
 });
 </script>
