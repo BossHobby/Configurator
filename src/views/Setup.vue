@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-4">
-    <div class="grid items-stretch gap-4 lg:grid-cols-2">
+  <div class="space-y-5">
+    <div class="grid items-stretch gap-5 lg:grid-cols-2">
       <GyroModel /><BoardOrientationSettings /><Voltage /><Serial />
     </div>
     <VTX v-if="profile.serial.smart_audio != 0 || profile.serial.hdzero != 0" />

@@ -16,7 +16,9 @@
         <div class="grid grid-cols-12 gap-4">
           <div class="min-w-0 col-span-12 md:col-span-6">
             <div class="min-w-0 flex-1">
-              <label class="text-sm font-medium text-ink">Serial Port</label>
+              <label class="mb-2 block text-sm font-medium text-ink"
+                >Serial Port</label
+              >
               <div class="min-w-0 flex-1">
                 <input-select
                   v-model.number="serial_port"
@@ -29,7 +31,9 @@
 
           <div class="min-w-0 col-span-12 md:col-span-6">
             <div class="min-w-0 flex-1">
-              <label class="text-sm font-medium text-ink">Preset</label>
+              <label class="mb-2 block text-sm font-medium text-ink"
+                >Preset</label
+              >
               <div class="min-w-0 flex-1">
                 <input-select
                   v-model="preset"

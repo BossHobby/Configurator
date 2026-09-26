@@ -1,8 +1,12 @@
 <template>
-  <div class="input-select relative min-w-0">
+  <div
+    class="input-select relative min-w-0"
+    :class="$attrs.class"
+    :style="$attrs.style"
+  >
     <select
       v-model="inputVal"
-      v-bind="$attrs"
+      v-bind="selectAttrs()"
       class="min-h-9 w-full min-w-0 appearance-none rounded-md border border-line bg-subtle py-2 pl-3 pr-10 text-sm text-ink disabled:opacity-50"
     >
       <option v-for="o of optionMap" :key="o.value" :value="o.value">
@@ -52,6 +56,15 @@ export default defineComponent({
         }
         return o;
       });
+    },
+  },
+  methods: {
+    selectAttrs() {
+      return Object.fromEntries(
+        Object.entries(this.$attrs).filter(
+          ([key]) => key !== "class" && key !== "style",
+        ),
+      );
     },
   },
 });

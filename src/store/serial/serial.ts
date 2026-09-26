@@ -511,4 +511,13 @@ export class Serial {
   }
 }
 
-export const serial = new Serial();
+// Keep the transport alive when Vite replaces this module during HMR. A
+// SerialPort is owned by the page's current JS realm; replacing the module
+// must not create a second Serial instance while the first one still owns the
+// port. The HMR data object is retained by Vite between module evaluations.
+const hmrData = import.meta.hot?.data as { serial?: Serial } | undefined;
+export const serial = hmrData?.serial ?? new Serial();
+
+import.meta.hot?.dispose((data) => {
+  (data as { serial?: Serial }).serial = serial;
+});

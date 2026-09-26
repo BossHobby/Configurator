@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useId } from "vue";
+import { useAttrs, useId } from "vue";
 import Icon from "./Icon.vue";
 defineOptions({ inheritAttrs: false });
 defineProps<{
@@ -11,9 +11,15 @@ defineProps<{
 }>();
 defineEmits<{ "update:modelValue": [value: string | number] }>();
 const id = useId();
+const attrs = useAttrs();
+function selectAttrs() {
+  return Object.fromEntries(
+    Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style"),
+  );
+}
 </script>
 <template>
-  <div class="min-w-0">
+  <div class="min-w-0" :class="$attrs.class" :style="$attrs.style">
     <label
       :for="id"
       :class="hideLabel ? 'sr-only' : 'mb-1.5 block text-xs text-muted'"
@@ -22,7 +28,7 @@ const id = useId();
     <div class="relative">
       <select
         :id="id"
-        v-bind="$attrs"
+        v-bind="selectAttrs()"
         :value="modelValue"
         :disabled="disabled"
         class="min-h-9 w-full min-w-0 rounded-md border border-line bg-subtle appearance-none pl-3 pr-10 py-2 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"

@@ -70,7 +70,10 @@
               <div class="p-4">
                 <div class="space-y-4">
                   <figure class="block m-0">
-                    <img :src="'osd/' + current_font_file" />
+                    <img
+                      class="mx-auto block h-auto max-h-[305px] max-w-full object-contain"
+                      :src="'osd/' + current_font_file"
+                    />
                   </figure>
                 </div>
               </div>
@@ -88,7 +91,10 @@
               <div class="p-4">
                 <div class="space-y-4">
                   <figure class="block m-0">
-                    <img :src="imageSource" />
+                    <img
+                      class="mx-auto block h-auto max-h-[305px] max-w-full object-contain"
+                      :src="imageSource"
+                    />
                   </figure>
                   <canvas
                     ref="canvas"

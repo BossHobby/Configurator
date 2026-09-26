@@ -34,24 +34,31 @@
       <Panel
         title="Preview"
         description="Simulated OSD · drag an element to reposition it"
+        class="flex flex-col"
       >
-        <canvas
-          ref="canvas"
-          :width="canvasWidth"
-          :height="canvasHeight"
-          class="osd-canvas"
-          aria-label="OSD layout preview; use the position fields to move elements with the keyboard"
-          @mousedown="drag_start"
-          @mousemove="drag_move"
-          @mouseup="drag_drop"
-          @mouseleave="drag_drop"
-        ></canvas>
+        <div class="flex flex-1 items-center justify-center min-h-0">
+          <div class="osd-preview" :style="previewStyle">
+            <canvas
+              ref="canvas"
+              :width="canvasWidth"
+              :height="canvasHeight"
+              class="osd-canvas"
+              aria-label="OSD layout preview; use the position fields to move elements with the keyboard"
+              @mousedown="drag_start"
+              @mousemove="drag_move"
+              @mouseup="drag_drop"
+              @mouseleave="drag_drop"
+            ></canvas>
+          </div>
+        </div>
       </Panel>
       <Panel
         title="Elements"
         :description="`${availableElements.length} available · ${availableElements.filter((el) => el.active).length} visible`"
       >
-        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2">
+        <div
+          class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2"
+        >
           <div
             v-for="el in availableElements"
             :key="el.index"
@@ -315,6 +322,13 @@ export default defineComponent({
           "",
         );
       },
+    },
+    previewStyle() {
+      const ratio = this.canvasWidth / this.canvasHeight;
+      return {
+        aspectRatio: `${this.canvasWidth} / ${this.canvasHeight}`,
+        maxWidth: `min(100%, calc(min(45dvh, 420px) * ${ratio}))`,
+      };
     },
   },
   watch: {
@@ -589,12 +603,15 @@ export default defineComponent({
 <style lang="scss" scoped>
 .osd-canvas {
   display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: 45dvh;
+  width: 100%;
+  height: 100%;
   margin-inline: auto;
   background: #101a1c;
   border: 1px solid var(--ui-line);
   border-radius: 4px;
+}
+.osd-preview {
+  width: 100%;
+  margin-inline: auto;
 }
 </style>

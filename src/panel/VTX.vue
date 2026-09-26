@@ -142,10 +142,10 @@
           </template>
         </div>
 
-        <div class="min-w-0 col-span-12 md:col-span-6">
+        <div class="min-w-0 col-span-12 md:col-span-6 md:pl-4">
           <div v-if="desiredVtx.protocol && desiredVtx.power_table">
             <template v-if="desiredPowerTableRows.length">
-              <div class="grid grid-cols-12 gap-4">
+              <div class="grid grid-cols-12 gap-4 mb-3">
                 <div class="min-w-0 col-span-12 md:col-span-2"></div>
                 <div class="min-w-0 col-span-12 md:col-span-5">
                   <div class="grid grid-cols-12 gap-4">
@@ -171,7 +171,7 @@
               <div
                 v-for="index in desiredPowerTableRows"
                 :key="index"
-                class="grid grid-cols-12 gap-4 items-center"
+                class="grid grid-cols-12 gap-4 items-center mb-3 last:mb-0"
               >
                 <div class="min-w-0 col-span-12 md:col-span-2">
                   <label class="text-sm font-medium text-ink"

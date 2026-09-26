@@ -96,20 +96,18 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const serial = useSerialStore();
   if (serial.is_connected) {
     if (to.name === "home") {
-      next({ name: "profile" });
-    } else {
-      next();
+      return { name: "profile" };
     }
+    return true;
   } else {
     if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
-      next({ name: "home" });
-    } else {
-      next();
+      return { name: "home" };
     }
+    return true;
   }
 });
 
