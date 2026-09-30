@@ -31,10 +31,18 @@ function stopInterval() {
 function startInterval(fn: any) {
   stopInterval();
 
+  // Skip ticks while a slow link is still answering the previous poll.
+  let polling = false;
   interval = setInterval(async () => {
-    await fn(intervalCounter);
-    intervalCounter++;
-  }, settings.serial.updateInterval);
+    if (polling) return;
+    polling = true;
+    try {
+      await fn(intervalCounter);
+      intervalCounter++;
+    } finally {
+      polling = false;
+    }
+  }, settings.updateInterval());
 }
 
 export const useSerialStore = defineStore("serial", {
