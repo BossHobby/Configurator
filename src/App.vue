@@ -156,7 +156,11 @@ export default defineComponent({
       return updater.updatePreparing() || updater.updatePending();
     },
     hasBrowserSupport() {
-      return settings.websocketUrl() || (navigator.usb && WebSerial);
+      return (
+        settings.websocketUrl() ||
+        settings.crsfUrl() ||
+        (navigator.usb && WebSerial)
+      );
     },
     logDownloadAnchorRef(): HTMLAnchorElement {
       return this.$refs.logDownloadAnchor as HTMLAnchorElement;
