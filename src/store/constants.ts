@@ -198,6 +198,7 @@ enum AuxFunctionsV026Wing {
   _AUX_RETURN_TO_HOME, // Reserved by firmware; wing RTH is not implemented.
   AUX_AUTOTRIM,
   AUX_AUTOLAUNCH,
+  AUX_LOITER,
 }
 
 enum RXProtocolV5 {

@@ -1,5 +1,5 @@
 <template>
-  <Panel title="Wing Settings" description="Autolaunch">
+  <Panel title="Wing Settings" description="Autolaunch, level and loiter">
     <div class="space-y-6">
       <fieldset class="min-w-0 border-t border-line pt-4">
         <legend class="pr-3 text-sm font-semibold">Launch detection</legend>
@@ -222,6 +222,83 @@
           </div>
         </div>
       </fieldset>
+      <fieldset
+        v-if="profile.wing.banked_turns !== undefined"
+        class="min-w-0 border-t border-line pt-4"
+      >
+        <legend class="pr-3 text-sm font-semibold">Level</legend>
+        <label class="inline-flex items-center gap-3 text-sm">
+          <input v-model="bankedTurns" type="checkbox" class="form-switch" />
+          Banked turns
+          <tooltip entry="wing.banked_turns" />
+        </label>
+      </fieldset>
+      <fieldset
+        v-if="profile.wing.navigation"
+        class="min-w-0 border-t border-line pt-4"
+      >
+        <legend class="pr-3 text-sm font-semibold">Loiter</legend>
+        <div class="form-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="form-row">
+            <label for="wing-settings-cruise-throttle" class="form-label"
+              >Cruise Throttle (%)
+              <tooltip entry="wing.navigation.cruise_throttle"
+            /></label>
+            <input
+              id="wing-settings-cruise-throttle"
+              v-model.number="cruiseThrottlePct"
+              class="form-input"
+              type="number"
+              step="1"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="form-row">
+            <label for="wing-settings-max-bank-angle" class="form-label"
+              >Max Bank (deg) <tooltip entry="wing.navigation.max_bank_angle"
+            /></label>
+            <input
+              id="wing-settings-max-bank-angle"
+              v-model.number="profile.wing.navigation.max_bank_angle"
+              class="form-input"
+              type="number"
+              step="1"
+              min="0"
+              max="80"
+            />
+          </div>
+          <div class="form-row">
+            <label for="wing-settings-loiter-radius" class="form-label"
+              >Loiter Radius (m) <tooltip entry="wing.navigation.loiter_radius"
+            /></label>
+            <input
+              id="wing-settings-loiter-radius"
+              v-model.number="profile.wing.navigation.loiter_radius"
+              class="form-input"
+              type="number"
+              step="5"
+              min="1"
+            />
+          </div>
+          <div class="form-row">
+            <label for="wing-settings-loiter-direction" class="form-label"
+              >Loiter Direction
+              <tooltip entry="wing.navigation.loiter_direction"
+            /></label>
+            <div class="relative">
+              <select
+                id="wing-settings-loiter-direction"
+                v-model.number="profile.wing.navigation.loiter_direction"
+                class="form-select"
+              >
+                <option :value="0">Right (clockwise)</option>
+                <option :value="1">Left (counter-clockwise)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </fieldset>
     </div>
   </Panel>
 </template>
@@ -240,6 +317,26 @@ export default defineComponent({
     };
   },
   computed: {
+    bankedTurns: {
+      get(): boolean {
+        return !!this.profile.wing.banked_turns;
+      },
+      set(val: boolean) {
+        this.profile.wing.banked_turns = val ? 1 : 0;
+      },
+    },
+    cruiseThrottlePct: {
+      get(): number {
+        return Math.round(
+          (this.profile.wing.navigation?.cruise_throttle || 0) * 100,
+        );
+      },
+      set(val: number) {
+        if (this.profile.wing.navigation) {
+          this.profile.wing.navigation.cruise_throttle = this.clampPercent(val);
+        }
+      },
+    },
     autolaunchIdleThrottlePct: {
       get(): number {
         return Math.round(
