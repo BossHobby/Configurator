@@ -249,8 +249,17 @@ export interface profile_wing_autolaunch_t {
   finish_ms: number;
 }
 
+export interface profile_wing_navigation_t {
+  cruise_throttle: number;
+  max_bank_angle: number;
+  loiter_radius: number;
+  loiter_direction: number;
+}
+
 export interface profile_wing_t {
   autolaunch: profile_wing_autolaunch_t;
+  banked_turns?: number;
+  navigation?: profile_wing_navigation_t;
 }
 
 export interface profile_navigation_t {
