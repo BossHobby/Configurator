@@ -195,7 +195,7 @@ enum AuxFunctionsV026Wing {
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
-  _AUX_RETURN_TO_HOME, // Reserved by firmware; wing RTH is not implemented.
+  AUX_RETURN_TO_HOME,
   AUX_AUTOTRIM,
   AUX_AUTOLAUNCH,
   AUX_LOITER,

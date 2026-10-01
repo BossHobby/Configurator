@@ -327,20 +327,29 @@
   "wing.banked_turns": {
     "text": "In Level mode, strengthen roll and pitch commands while the other axis is tilted, so pulling pitch in a bank tightens the turn. Loiter uses the same correction."
   },
-  "wing.navigation.cruise_throttle": {
-    "text": "Throttle while loitering in level flight. Loiter adds throttle while climbing and reduces it while descending."
+  "navigation.cruise_throttle": {
+    "text": "Throttle for level flight in loiter and RTH. Navigation adds throttle while climbing and reduces it while descending."
   },
-  "wing.navigation.max_bank_angle": {
-    "text": "Largest bank angle loiter commands, in degrees. A loiter radius too small for the ground speed is flown at this bank."
+  "navigation.max_bank_angle": {
+    "text": "Largest bank angle loiter and RTH command, in degrees. A loiter radius too small for the ground speed is flown at this bank."
   },
-  "wing.navigation.loiter_radius": {
+  "navigation.wing_rth_altitude": {
+    "text": "RTH climbs this far above the altitude where it started, in meters, then holds that altitude on the way home and while circling home. Needs a barometer."
+  },
+  "navigation.wing_rth_on_failsafe": {
+    "text": "On receiver loss, fly home and circle there instead of gliding and disarming. Without GPS or a home position, circle while descending slowly. The pilot gets control back when the link recovers, unless the RTH switch is on."
+  },
+  "navigation.loiter_radius": {
     "text": "Radius of the GPS loiter circle, in meters. The circle is placed to the turn side of the current track when loiter starts."
   },
-  "wing.navigation.loiter_direction": {
+  "navigation.loiter_direction": {
     "text": "Turn direction of the loiter circle, seen from above."
   },
+  "channel.aux_return_to_home": {
+    "text": "Return to the home position set on arming, climbing by the RTH climb height. Wings circle home on arrival and never land. Without a home position, wings loiter in place."
+  },
   "channel.aux_loiter": {
-    "text": "Circle with GPS and hold the barometer altitude from when loiter started, at cruise throttle. Sticks are ignored. Works only while armed and airborne, after autolaunch. Without GPS, holds a constant bank instead. Failsafe cancels loiter."
+    "text": "Circle with GPS and hold the barometer altitude from when loiter started, at cruise throttle. Sticks are ignored. Works only while armed and airborne, after autolaunch. Without GPS, holds a constant bank instead. RTH takes priority, including failsafe RTH."
   },
   "channel.aux_autotrim": {
     "text": "Capture wing control-surface trim during steady flight. Keep Autotrim enabled through landing and disarming so the captured trim can be saved. Switching it off before saving cancels the capture and restores the previous trim."
