@@ -225,6 +225,7 @@ enum AuxFunctionsV031Wing {
   _AUX_RETURN_TO_HOME, // Reserved by firmware; wing RTH is not implemented.
   AUX_AUTOTRIM,
   AUX_AUTOLAUNCH,
+  AUX_LOITER,
   AUX_PINIO_1,
   AUX_PINIO_2,
   AUX_PINIO_3,
