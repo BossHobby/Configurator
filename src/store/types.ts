@@ -253,6 +253,15 @@ export interface profile_wing_autolaunch_t {
 export interface profile_wing_t {
   autolaunch: profile_wing_autolaunch_t;
   turn_coordination?: number;
+  auto_center: number;
+  sport_hold: number;
+  banked_turns: number;
+  surface_expo: vec3_t;
+  surface_rate: vec3_t;
+  low_rate: number;
+  gain_p: number[];
+  gain_i: number[];
+  gain_d: number[];
 }
 
 export interface profile_navigation_t {

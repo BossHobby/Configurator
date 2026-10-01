@@ -134,7 +134,17 @@ export const useProfileStore = defineStore("profile", {
       reversible: 1,
     },
     vtx: {},
-    wing: {},
+    wing: {
+      auto_center: 0,
+      sport_hold: 1,
+      banked_turns: 0,
+      surface_expo: [0, 0, 0],
+      surface_rate: [1, 1, 1],
+      low_rate: 0.5,
+      gain_p: [16, 16, 16],
+      gain_i: [16, 16, 16],
+      gain_d: [16, 16, 16],
+    },
     navigation: {},
   }),
   getters: {

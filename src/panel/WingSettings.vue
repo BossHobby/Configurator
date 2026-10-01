@@ -1,6 +1,163 @@
 <template>
-  <Panel title="Wing Settings" description="Autolaunch, level and loiter">
+  <Panel
+    title="Wing Settings"
+    description="Stabilization, autolaunch, level and loiter"
+  >
     <div class="space-y-6">
+      <template v-if="profile.profileVersionGt('0.2.7')">
+        <h4 class="text-sm font-semibold">Sport Stabilization</h4>
+        <p>
+          Sport combines direct surface control with gyro damping. Assign Sport
+          Mode and Low Rates on the Auxiliary Channels page. Level and Acro take
+          priority when their switches are also active.
+        </p>
+        <div class="space-y-2">
+          <label class="inline-flex min-h-9 items-center gap-3 text-sm">
+            <input
+              v-model="profile.wing.sport_hold"
+              type="checkbox"
+              class="size-4 accent-accent"
+              :true-value="1"
+              :false-value="0"
+            />
+            Hold orientation when sticks are released
+          </label>
+        </div>
+        <div class="space-y-2">
+          <label class="inline-flex min-h-9 items-center gap-3 text-sm">
+            <input
+              v-model="profile.wing.auto_center"
+              type="checkbox"
+              class="size-4 accent-accent"
+              :true-value="1"
+              :false-value="0"
+            />
+            Learn transmitter trims automatically
+          </label>
+          <p class="text-xs text-muted">
+            Learns steady inputs within 25% of center after 0.75 seconds. Keep
+            sticks released while trimming. Centers are learned again after
+            power-up.
+          </p>
+          <p class="text-xs text-muted">
+            Learned centers:
+            {{
+              state.wing_rx_center
+                .map((value) => `${(value * 100).toFixed(1)}%`)
+                .join(" / ")
+            }}
+            (roll / pitch / yaw)
+          </p>
+        </div>
+        <div class="space-y-2">
+          <label class="inline-flex min-h-9 items-center gap-3 text-sm">
+            <input
+              v-model="profile.wing.banked_turns"
+              type="checkbox"
+              class="size-4 accent-accent"
+              :true-value="1"
+              :false-value="0"
+            />
+            Bank-and-yank correction in Level mode
+          </label>
+        </div>
+
+        <h4 class="text-sm font-semibold">Manual and Sport Surface Response</h4>
+        <table class="w-full text-left text-sm [&_th]:p-2 [&_td]:p-2">
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th>Travel (0–1)</th>
+              <th>Expo (0–1)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(axis, index) in axes" :key="axis">
+              <th>{{ axis }}</th>
+              <td>
+                <input
+                  v-model.number="profile.wing.surface_rate[index]"
+                  :aria-label="`${axis} travel`"
+                  class="form-input"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                />
+              </td>
+              <td>
+                <input
+                  v-model.number="profile.wing.surface_expo[index]"
+                  :aria-label="`${axis} expo`"
+                  class="form-input"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="space-y-2">
+          <label class="form-label" for="wing-low-rate"
+            >Low Rate Multiplier (0–1)</label
+          >
+          <input
+            id="wing-low-rate"
+            v-model.number="profile.wing.low_rate"
+            class="form-input"
+            type="number"
+            min="0"
+            max="1"
+            step="0.05"
+          />
+          <p class="text-xs text-muted">
+            Reduces the outer stick curve while preserving trim near center.
+            Reduction is limited at low expo. Servo endpoint limits still apply.
+          </p>
+        </div>
+
+        <h4 class="text-sm font-semibold">Gain Knobs</h4>
+        <p>
+          Channel endpoints select 50–150% of the configured gain; center
+          selects 100%. These adjustments are not saved into the base gains.
+        </p>
+        <table class="w-full text-left text-sm [&_th]:p-2 [&_td]:p-2">
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th>P</th>
+              <th>I</th>
+              <th>D</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(axis, index) in axes" :key="axis">
+              <th>{{ axis }}</th>
+              <td v-for="term in gainTerms" :key="term">
+                <div class="min-w-0">
+                  <select
+                    class="form-select"
+                    v-model.number="profile.wing[term][index]"
+                    :aria-label="`${axis} ${term.slice(-1).toUpperCase()} gain channel`"
+                  >
+                    <option :value="16">Fixed</option>
+                    <option
+                      v-for="channel in 16"
+                      :key="channel"
+                      :value="channel - 1"
+                    >
+                      CH {{ channel }}
+                    </option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </template>
+
       <fieldset class="min-w-0 border-t border-line pt-4">
         <legend class="pr-3 text-sm font-semibold">Launch detection</legend>
         <div class="form-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
@@ -363,6 +520,7 @@
 import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { useProfileStore } from "@/store/profile";
+import { useStateStore } from "@/store/state";
 
 export default defineComponent({
   name: "WingSettings",
@@ -370,6 +528,9 @@ export default defineComponent({
   setup() {
     return {
       profile: useProfileStore(),
+      state: useStateStore(),
+      axes: ["Roll", "Pitch", "Yaw"],
+      gainTerms: ["gain_p", "gain_i", "gain_d"] as const,
     };
   },
   computed: {
