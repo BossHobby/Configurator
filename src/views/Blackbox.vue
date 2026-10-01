@@ -266,6 +266,7 @@ export default defineComponent({
           value: BlackboxDebugFlag.BBOX_DEBUG_NAVIGATION,
           text: "Navigation / RTH",
         },
+        { value: BlackboxDebugFlag.BBOX_DEBUG_WING, text: "Wing" },
       ];
     },
     logRateOptions() {
