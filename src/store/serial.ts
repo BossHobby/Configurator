@@ -18,9 +18,12 @@ import { useBlackboxStore } from "./blackbox";
 import { useTargetStore } from "./target";
 import { asyncDelay } from "./util";
 import { WebSerial } from "./serial/webserial";
+import { initialConnection } from "./serial/connection";
+import { ScanCancelled } from "./serial/ble-scan";
 
 let interval: any = null;
 let intervalCounter = 0;
+let connectionRevision = 0;
 
 function stopInterval() {
   clearInterval(interval);
@@ -39,18 +42,32 @@ function startInterval(fn: any) {
     try {
       await fn(intervalCounter);
       intervalCounter++;
+    } catch (error) {
+      Log.error("serial", error);
     } finally {
       polling = false;
     }
-  }, settings.updateInterval());
+  }, serial.pollInterval);
 }
 
 export const useSerialStore = defineStore("serial", {
   state: () => ({
+    connection: initialConnection(),
     is_connected: false,
     is_connecting: false,
+    /** 0–1 through the connect stages, with a label for the current one. */
+    connect_progress: 0,
+    connect_status: "",
   }),
   actions: {
+    set_progress(progress: number, status: string) {
+      this.connect_progress = progress;
+      this.connect_status = status;
+    },
+    begin_progress() {
+      this.set_progress(0.05, "Connecting to device…");
+      serial.onLinkReady = () => this.set_progress(0.35, "Reading board info…");
+    },
     async poll_serial(counter: number) {
       if (!this.is_connected) {
         return;
@@ -87,22 +104,32 @@ export const useSerialStore = defineStore("serial", {
       await this.disconnect();
 
       this.is_connecting = true;
+      const revision = connectionRevision;
       await serial.softReboot();
-      for (let i = 0; i < 10; i++) {
-        const ports = await WebSerial.getPorts();
-        if (!ports.length) {
-          break;
+      if (serial.connectionKind === "usb") {
+        for (let i = 0; i < 10; i++) {
+          const ports = await WebSerial.getPorts();
+          if (!ports.length) {
+            break;
+          }
+          await asyncDelay(100);
         }
-        await asyncDelay(100);
-      }
-      for (let i = 0; i < 10; i++) {
-        const ports = await WebSerial.getPorts();
-        if (ports.length) {
-          break;
+        for (let i = 0; i < 10; i++) {
+          const ports = await WebSerial.getPorts();
+          if (ports.length) {
+            break;
+          }
+          await asyncDelay(100);
         }
-        await asyncDelay(100);
+      } else {
+        await asyncDelay(1500);
       }
 
+      if (revision !== connectionRevision) {
+        this.is_connecting = false;
+        return;
+      }
+      this.begin_progress();
       await this.connect(
         serial.connectFirstPort((err) => {
           Log.error("serial", err);
@@ -182,10 +209,8 @@ export const useSerialStore = defineStore("serial", {
         });
     },
     disconnect() {
-      if (!this.is_connected) return;
-
+      ++connectionRevision;
       this.is_connected = false;
-      this.is_connecting = false;
 
       stopInterval();
 
@@ -197,6 +222,7 @@ export const useSerialStore = defineStore("serial", {
       }
     },
     async connect(infoPromise: Promise<any>) {
+      const revision = connectionRevision;
       const bb = useBlackboxStore();
       const default_profile = useDefaultProfileStore();
       const info = useInfoStore();
@@ -208,6 +234,8 @@ export const useSerialStore = defineStore("serial", {
 
       try {
         const i = await infoPromise;
+        if (revision !== connectionRevision)
+          throw new Error("Connection cancelled");
 
         info.$reset();
         motor.$reset();
@@ -219,16 +247,28 @@ export const useSerialStore = defineStore("serial", {
 
         this.is_connected = true;
         info.set_info(i);
+        this.set_progress(0.5, "Loading configuration…");
+        let loaded = 0;
+        const step = <T>(p: Promise<T>) =>
+          p.then((value) => {
+            this.set_progress(
+              0.5 + (0.5 * ++loaded) / 3,
+              "Loading configuration…",
+            );
+            return value;
+          });
 
         if (info.quic_semver_gte("0.2.0")) {
           target.fetch();
         }
 
         await Promise.all([
-          default_profile.fetch_default_profile(),
-          root.fetch_pid_rate_presets(),
-          profile.fetch_profile(),
+          step(default_profile.fetch_default_profile()),
+          step(root.fetch_pid_rate_presets()),
+          step(profile.fetch_profile()),
         ]);
+        if (revision !== connectionRevision)
+          throw new Error("Connection cancelled");
         vtx.update_status();
 
         startInterval((c) => this.poll_serial(c));
@@ -242,27 +282,33 @@ export const useSerialStore = defineStore("serial", {
         stopInterval();
         await serial.close();
         root.reset_needs_reboot();
-        root.append_alert({
-          type: "danger",
-          msg: "Connection to the board failed",
-        });
+        if (!(err instanceof ScanCancelled))
+          root.append_alert({
+            type: "danger",
+            msg:
+              "Connection to the board failed: " +
+              (err instanceof Error ? err.message : String(err)),
+          });
       } finally {
         this.is_connecting = false;
+        this.set_progress(0, "");
       }
     },
     async toggle_connection() {
+      if (this.is_connecting) return;
       if (this.is_connected) {
         this.disconnect();
         return serial.close();
       }
 
       this.is_connecting = true;
+      this.begin_progress();
       return this.connect(
         serial.connect((err) => {
           Log.error("serial", err);
           this.disconnect();
           return serial.close();
-        }),
+        }, this.connection),
       );
     },
   },

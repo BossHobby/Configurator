@@ -1,5 +1,5 @@
 import semver from "semver";
-import { BlackboxField } from "../constants";
+import { BlackboxField } from "../blackbox-fields";
 
 export const LEGACY_BLACKBOX_SCALE = 1000;
 export const BLACKBOX_SCALE = 100;

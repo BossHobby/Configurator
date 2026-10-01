@@ -19,13 +19,18 @@
         </dd>
       </div>
     </dl>
-    <div class="mt-auto flex flex-wrap gap-2 border-t border-line pt-4">
-      <spinner-btn @click="downloadProfile">Save profile</spinner-btn>
-      <spinner-btn :disabled="info.is_read_only" @click="uploadProfile"
-        >Load profile</spinner-btn
+    <!-- Phones: one even row; the card title already says "profile". -->
+    <div
+      class="mt-auto flex flex-wrap gap-2 border-t border-line pt-4 max-sm:grid max-sm:grid-cols-3 max-sm:*:w-full"
+    >
+      <spinner-btn @click="downloadProfile"
+        >Save<span class="max-sm:hidden"> profile</span></spinner-btn
       >
-      <spinner-btn class="ml-auto" @click="profile.reset"
-        >Reset profile</spinner-btn
+      <spinner-btn :disabled="info.is_read_only" @click="uploadProfile"
+        >Load<span class="max-sm:hidden"> profile</span></spinner-btn
+      >
+      <spinner-btn class="sm:ml-auto" @click="profile.reset"
+        >Reset<span class="max-sm:hidden"> profile</span></spinner-btn
       >
     </div>
     <input ref="file" accept=".yaml" type="file" hidden />
@@ -33,6 +38,7 @@
   </Panel>
 </template>
 <script lang="ts">
+import { exportText } from "@/store/util/export";
 import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import YAML from "yaml";
@@ -121,16 +127,13 @@ export default defineComponent({
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
         const yamlProfile = encodeProfileForYaml(profile);
-        const encoded = encodeURIComponent(YAML.stringify(yamlProfile));
-        const yaml = "data:text/yaml;charset=utf-8," + encoded;
+        const yaml = YAML.stringify(yamlProfile);
 
         const date = this.date.toISOString().substring(0, 10);
         const name = profile.meta.name.replace(/\0/g, "");
         const filename = `Profile_${name}_${date}.yaml`;
 
-        this.downloadAnchorRef.setAttribute("href", yaml);
-        this.downloadAnchorRef.setAttribute("download", filename);
-        this.downloadAnchorRef.click();
+        return exportText(filename, yaml, "text/yaml");
       });
     },
   },

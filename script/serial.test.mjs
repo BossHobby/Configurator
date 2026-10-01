@@ -1,34 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { runInNewContext } from "node:vm";
-import ts from "typescript";
-
-function loadModule(path, imports, globals = {}) {
-  const source = readFileSync(new URL(path, import.meta.url), "utf8");
-  const { outputText } = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-    },
-  });
-  const exports = {};
-  runInNewContext(outputText, {
-    exports,
-    require: (name) => {
-      assert.ok(name in imports, `Unexpected import: ${name}`);
-      return imports[name];
-    },
-    TransformStream,
-    Uint8Array,
-    TypeError,
-    console,
-    setTimeout,
-    clearTimeout,
-    ...globals,
-  });
-  return exports;
-}
+import { loadModule } from "./test-module.mjs";
 
 function createSerial(globals) {
   const { Serial } = loadModule(
@@ -40,6 +12,10 @@ function createSerial(globals) {
       "./cbor": {},
       "./webserial": {},
       "./settings": {},
+      "./crsf": {},
+      "./ble": {},
+      "./transport": {},
+      "./connection": {},
     },
     globals,
   );
@@ -124,7 +100,9 @@ test("failed connection waits for port cleanup before clearing connecting state"
     "@/router": {},
     "./serial/quic": {},
     "./serial/settings": {},
+    "./serial/connection": { initialConnection: () => ({ kind: "usb" }) },
     "./serial/webserial": {},
+    "./serial/ble-scan": { ScanCancelled: class extends Error {} },
     "./util": {},
     "./serial/serial": {
       serial: {
@@ -162,7 +140,12 @@ test("failed connection waits for port cleanup before clearing connecting state"
     imports,
     { clearInterval },
   );
-  const state = { ...store.state(), is_connecting: true };
+  const state = {
+    ...store.state(),
+    ...store.actions,
+    is_connecting: true,
+    connect_progress: 0.35,
+  };
   const connecting = store.actions.connect.call(
     state,
     Promise.reject(new Error("connect failed")),
@@ -174,4 +157,43 @@ test("failed connection waits for port cleanup before clearing connecting state"
   await connecting;
   assert.equal(state.is_connected, false);
   assert.equal(state.is_connecting, false);
+  assert.equal(state.connect_progress, 0);
+});
+
+test("wireless receive reassembles QUIC packets across notification boundaries", async () => {
+  const quic = loadModule("../src/store/serial/quic.ts", {});
+  const { Serial } = loadModule("../src/store/serial/serial.ts", {
+    "./quic": quic,
+    "../util": {},
+    "@/log": { Log: { trace() {} } },
+    "./cbor": { CBOR: { decode: (bytes) => [...bytes] } },
+    "./webserial": {},
+    "./settings": { settings: { serial: { bufferSize: 1024 } } },
+    "./crsf": {},
+    "./ble": {},
+    "./transport": {},
+    "./connection": {},
+  });
+  const serial = new Serial();
+  let receive;
+  let closed = 0;
+  await serial.connectLink(
+    {
+      connect: async (onData) => {
+        receive = onData;
+      },
+      close: async () => {
+        closed++;
+      },
+    },
+    false,
+    assert.fail,
+  );
+  const packet = serial.readPacket(() => {}, 1000);
+  receive(Uint8Array.from([quic.QUIC_MAGIC, quic.QuicCmd.Get]));
+  receive(Uint8Array.from([0, 3, 5]));
+  receive(Uint8Array.from([6, 7]));
+  assert.deepEqual((await packet).payload, [5, 6, 7]);
+  await serial.close();
+  assert.equal(closed, 1);
 });

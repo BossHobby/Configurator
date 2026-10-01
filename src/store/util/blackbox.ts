@@ -5,7 +5,7 @@ import {
   transformBlackboxFieldFlags,
   type BlackboxFile,
 } from "./blackbox-shared";
-import { BlackboxField } from "../constants";
+import { BlackboxField } from "../blackbox-fields";
 import type { profile_t } from "../types";
 
 export interface FieldDefinition {

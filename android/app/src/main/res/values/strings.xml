@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">QUICKSILVER</string>
+    <string name="title_activity_main">QUICKSILVER</string>
+    <string name="package_name">com.bosshobby.configurator</string>
+    <string name="custom_url_scheme">com.bosshobby.configurator</string>
+</resources>

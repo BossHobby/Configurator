@@ -17,11 +17,12 @@ defineEmits<{ apply: []; reboot: [] }>();
 </script>
 <template>
   <footer
-    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line bg-panel px-4 py-3"
+    class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-line bg-panel px-4 py-3 max-sm:flex-nowrap max-sm:pr-6"
   >
+    <!-- Phones: Reboot | status | Apply, keeping Apply at the thumb's edge. -->
     <p
       role="status"
-      class="flex items-center gap-2 text-xs"
+      class="flex items-center gap-2 text-xs max-sm:min-w-0 max-sm:flex-1"
       :class="
         error
           ? 'text-danger'
@@ -43,8 +44,9 @@ defineEmits<{ apply: []; reboot: [] }>();
                 : "All changes applied")
       }}
     </p>
-    <div class="flex gap-2">
+    <div class="flex gap-2 max-sm:contents">
       <Button
+        class="max-sm:order-first"
         :disabled="busy || rebootDisabled"
         :busy="rebooting"
         @click="$emit('reboot')"

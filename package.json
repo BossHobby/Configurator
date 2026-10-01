@@ -22,9 +22,22 @@
     "extract-tooltips": "node script/extract-tooltips.js",
     "prepare": "husky",
     "pre-commit": "pretty-quick --staged",
-    "test:ui": "node --test script/ui.test.mjs"
+    "test:ui": "node --test script/ui.test.mjs",
+    "serve:mobile": "env DEPLOYMENT=mobile vite --host",
+    "build:mobile": "env DEPLOYMENT=mobile vite build --outDir dist-mobile",
+    "mobile:sync": "npm run build:mobile && cap sync",
+    "mobile:android": "cap open android",
+    "mobile:ios": "cap open ios",
+    "test:serial": "node --test script/serial.test.mjs script/ble.test.mjs script/crsf.test.mjs"
   },
   "dependencies": {
+    "@capacitor-community/bluetooth-le": "^8.3.0",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.3",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/share": "^8.0.2",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@lucide/vue": "^1.48.0",
@@ -47,6 +60,7 @@
     "yaml": "^2.1.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@electron/notarize": "^3.1.1",
     "@tailwindcss/vite": "^4.3.3",

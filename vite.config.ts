@@ -13,7 +13,9 @@ const branch =
 
 let base = "/";
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.DEPLOYMENT === "mobile") {
+  base = "/";
+} else if (process.env.NODE_ENV === "production") {
   if (
     process.env.DEPLOYMENT === "gh-pages" ||
     process.env.DEPLOYMENT === "local"
@@ -39,7 +41,9 @@ export default defineConfig({
     tailwindcss(),
     svgLoader(),
     VitePWA({
-      disable: process.env.PAGES_PREVIEW === "true",
+      disable:
+        process.env.PAGES_PREVIEW === "true" ||
+        process.env.DEPLOYMENT === "mobile",
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",

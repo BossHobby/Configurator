@@ -96,6 +96,7 @@
   </div>
 </template>
 <script lang="ts">
+import { exportObjectUrl } from "@/store/util/export";
 import Panel from "@/components/ui/Panel.vue";
 import FieldSelect from "@/components/ui/Select.vue";
 import { humanFileSize } from "@/mixin/filters";
@@ -227,9 +228,7 @@ export default defineComponent({
         const name = this.profile.meta.name.replace(/\0/g, "");
         const filename = `QUIC_${name}_${date}_file_${index}.json`;
 
-        this.$refs.downloadAnchor.setAttribute("href", url);
-        this.$refs.downloadAnchor.setAttribute("download", filename);
-        this.$refs.downloadAnchor.click();
+        return exportObjectUrl(filename, url);
       });
     },
     download_btfl(index) {
@@ -238,9 +237,7 @@ export default defineComponent({
         const name = this.profile.meta.name.replace(/\0/g, "");
         const filename = `QUIC_${name}_${date}_file_${index}.bfl`;
 
-        this.$refs.downloadAnchor.setAttribute("href", url);
-        this.$refs.downloadAnchor.setAttribute("download", filename);
-        this.$refs.downloadAnchor.click();
+        return exportObjectUrl(filename, url);
       });
     },
     load_preset(i: number) {

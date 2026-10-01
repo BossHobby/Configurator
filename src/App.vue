@@ -14,14 +14,21 @@
           {{ state.cpu_temp.toFixed(1) }}°C
         </span>
         <ActionButton
+          v-if="!native"
           :busy="serial.is_connecting"
-          :disabled="applying || rebooting"
+          :disabled="applying || rebooting || serial.is_connecting"
           @click="toggleConnection"
           >{{ serial.is_connected ? "Disconnect" : "Connect" }}</ActionButton
         >
       </div>
     </template>
     <template #utilities>
+      <ActionButton
+        v-if="native && serial.is_connected"
+        :disabled="applying || rebooting || serial.is_connecting"
+        @click="toggleConnection"
+        >Disconnect</ActionButton
+      >
       <button
         v-if="serial.is_connected"
         type="button"
@@ -64,20 +71,14 @@
   <AlertPortal />
   <ModalPortal />
   <div
-    v-if="updateProcessing || !hasBrowserSupport"
+    v-if="updateProcessing"
     role="alertdialog"
     aria-modal="true"
-    :aria-label="updateProcessing ? 'Updating' : 'Unsupported Browser'"
+    aria-label="Updating"
     class="fixed inset-0 z-[10002] flex items-center justify-center bg-workspace/95 p-6"
   >
     <div class="max-w-lg rounded-lg border border-line bg-panel p-6">
-      <h1 class="mb-3 text-xl font-semibold">
-        {{ updateProcessing ? "Updating…" : "Unsupported Browser" }}
-      </h1>
-      <p v-if="!updateProcessing">
-        Your browser does not support the APIs needed by this application.
-        Please use Chrome, Chromium, or Edge.
-      </p>
+      <h1 class="mb-3 text-xl font-semibold">Updating…</h1>
     </div>
   </div>
 </template>
@@ -100,8 +101,10 @@ import { useSerialStore } from "./store/serial";
 import { useRootStore } from "./store/root";
 import { useConstantStore } from "./store/constants";
 import { Log } from "./log";
-import { WebSerial } from "./store/serial/webserial";
-import { settings } from "./store/serial/settings";
+import { serial as deviceSerial } from "./store/serial/serial";
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
+import { App as NativeApp } from "@capacitor/app";
+import { exportText } from "./store/util/export";
 export default defineComponent({
   components: { Shell, ActionButton, SaveBar, AlertPortal, ModalPortal },
   setup() {
@@ -117,9 +120,12 @@ export default defineComponent({
   },
   data() {
     return {
+      pauseListener: undefined as PluginListenerHandle | undefined,
+      disposed: false,
       applying: false,
       rebooting: false,
       operationError: undefined as string | undefined,
+      native: Capacitor.isNativePlatform(),
     };
   },
   computed: {
@@ -155,13 +161,7 @@ export default defineComponent({
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
     },
-    hasBrowserSupport() {
-      return (
-        settings.websocketUrl() ||
-        settings.crsfUrl() ||
-        (navigator.usb && WebSerial)
-      );
-    },
+
     logDownloadAnchorRef(): HTMLAnchorElement {
       return this.$refs.logDownloadAnchor as HTMLAnchorElement;
     },
@@ -169,15 +169,33 @@ export default defineComponent({
   created() {
     if (updater.updatePending()) updater.finishUpdate();
     window.addEventListener("beforeunload", this.onBeforeUnload);
+    if (Capacitor.isNativePlatform()) {
+      void NativeApp.addListener("pause", this.onAppPause).then((listener) => {
+        if (this.disposed) void listener.remove();
+        else this.pauseListener = listener;
+      });
+    }
     window.electron?.ipcRenderer.on("select-serial", this.selectSerial);
     window.electron?.ipcRenderer.on("select-usb-device", this.selectUSBDevice);
   },
   unmounted() {
     window.removeEventListener("beforeunload", this.onBeforeUnload);
+    this.disposed = true;
+    void this.pauseListener?.remove();
     window.electron?.ipcRenderer.removeAllListeners("select-serial");
     window.electron?.ipcRenderer.removeAllListeners("select-usb-device");
   },
   methods: {
+    onAppPause() {
+      if (this.serial.is_connected || this.serial.is_connecting) {
+        this.serial.disconnect();
+        void deviceSerial.close();
+        this.root.append_alert({
+          type: "warning",
+          msg: "Connection closed while the app was in the background. Reconnect to continue.",
+        });
+      }
+    },
     onBeforeUnload(event: BeforeUnloadEvent) {
       if (this.serial.is_connected && this.root.needs_apply) {
         event.preventDefault();
@@ -283,15 +301,16 @@ export default defineComponent({
           return window.electron?.ipcRenderer.send("usb-device", value);
         });
     },
-    downloadLog() {
-      const file = Log.history.join("\n");
-      const encoded =
-        "data:text/plain;charset=utf-8," + encodeURIComponent(file);
-      const filename = `Log_${new Date().toISOString()}.txt`;
-
-      this.logDownloadAnchorRef.setAttribute("href", encoded);
-      this.logDownloadAnchorRef.setAttribute("download", filename);
-      this.logDownloadAnchorRef.click();
+    async downloadLog() {
+      try {
+        await exportText(
+          `Log_${new Date().toISOString().replace(/:/g, "-")}.txt`,
+          Log.history.join("\n"),
+          "text/plain",
+        );
+      } catch (error) {
+        this.root.append_alert({ type: "danger", msg: String(error) });
+      }
     },
   },
 });

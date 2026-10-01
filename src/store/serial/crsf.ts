@@ -1,4 +1,5 @@
 import { Log } from "@/log";
+import { WebSocketTransport, type ByteTransport } from "./transport";
 
 // QUIC over CRSF 0x7F frames, tunnelled through a CRSF WebSocket such as the
 // TBS Crossfire WiFi module's /ws endpoint. Payload after the extended header:
@@ -34,7 +35,8 @@ function crc8(data: Uint8Array): number {
 }
 
 export class CrsfLink {
-  private ws?: WebSocket;
+  private transport: ByteTransport;
+  private cancelOpen?: (error: Error) => void;
   private timer?: ReturnType<typeof setInterval>;
   private rxFrame = new Uint8Array(0);
 
@@ -50,48 +52,55 @@ export class CrsfLink {
   private ackPending = false;
 
   constructor(
-    private url: string,
+    transport: string | ByteTransport,
     private onData: (data: Uint8Array) => void,
     private onClose: (err: any) => void,
     private origin = 0x10,
-  ) {}
+  ) {
+    this.transport =
+      typeof transport === "string"
+        ? new WebSocketTransport(transport)
+        : transport;
+  }
 
   connect(timeout = 10_000): Promise<void> {
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(this.url);
-      ws.binaryType = "arraybuffer";
-      this.ws = ws;
-
-      const deadline = setTimeout(() => {
-        reject(new Error("crsf session timeout"));
-        this.close();
-      }, timeout);
-
-      let opened = false;
-      ws.onopen = () => {
-        this.timer = setInterval(() => {
-          if (this.open) {
-            if (!opened) {
-              opened = true;
-              clearTimeout(deadline);
-              resolve();
-            }
-            this.pump();
-          } else if (Date.now() - this.lastSend > RESET_RETRY_MS) {
-            this.sendFrame(CONTROL_RESET, this.session, new Uint8Array(0));
-          }
-        }, PUMP_MS);
-      };
-      ws.onmessage = (e) => this.receive(new Uint8Array(e.data));
-      ws.onerror = (e) => {
+      let deadline: ReturnType<typeof setTimeout> | undefined;
+      this.cancelOpen = (error) => {
         clearTimeout(deadline);
-        reject(e);
+        reject(error);
       };
-      ws.onclose = (e) => {
+      const fail = (error: unknown) => {
         clearTimeout(deadline);
+        reject(error);
         this.stop();
-        this.onClose(e);
+        this.onClose(error);
       };
+      let opened = false;
+      this.transport
+        .connect((data) => this.receive(data), fail)
+        .then(() => {
+          if (!this.cancelOpen) return;
+          // Device selection may take arbitrarily long; time the handshake only.
+          deadline = setTimeout(() => {
+            reject(new Error("crsf session timeout"));
+            void this.close();
+          }, timeout);
+          this.timer = setInterval(() => {
+            if (this.open) {
+              if (!opened) {
+                opened = true;
+                clearTimeout(deadline);
+                this.cancelOpen = undefined;
+                resolve();
+              }
+              this.pump();
+            } else if (Date.now() - this.lastSend > RESET_RETRY_MS) {
+              this.sendFrame(CONTROL_RESET, this.session, new Uint8Array(0));
+            }
+          }, PUMP_MS);
+        })
+        .catch(fail);
     });
   }
 
@@ -100,14 +109,11 @@ export class CrsfLink {
     this.pump();
   }
 
-  close() {
+  async close() {
+    this.cancelOpen?.(new Error("CRSF connection cancelled"));
+    this.cancelOpen = undefined;
     this.stop();
-    if (this.ws) {
-      // A requested close is not a link failure.
-      this.ws.onclose = null;
-      this.ws.close();
-    }
-    this.ws = undefined;
+    await this.transport.close();
   }
 
   private stop() {
@@ -162,7 +168,10 @@ export class CrsfLink {
 
     this.ackPending = false;
     this.lastSend = Date.now();
-    this.ws?.send(frame);
+    this.transport.write(frame).catch((error) => {
+      this.stop();
+      this.onClose(error);
+    });
   }
 
   // The WebSocket carries every CRSF frame routed to it; keep only ours.

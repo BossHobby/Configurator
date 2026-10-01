@@ -17,6 +17,9 @@ import { CBOR } from "./cbor";
 import { WebSerial } from "./webserial";
 import { settings } from "./settings";
 import { CrsfLink } from "./crsf";
+import { BleTransport } from "./ble";
+import { WebSocketTransport, type ByteTransport } from "./transport";
+import { initialConnection, type ConnectionOptions } from "./connection";
 
 const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";
@@ -117,7 +120,23 @@ export class Serial {
   private waitingCommands: Promise<QuicPacket> = Promise.resolve({} as any);
 
   private port?: SerialPort;
-  private ws?: WebSocket;
+  private link?: ByteTransport;
+  private lastBle?: BleTransport;
+  private connection?: ConnectionOptions;
+  private linkGeneration = 0;
+  /** Called once the transport is up, before the board is queried. */
+  public onLinkReady?: () => void;
+
+  get connectionKind() {
+    return this.connection?.kind ?? "usb";
+  }
+  get pollInterval() {
+    if (this.connectionKind === "crsf" || this.connectionKind === "ble-crsf")
+      return 2000;
+    return this.connectionKind === "ble"
+      ? 1000
+      : settings.serial.updateInterval;
+  }
   private crsf?: CrsfLink;
 
   private transform?: QuicStream;
@@ -128,35 +147,59 @@ export class Serial {
   private errorCallback?: any;
   private closing?: Promise<void>;
 
-  public async connect(errorCallback: any = console.warn): Promise<any> {
-    const ws = settings.websocketUrl();
-    const crsf = settings.crsfUrl();
-    if (crsf) {
-      await this._connectCrsf(crsf, errorCallback);
-    } else if (ws) {
-      await this._connectWebsocket(ws, errorCallback);
-    } else {
-      const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
-      await this._connectPort(port, errorCallback);
-    }
-    return await this.get(QuicVal.Info, 10_000);
+  public async connect(
+    errorCallback: any = console.warn,
+    options = initialConnection(),
+  ): Promise<any> {
+    if (this.closing) await this.closing;
+    this.connection = { ...options, ble: { ...options.ble } };
+    this.lastBle = undefined;
+    return this.openConnection(errorCallback, false);
   }
 
   public async connectFirstPort(
     errorCallback: any = console.warn,
   ): Promise<any> {
-    const ws = settings.websocketUrl();
-    const crsf = settings.crsfUrl();
-    if (crsf) {
-      await this._connectCrsf(crsf, errorCallback);
-    } else if (ws) {
-      await this._connectWebsocket(ws, errorCallback);
+    if (this.closing) await this.closing;
+    this.connection ??= initialConnection();
+    return this.openConnection(errorCallback, true);
+  }
+
+  private async openConnection(errorCallback: any, reconnect: boolean) {
+    const options = this.connection!;
+    if (options.kind === "usb") {
+      const ports = reconnect ? await WebSerial.getPorts() : [];
+      const port = reconnect
+        ? ports.find((p) =>
+            SERIAL_FILTERS.some((filter) => {
+              const info = p.getInfo();
+              return (
+                info.usbVendorId === filter.usbVendorId &&
+                info.usbProductId === filter.usbProductId
+              );
+            }),
+          )
+        : await WebSerial.requestPort({ filters: SERIAL_FILTERS });
+      if (!port) throw new Error("No matching USB port found");
+      await this._connectPort(port, errorCallback);
     } else {
-      const ports = await WebSerial.getPorts();
-      if (!ports.length) throw new Error("no ports");
-      await this._connectPort(ports[0], errorCallback);
+      let transport: ByteTransport;
+      if (options.kind === "ble" || options.kind === "ble-crsf") {
+        transport = this.lastBle ??= new BleTransport(options.ble);
+      } else {
+        const url = new URL(options.url);
+        if (!["ws:", "wss:"].includes(url.protocol))
+          throw new Error("Use a ws:// or wss:// address");
+        transport = new WebSocketTransport(url.toString());
+      }
+      await this.connectLink(
+        transport,
+        options.kind === "crsf" || options.kind === "ble-crsf",
+        errorCallback,
+      );
     }
-    return await this.get(QuicVal.Info, 30_000);
+    this.onLinkReady?.();
+    return this.get(QuicVal.Info, 30_000);
   }
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
@@ -189,62 +232,46 @@ export class Serial {
     }
   }
 
-  private async _connectWebsocket(
-    host: string,
-    errorCallback: any = console.warn,
+  private async connectLink(
+    transport: ByteTransport,
+    crsf: boolean,
+    errorCallback: any,
   ) {
-    const transform = new QuicStream();
-    const writer = transform.writable.getWriter();
-    this.reader = transform.readable.getReader();
-
+    const generation = ++this.linkGeneration;
+    this.transform = new QuicStream();
+    const writer = this.transform.writable.getWriter();
+    this.reader = this.transform.readable.getReader();
     this.errorCallback = errorCallback;
     this.waitingCommands = Promise.resolve({} as any);
-
-    this.transfromClosed = Promise.resolve({} as any);
-
-    return new Promise<void>((resolve, reject) => {
-      this.ws = new WebSocket("wss://" + host + "/ws");
-      this.ws.binaryType = "arraybuffer";
-      this.ws.onopen = (e) => {
-        resolve();
-      };
-      this.ws.onmessage = async (e) => {
-        try {
-          writer.write(new Uint8Array(e.data));
-        } catch (e) {
-          errorCallback(e);
-        }
-      };
-      this.ws.onclose = (e) => {
-        errorCallback(e);
-        this.close();
-      };
-      this.ws.onerror = (e) => {
-        errorCallback(e);
-        reject(e);
-      };
-    });
-  }
-
-  private async _connectCrsf(url: string, errorCallback: any = console.warn) {
-    const transform = new QuicStream();
-    const writer = transform.writable.getWriter();
-    this.transform = transform;
-    this.reader = transform.readable.getReader();
-
-    this.errorCallback = errorCallback;
-    this.waitingCommands = Promise.resolve({} as any);
-    this.transfromClosed = Promise.resolve({} as any);
-
-    this.crsf = new CrsfLink(
-      url,
-      (data) => writer.write(data).catch(errorCallback),
-      (e) => {
-        errorCallback(e);
-        this.close();
-      },
-    );
-    await this.crsf.connect();
+    let pendingBytes = 0;
+    const fail = (error: unknown) => {
+      if (generation !== this.linkGeneration) return;
+      this.errorCallback?.(error);
+      void this.close();
+    };
+    const receive = (data: Uint8Array) => {
+      if (generation !== this.linkGeneration) return;
+      pendingBytes += data.length;
+      if (pendingBytes > settings.serial.bufferSize) {
+        fail(new Error("Connection receive buffer overflow"));
+        return;
+      }
+      writer
+        .write(data)
+        .catch(fail)
+        .finally(() => {
+          pendingBytes -= data.length;
+        });
+    };
+    this.link = transport;
+    if (crsf) {
+      this.crsf = new CrsfLink(transport, receive, fail);
+      await this.crsf.connect(30_000);
+    } else {
+      await transport.connect(receive, fail);
+    }
+    if (generation !== this.linkGeneration)
+      throw new Error("Connection cancelled");
   }
 
   public async softReboot() {
@@ -328,6 +355,8 @@ export class Serial {
   }
 
   private async closePort() {
+    ++this.linkGeneration;
+    this.errorCallback = undefined;
     try {
       const errors = (
         await Promise.all(
@@ -350,8 +379,8 @@ export class Serial {
       if (errors.length) console.warn(errors);
 
       await this.port?.close().catch((e) => e);
-      this.ws?.close();
-      this.crsf?.close();
+      await this.crsf?.close();
+      if (!this.crsf) await this.link?.close();
     } catch (err) {
       console.warn(err);
     } finally {
@@ -362,7 +391,7 @@ export class Serial {
       this.transform = undefined;
 
       this.port = undefined;
-      this.ws = undefined;
+      this.link = undefined;
       this.crsf = undefined;
     }
   }
@@ -398,8 +427,8 @@ export class Serial {
   private async write(array: Uint8Array) {
     if (this.crsf) {
       this.crsf.write(array);
-    } else if (this.ws) {
-      await this.ws?.send(array);
+    } else if (this.link) {
+      await this.link.write(array);
     } else if (this.writer) {
       await this.writer.write(array);
     } else {
@@ -435,7 +464,8 @@ export class Serial {
     await this.write(concatUint8Array(request, payload));
 
     // Timeouts sized for USB are too short for the radio link.
-    if (this.crsf && timeout) timeout = Math.max(timeout, 30_000);
+    if (this.link)
+      timeout = Math.max(timeout ?? 10_000, this.crsf ? 30_000 : 10_000);
 
     let packet = await this.readPacket(progress, timeout, decodeStreaming);
     while (packet.cmd == QuicCmd.Log) {
@@ -517,7 +547,7 @@ export class Serial {
 
     const cmd = value.cmd;
     while (writer) {
-      const { value } = await this.reader.read();
+      const value = await this.readTimeout(timeout);
       if (!value) {
         throw new Error("no packet");
       }
