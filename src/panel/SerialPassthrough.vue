@@ -1,57 +1,50 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Serial Passthrough</p>
-      <tooltip class="card-header-icon" entry="serial_passthrough" size="lg" />
-    </header>
-
-    <div class="card-content">
-      <div class="content">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field">
-              <label class="label">Serial Port</label>
-              <div class="control is-expanded">
-                <input-select
-                  v-model.number="serial_port"
-                  class="is-fullwidth"
-                  :options="serialPorts"
-                />
-              </div>
-            </div>
+  <Panel title="Serial Passthrough" help="serial_passthrough"
+    ><div class="space-y-4">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="min-w-0 flex-1">
+            <label class="form-label mb-1.5" for="passthrough-port"
+              >Serial Port</label
+            >
+            <UiSelect
+              id="passthrough-port"
+              v-model.number="serial_port"
+              class="w-full"
+              :options="serialPorts"
+            />
           </div>
+        </div>
 
-          <div class="column is-6">
-            <div class="field">
-              <label class="label">Preset</label>
-              <div class="control is-expanded">
-                <input-select
-                  v-model="preset"
-                  class="is-fullwidth"
-                  :options="presetOptions"
-                />
-              </div>
-            </div>
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="min-w-0 flex-1">
+            <label class="form-label mb-1.5" for="passthrough-preset"
+              >Preset</label
+            >
+            <UiSelect
+              id="passthrough-preset"
+              v-model="preset"
+              class="w-full"
+              :options="presetOptions"
+            />
           </div>
         </div>
       </div>
     </div>
 
-    <footer class="card-footer">
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
+    <footer class="mt-5 flex flex-wrap items-center justify-end gap-2">
       <spinner-btn
-        class="card-footer-item"
         :disabled="serial_port == 0 || preset == null"
         @click="start_passthrough"
       >
         Start
       </spinner-btn>
-    </footer>
-  </div>
+    </footer></Panel
+  >
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { useInfoStore } from "@/store/info";
 import { useSerialStore } from "@/store/serial";
 import { useTargetStore } from "@/store/target";
@@ -59,6 +52,7 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "SerialPassthrough",
+  components: { Panel },
   setup() {
     return {
       info: useInfoStore(),

@@ -1,45 +1,58 @@
 <template>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Select {{ title }}</p>
+  <div
+    role="dialog"
+    aria-modal="true"
+    :aria-label="'Select ' + title"
+    class="relative z-10 flex max-h-[85dvh] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-line bg-panel text-ink shadow-xl"
+  >
+    <header class="flex items-center justify-between gap-4 p-5 pb-3">
+      <h2 class="text-base font-semibold">Select {{ title }}</h2>
       <button
-        class="delete has-background-primary"
-        aria-label="close"
+        class="form-dismiss"
+        aria-label="Close"
         @click="$emit('close')"
       ></button>
     </header>
-    <section class="modal-card-body">
-      <div class="select is-fullwidth is-multiple select-list">
-        <div class="control">
-          <select v-model="value" size="8">
-            <option v-for="o of options" :key="o.value" :value="o.value">
-              {{ o.text }}
-            </option>
-          </select>
-        </div>
-      </div>
+    <section class="min-h-0 overflow-y-auto px-5">
+      <select
+        v-model="value"
+        class="form-input h-auto p-0 [&>option]:px-4 [&>option]:py-2"
+        size="8"
+        :aria-label="title"
+        @dblclick="value != undefined && $emit('close', value)"
+      >
+        <option v-for="o of options" :key="o.value" :value="o.value">
+          {{ o.text }}
+        </option>
+      </select>
     </section>
-    <footer class="modal-card-foot">
-      <div class="buttons is-justify-content-space-between" style="width: 100%">
-        <button class="button" @click="$emit('close')">Cancel</button>
-        <button
-          class="button is-success"
-          :disabled="value == undefined"
-          @click="$emit('close', value)"
-        >
-          Select
-        </button>
-      </div>
+    <footer class="flex justify-end gap-2 p-5 pt-4">
+      <UiButton @click="$emit('close')">Cancel</UiButton>
+      <UiButton
+        variant="primary"
+        :disabled="value == undefined"
+        @click="$emit('close', value)"
+        >Select</UiButton
+      >
     </footer>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from "vue";
+import UiButton from "./ui/Button.vue";
 
 export default defineComponent({
   name: "SelectModal",
-  props: ["options", "title"],
+  components: { UiButton },
+  props: {
+    options: {
+      type: Array as PropType<{ text: string; value: unknown }[]>,
+      required: true,
+    },
+    title: { type: String, required: true },
+  },
+  emits: ["close"],
   data() {
     return {
       value: undefined,
@@ -47,16 +60,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss">
-.select-list {
-  select {
-    height: auto !important;
-    padding: 0 !important;
-
-    option {
-      padding: 0.5em 1em !important;
-    }
-  }
-}
-</style>

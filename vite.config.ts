@@ -2,10 +2,10 @@ import { fileURLToPath, URL } from "url";
 
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { execSync } from "child_process";
 import svgLoader from "vite-svg-loader";
-import webfontDownload from "vite-plugin-webfont-dl";
 
 const branch =
   process.env.GITHUB_REF_NAME ||
@@ -36,10 +36,8 @@ export default defineConfig({
   base: process.env.PAGES_BASE || base,
   plugins: [
     vue(),
+    tailwindcss(),
     svgLoader(),
-    webfontDownload([
-      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
-    ]),
     VitePWA({
       disable: process.env.PAGES_PREVIEW === "true",
       strategies: "injectManifest",
@@ -50,7 +48,7 @@ export default defineConfig({
         short_name: "QUICKSILVER",
         description:
           "Configurator for the QUICKSILVER flight-controller firmware",
-        theme_color: "#3c7317",
+        theme_color: "#246b3c",
         icons: [
           {
             src: "pwa.png",

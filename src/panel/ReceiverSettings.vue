@@ -1,274 +1,173 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Receiver</p>
-      <spinner-btn class="card-header-button is-warning" @click="reset">
-        Reset
-      </spinner-btn>
-    </header>
-
-    <div class="card-content">
-      <div class="content field-is-2">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Protocol
-              <tooltip entry="receiver.protocol" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  class="is-fullwidth"
-                  v-model.number="profile.receiver.protocol"
-                  :options="protocolOptions"
-                ></input-select>
-              </div>
+  <Panel title="Receiver" description="Protocol, link quality, and binding.">
+    <div>
+      <div>
+        <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <label class="text-xs text-muted"
+            >Receiver type <tooltip entry="receiver.protocol" /><UiSelect
+              v-model.number="profile.receiver.protocol"
+              class="mt-1.5"
+              :options="protocolOptions"
+          /></label>
+          <label
+            v-if="rx_protocol === RXProtocol.UNIFIED_SERIAL"
+            class="text-xs text-muted"
+          >
+            Serial protocol
+            <UiSelect
+              :model-value="serialProto"
+              class="mt-1.5"
+              :options="serialProtoOptions"
+              @update:model-value="setSerialProtocol"
+            />
+          </label>
+          <label class="text-xs text-muted"
+            >LQI source <tooltip entry="receiver.lqi_source" /><UiSelect
+              v-model.number="profile.receiver.lqi_source"
+              class="mt-1.5"
+              :options="lqiSourceNames"
+          /></label>
+          <div
+            class="col-span-1 grid grid-cols-2 gap-4 sm:col-span-2 xl:col-span-2"
+          >
+            <div class="text-xs text-muted">
+              Bind saved <tooltip entry="receiver.bind_saved" />
+              <p
+                class="mt-1.5 py-2 text-sm font-medium"
+                :class="bindInfo.bind_saved ? 'text-accent' : 'text-danger'"
+              >
+                {{ bindInfo.bind_saved ? "Yes" : "No" }}
+              </p>
             </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              LQI Source
-              <tooltip entry="receiver.lqi_source" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  class="is-fullwidth"
-                  v-model.number="profile.receiver.lqi_source"
-                  :options="lqiSourceNames"
-                ></input-select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Bind Saved
-              <tooltip entry="receiver.bind_saved" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                {{ bindInfo.bind_saved ? "yes" : "no" }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">RSSI</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ state.rx_rssi }}</div>
+            <div class="text-xs text-muted">
+              RSSI
+              <p
+                class="mt-1.5 py-2 text-sm font-medium text-accent tabular-nums"
+              >
+                {{ state.rx_rssi }}
+              </p>
             </div>
           </div>
         </div>
 
         <div
-          class="card mt-4"
-          v-if="
-            bindInfo.raw &&
-            (rx_protocol == RXProtocol.UNIFIED_SERIAL ||
-              rx_protocol == RXProtocol.CRSF)
-          "
+          class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3"
         >
-          <header class="card-header">
-            <p class="card-header-title">Serial Protocol</p>
-          </header>
-          <div
-            class="card-content"
-            v-if="rx_protocol == RXProtocol.UNIFIED_SERIAL"
-          >
-            <div class="content" v-if="profile.serial.rx">
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label"> Protocol </label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input-select
-                        class="is-fullwidth"
-                        v-model.number="serialProto"
-                        :options="serialProtoOptions"
-                      ></input-select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal" v-if="serialProto == 0">
-                <div class="field-label">
-                  <label class="label">Status</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      {{ serialProtoStatus }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="content has-text-centered" v-else>
-              No rx serial port selected. Check setup tab.
-            </div>
-          </div>
-
-          <footer class="card-footer">
-            <spinner-btn
-              v-if="isCrsfProtocol"
-              class="card-footer-item"
-              @click="bind.bind_crsf()"
+          <p class="text-sm text-muted">
+            <template v-if="rx_protocol === RXProtocol.UNIFIED_SERIAL">
+              {{
+                profile.serial.rx
+                  ? serialProtoStatus
+                  : "Select a receiver serial port in Setup."
+              }}
+            </template>
+            <template v-else>Binding controls</template>
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <spinner-btn v-if="isCrsfProtocol" @click="bind.bind_crsf()"
+              >Bind receiver</spinner-btn
             >
-              Bind
-            </spinner-btn>
-            <span class="card-footer-item"></span>
             <spinner-btn
               v-if="
-                isLegacyBindInfo && rx_protocol == RXProtocol.UNIFIED_SERIAL
+                isLegacyBindInfo && rx_protocol === RXProtocol.UNIFIED_SERIAL
               "
-              class="card-footer-item"
               @click="applySerialBindInfo()"
+              >Apply serial protocol</spinner-btn
             >
-              Apply
-            </spinner-btn>
-          </footer>
-        </div>
-
-        <div
-          class="card mt-4"
-          v-if="bindInfo.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
-        >
-          <header class="card-header">
-            <p class="card-header-title">ExpressLRS</p>
-          </header>
-          <div class="card-content">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Status</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">{{ protoStatus }}</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="content">
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Switch Mode</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsSwitchMode }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Current Bind Phrase</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsBindPhrase }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">New Bind Phrase</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        id="name"
-                        type="text"
-                        v-model="elrsBindPhraseInput"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <spinner-btn @click="reset">Reset binding</spinner-btn>
           </div>
-
-          <footer class="card-footer">
-            <span class="card-footer-item"></span>
-            <spinner-btn
-              class="card-footer-item"
-              @click="applyElrsBindPhrase(elrsBindPhraseInput)"
-              :disabled="elrsBindPhraseInput.length < 2"
-            >
-              Apply
-            </spinner-btn>
-          </footer>
         </div>
-
-        <div class="card mt-4" v-if="bindInfo.raw && isSpiProtocol">
-          <header class="card-header">
-            <p class="card-header-title">Bind Data</p>
-          </header>
-
-          <div class="card-content">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Status</label>
+        <div>
+          <Panel
+            v-if="bindInfo.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
+            title="ExpressLRS"
+            class="mt-4"
+            ><div class="form-row">
+              <span class="form-label">Status</span>
+              <div class="min-w-0 flex-1 text-accent">
+                {{ protoStatus }}
               </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">{{ protoStatus }}</div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="form-grid">
+                <div class="form-row">
+                  <span class="form-label">Switch mode</span>
+                  <div class="min-w-0 flex-1">
+                    {{ elrsSwitchMode }}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <span class="form-label">Current bind phrase</span>
+                  <div class="min-w-0 flex-1">
+                    {{ elrsBindPhrase }}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <label for="name" class="form-label">New bind phrase</label>
+                  <input
+                    id="name"
+                    v-model="elrsBindPhraseInput"
+                    class="form-input"
+                    type="text"
+                  />
                 </div>
               </div>
             </div>
 
-            <div class="content has-text-centered">
-              Save and load bind information for spi protocols.<br />
+            <footer class="mt-5 flex flex-wrap items-center justify-end gap-2">
+              <spinner-btn
+                :disabled="elrsBindPhraseInput.length < 2"
+                @click="applyElrsBindPhrase(elrsBindPhraseInput)"
+              >
+                Apply
+              </spinner-btn>
+            </footer></Panel
+          >
+
+          <Panel
+            v-if="bindInfo.raw && isSpiProtocol"
+            title="Bind Data"
+            class="mt-4"
+            ><div class="form-row">
+              <span class="form-label">Status</span>
+              <div class="min-w-0 flex-1 text-accent">
+                {{ protoStatus }}
+              </div>
+            </div>
+
+            <div class="space-y-4 text-center">
+              Save and load bind information for SPI protocols.<br />
               Requires reboot after load.
             </div>
-          </div>
 
-          <footer class="card-footer">
-            <spinner-btn class="card-footer-item" @click="downloadBindData">
-              Save Bind Data
-            </spinner-btn>
-            <spinner-btn class="card-footer-item" @click="uploadBindData">
-              Load Bind Data
-            </spinner-btn>
-          </footer>
+            <footer class="mt-5 flex flex-wrap items-center justify-end gap-2">
+              <spinner-btn @click="downloadBindData">
+                Save bind data
+              </spinner-btn>
+              <spinner-btn @click="uploadBindData">
+                Load bind data
+              </spinner-btn>
+            </footer>
 
-          <input
-            class="input"
-            accept=".base64"
-            type="file"
-            ref="file"
-            style="display: none"
-          />
-          <a ref="downloadAnchor" target="_blank"></a>
+            <input
+              ref="file"
+              class="form-input"
+              accept=".base64"
+              type="file"
+              style="display: none" />
+            <a ref="downloadAnchor" target="_blank"></a
+          ></Panel>
         </div>
       </div>
     </div>
-  </div>
+  </Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { $enum } from "ts-enum-util";
 import md5 from "md5";
@@ -282,13 +181,7 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "ReceiverSettings",
-  data() {
-    return {
-      serialProto: 0,
-      elrsBindPhraseInput: "",
-      bindReady: false,
-    };
-  },
+  components: { Panel },
   setup() {
     return {
       profile: useProfileStore(),
@@ -296,6 +189,12 @@ export default defineComponent({
       bind: useBindStore(),
       state: useStateStore(),
       root: useRootStore(),
+    };
+  },
+  data() {
+    return {
+      serialProto: 0,
+      elrsBindPhraseInput: "",
     };
   },
   computed: {
@@ -410,17 +309,29 @@ export default defineComponent({
     "profile.receiver.protocol"() {
       this.reset();
     },
-    serialProto() {
+  },
+  async created() {
+    if (this.isLegacyBindInfo) {
+      await this.bind.fetch_bind_info();
+    }
+
+    if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
+      this.serialProto = this.bindInfo.raw?.[0] ?? 0;
+      if (this.serialProto == 0 && this.state.rx_status >= 200) {
+        this.serialProto = this.state.rx_status - 200;
+      }
+    }
+  },
+  methods: {
+    setSerialProtocol(value: number) {
+      this.serialProto = value;
       if (
-        this.bindReady &&
         !this.isLegacyBindInfo &&
         this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL
       ) {
-        this.applySerialBindInfo();
+        return this.applySerialBindInfo();
       }
     },
-  },
-  methods: {
     async applyBindInfo(info: any) {
       if (this.isLegacyBindInfo) {
         await this.profile.apply_profile(this.profile.$state);
@@ -517,19 +428,6 @@ export default defineComponent({
 
       return this.applyBindInfo(info);
     },
-  },
-  async created() {
-    if (this.isLegacyBindInfo) {
-      await this.bind.fetch_bind_info();
-    }
-
-    if (this.rx_protocol == this.RXProtocol.UNIFIED_SERIAL) {
-      this.serialProto = this.bindInfo.raw[0];
-      if (this.serialProto == 0 && this.state.rx_status >= 200) {
-        this.serialProto = this.state.rx_status - 200;
-      }
-    }
-    this.bindReady = true;
   },
 });
 </script>

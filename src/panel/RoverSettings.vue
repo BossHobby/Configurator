@@ -1,83 +1,61 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Rover Settings</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Center Deadband (%)</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="center-deadband"
-                  v-model.number="centerDeadbandPct"
-                  class="input"
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="50"
-                />
-              </div>
-            </div>
-          </div>
+  <Panel title="Rover Settings"
+    ><div class="space-y-4">
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="center-deadband" class="form-label"
+            >Center Deadband (%)</label
+          >
+          <input
+            id="center-deadband"
+            v-model.number="centerDeadbandPct"
+            class="form-input"
+            type="number"
+            step="1"
+            min="0"
+            max="50"
+          />
         </div>
 
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Max Yaw Rate (deg/s)</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="yaw-rate"
-                  v-model.number="profile.rover.yaw_rate"
-                  class="input"
-                  type="number"
-                  step="10"
-                  min="0"
-                  max="720"
-                />
-              </div>
-            </div>
-          </div>
+        <div class="form-row">
+          <label for="yaw-rate" class="form-label">Max Yaw Rate (deg/s)</label>
+          <input
+            id="yaw-rate"
+            v-model.number="profile.rover.yaw_rate"
+            class="form-input"
+            type="number"
+            step="10"
+            min="0"
+            max="720"
+          />
         </div>
 
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">
-              Reversible Motor
-              <tooltip entry="rover.reversible" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input-select
-                  v-model.number="profile.rover.reversible"
-                  class="is-fullwidth"
-                  :options="reversibleOptions"
-                ></input-select>
-              </div>
-            </div>
+        <div class="form-row">
+          <label for="rover-settings-reversible-motor" class="form-label">
+            Reversible Motor
+            <tooltip entry="rover.reversible"
+          /></label>
+          <div class="min-w-0">
+            <UiSelect
+              id="rover-settings-reversible-motor"
+              v-model.number="profile.rover.reversible"
+              class="w-full"
+              :options="reversibleOptions"
+            ></UiSelect>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </div></div
+  ></Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "RoverSettings",
+  components: { Panel },
   setup() {
     return {
       profile: useProfileStore(),

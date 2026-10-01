@@ -13,6 +13,13 @@ import Profile from "./views/Profile.vue";
 import Home from "./views/Home.vue";
 import Templates from "./views/Templates.vue";
 
+declare module "vue-router" {
+  interface RouteMeta {
+    title?: string;
+    description?: string;
+  }
+}
+
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
@@ -30,31 +37,52 @@ const router = createRouter({
       path: "/home",
       name: "home",
       component: Home,
+      meta: { title: "Welcome", description: "" },
     },
     {
       path: "/templates",
       name: "templates",
       component: Templates,
+      meta: {
+        title: "Templates",
+        description: "Browse configurations shared by the community.",
+      },
     },
     {
       path: "/profile",
       name: "profile",
       component: Profile,
+      meta: {
+        title: "Profile",
+        description: "Craft identity, firmware, and configuration files.",
+      },
     },
     {
       path: "/setup",
       name: "setup",
       component: Setup,
+      meta: {
+        title: "Setup",
+        description: "Board orientation, power, and serial connections.",
+      },
     },
     {
       path: "/outputs",
       name: "outputs",
       component: Outputs,
+      meta: {
+        title: "Outputs",
+        description: "Assign outputs and configure motors and servos.",
+      },
     },
     {
       path: "/control",
       name: "control",
       component: Control,
+      meta: {
+        title: "Control",
+        description: "Tune rates, throttle response, PID gains, and filters.",
+      },
     },
     {
       path: "/rates",
@@ -64,11 +92,19 @@ const router = createRouter({
       path: "/receiver",
       name: "receiver",
       component: Receiver,
+      meta: {
+        title: "Receiver",
+        description: "Verify your radio link and channel assignments.",
+      },
     },
     {
       path: "/osd",
       name: "osd",
       component: OSD,
+      meta: {
+        title: "OSD",
+        description: "Arrange the information in your goggles.",
+      },
     },
     {
       path: "/motor",
@@ -78,6 +114,10 @@ const router = createRouter({
       path: "/blackbox",
       name: "blackbox",
       component: Blackbox,
+      meta: {
+        title: "Blackbox",
+        description: "Configure flight recording and download logs.",
+      },
     },
     {
       path: "/state",
@@ -87,29 +127,36 @@ const router = createRouter({
       path: "/diagnostics",
       name: "diagnostics",
       component: Diagnostics,
+      meta: {
+        title: "Diagnostics",
+        description:
+          "Inspect live sensor readings and flight-controller performance.",
+      },
     },
     {
       path: "/perf",
       name: "perf",
       component: Perf,
+      meta: {
+        title: "Performance",
+        description: "Inspect flight-controller task timing.",
+      },
     },
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const serial = useSerialStore();
   if (serial.is_connected) {
     if (to.name === "home") {
-      next({ name: "profile" });
-    } else {
-      next();
+      return { name: "profile" };
     }
+    return true;
   } else {
     if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
-      next({ name: "home" });
-    } else {
-      next();
+      return { name: "home" };
     }
+    return true;
   }
 });
 

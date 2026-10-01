@@ -6,7 +6,7 @@
     "text": "Start/stop blackbox recording"
   },
   "channel.aux_buzzer_enable": {
-    "disabled": true
+    "text": "Turn on the buzzer from a switch, useful to find a lost craft"
   },
   "channel.aux_fpv_switch": {
     "text": "Vtx Pit mode on a switch. If you are not using this leave as ON"
@@ -33,29 +33,29 @@
     "text": "Uses self levelling only on the roll axis, acro on pitch, requires Level mode active"
   },
   "channel.aux_rate_profile": {
-    "disabled": true
+    "text": "Switch between rate profile 1 and 2 in flight"
   },
   "channel.aux_rssi": {
     "text": "For fcs that can send rssi on a channel"
   },
   "channel.aux_stick_boost_profile": {
-    "disabled": true
+    "text": "Switch between the two stick boost profiles, AUX Off and AUX On"
   },
   "channel.aux_turtle": {
     "text": "Set this to ON and the fc will detect when landed inverted and activate Turtle when ARM is active, optional to set to an Aux switch",
     "link": "https://docs.bosshobby.com/Features/#turtle-mode"
   },
   "filter.dterm_1_freq": {
-    "disabled": true
+    "text": "Cutoff frequency of the first D-term lowpass in Hz, lower filters more noise but adds delay"
   },
   "filter.dterm_1_type": {
-    "disabled": true
+    "text": "Filter type for the first D-term lowpass, PT1 is the lightest, PT3 the strongest. None disables this pass"
   },
   "filter.dterm_2_freq": {
-    "disabled": true
+    "text": "Cutoff frequency of the second D-term lowpass in Hz, lower filters more noise but adds delay"
   },
   "filter.dterm_2_type": {
-    "disabled": true
+    "text": "Filter type for the second D-term lowpass, PT1 is the lightest, PT3 the strongest. None disables this pass"
   },
   "filter.dterm_dynamic_enable": {
     "text": "Enable a dynamic D-term filtercut, you almost always want to leave this ON",
@@ -66,22 +66,22 @@
     "link": "https://docs.bosshobby.com/Features/#dynamic-d-term"
   },
   "filter.dterm_dynamic_max": {
-    "disabled": true
+    "text": "Dynamic D-term cutoff in Hz at full throttle"
   },
   "filter.dterm_dynamic_min": {
-    "disabled": true
+    "text": "Dynamic D-term cutoff in Hz at zero throttle, the cutoff rises towards Dynamic Max as throttle increases"
   },
   "filter.gyro_1_freq": {
-    "disabled": true
+    "text": "Cutoff frequency of the first gyro lowpass in Hz, lower filters more noise but adds delay"
   },
   "filter.gyro_1_type": {
-    "disabled": true
+    "text": "Filter type for the first gyro lowpass, PT1 is the lightest, PT3 the strongest. None disables this pass"
   },
   "filter.gyro_2_freq": {
-    "disabled": true
+    "text": "Cutoff frequency of the second gyro lowpass in Hz, lower filters more noise but adds delay"
   },
   "filter.gyro_2_type": {
-    "disabled": true
+    "text": "Filter type for the second gyro lowpass, PT1 is the lightest, PT3 the strongest. None disables this pass"
   },
   "filter.gyro_dynamic_notch_enable": {
     "text": "Tracks noise peaks and inserts notch filters at these frequencies",
@@ -123,7 +123,7 @@
     "text": "On some fcs this might need set to 300 to avoid failloops, Default 600"
   },
   "motor.flip_gyro": {
-    "disabled": true
+    "text": "Rotate the gyro 180° when the fc is mounted upside down, combine with gyro orientation until the preview model moves correctly"
   },
   "motor.gyro_orientation": {
     "text": "Change this if the fc is mounted in a non standard way, use with the flip-gyro option until the preview model moves correctly"
@@ -186,7 +186,7 @@
     "text": "Increase to give a higher velocity for racing, combined with high camera angle, to a max of 90"
   },
   "rate.low_rate_mulitplier": {
-    "disabled": true
+    "text": "Rates are multiplied by this value while the high rates switch is off, 1.0 keeps them unchanged"
   },
   "rate.mode": {
     "text": "Silverware, Betaflight and Actual rates option"
@@ -260,5 +260,77 @@
   },
   "rover.reversible": {
     "text": "Enable bidirectional motor output. Allows the drive motor to run in reverse using the throttle reverse limit."
+  },
+  "motor.test_master": {
+    "text": "Sets all unidirectional test outputs to the same value, from 0 to 50%. On a wing, PWM outputs are excluded, including PWM throttle outputs. It has no effect on an all-PWM wing. The displayed value is the highest included output value."
+  },
+  "vtx.band": {
+    "text": "Frequency band used by the video transmitter. Band and Channel together select the transmit frequency."
+  },
+  "vtx.channel": {
+    "text": "Channel within the selected VTX band. Match the resulting frequency on your video receiver."
+  },
+  "vtx.detected": {
+    "text": "Protocol and frequency reported by the connected VTX. These are the detected values, which may differ from the requested settings until they are applied."
+  },
+  "vtx.pit_mode": {
+    "text": "Requests the VTX low-power pit mode for setup near other pilots. Availability and behavior depend on the video transmitter."
+  },
+  "vtx.power_level": {
+    "text": "Requested VTX transmit power level. Available levels and their labels come from the configured or detected power table."
+  },
+  "vtx.protocol": {
+    "text": "Control protocol used by the connected video transmitter. Select the protocol supported by your VTX and configure its serial port in Serial settings."
+  },
+  "wing.autolaunch.accel_threshold": {
+    "text": "Forward acceleration needed to detect a throw, in g. Launch detection can also come from GPS speed."
+  },
+  "wing.autolaunch.detect_time_ms": {
+    "text": "How long a launch detection condition must remain true before the throw is accepted. A longer time rejects brief spikes."
+  },
+  "wing.autolaunch.finish_ms": {
+    "text": "Time to blend launch throttle and pitch back toward pilot control when the climb ends. Roll or pitch movement beyond Stick Deadband ends this ramp early."
+  },
+  "wing.autolaunch.idle_delay_ms": {
+    "text": "Delay after raising throttle with autolaunch armed, before ramping to Idle Throttle and waiting for the throw."
+  },
+  "wing.autolaunch.idle_throttle": {
+    "text": "Motor throttle while waiting for a throw and during the motor delay. A nonzero value can spin the motor before launch; 0 keeps it stopped."
+  },
+  "wing.autolaunch.max_altitude": {
+    "text": "GPS altitude gain above the launch reference that ends the climb and starts the finish ramp. Requires GPS lock and a valid launch altitude reference. 0 disables this exit condition."
+  },
+  "wing.autolaunch.min_time_ms": {
+    "text": "Minimum time from launch detection before roll or pitch stick movement can cancel the launch. Does not prevent disarming or switching autolaunch off."
+  },
+  "wing.autolaunch.motor_delay_ms": {
+    "text": "Delay before ramping to Launch Throttle after the throw is released. The motor stays at Idle Throttle during this delay."
+  },
+  "wing.autolaunch.pitch_angle": {
+    "text": "Target pitch attitude during autolaunch, in degrees. Positive values command a nose-up climb."
+  },
+  "wing.autolaunch.spinup_ms": {
+    "text": "Time to ramp from Idle Throttle to Launch Throttle after the motor delay."
+  },
+  "wing.autolaunch.stick_deadband": {
+    "text": "Roll or pitch stick movement from center needed to cancel autolaunch after Min Launch Time, as a percentage of stick travel. During the finish ramp, this movement ends the handover immediately."
+  },
+  "wing.autolaunch.throttle": {
+    "text": "Motor throttle used during the launch climb, as a percentage of full throttle."
+  },
+  "wing.autolaunch.timeout_ms": {
+    "text": "Duration of the launch climb after motor spinup, before the finish ramp begins. Reaching Max Launch Altitude can end the climb sooner."
+  },
+  "wing.autolaunch.velocity_threshold": {
+    "text": "GPS ground speed needed to detect launch, in m/s. Requires GPS lock and a level to nose-up attitude. Acceleration can detect a throw without GPS."
+  },
+  "channel.aux_autotrim": {
+    "text": "Capture wing control-surface trim during steady flight. Keep Autotrim enabled through landing and disarming so the captured trim can be saved. Switching it off before saving cancels the capture and restores the previous trim."
+  },
+  "channel.aux_autolaunch": {
+    "text": "Enable assisted wing launch before arming. Uses the detection, throttle, pitch and handover settings in Wing Settings. Switching it off cancels autolaunch; disarm before starting another launch."
+  },
+  "channel.aux_acromode": {
+    "text": "Enable gyro-stabilized rate control on a wing. Sticks command rotation rates rather than a self-leveling attitude. Acro mode takes priority over Level mode."
   }
 }

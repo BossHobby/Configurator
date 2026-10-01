@@ -1,9 +1,9 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
+  <div class="space-y-4">
+    <div>
       <OutputMapping></OutputMapping>
     </div>
-    <div class="column is-12">
+    <div>
       <MotorTest></MotorTest>
     </div>
   </div>

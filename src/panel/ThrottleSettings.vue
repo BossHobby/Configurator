@@ -1,176 +1,122 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Throttle Settings</p>
-    </header>
-
-    <div class="card-content">
-      <div v-if="info.is_rover" class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="rover-throttle-scale-breakpoint"
-              >Throttle Scale Breakpoint (%)</label
-            >
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="rover-throttle-scale-breakpoint"
-                  v-model.number="throttleScaleBreakpointPct"
-                  class="input"
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="100"
-                />
-              </div>
-            </div>
-          </div>
+  <Panel title="Throttle Settings"
+    ><div v-if="info.is_rover" class="space-y-4">
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label" for="rover-throttle-scale-breakpoint"
+            >Throttle Scale Breakpoint (%)</label
+          >
+          <input
+            id="rover-throttle-scale-breakpoint"
+            v-model.number="throttleScaleBreakpointPct"
+            class="form-input"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+          />
         </div>
 
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="rover-throttle-scale-factor"
-              >Throttle Scale Factor (%)</label
-            >
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="rover-throttle-scale-factor"
-                  v-model.number="throttleScaleFactorPct"
-                  class="input"
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="100"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else class="content">
-        <div class="columns column-narrow field-is-5">
-          <div class="column is-6">
-            <div
-              v-if="profile.profileVersionGt('0.2.0')"
-              class="field is-horizontal mt-6"
-            >
-              <div class="field-label">
-                <label class="label" for="throttle_mid">
-                  Throttle Mid
-                  <tooltip entry="rate.throttle_mid" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      step="0.01"
-                      id="throttle_mid"
-                      type="number"
-                      min="0"
-                      max="1"
-                      v-model.number="profile.rate.throttle_mid"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-if="profile.profileVersionGt('0.2.0')"
-              class="field is-horizontal"
-            >
-              <div class="field-label">
-                <label class="label" for="throttle_expo">
-                  Throttle Expo
-                  <tooltip entry="rate.throttle_expo" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      step="0.01"
-                      id="throttle_expo"
-                      type="number"
-                      min="0"
-                      max="1"
-                      v-model.number="profile.rate.throttle_expo"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal mt-6">
-              <div class="field-label">
-                <label class="label" for="torque-boost">
-                  Torque Boost
-                  <tooltip entry="motor.torque_boost" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      id="torque-boost"
-                      v-model.number="profile.motor.torque_boost"
-                      class="input"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="throttle-boost">
-                  Throttle Boost
-                  <tooltip entry="motor.throttle_boost" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      id="throttle-boost"
-                      v-model.number="profile.motor.throttle_boost"
-                      class="input"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="profile.profileVersionGt('0.2.0')" class="column is-6">
-            <LineChart
-              :title="'Throttle'"
-              :labels="plot.labels"
-              :axis="plot.axis"
-              class="image is-fullwidth is-4by3"
-            ></LineChart>
-          </div>
+        <div class="form-row">
+          <label class="form-label" for="rover-throttle-scale-factor"
+            >Throttle Scale Factor (%)</label
+          >
+          <input
+            id="rover-throttle-scale-factor"
+            v-model.number="throttleScaleFactorPct"
+            class="form-input"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+          />
         </div>
       </div>
     </div>
-  </div>
+
+    <div v-else class="space-y-4">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="form-grid grid-cols-2">
+            <div v-if="profile.profileVersionGt('0.2.0')" class="form-row">
+              <label class="form-label" for="throttle_mid">
+                Throttle Mid
+                <tooltip entry="rate.throttle_mid"
+              /></label>
+              <input
+                id="throttle_mid"
+                v-model.number="profile.rate.throttle_mid"
+                class="form-input"
+                step="0.01"
+                type="number"
+                min="0"
+                max="1"
+              />
+            </div>
+
+            <div v-if="profile.profileVersionGt('0.2.0')" class="form-row">
+              <label class="form-label" for="throttle_expo">
+                Throttle Expo
+                <tooltip entry="rate.throttle_expo"
+              /></label>
+              <input
+                id="throttle_expo"
+                v-model.number="profile.rate.throttle_expo"
+                class="form-input"
+                step="0.01"
+                type="number"
+                min="0"
+                max="1"
+              />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="torque-boost">
+                Torque Boost
+                <tooltip entry="motor.torque_boost"
+              /></label>
+              <input
+                id="torque-boost"
+                v-model.number="profile.motor.torque_boost"
+                class="form-input"
+                type="number"
+                step="0.1"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="throttle-boost">
+                Throttle Boost
+                <tooltip entry="motor.throttle_boost"
+              /></label>
+              <input
+                id="throttle-boost"
+                v-model.number="profile.motor.throttle_boost"
+                class="form-input"
+                type="number"
+                step="0.1"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="profile.profileVersionGt('0.2.0')"
+          class="relative h-64 min-w-0 col-span-12 md:col-span-6"
+        >
+          <LineChart
+            title="Throttle curve"
+            :labels="plot.labels"
+            :axis="plot.axis"
+          />
+        </div>
+      </div></div
+  ></Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { defineComponent } from "vue";
@@ -179,9 +125,7 @@ import LineChart from "@/components/LineChart.vue";
 
 export default defineComponent({
   name: "ThrottleSettings",
-  components: {
-    LineChart,
-  },
+  components: { Panel, LineChart },
   setup() {
     return {
       info: useInfoStore(),
@@ -200,14 +144,6 @@ export default defineComponent({
         ],
       },
     };
-  },
-  watch: {
-    "profile.rate.throttle_expo"() {
-      this.update();
-    },
-    "profile.rate.throttle_mid"() {
-      this.update();
-    },
   },
   computed: {
     throttleScaleBreakpointPct: {
@@ -236,6 +172,17 @@ export default defineComponent({
         );
       },
     },
+  },
+  watch: {
+    "profile.rate.throttle_expo"() {
+      this.update();
+    },
+    "profile.rate.throttle_mid"() {
+      this.update();
+    },
+  },
+  created() {
+    this.update();
   },
   methods: {
     constrainf(val, lower, upper) {
@@ -291,9 +238,6 @@ export default defineComponent({
       }
       this.plot.axis[0].data = axis;
     },
-  },
-  created() {
-    this.update();
   },
 });
 </script>

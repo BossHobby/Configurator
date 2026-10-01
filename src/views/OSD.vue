@@ -1,12 +1,12 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
+  <div class="space-y-4">
+    <div>
       <OSDElementsLegacy
         v-if="default_profile.has_legacy_osd"
       ></OSDElementsLegacy>
       <OSDElements v-else></OSDElements>
     </div>
-    <div class="column is-12">
+    <div>
       <OSDFont v-if="!is_hd"></OSDFont>
     </div>
   </div>

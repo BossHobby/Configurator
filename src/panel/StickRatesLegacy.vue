@@ -1,221 +1,128 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Rates</p>
-    </header>
+  <Panel title="Rates"
+    ><div class="space-y-4">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="form-row">
+            <label class="form-label" for="rate-mode">
+              Mode
+              <tooltip entry="rate.mode"
+            /></label>
+            <UiSelect
+              id="rate-mode"
+              v-model.number="profile.rate.mode"
+              class="w-full"
+              :options="rateModes"
+              @change="update()"
+            ></UiSelect>
+          </div>
 
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="rate-mode">
-                  Mode
-                  <tooltip entry="rate.mode" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="rate-mode"
-                      class="is-fullwidth"
-                      v-model.number="profile.rate.mode"
-                      :options="rateModes"
-                      @change="update()"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
+          <table class="data-table my-4">
+            <thead>
+              <tr>
+                <th scope="col">{{ currentMode.text }}</th>
+                <th v-for="axis in axes" :key="axis" scope="col">
+                  {{ axis }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(val, key) in profile.rate[
+                  currentMode.text.toLowerCase()
+                ]"
+                :key="key"
+              >
+                <th scope="row" class="w-36 capitalize">
+                  {{ String(key).replace(/_/g, " ") }}
+                </th>
+                <td v-for="(axis, i) in axes" :key="axis">
+                  <input
+                    v-model.number="
+                      profile.rate[currentMode.text.toLowerCase()][key][i]
+                    "
+                    :aria-label="`${key} ${axis}`"
+                    class="form-input"
+                    type="number"
+                    step="10"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="form-grid">
+            <div class="form-row">
+              <label class="form-label" for="level-max-angle">
+                LevelMaxAngle
+                <tooltip entry="rate.level_max_angle"
+              /></label>
+              <input
+                id="level-max-angle"
+                v-model.number="profile.rate.level_max_angle"
+                class="form-input"
+                type="number"
+                step="5"
+              />
             </div>
 
-            <div class="card mt-5 mb-6">
-              <header class="card-header">
-                <p class="card-header-title">
-                  {{ currentMode.text }}
-                </p>
-              </header>
-
-              <div class="card-content">
-                <div class="content">
-                  <div class="columns is-multiline">
-                    <div class="column is-offset-4 is-8">
-                      <div class="columns is-multiline">
-                        <div class="column is-4">
-                          <h6>Roll</h6>
-                        </div>
-                        <div class="column is-4">
-                          <h6>Pitch</h6>
-                        </div>
-                        <div class="column is-4">
-                          <h6>Yaw</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="columns is-multiline"
-                    v-for="(val, key) in profile.rate[
-                      currentMode.text.toLowerCase()
-                    ]"
-                    :key="key"
-                  >
-                    <div class="column is-4">
-                      <label :for="`${currentMode.text}-${key}`">
-                        {{ key }}
-                      </label>
-                    </div>
-                    <div class="field-body">
-                      <div class="field">
-                        <div class="control is-expanded">
-                          <div class="columns is-multiline">
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentMode.text}-${key}-roll`"
-                                type="number"
-                                step="10"
-                                v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][
-                                    key
-                                  ][0]
-                                "
-                              />
-                            </div>
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentMode.text}-${key}-pitch`"
-                                type="number"
-                                step="10"
-                                v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][
-                                    key
-                                  ][1]
-                                "
-                              />
-                            </div>
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentMode.text}-${key}-yaw`"
-                                type="number"
-                                step="10"
-                                v-model.number="
-                                  profile.rate[currentMode.text.toLowerCase()][
-                                    key
-                                  ][2]
-                                "
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="form-row">
+              <label class="form-label" for="low-rate-mulitplier">
+                LowRateMulitplier
+                <tooltip entry="rate.low_rate_mulitplier"
+              /></label>
+              <input
+                id="low-rate-mulitplier"
+                v-model.number="profile.rate.low_rate_mulitplier"
+                class="form-input"
+                type="number"
+                step="0.05"
+              />
             </div>
 
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="level-max-angle">
-                  LevelMaxAngle
-                  <tooltip entry="rate.level_max_angle" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      id="level-max-angle"
-                      type="number"
-                      step="5"
-                      v-model.number="profile.rate.level_max_angle"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="low-rate-mulitplier">
-                  LowRateMulitplier
-                  <tooltip entry="rate.low_rate_mulitplier" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      id="low-rate-mulitplier"
-                      type="number"
-                      step="0.05"
-                      v-model.number="profile.rate.low_rate_mulitplier"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="sticks-deadband">
-                  SticksDeadband
-                  <tooltip entry="rate.sticks_deadband" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      step="0.01"
-                      id="sticks-deadband"
-                      type="number"
-                      v-model.number="profile.rate.sticks_deadband"
-                    />
-                  </div>
-                </div>
-              </div>
+            <div class="form-row">
+              <label class="form-label" for="sticks-deadband">
+                SticksDeadband
+                <tooltip entry="rate.sticks_deadband"
+              /></label>
+              <input
+                id="sticks-deadband"
+                v-model.number="profile.rate.sticks_deadband"
+                class="form-input"
+                step="0.01"
+                type="number"
+              />
             </div>
           </div>
-          <div class="column is-6">
+        </div>
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="relative h-72 min-w-0 xl:h-80">
             <LineChart
               v-if="profile.rate.silverware.acro_expo"
               :title="(plotLowRates ? 'Low ' : '') + 'Rates'"
               :labels="plot.labels"
               :axis="plot.axis"
-            ></LineChart>
-            <input
-              id="plotLowRates"
-              name="plotLowRates"
-              type="checkbox"
-              class="switch"
-              v-model="plotLowRates"
             />
-            <label for="plotLowRates">Plot LowRates</label>
           </div>
+          <label class="mt-3 inline-flex items-center gap-2 text-sm">
+            <input v-model="plotLowRates" type="checkbox" class="form-switch" />
+            Plot low rates
+          </label>
         </div>
       </div>
-    </div>
-  </div>
+    </div></Panel
+  >
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import LineChart from "@/components/LineChart.vue";
 import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "StickRatesLegacy",
-  components: {
-    LineChart,
-  },
+  components: { Panel, LineChart },
   setup() {
     return {
       profile: useProfileStore(),
@@ -223,6 +130,7 @@ export default defineComponent({
   },
   data() {
     return {
+      axes: ["Roll", "Pitch", "Yaw"],
       plotLowRates: false,
       rateModes: [
         { value: 0, text: "Silverware" },
@@ -251,6 +159,9 @@ export default defineComponent({
     plotLowRates() {
       this.update();
     },
+  },
+  mounted() {
+    this.update();
   },
 
   methods: {
@@ -347,9 +258,6 @@ export default defineComponent({
         axis,
       };
     },
-  },
-  mounted() {
-    this.update();
   },
 });
 </script>
