@@ -1,106 +1,84 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Font</p>
-      <tooltip class="card-header-icon" entry="osd.font" size="lg" />
-    </header>
-
-    <div class="card-content">
-      <div class="content">
-        <div class="field field-is-4 is-horizontal">
-          <div class="field-label">
-            <label class="label"> Full OSD font to upload </label>
-          </div>
-          <div class="field-body">
-            <div class="field has-addons">
-              <p class="control is-expanded">
-                <input-select
-                  id="font-file"
-                  class="is-fullwidth"
-                  v-model="current_font_file"
-                  :options="fontFiles"
-                ></input-select>
-              </p>
-              <p class="control">
-                <spinner-btn
-                  class="float-right"
-                  @click="apply_osd_font(current_font_file)"
-                >
-                  Upload Font
-                </spinner-btn>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <form ref="form">
-          <div class="field field-is-4 is-horizontal">
-            <div class="field-label">
-              <label class="label">
-                Custom Logo <br />
-                288x72 Black/White/Transparent PNG
-              </label>
-            </div>
-            <div class="field-body">
-              <div class="field has-addons">
-                <p class="control is-expanded"></p>
-                <p class="control">
-                  <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
-                </p>
-              </div>
-            </div>
-          </div>
-        </form>
-
-        <div class="columns mt-5">
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <p class="card-header-title">Preview</p>
-              </header>
-
-              <div class="card-content">
-                <div class="content">
-                  <figure class="image m-0">
-                    <img :src="'osd/' + current_font_file" />
-                  </figure>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <p class="card-header-title">Current</p>
-              </header>
-              <div class="card-content">
-                <div class="content">
-                  <figure class="image m-0">
-                    <img :src="imageSource" />
-                  </figure>
-                  <canvas
-                    ref="canvas"
-                    class="mx-5 mt-3 is-hidden"
-                    width="209"
-                    height="305"
-                  ></canvas>
-                  <canvas
-                    ref="logoCanvas"
-                    class="mx-5 mt-3 is-hidden"
-                    width="288"
-                    height="72"
-                  ></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
+  <Panel title="OSD Font" help="osd.font"
+    ><div class="space-y-4">
+      <div class="form-row">
+        <label for="font-file" class="form-label">
+          Full OSD font to upload
+        </label>
+        <div class="flex min-w-0 items-center gap-2">
+          <UiSelect
+            id="font-file"
+            v-model="current_font_file"
+            class="w-full"
+            :options="fontFiles"
+          ></UiSelect>
+          <p class="min-w-0">
+            <spinner-btn
+              class="float-right"
+              @click="apply_osd_font(current_font_file)"
+            >
+              Upload Font
+            </spinner-btn>
+          </p>
         </div>
       </div>
-    </div>
-  </div>
+
+      <form ref="form">
+        <div class="form-row">
+          <span class="form-label">
+            Custom Logo <br />
+            288x72 Black/White/Transparent PNG
+          </span>
+          <div class="flex min-w-0 items-center gap-2">
+            <p class="min-w-0 flex-1"></p>
+            <p class="min-w-0">
+              <spinner-btn @click="uploadLogo()"> Upload Logo </spinner-btn>
+            </p>
+          </div>
+        </div>
+      </form>
+
+      <div class="grid grid-cols-12 gap-4 mt-5">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <Panel title="Preview"
+            ><div class="space-y-4">
+              <figure class="block m-0">
+                <img
+                  class="mx-auto block h-auto max-h-[305px] max-w-full object-contain"
+                  :src="'osd/' + current_font_file"
+                />
+              </figure></div
+          ></Panel>
+        </div>
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <Panel title="Current"
+            ><div class="space-y-4">
+              <figure class="block m-0">
+                <img
+                  class="mx-auto block h-auto max-h-[305px] max-w-full object-contain"
+                  :src="imageSource"
+                />
+              </figure>
+              <canvas
+                ref="canvas"
+                class="mx-5 mt-3 hidden"
+                width="209"
+                height="305"
+              ></canvas>
+              <canvas
+                ref="logoCanvas"
+                class="mx-5 mt-3 hidden"
+                width="288"
+                height="72"
+              ></canvas></div
+          ></Panel>
+        </div>
+      </div></div
+  ></Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { serial } from "@/store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
@@ -120,6 +98,14 @@ const loadImage = (url) => {
 
 export default defineComponent({
   name: "OSDFont",
+  components: { Panel },
+  setup() {
+    return {
+      root: useRootStore(),
+      profile: useProfileStore(),
+      osd: useOSDStore(),
+    };
+  },
   data() {
     return {
       fontFiles: [
@@ -138,12 +124,8 @@ export default defineComponent({
       imageSource: undefined as string | undefined,
     };
   },
-  setup() {
-    return {
-      root: useRootStore(),
-      profile: useProfileStore(),
-      osd: useOSDStore(),
-    };
+  created() {
+    this.get_osd_font();
   },
   methods: {
     apply_osd_font(name) {
@@ -238,9 +220,6 @@ export default defineComponent({
         })
         .finally(() => this.$refs.form.reset());
     },
-  },
-  created() {
-    this.get_osd_font();
   },
 });
 </script>

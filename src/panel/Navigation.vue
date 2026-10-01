@@ -1,141 +1,105 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Navigation</p>
-      <small class="card-header-icon" v-if="state.gps_lock">
-        {{ state.home_distance.toFixed(0) }}m home
-      </small>
-    </header>
-
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Failsafe RTH</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input
-                  id="rth_on_failsafe"
-                  type="checkbox"
-                  class="switch"
-                  v-model="profile.navigation.rth_on_failsafe"
-                />
-                <label for="rth_on_failsafe"></label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="columns">
-          <div class="column">
-            <number-field
-              label="RTH Climb Height"
-              unit="m"
-              step="0.5"
-              min="0"
-              v-model="profile.navigation.rth_altitude"
-            />
-            <number-field
-              label="Return Speed"
-              unit="km/h"
-              step="0.1"
-              min="0.36"
-              v-model="cruiseSpeedKph"
-            />
-          </div>
-          <div class="column">
-            <number-field
-              label="Min Throttle"
-              unit="%"
-              step="1"
-              min="0"
-              max="100"
-              v-model="throttleMinPercent"
-            />
-            <number-field
-              label="Hover Throttle"
-              unit="%"
-              step="1"
-              min="0"
-              max="100"
-              v-model="throttleHoverPercent"
-            />
-            <number-field
-              label="Max Throttle"
-              unit="%"
-              step="1"
-              min="0"
-              max="100"
-              v-model="throttleMaxPercent"
-            />
-          </div>
+  <Panel title="Navigation" description="Return-to-home behaviour.">
+    <template v-if="state.gps_lock" #actions>
+      <span class="text-xs text-muted tabular-nums"
+        >{{ state.home_distance.toFixed(0) }} m from home</span
+      >
+    </template>
+    <label class="mb-5 inline-flex items-center gap-3 text-sm">
+      <input
+        v-model="profile.navigation.rth_on_failsafe"
+        type="checkbox"
+        class="form-switch"
+      />
+      Return to home on failsafe
+    </label>
+    <div class="form-grid">
+      <div v-for="field in fields" :key="field.id" class="form-row">
+        <label class="form-label" :for="field.id">{{ field.label }}</label>
+        <div class="relative">
+          <input
+            :id="field.id"
+            :value="read(field.key)"
+            class="form-input pr-14"
+            type="number"
+            :step="field.step"
+            :min="field.min"
+            :max="field.max"
+            @input="write(field.key, $event)"
+          />
+          <span
+            class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted"
+            >{{ field.unit }}</span
+          >
         </div>
       </div>
     </div>
-  </div>
+  </Panel>
 </template>
 
 <script lang="ts">
-import { defineComponent, h } from "vue";
+import Panel from "@/components/ui/Panel.vue";
+import { defineComponent } from "vue";
 import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
 
-const NumberField = defineComponent({
-  name: "NumberField",
-  props: {
-    label: { type: String, required: true },
-    unit: { type: String, default: "" },
-    modelValue: { type: Number, required: true },
-    step: { type: String, default: "1" },
-    min: { type: String, default: undefined },
-    max: { type: String, default: undefined },
-  },
-  emits: ["update:modelValue"],
-  setup(props, { emit }) {
-    return () =>
-      h("div", { class: "field is-horizontal" }, [
-        h("div", { class: "field-label" }, [
-          h("label", { class: "label" }, props.label),
-        ]),
-        h("div", { class: "field-body" }, [
-          h("div", { class: "field has-addons" }, [
-            h("div", { class: "control is-expanded" }, [
-              h("input", {
-                class: "input",
-                type: "number",
-                step: props.step,
-                min: props.min,
-                max: props.max,
-                value: props.modelValue,
-                onInput: (event: Event) => {
-                  emit(
-                    "update:modelValue",
-                    Number((event.target as HTMLInputElement).value),
-                  );
-                },
-              }),
-            ]),
-            props.unit
-              ? h("p", { class: "control" }, [
-                  h("span", { class: "button is-static" }, props.unit),
-                ])
-              : null,
-          ]),
-        ]),
-      ]);
-  },
-});
-
 export default defineComponent({
   name: "Navigation",
-  components: { NumberField },
+  components: { Panel },
   setup() {
     const profile = useProfileStore();
     const state = useStateStore();
 
     return { profile, state };
+  },
+  data() {
+    return {
+      fields: [
+        {
+          id: "nav-rth-altitude",
+          key: "rthAltitude",
+          label: "RTH climb height",
+          unit: "m",
+          step: 0.5,
+          min: 0,
+        },
+        {
+          id: "nav-cruise-speed",
+          key: "cruiseSpeedKph",
+          label: "Return speed",
+          unit: "km/h",
+          step: 0.1,
+          min: 0.36,
+        },
+        {
+          id: "nav-throttle-min",
+          key: "throttleMinPercent",
+          label: "Min throttle",
+          unit: "%",
+          step: 1,
+          min: 0,
+          max: 100,
+        },
+        {
+          id: "nav-throttle-hover",
+          key: "throttleHoverPercent",
+          label: "Hover throttle",
+          unit: "%",
+          step: 1,
+          min: 0,
+          max: 100,
+        },
+        {
+          id: "nav-throttle-max",
+          key: "throttleMaxPercent",
+          label: "Max throttle",
+          unit: "%",
+          step: 1,
+          min: 0,
+          max: 100,
+        },
+      ] as const,
+    };
   },
   computed: {
     throttleMinPercent: {
@@ -168,6 +132,14 @@ export default defineComponent({
         this.profile.navigation.rth_throttle_max = value / 100;
       },
     },
+    rthAltitude: {
+      get(): number {
+        return this.profile.navigation.rth_altitude;
+      },
+      set(value: number) {
+        this.profile.navigation.rth_altitude = value;
+      },
+    },
     cruiseSpeedKph: {
       get(): number {
         return Number(
@@ -177,6 +149,15 @@ export default defineComponent({
       set(value: number) {
         this.profile.navigation.rth_cruise_speed = value / 3.6;
       },
+    },
+  },
+  methods: {
+    read(key: string): number {
+      return this[key];
+    },
+    write(key: string, event: Event) {
+      const value = (event.target as HTMLInputElement).valueAsNumber;
+      if (Number.isFinite(value)) this[key] = value;
     },
   },
 });

@@ -14,8 +14,7 @@ export interface RuntimeTarget {
 const isDevelop = import.meta.env.VITE_BRANCH_NAME == "develop";
 const targetBranch = isDevelop ? "targets-develop" : "targets";
 
-export const TARGET_URL =
-  `https://raw.githubusercontent.com/BossHobby/Targets/${targetBranch}/`;
+export const TARGET_URL = `https://raw.githubusercontent.com/BossHobby/Targets/${targetBranch}/`;
 
 export const useFlashStore = defineStore("flash", {
   state: () => ({

@@ -35,7 +35,7 @@ This is the QUICKSILVER Configurator - a web-based and desktop application for c
 - **Frontend**: Vue 3 + TypeScript + Vite
 - **Desktop**: Electron with electron-vite
 - **State Management**: Pinia stores in `/src/store/`
-- **UI**: Bulma CSS framework
+- **UI**: Tailwind CSS with shared components in `/src/components/ui/` and form primitives in `/src/style.css`
 - **Serial Communication**: WebSerial API (web) / node-serialport (Electron)
 - **Data Format**: CBOR for binary communication with flight controller
 

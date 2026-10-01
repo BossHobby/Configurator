@@ -1,211 +1,93 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Rates</p>
-    </header>
-
-    <div class="card-content">
-      <div class="content column-narrow field-is-5">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="profile">
-                  Profile
-                  <tooltip entry="rate.profile" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="profile"
-                      class="is-fullwidth"
-                      v-model.number="profile.rate.profile"
-                      :options="rateProfiles"
-                      @change="update()"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="rate-mode">
-                  Mode
-                  <tooltip entry="rate.mode" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="rate-mode"
-                      class="is-fullwidth"
-                      v-model.number="currentMode"
-                      :options="rateModes"
-                      @change="update()"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="card mt-5 mb-6">
-              <header class="card-header">
-                <p class="card-header-title">
-                  {{ currentModeText }}
-                </p>
-              </header>
-
-              <div class="card-content">
-                <div class="content">
-                  <div class="columns is-mobile is-multiline">
-                    <div class="column is-offset-4 is-8">
-                      <div class="columns is-mobile is-multiline">
-                        <div class="column is-4">
-                          <h6>Roll</h6>
-                        </div>
-                        <div class="column is-4">
-                          <h6>Pitch</h6>
-                        </div>
-                        <div class="column is-4">
-                          <h6>Yaw</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="columns is-mobile is-multiline"
-                    v-for="(val, index) in currentProfile.rate"
-                    :key="rateLabel[index]"
-                  >
-                    <div class="column is-4">
-                      <label :for="`${currentModeText}-${rateLabel[index]}`">{{
-                        rateLabel[index]
-                      }}</label>
-                    </div>
-                    <div class="column field-body">
-                      <div class="field">
-                        <div class="control is-expanded">
-                          <div class="columns is-mobile is-multiline">
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentModeText}-${rateLabel[index]}-roll`"
-                                type="number"
-                                :step="rateStep[currentMode][index]"
-                                :min="rateLimits[currentMode][index].min"
-                                :max="rateLimits[currentMode][index].max"
-                                v-model.number="currentProfile.rate[index][0]"
-                                @input="update()"
-                              />
-                            </div>
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentModeText}-${rateLabel[index]}-pitch`"
-                                type="number"
-                                :step="rateStep[currentMode][index]"
-                                :min="rateLimits[currentMode][index].min"
-                                :max="rateLimits[currentMode][index].max"
-                                v-model.number="currentProfile.rate[index][1]"
-                                @input="update()"
-                              />
-                            </div>
-                            <div class="column is-4">
-                              <input
-                                class="input"
-                                :id="`${currentModeText}-${rateLabel[index]}-yaw`"
-                                type="number"
-                                :step="rateStep[currentMode][index]"
-                                :min="rateLimits[currentMode][index].min"
-                                :max="rateLimits[currentMode][index].max"
-                                v-model.number="currentProfile.rate[index][2]"
-                                @input="update()"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="level-max-angle">
-                  LevelMaxAngle
-                  <tooltip entry="rate.level_max_angle" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      id="level-max-angle"
-                      type="number"
-                      step="5"
-                      v-model.number="profile.rate.level_max_angle"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="sticks-deadband">
-                  SticksDeadband
-                  <tooltip entry="rate.sticks_deadband" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      class="input"
-                      step="0.01"
-                      id="sticks-deadband"
-                      type="number"
-                      v-model.number="profile.rate.sticks_deadband"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+  <Panel title="Rates" description="Maximum rotation rates and stick feel.">
+    <template #actions>
+      <spinner-btn @click="uploadRates">Load rates</spinner-btn>
+      <spinner-btn @click="downloadRates">Save rates</spinner-btn>
+    </template>
+    <div class="grid gap-x-8 gap-y-6 xl:grid-cols-2">
+      <div class="min-w-0 space-y-4">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="rate-mode">
+              Mode <tooltip entry="rate.mode" />
+            </label>
+            <UiSelect
+              id="rate-mode"
+              v-model.number="currentMode"
+              :options="rateModes"
+            />
           </div>
+        </div>
 
-          <div class="column is-6">
-            <LineChart
-              :title="'Rates'"
-              :labels="plot.labels"
-              :axis="plot.axis"
-            ></LineChart>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ currentModeText }}</th>
+              <th v-for="axis in axes" :key="axis" scope="col">{{ axis }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(val, index) in currentProfile.rate" :key="index">
+              <th scope="row" class="w-36">{{ rateLabelText(index) }}</th>
+              <td v-for="(axis, i) in axes" :key="axis">
+                <input
+                  v-model.number="currentProfile.rate[index][i]"
+                  :aria-label="`${rateLabelText(index)} ${axis}`"
+                  class="form-input"
+                  type="number"
+                  :step="rateStep[currentMode][index]"
+                  :min="rateLimits[currentMode][index].min"
+                  :max="rateLimits[currentMode][index].max"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="level-max-angle">
+              Level Max Angle <tooltip entry="rate.level_max_angle" />
+            </label>
+            <input
+              id="level-max-angle"
+              v-model.number="profile.rate.level_max_angle"
+              class="form-input"
+              type="number"
+              step="5"
+            />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="sticks-deadband">
+              Sticks Deadband <tooltip entry="rate.sticks_deadband" />
+            </label>
+            <input
+              id="sticks-deadband"
+              v-model.number="profile.rate.sticks_deadband"
+              class="form-input"
+              type="number"
+              step="0.01"
+            />
           </div>
         </div>
       </div>
+
+      <div class="relative h-72 min-w-0 xl:h-80">
+        <LineChart
+          title="Stick response (°/s)"
+          :labels="plot.labels"
+          :axis="plot.axis"
+        />
+      </div>
     </div>
 
-    <footer class="card-footer">
-      <spinner-btn class="card-footer-item" @click="downloadRates">
-        Save Rates
-      </spinner-btn>
-      <spinner-btn class="card-footer-item" @click="uploadRates">
-        Load Rates
-      </spinner-btn>
-    </footer>
-
-    <input accept=".yaml" type="file" ref="file" style="display: none" />
-    <a ref="downloadAnchor" target="_blank"></a>
-  </div>
+    <input ref="file" accept=".yaml" type="file" hidden />
+    <a ref="downloadAnchor" hidden></a>
+  </Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import LineChart from "@/components/LineChart.vue";
 import { useProfileStore } from "@/store/profile";
@@ -214,56 +96,15 @@ import YAML from "yaml";
 
 export default defineComponent({
   name: "StickRates",
-  components: {
-    LineChart,
-  },
+  components: { Panel, LineChart },
   setup() {
     return {
       profile: useProfileStore(),
     };
   },
-  computed: {
-    fileRef(): HTMLInputElement {
-      return this.$refs.file as HTMLInputElement;
-    },
-    downloadAnchorRef(): HTMLAnchorElement {
-      return this.$refs.downloadAnchor as HTMLAnchorElement;
-    },
-
-    currentProfile() {
-      return this.profile.rate.rates[this.profile.rate.profile];
-    },
-    currentMode: {
-      get() {
-        return this.currentProfile.mode;
-      },
-      set(val) {
-        const oldMode = this.profile.rate.rates[this.profile.rate.profile].mode;
-        this.rateBackup[oldMode] = JSON.parse(
-          JSON.stringify(
-            this.profile.rate.rates[this.profile.rate.profile].rate,
-          ),
-        );
-        this.profile.rate.rates[this.profile.rate.profile].mode = val;
-
-        const copy = [...(this.rateBackup[val] || this.rateDefaults[val])];
-        this.profile.rate.rates[this.profile.rate.profile].rate =
-          copy as vec3_t[];
-      },
-    },
-    currentModeText() {
-      return this.rateModes[this.currentProfile.mode].text;
-    },
-    rateLabel() {
-      return this.rateLabels[this.currentProfile.mode];
-    },
-  },
   data() {
     return {
-      rateProfiles: [
-        { value: 0, text: "Rate Profile 1" },
-        { value: 1, text: "Rate Profile 2" },
-      ],
+      axes: ["Roll", "Pitch", "Yaw"],
 
       MODE_SILVERWARE: 0,
       MODE_BETAFLIGHT: 1,
@@ -339,7 +180,58 @@ export default defineComponent({
       ],
     };
   },
+  computed: {
+    fileRef(): HTMLInputElement {
+      return this.$refs.file as HTMLInputElement;
+    },
+    downloadAnchorRef(): HTMLAnchorElement {
+      return this.$refs.downloadAnchor as HTMLAnchorElement;
+    },
+
+    currentProfile() {
+      return this.profile.rate.rates[this.profile.rate.profile];
+    },
+    currentMode: {
+      get() {
+        return this.currentProfile.mode;
+      },
+      set(val) {
+        const oldMode = this.profile.rate.rates[this.profile.rate.profile].mode;
+        this.rateBackup[oldMode] = JSON.parse(
+          JSON.stringify(
+            this.profile.rate.rates[this.profile.rate.profile].rate,
+          ),
+        );
+        this.profile.rate.rates[this.profile.rate.profile].mode = val;
+
+        const copy = [...(this.rateBackup[val] || this.rateDefaults[val])];
+        this.profile.rate.rates[this.profile.rate.profile].rate =
+          copy as vec3_t[];
+      },
+    },
+    currentModeText() {
+      return this.rateModes[this.currentProfile.mode].text;
+    },
+    rateLabel() {
+      return this.rateLabels[this.currentProfile.mode];
+    },
+  },
+  watch: {
+    currentProfile: {
+      handler() {
+        this.update();
+      },
+      deep: true,
+    },
+  },
+  mounted() {
+    this.update();
+  },
   methods: {
+    rateLabelText(index: number) {
+      const label = this.rateLabel[index].toLowerCase().replace(/_/g, " ");
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    },
     constrain(val, lower, upper) {
       if (val > upper) return upper;
       if (val < lower) return lower;
@@ -474,9 +366,6 @@ export default defineComponent({
       this.downloadAnchorRef.setAttribute("download", filename);
       this.downloadAnchorRef.click();
     },
-  },
-  mounted() {
-    this.update();
   },
 });
 </script>

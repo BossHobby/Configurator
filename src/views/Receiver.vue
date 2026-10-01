@@ -1,15 +1,9 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <ReceiverSettings v-if="info.quic_semver_gt('0.1.0')"></ReceiverSettings>
-      <ReceiverSettingsLegacy v-else></ReceiverSettingsLegacy>
-    </div>
-    <div v-if="info.quic_semver_gt('0.1.0')" class="column is-12">
-      <RCChannels></RCChannels>
-    </div>
-    <div class="column is-12">
-      <AuxChannels></AuxChannels>
-    </div>
+  <div class="space-y-4">
+    <ReceiverSettings v-if="info.quic_semver_gt('0.1.0')" />
+    <ReceiverSettingsLegacy v-else />
+    <RCChannels v-if="info.quic_semver_gt('0.1.0')" />
+    <AuxChannels />
   </div>
 </template>
 

@@ -1,166 +1,142 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Elements</p>
-      <tooltip class="card-header-icon" entry="osd.elements" size="lg" />
-    </header>
-    <div class="card-content">
-      <div class="content">
-        <div class="columns is-multiline">
-          <div class="column is-6">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label"> Callsign Text </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input class="input" type="text" v-model="callsign" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="columns mt-4 mb-0">
-              <div
-                class="column has-text-centered has-text-weight-semibold px-0 is-4"
-              >
-                Element
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Active
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Invert
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                X
-              </div>
-              <div
-                class="column has-text-left has-text-weight-semibold px-0 is-2"
-              >
-                Y
-              </div>
-            </div>
-
-            <template v-for="(el, i) of elements" :key="i">
-              <div
-                v-if="el.enabled"
-                class="field mb-2 field-is-2 is-horizontal"
-              >
-                <div class="field-label">
-                  <label class="label" for="pid-preset">
-                    {{ el.name }}
-                  </label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'active-' + i"
-                        :name="'active-' + i"
-                        type="checkbox"
-                        class="switch"
-                        :checked="el.active == 1"
-                        @input="osd_set(i, 'active', !el.active)"
-                      />
-                      <label
-                        class="py-0"
-                        style="height: 2em"
-                        :for="'active-' + i"
-                      ></label>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'invert-' + i"
-                        :name="'invert-' + i"
-                        type="checkbox"
-                        class="switch"
-                        :checked="el.invert == 1"
-                        @input="osd_set(i, 'invert', !el.invert)"
-                      />
-                      <label
-                        class="py-0"
-                        style="height: 2em"
-                        :for="'invert-' + i"
-                      ></label>
-                    </div>
-                  </div>
-                  <div class="field" style="align-self: center">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        type="number"
-                        step="1"
-                        :value="el.pos.x"
-                        min="0"
-                        :max="limits.width - 1"
-                        @input="osd_set(i, 'pos_x', $event?.target?.value)"
-                      />
-                    </div>
-                  </div>
-                  <div class="field" style="align-self: center">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        type="number"
-                        step="1"
-                        :value="el.pos.y"
-                        min="0"
-                        :max="limits.height - 1"
-                        @input="osd_set(i, 'pos_y', $event?.target?.value)"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
+  <Panel title="Elements" help="osd.elements"
+    ><div class="space-y-4">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <div class="form-row">
+            <label for="osdelements-legacy-callsign-text" class="form-label">
+              Callsign Text
+            </label>
+            <input
+              id="osdelements-legacy-callsign-text"
+              v-model="callsign"
+              class="form-input"
+              type="text"
+            />
           </div>
 
-          <div class="column is-6">
-            <div class="card">
-              <header class="card-header">
-                <div class="card-header-title">
-                  Preview
-                  <div v-if="!is_hd" class="select ml-4">
-                    <select v-model="preview">
-                      <option>NTSC</option>
-                      <option>PAL</option>
-                    </select>
-                  </div>
+          <div class="grid grid-cols-12 gap-4 mt-4 mb-0">
+            <div
+              class="min-w-0 text-center font-semibold px-0 col-span-12 md:col-span-4"
+            >
+              Element
+            </div>
+            <div
+              class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
+            >
+              Active
+            </div>
+            <div
+              class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
+            >
+              Invert
+            </div>
+            <div
+              class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
+            >
+              X
+            </div>
+            <div
+              class="min-w-0 text-left font-semibold px-0 col-span-12 md:col-span-2"
+            >
+              Y
+            </div>
+          </div>
+
+          <template v-for="(el, i) of elements" :key="i">
+            <div v-if="el.enabled" class="form-row">
+              <label class="form-label" for="pid-preset">{{ el.name }}</label>
+              <div class="flex min-w-0 items-center gap-2">
+                <div class="min-w-0 flex-1">
+                  <input
+                    :id="'active-' + i"
+                    :name="'active-' + i"
+                    type="checkbox"
+                    class="form-switch"
+                    :checked="el.active == 1"
+                    @input="osd_set(i, 'active', !el.active)"
+                  />
+                  <label
+                    class="py-0"
+                    style="height: 2em"
+                    :for="'active-' + i"
+                  ></label>
                 </div>
-              </header>
-              <div class="card-content">
-                <div class="content">
-                  <canvas
-                    :width="canvasWidth"
-                    :height="canvasHeight"
-                    ref="canvas"
-                    class="osd-canvas"
-                    @mousedown="drag_start"
-                    @mousemove="drag_move"
-                    @mouseup="drag_drop"
-                    @mouseleave="drag_drop"
-                  ></canvas>
+                <div class="min-w-0 flex-1">
+                  <input
+                    :id="'invert-' + i"
+                    :name="'invert-' + i"
+                    type="checkbox"
+                    class="form-switch"
+                    :checked="el.invert == 1"
+                    @input="osd_set(i, 'invert', !el.invert)"
+                  />
+                  <label
+                    class="py-0"
+                    style="height: 2em"
+                    :for="'invert-' + i"
+                  ></label>
+                </div>
+                <div class="min-w-0 flex-1" style="align-self: center">
+                  <input
+                    class="form-input"
+                    type="number"
+                    step="1"
+                    :value="el.pos.x"
+                    min="0"
+                    :max="limits.width - 1"
+                    @input="osd_set(i, 'pos_x', $event?.target?.value)"
+                  />
+                </div>
+                <div class="min-w-0 flex-1" style="align-self: center">
+                  <input
+                    class="form-input"
+                    type="number"
+                    step="1"
+                    :value="el.pos.y"
+                    min="0"
+                    :max="limits.height - 1"
+                    @input="osd_set(i, 'pos_y', $event?.target?.value)"
+                  />
                 </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
-      </div>
-    </div>
-  </div>
+
+        <div class="min-w-0 col-span-12 md:col-span-6">
+          <Panel title="Preview">
+            <template v-if="!is_hd" #actions>
+              <UiSelect
+                v-model="preview"
+                label="Video standard"
+                hide-label
+                class="w-28"
+                :options="[
+                  { label: 'NTSC', value: 'NTSC' },
+                  { label: 'PAL', value: 'PAL' },
+                ]"
+              />
+            </template>
+            <canvas
+              ref="canvas"
+              :width="canvasWidth"
+              :height="canvasHeight"
+              class="osd-canvas rounded-md"
+              @mousedown="drag_start"
+              @mousemove="drag_move"
+              @mouseup="drag_drop"
+              @mouseleave="drag_drop"
+            ></canvas>
+          </Panel>
+        </div>
+      </div></div
+  ></Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import UiSelect from "@/components/ui/Select.vue";
 import { defineComponent } from "vue";
 import { OSD } from "@/store/util/osd";
 import { useProfileStore } from "@/store/profile";
@@ -193,6 +169,7 @@ function roundRect(
 
 export default defineComponent({
   name: "OSDElements",
+  components: { Panel, UiSelect },
   setup() {
     return {
       profile: useProfileStore(),
@@ -337,6 +314,15 @@ export default defineComponent({
         this.draw_canvas();
       });
     },
+  },
+  mounted() {
+    Promise.resolve()
+      .then(() => {
+        if (this.is_hd) {
+          return this.osd.fetch_hd_osd_font();
+        }
+      })
+      .then((_) => this.draw_canvas());
   },
   methods: {
     translateMouse(evt: MouseEvent): Coord2D {
@@ -550,19 +536,10 @@ export default defineComponent({
       return null;
     },
   },
-  mounted() {
-    Promise.resolve()
-      .then(() => {
-        if (this.is_hd) {
-          return this.osd.fetch_hd_osd_font();
-        }
-      })
-      .then((_) => this.draw_canvas());
-  },
 });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .osd-canvas {
   width: 100%;
   background-image: url("/osd_background.jpg");

@@ -1,46 +1,57 @@
 <template>
-  <section class="hero is-primary">
-    <div class="hero-body">
-      <div class="columns">
-        <div class="column is-2 p-0">
-          <LogoClean class="logo logo-animation" viewBox="-5 -5 160 160" />
-        </div>
-        <div class="column">
-          <p class="title">
-            QUICKSILVER
-            <small class="text-muted">{{ appVersion }}</small>
-          </p>
-          <p class="subtitle">
-            Checkout our
-            <a
-              target="_blank"
-              href="https://docs.bosshobby.com/"
-              style="font-weight: bold"
-            >
-              Docs</a
-            >
-            for help on getting started.
-          </p>
-          <p v-if="updateAvailable" class="subtitle">New Version available!</p>
-          <spinner-btn v-if="updateAvailable" @click="doUpdate">
-            Update Now
-          </spinner-btn>
-        </div>
-      </div>
+  <section
+    class="flex flex-col items-center gap-5 rounded-lg border border-line bg-panel px-6 pt-10 pb-6 text-center"
+  >
+    <LogoClean class="size-20" aria-hidden="true" />
+    <div>
+      <h1 class="text-2xl font-semibold text-ink">QUICKSILVER Configurator</h1>
+      <p class="mx-auto mt-2 max-w-md text-sm text-muted">
+        Connect your flight controller over USB to configure your craft, check
+        receiver inputs, and tune its response.
+      </p>
     </div>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <UiButton
+        variant="primary"
+        class="min-h-11 px-6 text-base"
+        :busy="serial.is_connecting"
+        @click="connect"
+        >Connect flight controller</UiButton
+      >
+      <spinner-btn v-if="updateAvailable" @click="doUpdate"
+        >Install update</spinner-btn
+      >
+    </div>
+    <p class="text-xs text-muted">
+      v{{ appVersion }} ·
+      <a
+        href="https://docs.bosshobby.com/"
+        target="_blank"
+        rel="noreferrer"
+        class="font-medium text-accent hover:underline"
+        >Getting started ↗</a
+      >
+    </p>
+    <div v-if="$slots.default" class="w-full text-left"><slot /></div>
   </section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
-
+import { useRootStore } from "@/store/root";
+import { useSerialStore } from "@/store/serial";
+import UiButton from "@/components/ui/Button.vue";
 import LogoClean from "@/assets/Logo_Clean.svg?component";
 
 export default defineComponent({
   name: "Info",
-  components: {
-    LogoClean,
+  components: { UiButton, LogoClean },
+  // Panels placed in the slot (the firmware flasher) render as divided
+  // sub-sections of this card instead of a second card.
+  provide: { "ui-panel": true },
+  setup() {
+    return { serial: useSerialStore(), root: useRootStore() };
   },
   data() {
     return {
@@ -57,18 +68,16 @@ export default defineComponent({
     }
   },
   methods: {
+    async connect() {
+      try {
+        await this.serial.toggle_connection();
+      } catch (error) {
+        this.root.append_alert({ type: "danger", msg: String(error) });
+      }
+    },
     doUpdate() {
       return updater.update(this.updateAvailable);
     },
   },
 });
 </script>
-
-<style lang="scss">
-.logo {
-  display: block;
-  height: 100%;
-  width: 100%;
-  transform: scale(0.99);
-}
-</style>

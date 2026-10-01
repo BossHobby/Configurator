@@ -1,413 +1,225 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">PID</p>
-    </header>
-
-    <div class="card-content">
-      <div v-if="info.is_rover" class="content column-narrow field-is-5">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="rover-pid-kp">Steering PID Kp</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="rover-pid-kp"
-                  v-model.number="profile.rover.pid.kp"
-                  class="input"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="200"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="rover-pid-ki">Steering PID Ki</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="rover-pid-ki"
-                  v-model.number="profile.rover.pid.ki"
-                  class="input"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="200"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="rover-pid-kd">Steering PID Kd</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  id="rover-pid-kd"
-                  v-model.number="profile.rover.pid.kd"
-                  class="input"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="200"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+  <Panel title="PID">
+    <div v-if="info.is_rover" class="form-grid">
+      <div class="form-row">
+        <label class="form-label" for="rover-pid-kp">Steering PID Kp</label>
+        <input
+          id="rover-pid-kp"
+          v-model.number="profile.rover.pid.kp"
+          class="form-input"
+          type="number"
+          step="0.1"
+          min="0"
+          max="200"
+        />
       </div>
+      <div class="form-row">
+        <label class="form-label" for="rover-pid-ki">Steering PID Ki</label>
+        <input
+          id="rover-pid-ki"
+          v-model.number="profile.rover.pid.ki"
+          class="form-input"
+          type="number"
+          step="0.1"
+          min="0"
+          max="200"
+        />
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="rover-pid-kd">Steering PID Kd</label>
+        <input
+          id="rover-pid-kd"
+          v-model.number="profile.rover.pid.kd"
+          class="form-input"
+          type="number"
+          step="0.01"
+          min="0"
+          max="200"
+        />
+      </div>
+    </div>
 
-      <div v-else class="content column-narrow field-is-5">
-        <div class="columns">
-          <div class="column is-6">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label" for="pid-preset">
-                  PID Preset
-                  <tooltip entry="pid.preset" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field has-addons">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="pid-preset"
-                      v-model.number="current_preset"
-                      class="is-fullwidth"
-                      :options="presets"
-                    ></input-select>
-                  </div>
-                  <div class="control">
-                    <spinner-btn
-                      :disabled="current_preset == -1"
-                      @click="load_preset(current_preset)"
-                    >
-                      Load
-                    </spinner-btn>
-                  </div>
-                </div>
-              </div>
+    <div v-else class="grid gap-8 py-2 xl:grid-cols-2">
+      <div class="min-w-0 space-y-8">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="pid-preset">
+              PID Preset <tooltip entry="pid.preset" />
+            </label>
+            <div class="flex min-w-0 items-center gap-2">
+              <UiSelect
+                id="pid-preset"
+                v-model.number="current_preset"
+                class="flex-1"
+                :options="presets"
+              />
+              <spinner-btn
+                :disabled="current_preset == -1"
+                @click="load_preset(current_preset)"
+                >Load</spinner-btn
+              >
             </div>
+          </div>
+        </div>
 
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label" for="pid-profile">
-                  PIDProfile
-                  <tooltip entry="pid.profile" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="pid-profile"
-                      v-model.number="profile.pid.pid_profile"
-                      class="is-fullwidth"
-                      :options="pidProfiles"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="columns mt-4 mb-0">
-              <div class="column is-offset-4 is-8">
-                <div class="columns">
-                  <div class="column is-4">
-                    <h6>Roll</h6>
-                  </div>
-                  <div class="column is-4">
-                    <h6>Pitch</h6>
-                  </div>
-                  <div class="column is-4">
-                    <h6>Yaw</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-for="key in pidTermKeys"
-              :key="key"
-              class="field field-is-2 is-horizontal"
-            >
-              <div class="field-label">
-                <label class="label">
-                  {{ key === "kff" ? "FF" : key }}
+        <table class="data-table [&_td]:py-3 [&_th]:py-3">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Term</span></th>
+              <th v-for="axis in axes" :key="axis" scope="col">{{ axis }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="key in pidTermKeys" :key="key">
+              <th scope="row" class="w-16">
+                <span class="inline-flex items-center gap-1.5"
+                  >{{ pidTermLabels[key] || key }}
                   <tooltip
                     v-if="key === 'kff'"
                     text="Wing rate feedforward. 100 gives full output at 1 rad/s requested rotation. Applies to stick and leveling rate targets."
-                  />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`pid-${key}-roll`"
-                      v-model.number="pid_rates[key][0]"
-                      class="input"
-                      type="number"
-                      step="1.0"
-                      min="0"
-                    />
-                  </p>
-                </div>
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`pid-${key}-pitch`"
-                      v-model.number="pid_rates[key][1]"
-                      class="input"
-                      type="number"
-                      step="1.0"
-                      min="0"
-                    />
-                  </p>
-                </div>
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`pid-${key}-yaw`"
-                      v-model.number="pid_rates[key][2]"
-                      class="input"
-                      type="number"
-                      step="1.0"
-                      min="0"
-                    />
-                  </p>
-                </div>
-              </div>
-            </div>
+                /></span>
+              </th>
+              <td v-for="(axis, i) in axes" :key="axis">
+                <input
+                  v-model.number="pid_rates[key][i]"
+                  :aria-label="`${pidTermLabels[key] || key} ${axis}`"
+                  class="form-input"
+                  type="number"
+                  step="1.0"
+                  min="0"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-            <div class="field is-horizontal mt-6">
-              <div class="field-label">
-                <label class="label" for="throttle_dterm_attenuation-enable">
-                  Throttle DTerm Attenuation
-                  <tooltip entry="pid.tda_active" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="throttle_dterm_attenuation-enable"
-                      v-model.number="
-                        profile.pid.throttle_dterm_attenuation.tda_active
-                      "
-                      class="is-fullwidth"
-                      :options="tdaOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label
-                  class="label"
-                  for="throttle_dterm_attenuation-breakpoint"
-                >
-                  TDA Breakpoint
-                  <tooltip entry="pid.tda_breakpoint" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      id="throttle_dterm_attenuation-breakpoint"
-                      v-model.number="
-                        profile.pid.throttle_dterm_attenuation.tda_breakpoint
-                      "
-                      class="input"
-                      type="number"
-                      step="0.05"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label" for="throttle_dterm_attenuation-percent">
-                  TDA Percent
-                  <tooltip entry="pid.tda_percent" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input
-                      id="throttle_dterm_attenuation-percent"
-                      v-model.number="
-                        profile.pid.throttle_dterm_attenuation.tda_percent
-                      "
-                      class="input"
-                      type="number"
-                      step="0.05"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="throttle_dterm_attenuation-enable">
+              Throttle D-Term Attenuation <tooltip entry="pid.tda_active" />
+            </label>
+            <UiSelect
+              id="throttle_dterm_attenuation-enable"
+              v-model.number="profile.pid.throttle_dterm_attenuation.tda_active"
+              :options="tdaOptions"
+            />
           </div>
-          <div class="column is-6">
-            <div class="field field-is-2 is-horizontal">
-              <div class="field-label">
-                <label class="label" for="stick-profile">
-                  Stick Boost Profile
-                  <tooltip entry="pid.stick_profile" />
-                </label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="stick-profile"
-                      v-model.number="profile.pid.stick_profile"
-                      class="is-fullwidth"
-                      :options="stickProfiles"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="columns my-0">
-              <div class="column is-offset-4 is-8">
-                <div class="columns">
-                  <div class="column is-4">
-                    <h6>Roll</h6>
-                  </div>
-                  <div class="column is-4">
-                    <h6>Pitch</h6>
-                  </div>
-                  <div class="column is-4">
-                    <h6>Yaw</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-for="(val, key) in stick_rates"
-              :key="key"
-              class="field field-is-2 is-horizontal"
+          <div class="form-row">
+            <label
+              class="form-label"
+              for="throttle_dterm_attenuation-breakpoint"
             >
-              <div class="field-label">
-                <label class="label">{{ key }}</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`stick-${key}-roll`"
-                      v-model.number="stick_rates[key][0]"
-                      class="input"
-                      type="number"
-                      step="0.01"
-                    />
-                  </p>
-                </div>
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`stick-${key}-pitch`"
-                      v-model.number="stick_rates[key][1]"
-                      class="input"
-                      type="number"
-                      step="0.01"
-                    />
-                  </p>
-                </div>
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`stick-${key}-yaw`"
-                      v-model.number="stick_rates[key][2]"
-                      class="input"
-                      type="number"
-                      step="0.01"
-                    />
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="columns mt-6 mb-1">
-              <div class="column is-4">
-                <h6 class="has-text-right">
-                  Angle Strength
-                  <tooltip entry="pid.angle_strength" />
-                </h6>
-              </div>
-              <div class="column is-4">
-                <h6>Small</h6>
-              </div>
-              <div class="column is-4">
-                <h6>Big</h6>
-              </div>
-            </div>
-
-            <div
-              v-for="(key, index) in ['kp', 'kd']"
-              :key="index"
-              class="field field-is-2 is-horizontal"
-            >
-              <div class="field-label">
-                <label class="label">{{ key }}</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`small-angle-${key}`"
-                      v-model.number="profile.pid.small_angle[key]"
-                      class="input"
-                      type="number"
-                      step="0.01"
-                    />
-                  </p>
-                </div>
-                <div class="field">
-                  <p class="control is-expanded">
-                    <input
-                      :id="`big-angle-${key}`"
-                      v-model.number="profile.pid.big_angle[key]"
-                      class="input"
-                      type="number"
-                      step="0.01"
-                    />
-                  </p>
-                </div>
-              </div>
-            </div>
+              TDA Breakpoint <tooltip entry="pid.tda_breakpoint" />
+            </label>
+            <input
+              id="throttle_dterm_attenuation-breakpoint"
+              v-model.number="
+                profile.pid.throttle_dterm_attenuation.tda_breakpoint
+              "
+              class="form-input"
+              type="number"
+              step="0.05"
+              min="0"
+            />
+          </div>
+          <div class="form-row">
+            <label class="form-label" for="throttle_dterm_attenuation-percent">
+              TDA Percent <tooltip entry="pid.tda_percent" />
+            </label>
+            <input
+              id="throttle_dterm_attenuation-percent"
+              v-model.number="
+                profile.pid.throttle_dterm_attenuation.tda_percent
+              "
+              class="form-input"
+              type="number"
+              step="0.05"
+              min="0"
+            />
           </div>
         </div>
       </div>
+
+      <div class="min-w-0 space-y-8">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="stick-profile">
+              Stick Boost Profile <tooltip entry="pid.stick_profile" />
+            </label>
+            <UiSelect
+              id="stick-profile"
+              v-model.number="profile.pid.stick_profile"
+              :options="stickProfiles"
+            />
+          </div>
+        </div>
+
+        <table class="data-table [&_td]:py-3 [&_th]:py-3">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Setting</span></th>
+              <th v-for="axis in axes" :key="axis" scope="col">{{ axis }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(val, key) in stick_rates" :key="key">
+              <th scope="row" class="w-28 capitalize">{{ key }}</th>
+              <td v-for="(axis, i) in axes" :key="axis">
+                <input
+                  v-model.number="stick_rates[key][i]"
+                  :aria-label="`${key} ${axis}`"
+                  class="form-input"
+                  type="number"
+                  step="0.01"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="data-table [&_td]:py-3 [&_th]:py-3">
+          <thead>
+            <tr>
+              <th scope="col">
+                <span class="inline-flex items-center gap-1.5"
+                  >Angle Strength <tooltip entry="pid.angle_strength"
+                /></span>
+              </th>
+              <th scope="col">Small</th>
+              <th scope="col">Big</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="key in ['kp', 'kd']" :key="key">
+              <th scope="row" class="w-28">{{ pidTermLabels[key] }}</th>
+              <td>
+                <input
+                  v-model.number="profile.pid.small_angle[key]"
+                  :aria-label="`Small angle ${pidTermLabels[key]}`"
+                  class="form-input"
+                  type="number"
+                  step="0.01"
+                />
+              </td>
+              <td>
+                <input
+                  v-model.number="profile.pid.big_angle[key]"
+                  :aria-label="`Big angle ${pidTermLabels[key]}`"
+                  class="form-input"
+                  type="number"
+                  step="0.01"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
+  </Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
@@ -415,6 +227,7 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "PIDRates",
+  components: { Panel },
   setup() {
     return {
       info: useInfoStore(),
@@ -424,10 +237,11 @@ export default defineComponent({
   },
   data() {
     return {
-      pidProfiles: [
-        { value: 0, text: "PID Profile 1" },
-        { value: 1, text: "PID Profile 2" },
-      ],
+      axes: ["Roll", "Pitch", "Yaw"],
+      pidTermLabels: { kp: "P", ki: "I", kd: "D", kff: "FF" } as Record<
+        string,
+        string
+      >,
       stickProfiles: [
         { value: 0, text: "Stick Boost Profile AUX Off" },
         { value: 1, text: "Stick Boost Profile AUX On" },
@@ -480,5 +294,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped></style>

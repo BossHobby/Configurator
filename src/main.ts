@@ -6,19 +6,17 @@ import pinia from "./store";
 
 import SpinnerBtn from "./components/SpinnerBtn.vue";
 import Tooltip from "./components/Tooltip.vue";
-import InputSelect from "./components/InputSelect.vue";
-import FontAwesomeIcon from "./mixin/icons";
+import UiSelect from "./components/ui/Select.vue";
 import { ModalPlugin } from "./mixin/modal";
 
-import "./style.scss";
+import "./style.css";
 import "./mixin/chart.ts";
 
 const app = createApp(App);
 
 app.component("spinner-btn", SpinnerBtn);
 app.component("tooltip", Tooltip);
-app.component("input-select", InputSelect);
-app.component("FontAwesomeIcon", FontAwesomeIcon);
+app.component("UiSelect", UiSelect);
 
 app.use(pinia);
 app.use(router);

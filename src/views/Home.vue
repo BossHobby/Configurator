@@ -1,11 +1,6 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <Info></Info>
-    </div>
-    <div class="column is-12">
-      <Flash></Flash>
-    </div>
+  <div class="mx-auto max-w-4xl">
+    <Info><Flash /></Info>
   </div>
 </template>
 

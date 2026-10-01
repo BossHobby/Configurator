@@ -1,238 +1,162 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Receiver</p>
-      <spinner-btn class="card-header-button is-warning" @click="reset"
-        >Reset</spinner-btn
-      >
-    </header>
-
-    <div class="card-content">
-      <div class="content field-is-2">
+  <Panel title="Receiver"
+    ><template #actions
+      ><spinner-btn @click="reset">Reset</spinner-btn></template
+    >
+    <div class="space-y-4">
+      <div class="form-grid">
         <div
-          class="field is-horizontal"
           v-if="info.rx_protocol && !profile.receiver.protocol"
+          class="form-row"
         >
-          <div class="field-label">
-            <label class="label">
-              Protocol
-              <tooltip entry="receiver.protocol" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                {{ protoNames[info.rx_protocol] }}
-              </div>
-            </div>
+          <span class="form-label">
+            Protocol
+            <tooltip entry="receiver.protocol"
+          /></span>
+          <div class="min-w-0 flex-1">
+            {{ protoNames[info.rx_protocol] }}
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="profile.receiver.protocol">
-          <div class="field-label">
-            <label class="label">
-              Protocol
-              <tooltip entry="receiver.protocol" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  class="is-fullwidth"
-                  v-model.number="profile.receiver.protocol"
-                  :options="protocolOptions"
-                ></input-select>
-              </div>
-            </div>
+        <div v-if="profile.receiver.protocol" class="form-row">
+          <label for="receiver-settings-legacy-protocol" class="form-label">
+            Protocol
+            <tooltip entry="receiver.protocol"
+          /></label>
+          <UiSelect
+            id="receiver-settings-legacy-protocol"
+            v-model.number="profile.receiver.protocol"
+            class="w-full"
+            :options="protocolOptions"
+          ></UiSelect>
+        </div>
+
+        <div v-if="info.quic_protocol_version > 3" class="form-row">
+          <label for="receiver-settings-legacy-lqi-source" class="form-label">
+            LQI Source
+            <tooltip entry="receiver.lqi_source"
+          /></label>
+          <UiSelect
+            id="receiver-settings-legacy-lqi-source"
+            v-model.number="profile.receiver.lqi_source"
+            class="w-full"
+            :options="lqiSourceNames"
+          ></UiSelect>
+        </div>
+
+        <div v-if="info.quic_protocol_version > 2" class="form-row">
+          <span class="form-label">
+            Bind Saved
+            <tooltip entry="receiver.bind_saved"
+          /></span>
+          <div class="min-w-0 flex-1">
+            {{ bind.info.bind_saved ? "yes" : "no" }}
           </div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 3">
-          <div class="field-label">
-            <label class="label">
-              LQI Source
-              <tooltip entry="receiver.lqi_source" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input-select
-                  class="is-fullwidth"
-                  v-model.number="profile.receiver.lqi_source"
-                  :options="lqiSourceNames"
-                ></input-select>
-              </div>
-            </div>
-          </div>
+        <div v-if="info.quic_protocol_version > 2" class="form-row">
+          <span class="form-label">RSSI</span>
+          <div class="min-w-0 flex-1">{{ state.rx_rssi }}</div>
         </div>
 
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">
-              Bind Saved
-              <tooltip entry="receiver.bind_saved" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                {{ bind.info.bind_saved ? "yes" : "no" }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">RSSI</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ state.rx_rssi }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal" v-if="info.quic_protocol_version > 2">
-          <div class="field-label">
-            <label class="label">Status</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ protoStatus }}</div>
-            </div>
+        <div v-if="info.quic_protocol_version > 2" class="form-row">
+          <span class="form-label">Status</span>
+          <div class="min-w-0 flex-1 text-accent">
+            {{ protoStatus }}
           </div>
         </div>
 
         <div
-          class="field is-horizontal"
           v-if="
             info.quic_protocol_version > 2 &&
             rx_protocol == RXProtocol.UNIFIED_SERIAL
           "
+          class="form-row"
         >
-          <div class="field-label">
-            <label class="label">Serial Protocol</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">{{ serialProtoStatus }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="card mt-4"
-          v-if="bind.info.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
-        >
-          <header class="card-header">
-            <p class="card-header-title">ExpressLRS</p>
-          </header>
-          <div class="card-content">
-            <div class="content">
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Switch Mode</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsSwitchMode }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">Current Bind Phrase</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">{{ elrsBindPhrase }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field is-horizontal">
-                <div class="field-label">
-                  <label class="label">New Bind Phrase</label>
-                </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control is-expanded">
-                      <input
-                        class="input"
-                        id="name"
-                        type="text"
-                        v-model="elrsBindPhraseInput"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <footer class="card-footer">
-            <span class="card-footer-item"></span>
-            <spinner-btn
-              class="card-footer-item"
-              @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
-              :disabled="elrsBindPhraseInput.length < 2"
-            >
-              Apply
-            </spinner-btn>
-          </footer>
-        </div>
-
-        <div class="card mt-4" v-if="bind.info.raw && isSpiProtocol">
-          <header class="card-header">
-            <p class="card-header-title">Bind Data</p>
-          </header>
-
-          <div class="card-content">
-            <div class="content has-text-centered">
-              Save and load bind information for spi protocols.<br />
-              Requires reboot after load.
-            </div>
-          </div>
-
-          <footer class="card-footer">
-            <spinner-btn class="card-footer-item" @click="downloadBindData">
-              Save Bind Data
-            </spinner-btn>
-            <spinner-btn class="card-footer-item" @click="uploadBindData">
-              Load Bind Data
-            </spinner-btn>
-          </footer>
-
-          <input
-            class="input"
-            accept=".base64"
-            type="file"
-            ref="file"
-            style="display: none"
-          />
-          <a ref="downloadAnchor" target="_blank"></a>
-        </div>
-
-        <div class="columns mt-4">
-          <div class="column is-12 has-text-centered">
-            <small>
-              When binding via your transmitter, save bind by moving your right
-              transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle
-              the Bind Saved flag above. When binding via passphrase or bind
-              data this is not required.
-            </small>
+          <span class="form-label">Serial Protocol</span>
+          <div class="min-w-0 flex-1 text-accent">
+            {{ serialProtoStatus }}
           </div>
         </div>
       </div>
-    </div>
-  </div>
+
+      <Panel
+        v-if="bind.info.raw && rx_protocol == RXProtocol.EXPRESS_LRS"
+        title="ExpressLRS"
+        class="mt-4"
+        ><div class="space-y-4">
+          <div class="form-grid">
+            <div class="form-row">
+              <span class="form-label">Switch Mode</span>
+              <div class="min-w-0 flex-1">{{ elrsSwitchMode }}</div>
+            </div>
+
+            <div class="form-row">
+              <span class="form-label">Current Bind Phrase</span>
+              <div class="min-w-0 flex-1">{{ elrsBindPhrase }}</div>
+            </div>
+
+            <div class="form-row">
+              <label for="name" class="form-label">New Bind Phrase</label>
+              <input
+                id="name"
+                v-model="elrsBindPhraseInput"
+                class="form-input"
+                type="text"
+              />
+            </div>
+          </div>
+        </div>
+
+        <footer class="mt-5 flex flex-wrap items-center justify-end gap-2">
+          <spinner-btn
+            :disabled="elrsBindPhraseInput.length < 2"
+            @click="apply_elrs_bind_phrase(elrsBindPhraseInput)"
+          >
+            Apply
+          </spinner-btn>
+        </footer></Panel
+      >
+
+      <Panel
+        v-if="bind.info.raw && isSpiProtocol"
+        title="Bind Data"
+        class="mt-4"
+        ><div class="space-y-4 text-center">
+          Save and load bind information for spi protocols.<br />
+          Requires reboot after load.
+        </div>
+
+        <footer class="mt-5 flex flex-wrap items-center justify-end gap-2">
+          <spinner-btn @click="downloadBindData"> Save Bind Data </spinner-btn>
+          <spinner-btn @click="uploadBindData"> Load Bind Data </spinner-btn>
+        </footer>
+
+        <input
+          ref="file"
+          class="form-input"
+          accept=".base64"
+          type="file"
+          style="display: none" />
+        <a ref="downloadAnchor" target="_blank"></a
+      ></Panel>
+
+      <div class="grid grid-cols-12 gap-4 mt-4">
+        <div class="min-w-0 text-center col-span-12 md:col-span-12">
+          <small>
+            When binding via your transmitter, save bind by moving your right
+            transmitter stick UP-UP-UP followed by DOWN-DOWN-DOWN, to toggle the
+            Bind Saved flag above. When binding via passphrase or bind data this
+            is not required.
+          </small>
+        </div>
+      </div>
+    </div></Panel
+  >
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { $enum } from "ts-enum-util";
 import md5 from "md5";
@@ -246,6 +170,16 @@ import { useRootStore } from "@/store/root";
 
 export default defineComponent({
   name: "ReceiverSettingsLegacy",
+  components: { Panel },
+  setup() {
+    return {
+      profile: useProfileStore(),
+      info: useInfoStore(),
+      bind: useBindStore(),
+      state: useStateStore(),
+      root: useRootStore(),
+    };
+  },
   data() {
     return {
       lqiSourceNames: [
@@ -254,15 +188,6 @@ export default defineComponent({
         { value: 2, text: "DIRECT" },
       ],
       elrsBindPhraseInput: "",
-    };
-  },
-  setup() {
-    return {
-      profile: useProfileStore(),
-      info: useInfoStore(),
-      bind: useBindStore(),
-      state: useStateStore(),
-      root: useRootStore(),
     };
   },
   computed: {

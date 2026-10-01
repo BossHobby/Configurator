@@ -1,88 +1,79 @@
 <template>
-  <div v-if="tmpl" class="card my-5">
-    <div class="card-content">
-      <p class="title">
-        <span class="is-3">
-          {{ tmpl.name }}
-        </span>
-
-        <span
-          class="is-size-5 has-text-weight-normal has-text-grey-lighter is-pulled-right"
-        >
-          <font-awesome-icon icon="fa-regular fa-pen-to-square" fixed-width />
-          by {{ tmpl.author }}
-        </span>
-      </p>
-
-      <article class="media">
-        <figure class="media-left">
-          <p class="image" style="width: 300px">
-            <img :src="tmpl.image" />
-          </p>
-        </figure>
-        <div class="media-content">
-          <p class="m-2">{{ tmpl.desc }}</p>
-          <hr />
-
-          <div v-for="o of tmpl.options" class="field is-horizontal">
-            <div class="field-label is-medium is-align-self-flex-start">
-              <label class="label">
-                <span class="is-size-5">{{ o.title }}</span>
-                <tooltip :text="o.desc" />
-              </label>
+  <Panel v-if="tmpl" :title="tmpl.name">
+    <template #actions>
+      <span class="flex items-center gap-1.5 text-xs text-muted">
+        <Icon name="edit" class="size-3.5" />by {{ tmpl.author }}
+      </span>
+    </template>
+    <article class="flex flex-col gap-6 lg:flex-row">
+      <img
+        :src="tmpl.image"
+        alt=""
+        class="h-auto w-full max-w-64 shrink-0 self-start rounded-md"
+      />
+      <div class="min-w-0 flex-1 space-y-4">
+        <p class="text-sm text-muted">{{ tmpl.desc }}</p>
+        <div class="form-grid">
+          <div v-for="o of tmpl.options" :key="o.name" class="form-row">
+            <label class="form-label" :for="'template-' + o.name">
+              {{ o.title }} <tooltip :text="o.desc" />
+            </label>
+            <div class="relative">
+              <select
+                :id="'template-' + o.name"
+                v-model="selected[o.name]"
+                class="form-select"
+                :aria-invalid="!selected[o.name] || undefined"
+              >
+                <option v-for="e of o.entries" :key="e.name" :value="e.name">
+                  {{ e.title }}
+                </option>
+              </select>
+              <Icon
+                name="chevron"
+                class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted"
+              />
             </div>
-            <div class="field-body is-flex-grow-2">
-              <div class="field">
-                <div class="control mb-2">
-                  <div class="select is-fullwidth">
-                    <select v-model="selected[o.name]">
-                      <option v-for="e of o.entries" :value="e.name">
-                        {{ e.title }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                <p v-if="!selected[o.name]" class="help is-danger">
-                  Please select an option!
-                </p>
-                <p
-                  v-if="selectedValues[o.name]?.desc"
-                  class="help has-text-grey-light"
-                >
-                  {{ selectedValues[o.name]?.desc }}
-                </p>
-              </div>
-            </div>
+            <p v-if="!selected[o.name]" class="text-xs text-danger">
+              Please select an option.
+            </p>
+            <p
+              v-else-if="selectedValues[o.name]?.desc"
+              class="text-xs text-muted"
+            >
+              {{ selectedValues[o.name]?.desc }}
+            </p>
           </div>
         </div>
-      </article>
-    </div>
-    <footer class="card-footer">
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
-      <span class="card-footer-item"></span>
+      </div>
+    </article>
+    <footer class="mt-5 flex justify-end">
       <spinner-btn
-        class="card-footer-item is-primary"
-        @click="applyTemplate()"
+        variant="primary"
         :disabled="!formValid"
+        @click="applyTemplate()"
+        >Apply template</spinner-btn
       >
-        Apply
-      </spinner-btn>
     </footer>
-  </div>
+  </Panel>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import Icon from "@/components/ui/Icon.vue";
 import { useInfoStore } from "@/store/info";
 import YAML from "yaml";
 import { templateUrl, type TemplateEntry } from "@/store/templates";
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from "vue";
 import { mergeDeep, useProfileStore } from "@/store/profile";
 import { Log } from "@/log";
 
 export default defineComponent({
   name: "TemplateModal",
-  props: ["template"],
+  components: { Panel, Icon },
+  props: {
+    template: { type: Object as PropType<TemplateEntry>, default: undefined },
+  },
   setup() {
     return {
       info: useInfoStore(),
@@ -94,11 +85,6 @@ export default defineComponent({
       selected: {},
       tmpl: undefined as TemplateEntry | undefined,
     };
-  },
-  watch: {
-    template(val) {
-      this.updateTemplate(val);
-    },
   },
   computed: {
     formValid() {
@@ -122,6 +108,14 @@ export default defineComponent({
 
       return values;
     },
+  },
+  watch: {
+    template(val) {
+      this.updateTemplate(val);
+    },
+  },
+  created() {
+    this.updateTemplate(this.template);
   },
   methods: {
     updateTemplate(val: TemplateEntry) {
@@ -200,15 +194,5 @@ export default defineComponent({
       return this.profile.merge_profile(patch);
     },
   },
-  created() {
-    this.updateTemplate(this.template);
-  },
 });
 </script>
-
-<style>
-.is-256x256 {
-  height: 256px;
-  width: 256px;
-}
-</style>
