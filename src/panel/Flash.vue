@@ -1,294 +1,200 @@
 <template>
   <form @submit="onSubmit">
-    <div class="card">
-      <div class="card-header">
-        <p class="card-header-title">
-          Flash
-          <tooltip entry="flash.reset" />
-        </p>
-        <spinner-btn
-          class="card-header-button is-info"
-          type="button"
-          @click="resetToBootloader()"
+    <Panel
+      title="Firmware"
+      description="Flash a QUICKSILVER release, development build, or local file."
+      help="flash.reset"
+    >
+      <template #actions>
+        <spinner-btn type="button" @click="resetToBootloader()"
+          >Reset to bootloader</spinner-btn
         >
-          Reset to Bootloader
-        </spinner-btn>
-      </div>
-
-      <div class="card-content field-is-3">
-        <div v-if="currentTarget" class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label"> Current Target </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input is-static"
-                  :value="currentTarget"
-                  readonly
-                />
-              </div>
-            </div>
-          </div>
+      </template>
+      <div class="form-grid">
+        <div v-if="currentTarget" class="form-row">
+          <label class="form-label" for="flash-current-target"
+            >Current target</label
+          >
+          <input
+            id="flash-current-target"
+            class="form-input"
+            :value="currentTarget"
+            readonly
+          />
         </div>
 
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">
-              Source <tooltip entry="flash.source" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <input-select
-                    v-model="source"
-                    :options="sourceOptions"
-                    :disabled="loading"
-                  >
-                  </input-select>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="form-row">
+          <label class="form-label" for="flash-source">
+            Source <tooltip entry="flash.source" />
+          </label>
+          <UiSelect
+            id="flash-source"
+            v-model="source"
+            :options="sourceOptions"
+            :disabled="loading"
+          />
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'local'">
-          <div class="field-label is-medium">
-            <label class="label">
-              File
-              <tooltip entry="flash.file-local" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div
-                class="file is-boxed is-medium"
-                :class="{ 'has-name': file }"
-              >
-                <label class="file-label">
-                  <span class="file-cta">
-                    <span class="file-icon">
-                      <font-awesome-icon icon="fa-solid fa-upload" />
-                    </span>
-                    <span class="file-label"> Choose a file… </span>
-                  </span>
-                  <input
-                    class="file-input"
-                    type="file"
-                    @change="updateFile()"
-                    ref="file"
-                    accept=".hex"
-                    :disabled="loading"
-                  />
-                  <span v-if="file" class="file-name">
-                    {{ file.name }}
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
+        <div v-if="source == 'local'" class="form-row">
+          <span class="form-label">
+            File <tooltip entry="flash.file-local" />
+          </span>
+          <label class="flex min-w-0 items-center gap-3">
+            <span class="form-button relative">
+              <Icon name="upload" />Choose a file…
+              <input
+                ref="file"
+                class="absolute inset-0 cursor-pointer opacity-0"
+                type="file"
+                accept=".hex"
+                :disabled="loading"
+                @change="updateFile()"
+              />
+            </span>
+            <span v-if="file" class="truncate text-sm text-muted">
+              {{ file.name }}
+            </span>
+          </label>
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'branch'">
-          <div class="field-label is-normal">
-            <label class="label">
-              Branch
-              <tooltip entry="flash.file-branch" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <input-select
-                    v-model="branch"
-                    :options="branchOptions"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-if="source == 'branch'" class="form-row">
+          <label class="form-label" for="flash-branch">
+            Branch <tooltip entry="flash.file-branch" />
+          </label>
+          <UiSelect
+            id="flash-branch"
+            v-model="branch"
+            :options="branchOptions"
+            :disabled="loading"
+          />
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'pull_request'">
-          <div class="field-label is-normal">
-            <label class="label">
-              Pull Request
-              <tooltip entry="flash.file-pull-request" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <input-select
-                    v-model="pullRequest"
-                    :options="pullRequestOptions"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-if="source == 'pull_request'" class="form-row">
+          <label class="form-label" for="flash-pull-request">
+            Pull request <tooltip entry="flash.file-pull-request" />
+          </label>
+          <UiSelect
+            id="flash-pull-request"
+            v-model="pullRequest"
+            :options="pullRequestOptions"
+            :disabled="loading"
+          />
         </div>
 
         <div
-          class="field is-horizontal"
           v-if="source == 'branch' || source == 'pull_request'"
+          class="form-row"
         >
-          <div class="field-label is-normal">
-            <label class="label">
-              Commit
-              <tooltip entry="flash.file-commit" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <input
-                  class="input is-fullwidth is-static"
-                  type="text"
-                  :value="commitHash"
-                />
-              </div>
-            </div>
-          </div>
+          <label class="form-label" for="flash-commit">
+            Commit <tooltip entry="flash.file-commit" />
+          </label>
+          <input
+            id="flash-commit"
+            class="form-input font-mono"
+            type="text"
+            :value="commitHash"
+            readonly
+          />
         </div>
 
-        <div class="field is-horizontal" v-if="source == 'release'">
-          <div class="field-label is-normal">
-            <label class="label">
-              Release
-              <tooltip entry="flash.file-release" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <input-select
-                    v-model="release"
-                    :options="releaseOptions"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-if="source == 'release'" class="form-row">
+          <label class="form-label" for="flash-release">
+            Release <tooltip entry="flash.file-release" />
+          </label>
+          <UiSelect
+            id="flash-release"
+            v-model="release"
+            :options="releaseOptions"
+            :disabled="loading"
+          />
         </div>
 
         <div
-          class="field is-horizontal"
           v-if="source != 'local' && isRuntimeTarget && supportsVehicles"
+          class="form-row"
         >
-          <div class="field-label is-normal">
-            <label class="label"> Vehicle </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <input-select
-                    v-model="vehicle"
-                    :options="vehicleOptions"
-                    :disabled="loading"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <label class="form-label" for="flash-vehicle">Vehicle</label>
+          <UiSelect
+            id="flash-vehicle"
+            v-model="vehicle"
+            :options="vehicleOptions"
+            :disabled="loading"
+          />
         </div>
 
-        <div class="field is-horizontal" v-if="source != 'local'">
-          <div class="field-label is-normal">
-            <label class="label">
-              Target
-              <tooltip entry="flash.file-remote" />
-            </label>
-          </div>
-          <div class="field-body">
-            <div class="field is-narrow">
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <div
-                    class="dropdown"
-                    :class="{ 'is-active': dropdownActive || dropdownHover }"
-                  >
-                    <div class="dropdown-trigger">
-                      <div class="field">
-                        <p class="control is-expanded has-icons-right">
-                          <input
-                            class="input is-fullwidth"
-                            type="search"
-                            placeholder="Search..."
-                            v-model="targetSearch"
-                            @focus="dropdownActive = true"
-                            @blur="dropdownActive = false"
-                            :disabled="loading"
-                          />
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      class="dropdown-menu"
-                      style="overflow-y: auto; max-height: 50vh"
-                      role="menu"
-                      @mouseover="dropdownHover = true"
-                      @mouseleave="dropdownHover = false"
-                    >
-                      <div class="dropdown-content">
-                        <a
-                          v-for="o of targetOptions"
-                          :key="o.value"
-                          :value="o.value"
-                          class="dropdown-item"
-                          :class="{ 'is-active': target == o }"
-                          @click.prevent="selectTarget(o)"
-                        >
-                          {{ o.text }}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <div v-if="source != 'local'" class="form-row col-span-full">
+          <label class="form-label" for="flash-target">
+            Target <tooltip entry="flash.file-remote" />
+          </label>
+          <div class="relative">
+            <input
+              id="flash-target"
+              v-model="targetSearch"
+              class="form-input"
+              type="search"
+              placeholder="Search targets…"
+              autocomplete="off"
+              :disabled="loading"
+              @focus="dropdownActive = true"
+              @blur="dropdownActive = false"
+            />
+            <div
+              v-show="dropdownActive || dropdownHover"
+              class="absolute top-full right-0 left-0 z-50 mt-1 max-h-[50vh] overflow-y-auto rounded-md border border-line bg-panel py-1 shadow-lg"
+              role="listbox"
+              @mouseover="dropdownHover = true"
+              @mouseleave="dropdownHover = false"
+            >
+              <a
+                v-for="o of targetOptions"
+                :key="o.value"
+                role="option"
+                :aria-selected="target == o"
+                class="block w-full cursor-pointer px-3 py-2 text-sm hover:bg-subtle"
+                :class="{ 'bg-active font-medium': target == o }"
+                @click.prevent="selectTarget(o)"
+              >
+                {{ o.text }}
+              </a>
             </div>
-          </div>
-        </div>
-
-        <div v-for="(v, k) in progress" :key="k" class="columns my-2 mx-2">
-          <div class="column is-2">{{ k }}</div>
-          <div class="column is-10">
-            <progress
-              class="progress is-primary"
-              height="20px"
-              :value="v.current"
-              :max="v.total"
-            ></progress>
           </div>
         </div>
       </div>
-      <footer class="card-footer">
+
+      <div v-if="Object.keys(progress).length" class="mt-5 space-y-2">
+        <div
+          v-for="(v, k) in progress"
+          :key="k"
+          class="grid grid-cols-[8rem_minmax(0,1fr)] items-center gap-3 text-xs"
+        >
+          <span class="text-muted capitalize">{{ k }}</span>
+          <progress
+            class="h-2 w-full overflow-hidden rounded-full"
+            :value="v.current"
+            :max="v.total"
+          ></progress>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end">
+        <!-- Stays a plain button until a firmware is chosen, so it never
+             competes with the Connect button above it. -->
         <spinner-btn
-          class="card-footer-item"
-          :class="{ 'is-loading': loading }"
+          :variant="canFlash ? 'primary' : 'secondary'"
+          :aria-busy="loading"
           :disabled="!canFlash"
           type="submit"
+          >Flash firmware</spinner-btn
         >
-          Flash
-        </spinner-btn>
-      </footer>
-    </div>
+      </div>
+    </Panel>
   </form>
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
+import Icon from "@/components/ui/Icon.vue";
 import { defineComponent } from "vue";
-import Info from "@/panel/Info.vue";
 import { Flasher, type FlashProgress } from "@/store/flash/flash";
 import { github } from "@/store/util/github";
 import { Log } from "@/log";
@@ -301,6 +207,7 @@ import Fuse from "fuse.js";
 
 export default defineComponent({
   name: "Flash",
+  components: { Panel, Icon },
   setup() {
     return {
       root: useRootStore(),
@@ -330,41 +237,6 @@ export default defineComponent({
       target: undefined as any | undefined,
       file: undefined as File | undefined,
     };
-  },
-  watch: {
-    async source() {
-      this.loading = true;
-      await this.flash.fetch(this.source);
-      this.loading = false;
-
-      this.release = this.pickRelease();
-      this.branch = this.branchOptions[0];
-      this.pullRequest = this.pullRequestOptions[0];
-
-      this.targetSearch = "";
-      this.target = undefined;
-      this.file = undefined;
-    },
-    release() {
-      this.targetSearch = "";
-      this.target = undefined;
-      this.file = undefined;
-    },
-    branch() {
-      this.targetSearch = "";
-      this.target = undefined;
-      this.file = undefined;
-    },
-    pullRequest() {
-      this.targetSearch = "";
-      this.target = undefined;
-      this.file = undefined;
-    },
-    vehicle() {
-      this.targetSearch = "";
-      this.target = undefined;
-      this.file = undefined;
-    },
   },
   computed: {
     branchOptions() {
@@ -486,6 +358,44 @@ export default defineComponent({
       }
       return !!this.target;
     },
+  },
+  watch: {
+    async source() {
+      this.loading = true;
+      await this.flash.fetch(this.source);
+      this.loading = false;
+
+      this.release = this.pickRelease();
+      this.branch = this.branchOptions[0];
+      this.pullRequest = this.pullRequestOptions[0];
+
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+    release() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+    branch() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+    pullRequest() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+    vehicle() {
+      this.targetSearch = "";
+      this.target = undefined;
+      this.file = undefined;
+    },
+  },
+  async created() {
+    this.source = "release";
   },
   methods: {
     async resetToBootloader() {
@@ -642,9 +552,6 @@ export default defineComponent({
           this.loading = false;
         });
     },
-  },
-  async created() {
-    this.source = "release";
   },
 });
 </script>

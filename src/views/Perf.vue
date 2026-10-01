@@ -1,23 +1,23 @@
 <template>
-  <div class="columns is-multiline">
-    <div v-if="totalTaskPerf" class="column is-12 my-3">
+  <div class="grid grid-cols-12 gap-4">
+    <div v-if="totalTaskPerf" class="min-w-0 my-3 col-span-12 md:col-span-12">
       <RealtimePlot
         :title="'Total Task Performance'"
         :axis="Object.keys(totalTaskPerf).slice(1)"
         :input="totalTaskPerf"
-        class="image is-fullwidth is-4by3"
+        class="block w-full aspect-[4/3]"
       ></RealtimePlot>
     </div>
     <div
       v-for="(counter, index) in perf.counters"
       :key="'counter' + index"
-      class="column is-6 my-3"
+      class="min-w-0 my-3 col-span-12 md:col-span-6"
     >
       <RealtimePlot
         :title="counter.name"
         :axis="Object.keys(counter).slice(1)"
         :input="counter"
-        class="image is-fullwidth is-4by3"
+        class="block w-full aspect-[4/3]"
       ></RealtimePlot>
     </div>
   </div>

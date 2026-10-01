@@ -140,7 +140,7 @@ export const useMotorStore = defineStore("motor", {
         const rule = profile.mixer.find((r) => r.source === p.source);
         const output = profile.outputs[p.index];
         const logicalIndex = info.is_rover
-          ? rule?.output_index ?? p.index
+          ? (rule?.output_index ?? p.index)
           : p.index;
         const mappedOutput = profile.outputs[logicalIndex];
         const index =

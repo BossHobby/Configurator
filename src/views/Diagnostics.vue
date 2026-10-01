@@ -1,26 +1,20 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-12">
-      <GyroModel></GyroModel>
-    </div>
-
-    <div
+  <div class="grid gap-4 lg:grid-cols-2">
+    <GyroModel />
+    <section
       v-for="plot in plots"
       :key="plot.name"
-      class="column"
-      :class="['is-' + plot.size]"
-      style="height: 40vh"
+      :aria-label="plot.title"
+      class="h-80 min-w-0 rounded-lg border border-line bg-panel p-4"
     >
       <RealtimePlot
         :title="plot.title"
         :axis="plot.axis"
         :input="state[plot.name]"
-      >
-      </RealtimePlot>
-    </div>
+      />
+    </section>
   </div>
 </template>
-
 <script lang="ts">
 import { defineComponent } from "vue";
 import RealtimePlot from "@/components/RealtimePlot.vue";
@@ -44,7 +38,7 @@ export default defineComponent({
         {
           name: "rx_filtered",
           size: 12,
-          title: "Rx Channels",
+          title: "RX Channels",
           axis: ["Roll", "Pitch", "Yaw", "Throttle"],
         },
         {
@@ -56,13 +50,13 @@ export default defineComponent({
         {
           name: "gyro_raw",
           size: 6,
-          title: "Gyro Raw",
+          title: "Raw Gyro",
           axis: ["Roll", "Pitch", "Yaw"],
         },
         {
           name: "gyro",
           size: 6,
-          title: "Gyro Filter",
+          title: "Filtered Gyro",
           axis: ["Roll", "Pitch", "Yaw"],
         },
         {
@@ -86,19 +80,19 @@ export default defineComponent({
         {
           name: "accel_raw",
           size: 6,
-          title: "AccelRaw",
+          title: "Raw Accelerometer",
           axis: ["Roll", "Pitch", "Yaw"],
         },
         {
           name: "accel",
           size: 6,
-          title: "AccelFilter",
+          title: "Filtered Accelerometer",
           axis: ["Roll", "Pitch", "Yaw"],
         },
         {
           name: "pidoutput",
           size: 12,
-          title: "Pid Output",
+          title: "PID Output",
           axis: ["Roll", "Pitch", "Yaw"],
         },
       ],

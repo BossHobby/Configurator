@@ -1,0 +1,201 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss" source(none);
+@source "./";
+
+@theme inline {
+  --color-workspace: var(--ui-workspace);
+  --color-panel: var(--ui-panel);
+  --color-subtle: var(--ui-subtle);
+  --color-ink: var(--ui-ink);
+  --color-muted: var(--ui-muted);
+  --color-line: var(--ui-line);
+  --color-accent: var(--ui-accent);
+  --color-on-accent: var(--ui-on-accent);
+  --color-active: var(--ui-active);
+  --color-warning: var(--ui-warning);
+  --color-danger: var(--ui-danger);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+/* Keep in sync with the chart palette in ui/useChartTheme.ts, which reads
+   these tokens at runtime. */
+:root {
+  color-scheme: light;
+  --ui-workspace: #f3f4f6;
+  --ui-panel: #ffffff;
+  --ui-subtle: #f7f8f9;
+  --ui-ink: #1b1f24;
+  --ui-muted: #5b6470;
+  --ui-line: #dde1e6;
+  --ui-accent: #246b3c;
+  --ui-on-accent: #ffffff;
+  --ui-active: #eceef1;
+  --ui-warning: #805600;
+  --ui-danger: #b42332;
+  --ui-series-1: #2467a4;
+  --ui-series-2: #ad570b;
+  --ui-series-3: #246b3c;
+  --ui-series-4: #b42332;
+  --ui-series-5: #7048a8;
+  --ui-series-6: #0f7d86;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ui-workspace: #17191c;
+  --ui-panel: #202327;
+  --ui-subtle: #282c31;
+  --ui-ink: #edf0f3;
+  --ui-muted: #a5adb7;
+  --ui-line: #393f46;
+  --ui-accent: #94d86a;
+  --ui-on-accent: #15240d;
+  --ui-active: #2c3036;
+  --ui-warning: #ffd16a;
+  --ui-danger: #ff9da7;
+  --ui-series-1: #75baff;
+  --ui-series-2: #ffb66b;
+  --ui-series-3: #94d86a;
+  --ui-series-4: #ff9da7;
+  --ui-series-5: #c5a3ff;
+  --ui-series-6: #5fd4d0;
+}
+@layer base {
+  body {
+    margin: 0;
+    background: var(--ui-workspace);
+    color: var(--ui-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ui-accent);
+    outline-offset: 3px;
+  }
+  input,
+  select,
+  button {
+    font: inherit;
+  }
+  @media (pointer: coarse) {
+    button,
+    input:not([type="checkbox"]),
+    select {
+      min-height: 44px;
+    }
+    input,
+    select {
+      font-size: 16px;
+    }
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold;
+  }
+  hr {
+    @apply my-4 border-line;
+  }
+  input[type="checkbox"],
+  input[type="range"] {
+    accent-color: var(--ui-accent);
+  }
+  progress {
+    background: var(--ui-line);
+  }
+  progress::-webkit-progress-bar {
+    background: var(--ui-line);
+  }
+  progress::-webkit-progress-value {
+    background: var(--ui-accent);
+  }
+  progress::-moz-progress-bar {
+    background: var(--ui-accent);
+  }
+}
+
+/* Shared form primitives for firmware-backed configuration panels. */
+@layer components {
+  .form-input {
+    @apply min-h-9 w-full min-w-0 rounded-md border border-line bg-subtle px-3 py-2 text-sm text-ink tabular-nums disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .form-select {
+    @apply min-h-9 w-full min-w-0 appearance-none rounded-md border border-line bg-subtle py-2 pr-10 pl-3 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .form-button {
+    @apply inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-line bg-panel px-3 py-2 text-sm font-medium text-ink enabled:hover:bg-subtle disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .form-button-primary {
+    @apply border-accent bg-accent text-on-accent enabled:hover:bg-accent enabled:hover:brightness-95;
+  }
+  /* Fields stack their label above the control and flow into columns. */
+  .form-grid {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))] gap-x-5 gap-y-4;
+  }
+  .form-row {
+    @apply flex min-w-0 flex-col gap-1.5;
+  }
+  .form-label {
+    @apply flex min-w-0 items-center gap-1.5 text-xs font-medium text-muted;
+  }
+  .form-switch {
+    @apply relative inline-block h-5 w-9 shrink-0 appearance-none rounded-full border border-line bg-subtle align-middle checked:border-accent checked:bg-accent disabled:opacity-50;
+  }
+  .form-switch::before {
+    content: "";
+    @apply absolute top-0.5 left-0.5 size-3.5 rounded-full bg-muted;
+  }
+  .form-switch:checked::before {
+    @apply translate-x-4 bg-on-accent;
+  }
+  .form-switch + label {
+    @apply ml-2 align-middle text-sm;
+  }
+  .form-dismiss {
+    @apply relative inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted hover:bg-subtle;
+  }
+  .form-dismiss::before {
+    content: "×";
+    @apply text-xl leading-none;
+  }
+  .form-input[type="range"] {
+    @apply border-0 bg-transparent px-0 accent-accent;
+  }
+  /* Per-axis values (roll / pitch / yaw) and similar compact grids. */
+  .data-table {
+    @apply w-full border-collapse text-sm tabular-nums;
+  }
+  .data-table th {
+    @apply py-2 pr-3 text-left text-xs font-medium text-muted;
+  }
+  .data-table tbody th {
+    @apply font-medium text-ink;
+  }
+  .data-table td {
+    @apply py-1.5 pr-3 last:pr-0;
+  }
+  .data-table tr + tr {
+    @apply border-t border-line;
+  }
+  .data-table thead tr {
+    @apply border-b border-line;
+  }
+
+  output {
+    @apply font-medium text-accent;
+  }
+}
+/* Stacked rows outside a grid still need breathing room. */
+:where(:not(.form-grid))
+  > :is(.form-row, .form-grid)
+  + :is(.form-row, .form-grid) {
+  margin-top: 1rem;
+}

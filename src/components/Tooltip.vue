@@ -1,84 +1,78 @@
 <template>
   <span
-    ref="tooltipContainer"
-    class="tooltip"
-    :class="placmentClass"
     v-if="active"
-    @mouseenter="visbleHover = true"
-    @mouseleave="visbleHover = false"
-    @click="onClick"
+    ref="anchor"
+    class="relative inline-flex align-middle"
+    @mouseenter="hover = true"
+    @mouseleave="hover = false"
+    @focusin="focus = true"
+    @focusout="focus = false"
+    @keydown.esc="close"
   >
     <slot>
-      <span
-        class="tooltip-icon"
-        :class="{ 'has-text-danger': danger, 'has-text-grey-light': !danger }"
-        :id="'tooltip-' + entry"
+      <button
+        type="button"
+        class="inline-flex size-4 items-center justify-center rounded-full"
+        :class="danger ? 'text-danger' : 'text-muted hover:text-ink'"
+        :aria-label="danger ? 'Missing help entry' : 'Help'"
+        :aria-describedby="visible ? id : undefined"
+        :aria-expanded="visible"
+        @click.stop.prevent="pinned = !pinned"
       >
-        <font-awesome-icon
-          icon="fa-solid fa-circle-question"
-          :size="size"
-          fixed-width
-        />
-      </span>
+        <CircleHelp :size="14" :stroke-width="2" aria-hidden="true" />
+      </button>
     </slot>
 
-    <Transition name="tooltip">
-      <span
-        ref="tooltipContent"
-        class="tooltip-text has-text-centered has-text-light has-background-dark"
-        v-visible="visible"
-      >
-        <span v-if="!danger">
-          {{ tooltip.text }}
-          <div v-if="tooltip.link">
-            <a target="_blank" :href="tooltip.link">read more</a>
-          </div>
+    <Teleport to="body">
+      <Transition name="tooltip">
+        <span
+          v-if="visible"
+          :id="id"
+          ref="content"
+          role="tooltip"
+          class="tooltip-text fixed z-[1001] max-h-[calc(100dvh-24px)] overflow-y-auto rounded-md border border-line bg-panel px-3 py-2 text-xs font-medium whitespace-pre-line text-ink shadow-lg [overflow-wrap:anywhere]"
+          :style="placementStyle"
+          @mouseenter="hover = true"
+          @mouseleave="hover = false"
+        >
+          <template v-if="!danger">
+            {{ tooltip.text }}
+            <a
+              v-if="tooltip.link"
+              class="mt-1 block text-accent underline"
+              target="_blank"
+              rel="noreferrer"
+              :href="tooltip.link"
+              >Read more</a
+            >
+          </template>
+          <template v-else>Missing tooltip entry {{ entry }}</template>
         </span>
-        <span v-else> Missing tooltip entry {{ entry }} </span>
-      </span>
-    </Transition>
+      </Transition>
+    </Teleport>
   </span>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { CircleHelp } from "@lucide/vue";
 import tooltipEntries from "@/assets/tooltips.json";
 
-const visible = {
-  updated(el, { value, oldValue }, { transition }) {
-    if (value === oldValue) {
-      return;
-    }
-
-    if (value) {
-      transition.beforeEnter(el);
-      el.style.visibility = "visible";
-      transition.enter(el);
-    } else {
-      transition.leave(el, () => {
-        el.style.visibility = "hidden";
-      });
-    }
-  },
-};
+let nextId = 0;
 
 export default defineComponent({
+  components: { CircleHelp },
   props: {
-    text: String,
-    entry: String,
-    size: String,
-  },
-  directives: {
-    visible,
-  },
-  setup() {
-    return {};
+    text: { type: String, default: undefined },
+    entry: { type: String, default: undefined },
   },
   data() {
     return {
-      placmentClass: {},
-      visbleClick: false,
-      visbleHover: false,
+      id: `tooltip-${nextId++}`,
+      placementStyle: {},
+      hover: false,
+      focus: false,
+      pinned: false,
     };
   },
   computed: {
@@ -92,7 +86,7 @@ export default defineComponent({
       return !this.tooltip || !this.tooltip.text;
     },
     visible() {
-      return this.visbleClick || this.visbleHover;
+      return this.pinned || this.hover || this.focus;
     },
     active() {
       return (
@@ -100,133 +94,67 @@ export default defineComponent({
       );
     },
   },
-  methods: {
-    onClick() {
-      if (this.$slots.default) {
-        return;
-      }
-      this.visbleClick = !this.visbleClick;
+  watch: {
+    visible(value) {
+      if (value) this.$nextTick(this.updatePosition);
     },
   },
   mounted() {
-    if (!this.$refs.tooltipContainer || !this.$refs.tooltipContent) return;
-
-    const { offsetTop, offsetLeft } = this.$refs
-      .tooltipContainer as HTMLElement;
-    const { clientHeight, clientWidth } = this.$refs
-      .tooltipContent as HTMLElement;
-
-    const top = offsetTop >= clientHeight;
-    const left = window.innerWidth - offsetLeft < clientWidth;
-    const right = offsetLeft < clientHeight;
-    this.placmentClass = {
-      "tooltip-bottom": !top,
-      "tooltip-top": top,
-      "tooltip-left": left,
-      "tooltip-right": right,
-      "tooltip-center": !left && !right,
-    };
+    window.addEventListener("resize", this.updatePosition);
+    window.addEventListener("scroll", this.updatePosition, true);
+    document.addEventListener("pointerdown", this.onOutside, true);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updatePosition);
+    window.removeEventListener("scroll", this.updatePosition, true);
+    document.removeEventListener("pointerdown", this.onOutside, true);
+  },
+  methods: {
+    close() {
+      this.pinned = this.hover = this.focus = false;
+    },
+    onOutside(event: PointerEvent) {
+      if (!this.pinned) return;
+      const target = event.target as Node;
+      const anchor = this.$refs.anchor as HTMLElement | undefined;
+      const content = this.$refs.content as HTMLElement | undefined;
+      if (anchor?.contains(target) || content?.contains(target)) return;
+      this.pinned = false;
+    },
+    updatePosition() {
+      const anchor = this.$refs.anchor as HTMLElement;
+      const content = this.$refs.content as HTMLElement;
+      if (!this.visible || !anchor || !content) return;
+      const rect = anchor.getBoundingClientRect();
+      const margin = 12;
+      const width = Math.min(280, window.innerWidth - margin * 2);
+      const left = Math.max(
+        margin,
+        Math.min(
+          rect.left + (rect.width - width) / 2,
+          window.innerWidth - width - margin,
+        ),
+      );
+      const height = content.offsetHeight;
+      const top =
+        rect.top >= height + margin + 8
+          ? rect.top - height - 8
+          : Math.min(rect.bottom + 8, window.innerHeight - height - margin);
+      this.placementStyle = {
+        width: `${width}px`,
+        left: `${left}px`,
+        top: `${Math.max(margin, top)}px`,
+      };
+    },
   },
 });
 </script>
 
-<style lang="scss">
-@use "sass:math";
-
-.tooltip {
-  position: relative;
-  display: inline-block;
-
-  .tooltip-icon {
-    cursor: pointer;
-  }
-
-  .tooltip-text {
-    position: absolute;
-    display: inline-block;
-    white-space: pre-line;
-    min-width: 160px;
-
-    visibility: hidden;
-
-    font-size: 0.85em;
-    font-weight: 700;
-    text-align: center;
-    padding: 6px;
-    border-radius: 6px;
-    z-index: 1001;
-
-    &::after {
-      content: " ";
-      position: absolute;
-
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-    }
-  }
-
-  &.tooltip-top {
-    .tooltip-text {
-      bottom: 100%;
-      left: 54%;
-
-      &::after {
-        top: 100%;
-        left: 50%;
-        border-color: hsl(0deg, 0%, 21%) transparent transparent transparent;
-      }
-    }
-  }
-
-  &.tooltip-left {
-    .tooltip-text {
-      transform: translateX(-100%);
-    }
-  }
-
-  &.tooltip-center {
-    .tooltip-text {
-      transform: translateX(-50%);
-    }
-  }
-
-  &.tooltip-right {
-    .tooltip-text {
-      transform: translateX(0%);
-    }
-  }
-
-  &.tooltip-bottom {
-    .tooltip-text {
-      top: 100%;
-      left: 54%;
-
-      &::after {
-        bottom: 100%;
-        left: 50%;
-        border-color: transparent transparent hsl(0deg, 0%, 21%) transparent;
-      }
-    }
-  }
-}
-
-.tooltip-enter-active {
-  transition:
-    transform 0.4s ease-out,
-    opacity 0.3s ease-out;
-}
-
+<style>
+.tooltip-enter-active,
 .tooltip-leave-active {
-  transition:
-    transform 0.35s ease-in,
-    opacity 0.28s ease-out;
+  transition: opacity 0.15s ease;
 }
-
-.tooltip-enter-from {
-  transition: none;
-}
-
 .tooltip-enter-from,
 .tooltip-leave-to {
   opacity: 0;

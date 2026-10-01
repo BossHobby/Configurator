@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.10.0
+
+changes since 0.9.2:
+
+- refreshed interface built on Tailwind with light, dark and system appearance
+- forms show labels above fields and flow into columns; per-axis values are shown as tables
+- rate and PID profile selection moved to the Control page header
+- welcome screen combines connecting and firmware flashing
+- motor test shows motors in a 2×2 layout with a master throttle
+- ask to apply or discard unsaved changes before reboot, disconnect or closing the app
+- keyboard-accessible help tooltips; restore missing tooltips for serial ports, voltage, gyro orientation and profiles
+- navigation settings panel for firmware using profile 0.3.0 and newer
+
 ## v0.9.2
 
 changes since 0.9.1:

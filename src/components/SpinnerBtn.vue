@@ -1,19 +1,35 @@
 <template>
-  <button
-    class="button"
-    :class="{ 'is-loading': loading }"
+  <UiButton
     v-bind="filteredAttrs"
+    :variant="variant"
+    :type="type"
+    :busy="loading"
+    :disabled="disabled"
     @click="clickHandler"
   >
     <slot></slot>
-  </button>
+  </UiButton>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from "vue";
+import UiButton from "./ui/Button.vue";
 
+/** A Button that shows a busy state until its (async) click handler settles. */
 export default defineComponent({
+  components: { UiButton },
   inheritAttrs: false,
+  props: {
+    variant: {
+      type: String as PropType<"primary" | "secondary">,
+      default: "secondary",
+    },
+    type: {
+      type: String as PropType<"button" | "submit" | "reset">,
+      default: "button",
+    },
+    disabled: { type: Boolean, default: false },
+  },
   data() {
     return {
       loading: false,
@@ -23,11 +39,9 @@ export default defineComponent({
     filteredAttrs() {
       const onRE = /^on[^a-z]/;
       const attributes = {};
-      const { $attrs } = this;
-
-      for (const property in $attrs) {
+      for (const property in this.$attrs) {
         if (!onRE.test(property)) {
-          attributes[property] = $attrs[property];
+          attributes[property] = this.$attrs[property];
         }
       }
       return attributes;
@@ -36,14 +50,12 @@ export default defineComponent({
   methods: {
     clickHandler(event) {
       const click = this.$attrs.onClick as any;
-
+      if (!click) return;
       this.loading = true;
       Promise.resolve()
-        .then(() => (click ? click(event) : null))
+        .then(() => click(event))
         .finally(() => (this.loading = false));
     },
   },
 });
 </script>
-
-<style></style>

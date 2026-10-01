@@ -1,8 +1,11 @@
-const { globSync } = require("glob");
-const fs = require("fs");
+import { globSync } from "glob";
+import fs from "fs";
 
-const regex = /<tooltip.*?entry="([\w_\-.]+)".*>/gm;
-const whitelist = ["channel."];
+// Static tooltip references: <tooltip entry="…"> and the help="…" prop on
+// Panel / ui/Select / ui/Toggle.
+const regex = /(?:<tooltip[^>]*?\sentry|\shelp)="([\w_\-.]+)"/gm;
+// Prefixes whose entries are built at runtime (e.g. 'voltage.' + field.key).
+const whitelist = ["channel.", "voltage."];
 const tooltips = {};
 
 const files = globSync("src/**/*.vue");

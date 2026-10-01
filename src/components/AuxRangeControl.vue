@@ -1,6 +1,6 @@
 <template>
   <div class="aux-range-control">
-    <div class="aux-range-values is-size-7 has-text-grey">
+    <div class="aux-range-values text-sm text-ink">
       <span>{{ minPercent }}%</span>
       <span v-if="currentPercent !== null">Current {{ currentPercent }}%</span>
       <span>{{ maxPercent }}%</span>
@@ -18,7 +18,7 @@
       <div
         v-if="currentPercent !== null"
         class="aux-range-current"
-        :class="{ 'is-active': currentInRange }"
+        :class="{ 'range-active': currentInRange }"
         :style="{ left: `${currentPercent}%` }"
       ></div>
 
@@ -27,6 +27,7 @@
         type="range"
         min="0"
         max="100"
+        :aria-label="label + ' minimum'"
         :value="minPercent"
         @input="setMin($event)"
       />
@@ -35,12 +36,13 @@
         type="range"
         min="0"
         max="100"
+        :aria-label="label + ' maximum'"
         :value="maxPercent"
         @input="setMax($event)"
       />
     </div>
 
-    <div class="aux-range-ticks is-size-7">
+    <div class="aux-range-ticks text-xs text-muted">
       <span
         v-for="tick in ticks"
         :key="tick"
@@ -59,6 +61,7 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "AuxRangeControl",
   props: {
+    label: { type: String, default: "Activation range" },
     min: { type: Number, required: true },
     max: { type: Number, required: true },
     current: { type: Number, default: null },
@@ -178,7 +181,7 @@ export default defineComponent({
   top: 0.75rem;
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--bulma-border, #dbdbdb);
+  background: var(--ui-line);
 }
 
 .aux-range-fill {
@@ -186,7 +189,7 @@ export default defineComponent({
   top: 0.75rem;
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--bulma-primary, #00d1b2);
+  background: var(--ui-accent);
   cursor: grab;
   z-index: 1;
 }
@@ -202,13 +205,13 @@ export default defineComponent({
   height: 1.18rem;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: var(--bulma-danger, #ff3860);
+  background: var(--ui-danger);
   box-shadow: 0 0 0 2px white;
   z-index: 2;
 }
 
-.aux-range-current.is-active {
-  background: var(--bulma-success, #48c78e);
+.aux-range-current.range-active {
+  background: var(--ui-accent);
 }
 
 .aux-range-input {
@@ -239,7 +242,7 @@ export default defineComponent({
   width: 1rem;
   height: 1rem;
   margin-top: 0.36rem;
-  border: 2px solid var(--bulma-primary, #00d1b2);
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
   background: white;
   cursor: grab;
@@ -249,7 +252,7 @@ export default defineComponent({
   pointer-events: auto;
   width: 1rem;
   height: 1rem;
-  border: 2px solid var(--bulma-primary, #00d1b2);
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
   background: white;
   cursor: grab;
@@ -259,7 +262,7 @@ export default defineComponent({
   position: relative;
   height: 1rem;
   margin-top: 0.1rem;
-  color: var(--bulma-text, currentColor);
+  color: var(--ui-ink);
 }
 
 .aux-range-tick {
@@ -274,6 +277,6 @@ export default defineComponent({
   left: 50%;
   top: -0.45rem;
   height: 0.3rem;
-  border-left: 1px solid var(--bulma-border, #dbdbdb);
+  border-left: 1px solid var(--ui-line);
 }
 </style>

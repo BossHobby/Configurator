@@ -1,77 +1,39 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Profile</p>
-    </header>
-    <div class="card-content">
-      <div class="content column-narrow field-is-2">
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label" for="name">Name</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input class="input" type="text" v-model="profile.meta.name" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Last Modified</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input is-static"
-                  :value="profile.modified"
-                  readonly
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label">
-            <label class="label">Version</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control is-expanded">
-                <a :href="versionLink" target="_blank">
-                  {{ info.git_version }}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+  <Panel title="Craft Profile" class="flex flex-col">
+    <label class="block text-xs text-muted"
+      >Craft name<input
+        v-model="profile.meta.name"
+        class="mt-1.5 min-h-9 w-full rounded-md border border-line bg-subtle px-3 py-2 text-sm text-ink"
+    /></label>
+    <dl class="mb-5 mt-4 space-y-3 text-sm">
+      <div class="flex justify-between gap-4">
+        <dt class="text-muted">Last modified</dt>
+        <dd>{{ profile.modified }}</dd>
       </div>
-    </div>
-    <footer class="card-footer">
-      <spinner-btn class="card-footer-item" @click="downloadProfile">
-        Save Profile
-      </spinner-btn>
-      <spinner-btn
-        class="card-footer-item"
-        @click="uploadProfile"
-        :disabled="info.is_read_only"
+      <div class="flex justify-between gap-4">
+        <dt class="text-muted">Firmware</dt>
+        <dd>
+          <a :href="versionLink" target="_blank" class="text-accent">{{
+            info.git_version
+          }}</a>
+        </dd>
+      </div>
+    </dl>
+    <div class="mt-auto flex flex-wrap gap-2 border-t border-line pt-4">
+      <spinner-btn @click="downloadProfile">Save profile</spinner-btn>
+      <spinner-btn :disabled="info.is_read_only" @click="uploadProfile"
+        >Load profile</spinner-btn
       >
-        Load Profile
-      </spinner-btn>
-      <spinner-btn class="card-footer-item is-warning" @click="profile.reset">
-        Reset Profile
-      </spinner-btn>
-    </footer>
-    <input accept=".yaml" type="file" ref="file" style="display: none" />
-    <a ref="downloadAnchor" target="_blank"></a>
-  </div>
+      <spinner-btn class="ml-auto" @click="profile.reset"
+        >Reset profile</spinner-btn
+      >
+    </div>
+    <input ref="file" accept=".yaml" type="file" hidden />
+    <a ref="downloadAnchor" target="_blank" hidden></a>
+  </Panel>
 </template>
-
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import YAML from "yaml";
 import { serial } from "../store/serial/serial";
@@ -103,7 +65,8 @@ function encodeProfileForYaml(profile: any) {
 }
 
 export default defineComponent({
-  name: "ProlfileMetadata",
+  name: "ProfileMetadata",
+  components: { Panel },
   setup() {
     return {
       state: useStateStore(),

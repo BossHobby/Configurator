@@ -1,250 +1,186 @@
 <template>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">VTX</p>
-      <div class="card-header-icon">
-        <span class="tag" :class="vtxStatusClass">{{ vtxStatusText }}</span>
-      </div>
-    </header>
-
-    <div class="card-content">
-      <div class="columns">
-        <div class="column field-is-3">
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Protocol</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <input-select
-                    id="vtx-protocol"
-                    v-model.number="desiredVtx.protocol"
-                    :options="vtxProtocolOptions"
-                  ></input-select>
-                  <p v-if="desiredVtx.protocol == 0" class="help is-warning">
-                    Please select a VTX protocol
-                  </p>
-                </div>
-              </div>
+  <Panel title="VTX"
+    ><template #actions
+      ><div class="shrink-0 text-muted">
+        <span
+          class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs"
+          :class="vtxStatusClass"
+          >{{ vtxStatusText }}</span
+        >
+      </div></template
+    >
+    <div class="grid grid-cols-12 gap-4">
+      <div class="min-w-0 col-span-12 md:col-span-6">
+        <div class="form-grid grid-cols-2">
+          <div class="form-row">
+            <label for="vtx-protocol" class="form-label"
+              >Protocol <tooltip entry="vtx.protocol"
+            /></label>
+            <div class="min-w-0 flex-1">
+              <UiSelect
+                id="vtx-protocol"
+                v-model.number="desiredVtx.protocol"
+                :options="vtxProtocolOptions"
+              ></UiSelect>
+              <p v-if="desiredVtx.protocol == 0" class="text-xs text-warning">
+                Please select a VTX protocol
+              </p>
             </div>
           </div>
 
-          <div class="field is-horizontal">
-            <div class="field-label">
-              <label class="label">Detected</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <div class="control is-expanded">
-                  <template v-if="vtx.status.protocol">
-                    <span class="tag is-medium is-success">
-                      {{ protocolNames[vtx.status.protocol] }}
-                    </span>
-                    <span v-if="detectedFrequency">
-                      <span class="tag is-medium is-info ml-2">
-                        {{ detectedFrequency }} MHz
-                      </span>
-                    </span>
-                  </template>
-                  <template v-else>
-                    <span class="tag is-medium is-warning">Not detected</span>
-                  </template>
-                </div>
-              </div>
+          <div class="form-row">
+            <span class="form-label"
+              >Detected <tooltip entry="vtx.detected"
+            /></span>
+            <div class="min-w-0 flex-1">
+              <template v-if="vtx.status.protocol">
+                <span
+                  class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-accent"
+                >
+                  {{ protocolNames[vtx.status.protocol] }}
+                </span>
+                <span v-if="detectedFrequency">
+                  <span
+                    class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-accent ml-2"
+                  >
+                    {{ detectedFrequency }} MHz
+                  </span>
+                </span>
+              </template>
+              <template v-else>
+                <span
+                  class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs text-warning"
+                  >Not detected</span
+                >
+              </template>
             </div>
           </div>
-
-          <template v-if="desiredVtx.protocol">
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Band</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="vtx-band"
-                      v-model.number="desiredVtx.band"
-                      :options="vtxBandOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Channel</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="vtx-channel"
-                      v-model.number="desiredVtx.channel"
-                      :options="vtxChannelOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="desiredVtx.pit_mode != 2" class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Pit Mode</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="vtx-pit-mode"
-                      v-model.number="desiredVtx.pit_mode"
-                      :options="vtxPitModeOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="field is-horizontal">
-              <div class="field-label">
-                <label class="label">Power</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <div class="control is-expanded">
-                    <input-select
-                      id="vtx-power-level"
-                      v-model.number="desiredVtx.power_level"
-                      :options="vtxPowerLevelOptions"
-                    ></input-select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
         </div>
 
-        <div class="column">
-          <div v-if="desiredVtx.protocol && desiredVtx.power_table">
-            <template v-if="desiredPowerTableRows.length">
-              <div class="columns">
-                <div class="column is-2"></div>
-                <div class="column is-5">
-                  <div class="columns is-mobile">
-                    <div class="column">
-                      <h6>Label</h6>
-                    </div>
-                    <div class="column">
-                      <h6>Detected</h6>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-5">
-                  <div class="columns is-mobile">
-                    <div class="column">
-                      <h6>Value</h6>
-                    </div>
-                    <div class="column">
-                      <h6>Detected</h6>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                v-for="index in desiredPowerTableRows"
-                :key="index"
-                class="columns is-vcentered"
-              >
-                <div class="column is-2">
-                  <label class="label">Level {{ index + 1 }}</label>
-                </div>
-                <div class="column is-5">
-                  <div class="field has-addons">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'power-level-label-' + index"
-                        v-model.text="desiredVtx.power_table.labels[index]"
-                        class="input"
-                        type="text"
-                        maxlength="3"
-                        @focus="ensureDesiredPowerTable(index)"
-                      />
-                    </div>
-                    <div class="control is-expanded">
-                      <input
-                        :id="'runtime-power-level-label-' + index"
-                        class="input"
-                        type="text"
-                        :value="runtimePowerLabel(index)"
-                        disabled
-                        readonly
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-5">
-                  <div class="field has-addons">
-                    <div class="control is-expanded">
-                      <input
-                        :id="'power-level-value-' + index"
-                        v-model.number="desiredVtx.power_table.values[index]"
-                        class="input"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        :placeholder="detectedPowerValue(index)"
-                        @focus="ensureDesiredPowerTable(index)"
-                      />
-                    </div>
-                    <div class="control is-expanded">
-                      <input
-                        :id="'runtime-power-level-value-' + index"
-                        class="input"
-                        type="number"
-                        :value="detectedPowerValue(index)"
-                        disabled
-                        readonly
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <div
-              v-if="showLoadDetectedPowerTable"
-              class="field is-grouped is-justify-content-flex-end"
-            >
-              <div class="control">
-                <button
-                  class="button is-small is-info is-light"
-                  type="button"
-                  @click="loadDetectedPowerTable()"
-                >
-                  Load Detected Power Levels
-                </button>
-              </div>
+        <template v-if="desiredVtx.protocol">
+          <div class="form-grid grid-cols-2">
+            <div class="form-row">
+              <label for="vtx-band" class="form-label"
+                >Band <tooltip entry="vtx.band"
+              /></label>
+              <UiSelect
+                id="vtx-band"
+                v-model.number="desiredVtx.band"
+                :options="vtxBandOptions"
+              ></UiSelect>
             </div>
+
+            <div class="form-row">
+              <label for="vtx-channel" class="form-label"
+                >Channel <tooltip entry="vtx.channel"
+              /></label>
+              <UiSelect
+                id="vtx-channel"
+                v-model.number="desiredVtx.channel"
+                :options="vtxChannelOptions"
+              ></UiSelect>
+            </div>
+
+            <div v-if="desiredVtx.pit_mode != 2" class="form-row">
+              <label for="vtx-pit-mode" class="form-label"
+                >Pit Mode <tooltip entry="vtx.pit_mode"
+              /></label>
+              <UiSelect
+                id="vtx-pit-mode"
+                v-model.number="desiredVtx.pit_mode"
+                :options="vtxPitModeOptions"
+              ></UiSelect>
+            </div>
+
+            <div class="form-row">
+              <label for="vtx-power-level" class="form-label"
+                >Power <tooltip entry="vtx.power_level"
+              /></label>
+              <UiSelect
+                id="vtx-power-level"
+                v-model.number="desiredVtx.power_level"
+                :options="vtxPowerLevelOptions"
+              ></UiSelect>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="min-w-0 col-span-12 md:col-span-6 md:pl-4">
+        <div v-if="desiredVtx.protocol && desiredVtx.power_table">
+          <template v-if="desiredPowerTableRows.length">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Level</th>
+                  <th scope="col">Label</th>
+                  <th scope="col">Detected</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Detected</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="index in desiredPowerTableRows" :key="index">
+                  <th scope="row" class="w-14">{{ index + 1 }}</th>
+                  <td>
+                    <input
+                      v-model.text="desiredVtx.power_table.labels[index]"
+                      :aria-label="`Level ${index + 1} label`"
+                      class="form-input"
+                      type="text"
+                      maxlength="3"
+                      @focus="ensureDesiredPowerTable(index)"
+                    />
+                  </td>
+                  <td class="text-muted">
+                    {{ runtimePowerLabel(index) || "–" }}
+                  </td>
+                  <td>
+                    <input
+                      v-model.number="desiredVtx.power_table.values[index]"
+                      :aria-label="`Level ${index + 1} value`"
+                      class="form-input"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      :placeholder="detectedPowerValue(index)"
+                      @focus="ensureDesiredPowerTable(index)"
+                    />
+                  </td>
+                  <td class="text-muted">
+                    {{ detectedPowerValue(index) ?? "–" }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+
+          <div v-if="showLoadDetectedPowerTable" class="mt-3 flex justify-end">
+            <button
+              class="form-button"
+              type="button"
+              @click="loadDetectedPowerTable()"
+            >
+              Load detected power levels
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <footer v-if="isLegacyVtx" class="card-footer">
-      <span class="card-footer-item"></span>
-      <spinner-btn
-        class="card-footer-item is-primary"
-        @click="applyVtxSettings()"
-      >
+    <footer
+      v-if="isLegacyVtx"
+      class="mt-5 flex flex-wrap items-center justify-end gap-2"
+    >
+      <spinner-btn variant="primary" @click="applyVtxSettings()">
         Apply
       </spinner-btn>
-    </footer>
-  </div>
+    </footer></Panel
+  >
 </template>
 
 <script lang="ts">
+import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import { useVTXStore } from "@/store/vtx";
 import { useInfoStore } from "@/store/info";
@@ -252,6 +188,7 @@ import { useProfileStore } from "@/store/profile";
 
 export default defineComponent({
   name: "Vtx",
+  components: { Panel },
   setup() {
     return {
       vtx: useVTXStore(),
@@ -285,7 +222,7 @@ export default defineComponent({
       return this.vtx.status.protocol ? "Detected" : "Not detected";
     },
     vtxStatusClass() {
-      return this.vtx.status.protocol ? "is-success" : "is-warning";
+      return this.vtx.status.protocol ? "text-accent" : "text-warning";
     },
     displayValueEdit() {
       return this.desiredVtx?.protocol == 1;
