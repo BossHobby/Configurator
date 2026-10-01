@@ -7,6 +7,26 @@ import {
 
 const BLACKBOX_FRAME_TYPE_BIT = 0x80000000; // Bit 31
 
+// Firmware stores these as int16 and sends wrapping int16 deltas, e.g. a
+// motor output leaving the -32768 "off" value.
+const INT16_DELTA_FIELDS = new Set<BlackboxField>([
+  BlackboxField.PID_P_TERM,
+  BlackboxField.PID_I_TERM,
+  BlackboxField.PID_D_TERM,
+  BlackboxField.RX,
+  BlackboxField.SETPOINT,
+  BlackboxField.ACCEL_RAW,
+  BlackboxField.ACCEL_FILTER,
+  BlackboxField.GYRO_RAW,
+  BlackboxField.GYRO_FILTER,
+  BlackboxField.OUTPUT,
+  BlackboxField.DEBUG,
+]);
+
+function toInt16(value: number) {
+  return (value << 16) >> 16;
+}
+
 export class CompressedBlackboxDecoder {
   public readonly useCompression: boolean;
   private previousFrame: any[] | null = null;
@@ -161,6 +181,7 @@ export class CompressedBlackboxDecoder {
           outputFrame[fieldIndex] = this.addFieldValue(
             this.previousFrame[fieldIndex],
             value,
+            INT16_DELTA_FIELDS.has(field),
           );
         } else {
           // Use value directly (I-frame or first occurrence)
@@ -177,17 +198,18 @@ export class CompressedBlackboxDecoder {
     return outputFrame;
   }
 
-  private addFieldValue(previous: any, delta: any): any {
+  private addFieldValue(previous: any, delta: any, int16: boolean): any {
+    const add = (a: number, b: number) => (int16 ? toInt16(a + b) : a + b);
     if (Array.isArray(previous) && Array.isArray(delta)) {
       // Handle arrays (vectors and debug data)
       const result: any[] = [];
       for (let i = 0; i < previous.length; i++) {
-        result.push((previous[i] || 0) + (delta[i] || 0));
+        result.push(add(previous[i] || 0, delta[i] || 0));
       }
       return result;
     } else if (typeof previous === "number" && typeof delta === "number") {
       // Handle scalar values
-      return previous + delta;
+      return add(previous, delta);
     } else {
       // Fallback: just return the delta
       return delta;
