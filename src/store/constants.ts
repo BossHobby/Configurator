@@ -323,6 +323,7 @@ export enum BlackboxDebugFlag {
   BBOX_DEBUG_DYN_NOTCH = 0x1 << 0,
   BBOX_DEBUG_ROVER = 0x1 << 1,
   BBOX_DEBUG_NAVIGATION = 0x1 << 2,
+  BBOX_DEBUG_WING = 0x1 << 3,
 }
 
 export const FailloopMessages = {
