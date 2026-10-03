@@ -122,7 +122,7 @@ export class Serial {
   private writer?: WritableStreamDefaultWriter<any>;
   private reader?: ReadableStreamDefaultReader<QuicPacket>;
 
-  private transfromClosed?: Promise<void>;
+  private transformClosed?: Promise<void>;
   private errorCallback?: any;
   private closing?: Promise<void>;
 
@@ -152,16 +152,25 @@ export class Serial {
   }
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
+    await this.closing;
+    if (this.port || this.ws) throw new Error("already connected");
+
     this.port = port;
     if (!this.port) {
       return;
     }
 
-    await this.port.open({
-      baudRate: settings.serial.baudRate,
-      bufferSize: settings.serial.bufferSize,
-      flowControl: "none",
-    });
+    try {
+      await this.port.open({
+        baudRate: settings.serial.baudRate,
+        bufferSize: settings.serial.bufferSize,
+        flowControl: "none",
+      });
+    } catch (err) {
+      // An unopened port cannot be closed and must not block reconnects.
+      if (this.port === port) this.port = undefined;
+      throw err;
+    }
 
     this.errorCallback = errorCallback;
     this.waitingCommands = Promise.resolve({} as any);
@@ -169,7 +178,11 @@ export class Serial {
     this.writer = await this.port.writable.getWriter();
 
     this.transform = new QuicStream();
-    this.transfromClosed = this.port.readable.pipeTo(this.transform.writable);
+    this.transformClosed = this.port.readable
+      .pipeTo(this.transform.writable)
+      .catch((err) => {
+        Log.trace("serial", "read stream closed", err);
+      });
     this.reader = this.transform.readable.getReader();
 
     while (true) {
@@ -185,14 +198,18 @@ export class Serial {
     host: string,
     errorCallback: any = console.warn,
   ) {
+    await this.closing;
+    if (this.port || this.ws) throw new Error("already connected");
+
     const transform = new QuicStream();
+    this.transform = transform;
     const writer = transform.writable.getWriter();
     this.reader = transform.readable.getReader();
 
     this.errorCallback = errorCallback;
     this.waitingCommands = Promise.resolve({} as any);
 
-    this.transfromClosed = Promise.resolve({} as any);
+    this.transformClosed = Promise.resolve({} as any);
 
     return new Promise<void>((resolve, reject) => {
       this.ws = new WebSocket("wss://" + host + "/ws");
@@ -219,8 +236,11 @@ export class Serial {
   }
 
   public async softReboot() {
-    await this.write(stringToUint8Array(SOFT_REBOOT_MAGIC));
-    await this.close();
+    try {
+      await this.write(stringToUint8Array(SOFT_REBOOT_MAGIC));
+    } finally {
+      await this.close();
+    }
   }
 
   public async hardReboot() {
@@ -231,17 +251,19 @@ export class Serial {
     const port = await WebSerial.requestPort({
       filters: SERIAL_FILTERS,
     });
-    await this._connectPort(port);
-    const target = await this.get(QuicVal.Target, 500)
-      .then((p) => p.name)
-      .catch(() => undefined);
-    await asyncDelay(100);
-    await this.write(stringToUint8Array(HARD_REBOOT_MAGIC));
-    await asyncDelay(100);
-    await this.write(stringToUint8Array("\r\nbl\r\n"));
-    await this.close();
-
-    return target;
+    try {
+      await this._connectPort(port);
+      const target = await this.get(QuicVal.Target, 500)
+        .then((p) => p.name)
+        .catch(() => undefined);
+      await asyncDelay(100);
+      await this.write(stringToUint8Array(HARD_REBOOT_MAGIC));
+      await asyncDelay(100);
+      await this.write(stringToUint8Array("\r\nbl\r\n"));
+      return target;
+    } finally {
+      await this.close();
+    }
   }
 
   public async get(id: QuicVal, timeout?: number): Promise<any> {
@@ -299,39 +321,35 @@ export class Serial {
   }
 
   private async closePort() {
-    try {
-      const errors = (
-        await Promise.all(
-          [
-            () => this.reader?.cancel().catch((e) => e),
-            () => (this.transfromClosed || Promise.resolve()).catch((e) => e),
-            () => Promise.resolve(this.reader?.releaseLock()).catch((e) => e),
-            () => this.writer?.close().catch((e) => e),
-            () => Promise.resolve(this.writer?.releaseLock()).catch((e) => e),
-          ].map((p) => {
-            try {
-              return p();
-            } catch (err) {
-              return err;
-            }
-          }),
-        )
-      ).filter((e) => e);
+    // Detach the streams before cancellation wakes pending reads or timers.
+    const reader = this.reader;
+    const writer = this.writer;
+    this.reader = undefined;
+    this.writer = undefined;
+    this.errorCallback = undefined;
 
-      if (errors.length) console.warn(errors);
+    const cleanup = async (operation: () => unknown) => {
+      try {
+        await operation();
+      } catch (err) {
+        console.warn(err);
+      }
+    };
 
-      await this.port?.close().catch((e) => e);
-      this.ws?.close();
-    } catch (err) {
-      console.warn(err);
-    } finally {
-      this.reader = undefined;
-      this.writer = undefined;
+    await cleanup(() => reader?.cancel());
+    await cleanup(() => this.transformClosed);
+    await cleanup(() => reader?.releaseLock());
+    await cleanup(() => writer?.close());
+    await cleanup(() => writer?.releaseLock());
+    this.transformClosed = undefined;
+    this.transform = undefined;
 
-      this.transfromClosed = undefined;
-      this.transform = undefined;
-
-      this.port = undefined;
+    // Retain the port if closing fails so cleanup can be retried.
+    await this.port?.close();
+    this.port = undefined;
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.close();
       this.ws = undefined;
     }
   }
@@ -429,14 +447,17 @@ export class Serial {
   }
 
   private async readTimeout(timeout: number | undefined) {
+    const reader = this.reader;
     const timer = timeout
       ? setTimeout(() => {
-          this.reader?.releaseLock();
-          this.reader = this.transform?.readable.getReader();
+          if (reader && this.reader === reader) {
+            reader.releaseLock();
+            this.reader = this.transform?.readable.getReader();
+          }
         }, timeout)
       : undefined;
     try {
-      const result = await this.reader?.read().then((r) => r.value);
+      const result = await reader?.read().then((r) => r.value);
       return result;
     } catch (e) {
       if (e instanceof TypeError) {
