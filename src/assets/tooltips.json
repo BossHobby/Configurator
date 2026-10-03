@@ -35,6 +35,15 @@
   "channel.aux_rate_profile": {
     "text": "Switch between rate profile 1 and 2 in flight"
   },
+  "channel.aux_rate_assist": {
+    "text": "Enable gyro-assisted rover steering. The steering stick commands a yaw rate, and the steering PID adjusts the output to follow it."
+  },
+  "channel.aux_rate_throttle": {
+    "text": "Enable gyro-assisted rover steering with automatic throttle adjustments to help match the requested yaw rate. Takes priority over Rate Assist when both switches are on."
+  },
+  "channel.aux_return_to_home": {
+    "text": "Request GPS-assisted return to the recorded home position. Requires firmware support, a valid home position and usable navigation data."
+  },
   "channel.aux_rssi": {
     "text": "For fcs that can send rssi on a channel"
   },
