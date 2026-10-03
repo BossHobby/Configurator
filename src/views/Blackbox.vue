@@ -65,7 +65,11 @@
       <div
         v-for="(file, index) in blackbox.list.files"
         :key="index"
-        class="flex flex-wrap items-center gap-2 border-b border-line py-3"
+        class="flex flex-wrap items-center gap-2 border-line py-3"
+        :class="{
+          'border-b':
+            index < blackbox.list.files.length - 1 || blackbox.progress,
+        }"
       >
         <span class="mr-auto text-sm"
           >Flight {{ index + 1 }} · {{ humanFileSize(file.size) }}</span
