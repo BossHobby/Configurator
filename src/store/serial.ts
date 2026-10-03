@@ -76,7 +76,7 @@ export const useSerialStore = defineStore("serial", {
       }
     },
     async soft_reboot() {
-      await this.disconnect();
+      this.reset_connection();
 
       this.is_connecting = true;
       await serial.softReboot();
@@ -98,8 +98,7 @@ export const useSerialStore = defineStore("serial", {
       await this.connect(
         serial.connectFirstPort((err) => {
           Log.error("serial", err);
-          this.disconnect();
-          return serial.close();
+          return this.disconnect();
         }),
       );
     },
@@ -115,8 +114,7 @@ export const useSerialStore = defineStore("serial", {
           half_duplex ? 1 : 0,
           stop_bits,
         )
-        .then(() => serial.close())
-        .then(() => this.toggle_connection())
+        .then(() => this.disconnect())
         .then(() => {
           root.append_alert({
             type: "success",
@@ -136,8 +134,7 @@ export const useSerialStore = defineStore("serial", {
 
       return serial
         .command(QuicCmd.Motor, QuicMotor.Serial, index, baudrate)
-        .then(() => serial.close())
-        .then(() => this.toggle_connection())
+        .then(() => this.disconnect())
         .then(() => {
           root.append_alert({
             type: "success",
@@ -173,9 +170,7 @@ export const useSerialStore = defineStore("serial", {
           return undefined;
         });
     },
-    disconnect() {
-      if (!this.is_connected) return;
-
+    reset_connection() {
       this.is_connected = false;
       this.is_connecting = false;
 
@@ -186,6 +181,15 @@ export const useSerialStore = defineStore("serial", {
 
       if (router.currentRoute.value.fullPath != "/home") {
         router.push("/home");
+      }
+    },
+    async disconnect() {
+      this.reset_connection();
+      this.is_connecting = true;
+      try {
+        await serial.close();
+      } finally {
+        this.is_connecting = false;
       }
     },
     async connect(infoPromise: Promise<any>) {
@@ -243,17 +247,16 @@ export const useSerialStore = defineStore("serial", {
       }
     },
     async toggle_connection() {
+      if (this.is_connecting) return;
       if (this.is_connected) {
-        this.disconnect();
-        return serial.close();
+        return this.disconnect();
       }
 
       this.is_connecting = true;
       return this.connect(
         serial.connect((err) => {
           Log.error("serial", err);
-          this.disconnect();
-          return serial.close();
+          return this.disconnect();
         }),
       );
     },
