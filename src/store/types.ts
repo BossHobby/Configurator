@@ -350,6 +350,13 @@ export interface target_led_t {
   invert: boolean;
 }
 
+export interface target_pinio_t {
+  pin: gpio_pins_t;
+  label: string;
+  description?: string;
+  invert?: boolean;
+}
+
 export interface target_invert_pin_t {
   pin: gpio_pins_t;
   invert: boolean;
@@ -445,6 +452,7 @@ export interface target_t {
   rx_spi?: target_rx_spi_device_t;
 
   usb_detect?: gpio_pins_t;
+  pinio?: target_pinio_t[];
   fpv?: gpio_pins_t;
   vbat?: gpio_pins_t;
   ibat?: gpio_pins_t;

@@ -49,6 +49,7 @@ export const useTargetStore = defineStore("target", {
     vehicles: 0,
 
     leds: [],
+    pinio: [],
     serial_ports: [],
     serial_soft_ports: [],
     spi_ports: [],

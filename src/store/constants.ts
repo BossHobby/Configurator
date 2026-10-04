@@ -171,33 +171,64 @@ enum AuxFunctionsV026 {
   AUX_RETURN_TO_HOME,
 }
 
-enum AuxFunctionsV026Rover {
+enum AuxFunctionsV031 {
+  AUX_ARMING,
+  AUX_IDLE_UP,
+  AUX_LEVELMODE,
+  AUX_RACEMODE,
+  AUX_HORIZON,
+  AUX_STICK_BOOST_PROFILE,
+  _AUX_RATE_PROFILE,
+  AUX_BUZZER_ENABLE,
+  AUX_TURTLE,
+  AUX_MOTOR_TEST,
+  AUX_RSSI,
+  AUX_VTX_PIT_MODE,
+  AUX_BLACKBOX,
+  AUX_PREARM,
+  AUX_OSD_PROFILE,
+  AUX_RETURN_TO_HOME,
+  AUX_PINIO_1,
+  AUX_PINIO_2,
+  AUX_PINIO_3,
+  AUX_PINIO_4,
+}
+
+enum AuxFunctionsV031Rover {
   AUX_ARMING,
   AUX_BUZZER_ENABLE,
   AUX_RSSI,
-  AUX_FPV_SWITCH,
+  AUX_VTX_PIT_MODE,
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
   AUX_RETURN_TO_HOME,
   AUX_RATE_ASSIST,
   AUX_RATE_THROTTLE,
+  AUX_PINIO_1,
+  AUX_PINIO_2,
+  AUX_PINIO_3,
+  AUX_PINIO_4,
 }
 
-enum AuxFunctionsV026Wing {
+enum AuxFunctionsV031Wing {
   AUX_ARMING,
   AUX_IDLE_UP,
   AUX_LEVELMODE,
   AUX_ACROMODE,
   AUX_BUZZER_ENABLE,
   AUX_RSSI,
-  AUX_FPV_SWITCH,
+  AUX_VTX_PIT_MODE,
   AUX_BLACKBOX,
   AUX_PREARM,
   AUX_OSD_PROFILE,
   _AUX_RETURN_TO_HOME, // Reserved by firmware; wing RTH is not implemented.
   AUX_AUTOTRIM,
   AUX_AUTOLAUNCH,
+  AUX_PINIO_1,
+  AUX_PINIO_2,
+  AUX_PINIO_3,
+  AUX_PINIO_4,
 }
 
 enum RXProtocolV5 {
@@ -366,13 +397,12 @@ export const useConstantStore = defineStore("constant", {
     AuxFunctions() {
       const profile = useProfileStore();
       const info = useInfoStore();
+      if (profile.profileVersionGt("0.3.0")) {
+        if (info.is_rover) return AuxFunctionsV031Rover;
+        if (info.is_wing) return AuxFunctionsV031Wing;
+        return AuxFunctionsV031;
+      }
       if (profile.profileVersionGt("0.2.5")) {
-        if (info.is_rover) {
-          return AuxFunctionsV026Rover;
-        }
-        if (info.is_wing) {
-          return AuxFunctionsV026Wing;
-        }
         return AuxFunctionsV026;
       }
       if (profile.profileVersionGt("0.2.4")) {
