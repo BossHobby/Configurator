@@ -8,6 +8,9 @@
   "channel.aux_buzzer_enable": {
     "text": "Turn on the buzzer from a switch, useful to find a lost craft"
   },
+  "channel.aux_vtx_pit_mode": {
+    "text": "Enable serial VTX pit mode while this AUX function is active. GPIO power switches are configured separately under their target labels."
+  },
   "channel.aux_fpv_switch": {
     "text": "Vtx Pit mode on a switch. If you are not using this leave as ON"
   },
