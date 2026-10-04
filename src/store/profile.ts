@@ -289,6 +289,28 @@ function migrateProfileVersion(
     }));
   }
 
+  if (
+    semver.lt(profileVersion, "v0.3.0") &&
+    semver.gte(firmwareVersion, "v0.3.1") &&
+    Array.isArray(profile.receiver?.aux)
+  ) {
+    // Released profiles are multirotor. Keep inverse serial pit-mode behavior;
+    // new GPIO assignments use firmware defaults because the old AUX has no pin identity.
+    const fpv = profile.receiver.aux[11] as aux_function_map_t;
+    const aux = (default_profile.receiver.aux as aux_function_map_t[]).map(
+      (entry) => ({ ...entry }),
+    );
+    for (let i = 0; i < Math.min(profile.receiver.aux.length, 16); i++)
+      aux[i] = profile.receiver.aux[i];
+    profile.receiver.aux = aux;
+    if (fpv) {
+      profile.receiver.aux[11] =
+        fpv.channel < 16
+          ? { channel: fpv.channel, range_min: 0, range_max: 32767 }
+          : { channel: 16, range_min: 0, range_max: 0 };
+    }
+  }
+
   return profile;
 }
 

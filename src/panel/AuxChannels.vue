@@ -2,7 +2,7 @@
   <Panel title="AUX Functions">
     <div class="divide-y divide-line">
       <section
-        v-for="f in auxFunctions"
+        v-for="f in visibleFunctions"
         :key="f.key"
         class="grid grid-cols-1 items-center gap-4 py-3 lg:grid-cols-[12rem_12rem_minmax(0,1fr)]"
       >
@@ -10,10 +10,25 @@
           <span
             class="mr-1 inline-block size-2 rounded-full"
             :class="classForIndex(f.index)"
-            aria-hidden="true" />
+            aria-hidden="true"
+          />
           {{ functionLabel(f.key) }}
-          <tooltip :entry="'channel.' + f.key.toLowerCase()"
-        /></label>
+          <tooltip
+            v-if="!pinioForFunction(f.key)"
+            :entry="'channel.' + f.key.toLowerCase()"
+          />
+          <span
+            v-if="pinioForFunction(f.key)"
+            class="mt-1 block text-xs font-normal text-muted"
+          >
+            {{ pinioForFunction(f.key)?.description?.replaceAll("\0", "") }}
+            <span class="block">
+              {{
+                pinioForFunction(f.key)?.invert ? "Active low" : "Active high"
+              }}
+            </span>
+          </span>
+        </label>
         <UiSelect
           :id="f.key"
           :model-value="channelForIndex(f.index)"
@@ -48,8 +63,9 @@ import { useConstantStore } from "@/store/constants";
 import { useDefaultProfileStore } from "@/store/default_profile";
 import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
+import { useTargetStore } from "@/store/target";
 import { mapState } from "pinia";
-import type { aux_function_map_t } from "@/store/types";
+import type { aux_function_map_t, target_pinio_t } from "@/store/types";
 
 export default defineComponent({
   name: "AuxChannels",
@@ -59,6 +75,7 @@ export default defineComponent({
       default_profile: useDefaultProfileStore(),
       profile: useProfileStore(),
       state: useStateStore(),
+      target: useTargetStore(),
     };
   },
   computed: {
@@ -92,8 +109,19 @@ export default defineComponent({
     hasRanges(): boolean {
       return !this.default_profile.has_legacy_aux;
     },
+    visibleFunctions() {
+      return this.auxFunctions.filter(
+        (f) => !f.key.startsWith("AUX_PINIO_") || this.pinioForFunction(f.key),
+      );
+    },
   },
   methods: {
+    pinioForFunction(key: string): target_pinio_t | undefined {
+      const match = /^AUX_PINIO_([1-4])$/.exec(key);
+      if (!match) return undefined;
+      const output = this.target.pinio?.[Number(match[1]) - 1];
+      return output?.pin && output.pin !== "NONE" ? output : undefined;
+    },
     getAuxEntry(index: number): aux_function_map_t | null {
       if (this.default_profile.has_legacy_aux) return null;
       return (this.profile.receiver.aux[index] as aux_function_map_t) || null;
@@ -111,6 +139,12 @@ export default defineComponent({
       return this.profile.profileVersionGt("0.2.5") ? 16 : 12;
     },
     functionLabel(key: string): string {
+      const output = this.pinioForFunction(key);
+      if (output)
+        return (
+          output.label?.replaceAll("\0", "") ||
+          key.replace("AUX_PINIO_", "PINIO ")
+        );
       const labels: Record<string, string> = {
         AUX_LEVELMODE: "Level mode",
         AUX_RACEMODE: "Race mode",
@@ -118,6 +152,7 @@ export default defineComponent({
         AUX_BUZZER_ENABLE: "Buzzer",
         AUX_RSSI: "RSSI",
         AUX_FPV_SWITCH: "FPV switch",
+        AUX_VTX_PIT_MODE: "VTX pit mode",
         AUX_OSD_PROFILE: "OSD profile",
       };
       const label = key.replace(/^AUX_/, "").replaceAll("_", " ").toLowerCase();
