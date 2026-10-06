@@ -86,6 +86,8 @@ export enum BlackboxFieldUnit {
   RADIANS = "rad",
   DEGREES = "deg",
   METERS = "m",
+  G = "g",
+  PERCENT = "percent",
 }
 
 export interface BlackboxFieldDef {
@@ -164,14 +166,14 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     title: "Accel Raw",
     axis: AxisRPY,
     scale: BLACKBOX_SCALE,
-    unit: BlackboxFieldUnit.RADIANS,
+    unit: BlackboxFieldUnit.G,
   },
   [BlackboxField.ACCEL_FILTER]: {
     name: "accel_filter",
     title: "Accel Filter",
     axis: AxisRPY,
     scale: BLACKBOX_SCALE,
-    unit: BlackboxFieldUnit.RADIANS,
+    unit: BlackboxFieldUnit.G,
   },
   [BlackboxField.GYRO_RAW]: {
     name: "gyro_raw",
@@ -198,7 +200,7 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     name: "cpu_load",
     title: "CPU Load",
     scale: 1,
-    unit: BlackboxFieldUnit.US,
+    unit: BlackboxFieldUnit.PERCENT,
   },
   [BlackboxField.DEBUG]: {
     name: "debug",
