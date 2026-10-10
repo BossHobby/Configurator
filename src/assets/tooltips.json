@@ -343,7 +343,7 @@
     "text": "Throttle for level flight in loiter and RTH. Navigation adds throttle while climbing and reduces it while descending."
   },
   "navigation.max_bank_angle": {
-    "text": "Largest bank angle loiter and RTH command, in degrees. A loiter radius too small for the ground speed is flown at this bank."
+    "text": "Largest bank angle loiter and RTH command, in degrees, up to 40. A loiter radius too small for the ground speed is flown at this bank."
   },
   "navigation.wing_rth_altitude": {
     "text": "RTH climbs this far above the altitude where it started, in meters, then holds that altitude on the way home and while circling home. Needs a barometer."
