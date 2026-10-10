@@ -287,7 +287,7 @@
               type="number"
               step="1"
               min="0"
-              max="80"
+              max="40"
             />
           </div>
           <div class="form-row">
