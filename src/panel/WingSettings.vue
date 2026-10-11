@@ -223,14 +223,18 @@
         </div>
       </fieldset>
       <fieldset
-        v-if="profile.wing.banked_turns !== undefined"
+        v-if="profile.wing.turn_coordination !== undefined"
         class="min-w-0 border-t border-line pt-4"
       >
         <legend class="pr-3 text-sm font-semibold">Level</legend>
         <label class="inline-flex items-center gap-3 text-sm">
-          <input v-model="bankedTurns" type="checkbox" class="form-switch" />
-          Banked turns
-          <tooltip entry="wing.banked_turns" />
+          <input
+            v-model="turnCoordination"
+            type="checkbox"
+            class="form-switch"
+          />
+          Turn coordination
+          <tooltip entry="wing.turn_coordination" />
         </label>
       </fieldset>
       <fieldset
@@ -274,6 +278,23 @@
               step="1"
               min="0"
               max="100"
+            />
+          </div>
+          <div
+            v-if="profile.navigation.cruise_speed !== undefined"
+            class="form-row"
+          >
+            <label for="wing-settings-cruise-speed" class="form-label"
+              >Cruise Speed (km/h) <tooltip entry="navigation.cruise_speed"
+            /></label>
+            <input
+              id="wing-settings-cruise-speed"
+              v-model.number="cruiseSpeedKph"
+              class="form-input"
+              type="number"
+              step="1"
+              min="18"
+              max="180"
             />
           </div>
           <div class="form-row">
@@ -338,12 +359,20 @@ export default defineComponent({
     };
   },
   computed: {
-    bankedTurns: {
+    turnCoordination: {
       get(): boolean {
-        return !!this.profile.wing.banked_turns;
+        return !!this.profile.wing.turn_coordination;
       },
       set(val: boolean) {
-        this.profile.wing.banked_turns = val ? 1 : 0;
+        this.profile.wing.turn_coordination = val ? 1 : 0;
+      },
+    },
+    cruiseSpeedKph: {
+      get(): number {
+        return Math.round((this.profile.navigation.cruise_speed || 0) * 3.6);
+      },
+      set(val: number) {
+        this.profile.navigation.cruise_speed = val / 3.6;
       },
     },
     cruiseThrottlePct: {
