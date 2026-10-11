@@ -340,13 +340,13 @@
     "text": "In Level mode, add the pitch and yaw rate a coordinated turn needs at the current bank, so the nose holds altitude and the rudder follows the turn. Navigation and autolaunch always coordinate turns."
   },
   "navigation.cruise_throttle": {
-    "text": "Throttle for level flight in loiter and RTH. Navigation adds throttle while climbing and reduces it while descending. PID gains are tuned at the airspeed this throttle gives and are scaled up at lower throttle and down at higher throttle."
+    "text": "Throttle for level flight in loiter, cruise and RTH. Navigation adds throttle while climbing and reduces it while descending. PID gains are tuned at the airspeed this throttle gives and are scaled up at lower throttle and down at higher throttle."
   },
   "navigation.cruise_speed": {
     "text": "Airspeed at cruise throttle, used for turn coordination. With GPS it is refined in flight during turns, where wind cancels out, and saved after disarming. Without GPS the value set here is used."
   },
   "navigation.max_bank_angle": {
-    "text": "Largest bank angle loiter and RTH command, in degrees, up to 40. A loiter radius too small for the ground speed is flown at this bank."
+    "text": "Largest bank angle loiter, cruise and RTH command, in degrees, up to 40. A loiter radius too small for the ground speed is flown at this bank."
   },
   "navigation.wing_rth_altitude": {
     "text": "RTH climbs this far above the altitude where it started, in meters, then holds that altitude on the way home and while circling home. Needs a barometer."
@@ -365,6 +365,9 @@
   },
   "channel.aux_loiter": {
     "text": "Circle with GPS and hold the barometer altitude from when loiter started, at cruise throttle. Sticks are ignored. Works only while armed and airborne, after autolaunch. Without GPS, holds a constant bank instead. RTH takes priority, including failsafe RTH."
+  },
+  "channel.aux_cruise": {
+    "text": "Fly a straight GPS track at cruise throttle. The track locks half a second after roll and yaw are centered; roll or yaw input steers as in Level and locks the new track on release. Pitch sets the climb rate and releasing it holds the barometer altitude. Throttle is ignored. Works only while armed and airborne, after autolaunch. Loiter and RTH take priority, including failsafe RTH."
   },
   "channel.aux_autotrim": {
     "text": "Capture wing control-surface trim during steady flight. Keep Autotrim enabled through landing and disarming so the captured trim can be saved. Switching it off before saving cancels the capture and restores the previous trim."
