@@ -251,7 +251,7 @@ export interface profile_wing_autolaunch_t {
 
 export interface profile_wing_t {
   autolaunch: profile_wing_autolaunch_t;
-  banked_turns?: number;
+  turn_coordination?: number;
 }
 
 export interface profile_navigation_t {
@@ -262,6 +262,7 @@ export interface profile_navigation_t {
   rth_throttle_hover: number;
   rth_throttle_max: number;
   cruise_throttle?: number;
+  cruise_speed?: number;
   max_bank_angle?: number;
   loiter_radius?: number;
   loiter_direction?: number;

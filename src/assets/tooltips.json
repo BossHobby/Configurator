@@ -336,11 +336,14 @@
   "wing.autolaunch.velocity_threshold": {
     "text": "GPS ground speed needed to detect launch, in m/s. Requires GPS lock and a level to nose-up attitude. Acceleration can detect a throw without GPS."
   },
-  "wing.banked_turns": {
-    "text": "In Level mode, strengthen roll and pitch commands while the other axis is tilted, so pulling pitch in a bank tightens the turn. Loiter uses the same correction."
+  "wing.turn_coordination": {
+    "text": "In Level mode, add the pitch and yaw rate a coordinated turn needs at the current bank, so the nose holds altitude and the rudder follows the turn. Navigation and autolaunch always coordinate turns."
   },
   "navigation.cruise_throttle": {
-    "text": "Throttle for level flight in loiter and RTH. Navigation adds throttle while climbing and reduces it while descending."
+    "text": "Throttle for level flight in loiter and RTH. Navigation adds throttle while climbing and reduces it while descending. PID gains are tuned at the airspeed this throttle gives and are scaled up at lower throttle and down at higher throttle."
+  },
+  "navigation.cruise_speed": {
+    "text": "Airspeed at cruise throttle, used for turn coordination. With GPS it is refined in flight during turns, where wind cancels out, and saved after disarming. Without GPS the value set here is used."
   },
   "navigation.max_bank_angle": {
     "text": "Largest bank angle loiter and RTH command, in degrees, up to 40. A loiter radius too small for the ground speed is flown at this bank."
