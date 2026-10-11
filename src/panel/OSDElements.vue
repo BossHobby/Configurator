@@ -282,6 +282,16 @@ export default defineComponent({
         { name: "ALTITUDE", enabled: true, text: "\x7f 12.3\x0c" },
         { name: "GPS HOME", enabled: true, text: "\x05 42.0\x0c" },
       );
+      if (this.profile.profileVersionGt("0.3.0")) {
+        elements.push(
+          { name: "VARIO", enabled: true, text: "\x75 1.2" },
+          {
+            name: "AIRSPEED",
+            enabled: this.info.is_wing,
+            text: "\x70A 54\x9e",
+          },
+        );
+      }
       return elements;
     },
     elements() {
