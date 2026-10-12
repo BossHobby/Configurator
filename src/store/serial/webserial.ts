@@ -1,3 +1,9 @@
-import { serial } from "web-serial-polyfill";
+import { usbSerial } from "./usbserial";
 
-export const WebSerial = navigator.serial ? navigator.serial : serial;
+// Chrome opens macOS serial ports with PARMRK, which limits the tty input
+// queue to about 1 KB and silently drops bytes while the reader lags. Over
+// WebUSB the device is NAKed instead, so large replies stay intact.
+const isMacOS = /Mac/.test(navigator.platform);
+
+export const WebSerial =
+  navigator.serial && !isMacOS ? navigator.serial : usbSerial;

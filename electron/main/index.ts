@@ -7,6 +7,9 @@ import icon from "../icon.png?asset";
 const USB_DEVICE_FILTER = [
   { vendorId: 0x0483, productId: 0xdf11 },
   { vendorId: 0x2e3c, productId: 0xdf11 },
+  // CDC ports, opened over WebUSB on macOS
+  { vendorId: 0x0483, productId: 0x5740 },
+  { vendorId: 0x2e3c, productId: 0x5740 },
 ];
 
 function createWindow(): void {
