@@ -43,7 +43,6 @@
     "vue": "^3.1.0",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^5.0.6",
-    "web-serial-polyfill": "github:BossHobby/web-serial-polyfill",
     "yaml": "^2.1.1"
   },
   "devDependencies": {
