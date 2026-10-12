@@ -58,7 +58,7 @@ export class CompressedBlackboxDecoder {
     // Add other fields in enum order
     for (
       let field = BlackboxField.PID_P_TERM;
-      field <= BlackboxField.DEBUG;
+      field <= BlackboxField.STATE;
       field++
     ) {
       if (this.fieldflags & (1 << field)) {
@@ -155,7 +155,7 @@ export class CompressedBlackboxDecoder {
     // Process remaining fields in the order they appear in the compressed data
     for (
       let field = BlackboxField.PID_P_TERM;
-      field <= BlackboxField.DEBUG;
+      field <= BlackboxField.STATE;
       field++
     ) {
       // Skip fields that are not enabled

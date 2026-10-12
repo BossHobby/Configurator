@@ -344,6 +344,7 @@ export enum BlackboxField {
   GPS_HOME,
   ALTITUDE,
   DEBUG,
+  STATE,
 }
 
 export enum LQISource {
