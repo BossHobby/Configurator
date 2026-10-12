@@ -229,6 +229,13 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     scale: 10,
     unit: BlackboxFieldUnit.METERS,
   },
+  [BlackboxField.STATE]: {
+    name: "state",
+    title: "State",
+    axis: ["State", "Aux"],
+    scale: 1,
+    unit: BlackboxFieldUnit.NONE,
+  },
 };
 
 export const useBlackboxStore = defineStore("blackbox", {
