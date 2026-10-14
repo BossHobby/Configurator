@@ -197,6 +197,7 @@ enum RXSerialProtocol {
   SBUS_INVERTED,
   FPORT_INVERTED,
   REDPINE_INVERTED,
+  MAVLINK,
 }
 
 export enum StickWizardState {
