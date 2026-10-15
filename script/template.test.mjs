@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import semver from "semver";
 import ts from "typescript";
+import * as receiver from "../src/store/util/receiver.ts";
 
 const V022 = 0x000202; // Pilot Rates template
 const V031 = 0x000301; // firmware
@@ -48,6 +49,7 @@ function profileModule() {
     },
     "./target": { useTargetStore: () => ({ $state: { serial_ports: [] } }) },
     "./util/osd": {},
+    "./util/receiver": receiver,
   };
   const source = readFileSync(
     new URL("../src/store/profile.ts", import.meta.url),

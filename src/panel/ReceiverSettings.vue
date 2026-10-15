@@ -21,6 +21,16 @@
               @update:model-value="setSerialProtocol"
             />
           </label>
+          <div v-if="hasInvert" class="text-xs text-muted">
+            Line
+            <Toggle
+              class="mt-1.5"
+              :model-value="!!profile.receiver.invert"
+              label="Inverted"
+              help="receiver.invert"
+              @update:model-value="profile.receiver.invert = $event ? 1 : 0"
+            />
+          </div>
           <label class="text-xs text-muted"
             >LQI source <tooltip entry="receiver.lqi_source" /><UiSelect
               v-model.number="profile.receiver.lqi_source"
@@ -30,7 +40,7 @@
           <div
             class="col-span-1 grid grid-cols-2 gap-4 sm:col-span-2 xl:col-span-2"
           >
-            <div class="text-xs text-muted">
+            <div v-if="hasBindSaved" class="text-xs text-muted">
               Bind saved <tooltip entry="receiver.bind_saved" />
               <p
                 class="mt-1.5 py-2 text-sm font-medium"
@@ -61,6 +71,13 @@
                   : "Select a receiver serial port in Setup."
               }}
             </template>
+            <template v-else-if="isSerialProtocol">
+              {{
+                profile.serial.rx
+                  ? serialStatus
+                  : "Select a receiver serial port in Setup."
+              }}
+            </template>
             <template v-else>Binding controls</template>
           </p>
           <div class="flex flex-wrap gap-2">
@@ -68,6 +85,11 @@
               v-if="isCrsfProtocol && !serial.radio_link"
               @click="bind.bind_crsf()"
               >Bind receiver</spinner-btn
+            >
+            <spinner-btn
+              v-if="rx_protocol === RXProtocol.DSM && hasFlatProtocols"
+              @click="requestDsmBind()"
+              >Bind at next power-up</spinner-btn
             >
             <spinner-btn
               v-if="
@@ -170,6 +192,7 @@
 
 <script lang="ts">
 import Panel from "@/components/ui/Panel.vue";
+import Toggle from "@/components/ui/Toggle.vue";
 import { defineComponent } from "vue";
 import { $enum } from "ts-enum-util";
 import md5 from "md5";
@@ -184,7 +207,7 @@ import { useSerialStore } from "@/store/serial";
 
 export default defineComponent({
   name: "ReceiverSettings",
-  components: { Panel },
+  components: { Panel, Toggle },
   setup() {
     return {
       profile: useProfileStore(),
@@ -224,6 +247,41 @@ export default defineComponent({
     isLegacyBindInfo() {
       return !this.info.quic_semver_gte("0.2.9");
     },
+    // Profile 0.3.1+ selects serial protocols directly instead of through
+    // unified serial and keeps bind data without bind_saved.
+    hasFlatProtocols() {
+      return this.RXProtocol.SERIAL_AUTO !== undefined;
+    },
+    hasBindSaved() {
+      return !this.hasFlatProtocols;
+    },
+    isSerialProtocol() {
+      return (
+        this.hasFlatProtocols &&
+        this.rx_protocol >= this.RXProtocol.SERIAL_AUTO &&
+        this.rx_protocol <= this.RXProtocol.MAVLINK
+      );
+    },
+    hasInvert() {
+      return (
+        this.hasFlatProtocols &&
+        [
+          this.RXProtocol.SBUS,
+          this.RXProtocol.FPORT,
+          this.RXProtocol.REDPINE_SERIAL,
+        ].includes(this.rx_protocol)
+      );
+    },
+    serialStatus() {
+      const active = this.state.rx_protocol;
+      if (active == this.RXProtocol.SERIAL_AUTO) {
+        return "Detecting serial protocol";
+      }
+      if (active == this.RXProtocol.INVALID) {
+        return "No receiver active";
+      }
+      return this.RXProtocol[active] + " active";
+    },
     bindInfo() {
       return this.isLegacyBindInfo
         ? this.bind.info
@@ -250,6 +308,12 @@ export default defineComponent({
     isCrsfProtocol() {
       if (this.rx_protocol == this.RXProtocol.CRSF) {
         return true;
+      }
+      if (this.hasFlatProtocols) {
+        return (
+          this.rx_protocol == this.RXProtocol.SERIAL_AUTO &&
+          this.state.rx_protocol == this.RXProtocol.CRSF
+        );
       }
 
       if (this.rx_protocol != this.RXProtocol.UNIFIED_SERIAL) {
@@ -359,7 +423,7 @@ export default defineComponent({
       const bytes = this.parseHexString(hex).slice(0, 6);
 
       const info = { ...this.bindInfo };
-      info.bind_saved = 1;
+      if (this.hasBindSaved) info.bind_saved = 1;
 
       info.raw[0] = 1;
       for (let i = 0; i < 6; i++) {
@@ -403,7 +467,7 @@ export default defineComponent({
       const reader = new FileReader();
       reader.addEventListener("load", (event) => {
         const info = { ...this.bindInfo };
-        info.bind_saved = 1;
+        if (this.hasBindSaved) info.bind_saved = 1;
         info.raw = Uint8Array.from(
           window.atob(event?.target?.result as string),
           (c) => c.charCodeAt(0),
@@ -420,9 +484,22 @@ export default defineComponent({
 
       this.fileRef.click();
     },
+    requestDsmBind() {
+      // Spektrum receivers only accept bind pulses at power-up; the firmware
+      // sends them once and clears the request.
+      const info = { ...this.bindInfo, raw: new Uint8Array(this.bindInfo.raw) };
+      info.raw.fill(0);
+      info.raw[0] = 1;
+
+      this.applyBindInfo(info);
+      this.root.append_alert({
+        type: "success",
+        msg: "Apply, then unplug and power up with the receiver connected to bind.",
+      });
+    },
     reset() {
       const info = { ...this.bindInfo };
-      info.bind_saved = 0;
+      if (this.hasBindSaved) info.bind_saved = 0;
       for (let i = 0; i < info.raw.length; i++) {
         info.raw[i] = 0;
       }

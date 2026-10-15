@@ -288,6 +288,25 @@ enum RXProtocolV011 {
   FLYSKY_AFHDS2A,
 }
 
+enum RXProtocolV031 {
+  INVALID = 0,
+  SERIAL_AUTO = 1,
+  SBUS = 2,
+  CRSF = 3,
+  IBUS = 4,
+  FPORT = 5,
+  DSM = 6,
+  REDPINE_SERIAL = 7,
+  MAVLINK = 8,
+  FRSKY_D8 = 9,
+  FRSKY_D16_FCC = 10,
+  FRSKY_D16_LBT = 11,
+  REDPINE = 12,
+  EXPRESS_LRS = 13,
+  FLYSKY_AFHDS = 14,
+  FLYSKY_AFHDS2A = 15,
+}
+
 enum RXSerialProtocol {
   INVALID,
   DSM,
@@ -370,7 +389,11 @@ export const useConstantStore = defineStore("constant", {
   getters: {
     RXProtocol() {
       const info = useInfoStore();
+      const profile = useProfileStore();
 
+      if (profile.profileVersionGt("0.3.0")) {
+        return RXProtocolV031;
+      }
       if (semver.gt(info.quic_protocol_semver, "0.1.0")) {
         return RXProtocolV011;
       }

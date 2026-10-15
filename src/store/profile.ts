@@ -14,6 +14,7 @@ import {
 } from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
+import { migrateReceiverV031 } from "./util/receiver";
 
 const DEFAULT_MOTOR = {
   digital_idle: 4.5,
@@ -294,6 +295,14 @@ function migrateProfileVersion(
   }
 
   if (
+    semver.lt(profileVersion, "v0.3.1") &&
+    semver.gte(firmwareVersion, "v0.3.1") &&
+    profile.receiver
+  ) {
+    profile.receiver = migrateReceiverV031(profile.receiver);
+  }
+
+  if (
     semver.lt(profileVersion, "v0.3.0") &&
     semver.gte(firmwareVersion, "v0.3.1") &&
     Array.isArray(profile.receiver?.aux)
@@ -329,6 +338,7 @@ function migrateProfile(profile) {
   if (!p.meta) {
     p.meta = {};
   }
+  coerceProfileByteStrings(p);
   if (firmwareVersion != profileVersion) {
     p = migrateProfileVersion(
       p,
@@ -360,8 +370,6 @@ function migrateProfile(profile) {
       max: map?.max ?? 1,
     }));
   }
-
-  coerceProfileByteStrings(p);
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
 

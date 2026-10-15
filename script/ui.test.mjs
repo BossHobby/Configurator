@@ -46,3 +46,50 @@ test("AUX activation follows firmware boundaries and treats zero/zero as disable
   assert.equal(auxRangeActive(32768, 32768, 65535), true);
   assert.equal(auxRangeActive(65535, 32768, 65535), true);
 });
+
+import { migrateReceiverV031 } from "../src/store/util/receiver.ts";
+test("0.3.1 receiver migration selects the unified serial protocol directly", () => {
+  const raw = new Uint8Array(64);
+  raw[0] = 8; // FPORT_INVERTED
+  const fport = migrateReceiverV031({
+    protocol: 1,
+    lqi_source: 2,
+    bind: { bind_saved: 1, raw },
+  });
+  assert.equal(fport.protocol, 5);
+  assert.equal(fport.invert, 1);
+  assert.equal(fport.lqi_source, 2);
+  assert.deepEqual([...fport.bind.raw], new Array(64).fill(0));
+  assert.equal(fport.bind.bind_saved, undefined);
+
+  raw[0] = 10; // MAVLINK, never saved: autodetect
+  assert.equal(
+    migrateReceiverV031({ protocol: 1, bind: { bind_saved: 0, raw } }).protocol,
+    1,
+  );
+  raw[0] = 10;
+  assert.equal(
+    migrateReceiverV031({ protocol: 1, bind: { bind_saved: 1, raw } }).protocol,
+    8,
+  );
+});
+test("0.3.1 receiver migration renumbers SPI protocols and retires Bayang", () => {
+  const raw = new Uint8Array(64).fill(7);
+  const elrs = migrateReceiverV031({
+    protocol: 14,
+    bind: { bind_saved: 1, raw },
+  });
+  assert.equal(elrs.protocol, 13);
+  assert.equal(elrs.bind.raw[5], 7);
+  assert.equal(
+    migrateReceiverV031({ protocol: 14, bind: { bind_saved: 0, raw } }).bind
+      .raw[5],
+    0,
+  );
+  assert.equal(migrateReceiverV031({ protocol: 8, bind: { raw } }).protocol, 0);
+  assert.equal(
+    migrateReceiverV031({ protocol: 16, bind: { raw } }).protocol,
+    15,
+  );
+  assert.equal(migrateReceiverV031({ protocol: 3, bind: { raw } }).protocol, 3);
+});

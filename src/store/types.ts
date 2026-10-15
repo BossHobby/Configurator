@@ -158,12 +158,13 @@ export interface aux_function_map_t {
 }
 
 export interface profile_receiver_bind_t {
-  bind_saved: number;
+  bind_saved?: number; // profiles before 0.3.1
   raw: Uint8Array;
 }
 
 export interface profile_receiver_t {
   protocol: number;
+  invert?: number; // 0.3.1+: serial receivers invert the RX line
   bind: profile_receiver_bind_t;
   aux: aux_function_map_t[];
   lqi_source: number;
