@@ -14,6 +14,7 @@ import {
 } from "./types";
 import { useTargetStore } from "./target";
 import { OSD } from "./util/osd";
+import { migrateReceiverV030 } from "./util/receiver";
 
 const DEFAULT_MOTOR = {
   digital_idle: 4.5,
@@ -288,6 +289,10 @@ function migrateProfileVersion(
       }));
     }
 
+    if (profile.receiver) {
+      profile.receiver = migrateReceiverV030(profile.receiver);
+    }
+
     if (Array.isArray(profile.receiver?.aux)) {
       // Released profiles are multirotor. Keep inverse serial pit-mode behavior;
       // new GPIO assignments use firmware defaults because the old AUX has no pin identity.
@@ -321,6 +326,7 @@ function migrateProfile(profile) {
   if (!p.meta) {
     p.meta = {};
   }
+  coerceProfileByteStrings(p);
   if (firmwareVersion != profileVersion) {
     p = migrateProfileVersion(
       p,
@@ -352,8 +358,6 @@ function migrateProfile(profile) {
       max: map?.max ?? 1,
     }));
   }
-
-  coerceProfileByteStrings(p);
 
   p.meta.datetime = Math.floor(Date.now() / 1000);
 

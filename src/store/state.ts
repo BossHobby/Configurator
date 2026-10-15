@@ -17,6 +17,7 @@ export const useStateStore = defineStore("state", {
     rx_filtered: [],
     rx_channels: [],
     rx_status: 0,
+    rx_protocol: 0,
     rx_rssi: 0,
     gyro_temp: 0,
     GEstG: null,

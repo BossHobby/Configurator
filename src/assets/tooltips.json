@@ -218,6 +218,9 @@
   "receiver.bind_saved": {
     "text": "Once you have bind and issued stick gesture up,up,up followed by down,down,down on Pitch this will show YES"
   },
+  "receiver.invert": {
+    "text": "Invert the receiver serial line. SBUS and FPort receivers usually need this unless the flight controller pad is already inverted"
+  },
   "receiver.channel_mapping": {
     "text": "Quicksilver default is AETR the other option is TAER"
   },
@@ -225,7 +228,7 @@
     "text": "Select the source for your rssi/lqi OSD display. Direct is best for ELRS, others can use Packet-Rate"
   },
   "receiver.protocol": {
-    "text": "Serial or spi connected rx will be detected automatically here"
+    "text": "Select the receiver protocol. SERIAL_AUTO detects the serial protocol and keeps the one it finds"
   },
   "serial.digital_vtx": {
     "text": "MSP serial port for digital systems like HDZero, DJI WTF and Walksnail. HDZero requires TX and RX connected to use msp, define the UART here"
