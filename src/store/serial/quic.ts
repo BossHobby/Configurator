@@ -70,9 +70,20 @@ export enum QuicFlag {
   Exit,
 }
 
+// Header byte 1 holds the command in bits 0-4, the QuicFlag in bits 5-6 and
+// QUIC_HEADER_COMPRESSED in bit 7. A request carrying QUIC_HEADER_COMPRESSED
+// accepts an LZSS payload in reply; a reply carries it when its payload is.
+export const QUIC_HEADER_CMD_MASK = 0x1f;
+export const QUIC_HEADER_FLAG_SHIFT = 5;
+export const QUIC_HEADER_FLAG_MASK = 0x3 << QUIC_HEADER_FLAG_SHIFT;
+export const QUIC_HEADER_COMPRESSED = 1 << 7;
+// First QUIC protocol version that understands QUIC_HEADER_COMPRESSED.
+export const QUIC_COMPRESSION_VERSION = "v0.2.10";
+
 export interface QuicHeader {
   cmd: QuicCmd;
   flag: QuicFlag;
+  compressed: boolean;
   len: number;
 }
 
