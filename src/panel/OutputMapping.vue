@@ -46,8 +46,8 @@
         </div>
 
         <div class="min-w-0 col-span-12 md:col-span-7">
-          <div class="form-grid">
-            <div class="form-row">
+          <div class="form-grid sm:grid-cols-2">
+            <div class="form-row col-span-full">
               <label for="invert-yaw" class="form-label">
                 Prop Direction <tooltip entry="motor.invert_yaw" />
               </label>
