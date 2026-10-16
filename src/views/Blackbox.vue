@@ -111,6 +111,7 @@ import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
 import { useSerialStore } from "@/store/serial";
+import { useRootStore } from "@/store/root";
 import { $enum } from "ts-enum-util";
 import { defineComponent } from "vue";
 
@@ -124,6 +125,7 @@ export default defineComponent({
       state: useStateStore(),
       info: useInfoStore(),
       serial: useSerialStore(),
+      root: useRootStore(),
     };
   },
   data() {
@@ -216,7 +218,12 @@ export default defineComponent({
     },
   },
   created() {
-    this.blackbox.list_blackbox();
+    this.blackbox.list_blackbox().catch((err) =>
+      this.root.append_alert({
+        type: "danger",
+        msg: "Could not list flight logs: " + err.message,
+      }),
+    );
     if (this.info.quic_semver_gt("0.1.2")) {
       this.blackbox.fetch_presets();
     }
