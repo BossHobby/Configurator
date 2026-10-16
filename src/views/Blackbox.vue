@@ -74,8 +74,10 @@
         <span class="mr-auto text-sm"
           >Flight {{ index + 1 }} · {{ humanFileSize(file.size) }}</span
         >
-        <spinner-btn @click="download_btfl(index)">BTFL</spinner-btn
-        ><spinner-btn @click="download_quic(index)">QUIC</spinner-btn>
+        <template v-if="!serial.radio_link">
+          <spinner-btn @click="download_btfl(index)">BTFL</spinner-btn
+          ><spinner-btn @click="download_quic(index)">QUIC</spinner-btn>
+        </template>
       </div>
       <a ref="downloadAnchor" target="_blank" hidden></a>
       <div v-if="blackbox.progress" class="mt-4 text-xs text-muted">
@@ -108,6 +110,7 @@ import { BlackboxField, BlackboxDebugFlag } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
 import { useProfileStore } from "@/store/profile";
 import { useStateStore } from "@/store/state";
+import { useSerialStore } from "@/store/serial";
 import { $enum } from "ts-enum-util";
 import { defineComponent } from "vue";
 
@@ -120,6 +123,7 @@ export default defineComponent({
       profile: useProfileStore(),
       state: useStateStore(),
       info: useInfoStore(),
+      serial: useSerialStore(),
     };
   },
   data() {

@@ -64,7 +64,9 @@
             <template v-else>Binding controls</template>
           </p>
           <div class="flex flex-wrap gap-2">
-            <spinner-btn v-if="isCrsfProtocol" @click="bind.bind_crsf()"
+            <spinner-btn
+              v-if="isCrsfProtocol && !serial.radio_link"
+              @click="bind.bind_crsf()"
               >Bind receiver</spinner-btn
             >
             <spinner-btn
@@ -178,6 +180,7 @@ import { mapState } from "pinia";
 import { useBindStore } from "@/store/bind";
 import { useStateStore } from "@/store/state";
 import { useRootStore } from "@/store/root";
+import { useSerialStore } from "@/store/serial";
 
 export default defineComponent({
   name: "ReceiverSettings",
@@ -189,6 +192,7 @@ export default defineComponent({
       bind: useBindStore(),
       state: useStateStore(),
       root: useRootStore(),
+      serial: useSerialStore(),
     };
   },
   data() {

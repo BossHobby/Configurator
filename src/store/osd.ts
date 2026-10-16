@@ -40,6 +40,24 @@ export const useOSDStore = defineStore("osd", {
         await serial.command(QuicCmd.OSD, QuicOSD.WriteChar, i, font[i]);
       }
     },
+    // Stands in for the board's font where it cannot be read, e.g. over the
+    // radio link.
+    async load_sd_osd_font(name: string) {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = "osd/" + name;
+      });
+      const canvas = new OffscreenCanvas(OSD.FULL_WIDTH, OSD.FULL_HEIGHT);
+      const font = OSD.packFont(
+        canvas as unknown as HTMLCanvasElement,
+        image,
+      ).map((char) => Array.from(char));
+      this.font_raw = font;
+      this.font_bitmap = OSD.unpackFontBitmap(font);
+      this.font_bitmap_inverted = OSD.unpackFontBitmap(font, true);
+    },
     fetch_hd_osd_font() {
       return new Promise((resolve, reject) => {
         const image = new Image();
