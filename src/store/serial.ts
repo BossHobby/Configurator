@@ -207,6 +207,7 @@ export const useSerialStore = defineStore("serial", {
       const motor = useMotorStore();
       const profile = useProfileStore();
       const root = useRootStore();
+      const state = useStateStore();
       const target = useTargetStore();
       const vtx = useVTXStore();
 
@@ -229,6 +230,7 @@ export const useSerialStore = defineStore("serial", {
         }
 
         await Promise.all([
+          state.fetch_state(),
           default_profile.fetch_default_profile(),
           root.fetch_pid_rate_presets(),
           profile.fetch_profile(),
