@@ -2,6 +2,11 @@ import {
   QuicCmd,
   QuicFlag,
   QuicVal,
+  QUIC_COMPRESSION_VERSION,
+  QUIC_HEADER_CMD_MASK,
+  QUIC_HEADER_COMPRESSED,
+  QUIC_HEADER_FLAG_MASK,
+  QUIC_HEADER_FLAG_SHIFT,
   QUIC_MAGIC,
   type QuicHeader,
   type QuicPacket,
@@ -10,10 +15,13 @@ import {
   ArrayWriter,
   asyncDelay,
   concatUint8Array,
+  decodeSemver,
   stringToUint8Array,
 } from "../util";
+import semver from "semver";
 import { Log } from "@/log";
 import { CBOR } from "./cbor";
+import { lzssDecode } from "./lzss";
 import { WebSerial } from "./webserial";
 import { settings } from "./settings";
 import { CrsfLink } from "./crsf";
@@ -44,6 +52,7 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
   private header: QuicHeader = {
     cmd: 0,
     flag: 0,
+    compressed: false,
     len: 0,
   };
   private payload = new Uint8Array(0);
@@ -74,8 +83,10 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
         break;
 
       case QuicParserState.READ_CMD:
-        this.header.cmd = val & (0xff >> 3);
-        this.header.flag = val >> 5;
+        this.header.cmd = val & QUIC_HEADER_CMD_MASK;
+        this.header.flag =
+          (val & QUIC_HEADER_FLAG_MASK) >> QUIC_HEADER_FLAG_SHIFT;
+        this.header.compressed = (val & QUIC_HEADER_COMPRESSED) != 0;
         this.state = QuicParserState.READ_LEN_HIGH;
         break;
 
@@ -107,7 +118,9 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
         this.state = QuicParserState.READ_MAGIC;
         return {
           ...this.header,
-          payload: this.payload,
+          payload: this.header.compressed
+            ? lzssDecode(this.payload)
+            : this.payload,
         };
     }
   }
@@ -119,6 +132,8 @@ export class Serial {
   private port?: SerialPort;
   private ws?: WebSocket;
   private crsf?: CrsfLink;
+  // Request compressed replies; enabled once Info shows firmware support.
+  private compress = false;
 
   private transform?: QuicStream;
   private writer?: WritableStreamDefaultWriter<any>;
@@ -139,7 +154,7 @@ export class Serial {
       const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
       await this._connectPort(port, errorCallback);
     }
-    return await this.get(QuicVal.Info, 10_000);
+    return await this.fetchInfo(10_000);
   }
 
   public async connectFirstPort(
@@ -156,7 +171,21 @@ export class Serial {
       if (!ports.length) throw new Error("no ports");
       await this._connectPort(ports[0], errorCallback);
     }
-    return await this.get(QuicVal.Info, 30_000);
+    return await this.fetchInfo(30_000);
+  }
+
+  // Compression only pays off on the radio link; USB is fast enough without.
+  private async fetchInfo(timeout: number) {
+    this.compress = false;
+    const info = await this.get(QuicVal.Info, timeout);
+    this.compress =
+      !!this.crsf &&
+      !!info.quic_protocol_version &&
+      semver.gte(
+        decodeSemver(info.quic_protocol_version),
+        QUIC_COMPRESSION_VERSION,
+      );
+    return info;
   }
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
@@ -436,7 +465,7 @@ export class Serial {
 
     const request = Uint8Array.from([
       QUIC_MAGIC,
-      cmd,
+      cmd | (this.compress ? QUIC_HEADER_COMPRESSED : 0),
       (payload.length >> 8) & 0xff,
       payload.length & 0xff,
     ]);
