@@ -52,6 +52,8 @@ export const useSerialStore = defineStore("serial", {
   state: () => ({
     is_connected: false,
     is_connecting: false,
+    // Connected over the CRSF radio link, which only serves configuration.
+    radio_link: false,
   }),
   actions: {
     async poll_serial(counter: number) {
@@ -185,6 +187,7 @@ export const useSerialStore = defineStore("serial", {
     reset_connection() {
       this.is_connected = false;
       this.is_connecting = false;
+      this.radio_link = false;
 
       stopInterval();
 
@@ -226,7 +229,7 @@ export const useSerialStore = defineStore("serial", {
         profile.$reset();
         target.$reset();
 
-        this.is_connected = true;
+        this.radio_link = serial.isRadioLink;
         info.set_info(i);
 
         if (info.quic_semver_gte("0.2.0")) {
@@ -241,6 +244,9 @@ export const useSerialStore = defineStore("serial", {
         ]);
         vtx.update_status();
 
+        // Navigation and pages need the profile, which takes a while over
+        // the radio link.
+        this.is_connected = true;
         startInterval((c) => this.poll_serial(c));
 
         if (router.currentRoute.value.fullPath != "/profile") {
