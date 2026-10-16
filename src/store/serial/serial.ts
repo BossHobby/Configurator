@@ -36,6 +36,9 @@ const SERIAL_FILTERS = [
 
 export type ProgressCallbackType = (number) => void;
 
+/** An error reply from the firmware; the link itself is still in sync. */
+export class QuicError extends Error {}
+
 export type ConnectionTarget =
   | { transport: "usb" }
   // A CRSF WebSocket such as the TBS Crossfire Wi-Fi module's /ws endpoint.
@@ -391,13 +394,14 @@ export class Serial {
           throw new Error("invalid command");
         }
         if (packet.flag == QuicFlag.Error) {
-          throw new Error(packet.payload[0]);
+          throw new QuicError(packet.payload[0]);
         }
 
         return packet;
       })
       .catch((err) => {
-        if (this.errorCallback) {
+        // Only transport failures end the connection; callers handle replies.
+        if (this.errorCallback && !(err instanceof QuicError)) {
           this.errorCallback(err);
           this.errorCallback = undefined;
         }
