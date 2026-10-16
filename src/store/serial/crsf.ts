@@ -189,6 +189,10 @@ export class CrsfLink {
       this.handleFrame(body.subarray(0, len - 1));
     }
     this.rxFrame = buf.slice(offset);
+
+    // Acknowledge, and refill the window freed by acks, without waiting for
+    // the next pump tick; the firmware stalls once its window is in flight.
+    this.pump();
   }
 
   private handleFrame(body: Uint8Array) {
