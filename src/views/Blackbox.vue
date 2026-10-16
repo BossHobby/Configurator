@@ -202,9 +202,12 @@ export default defineComponent({
     logRateOptions() {
       return [
         { value: 200, text: "200 Hz" },
+        { value: 250, text: "250 Hz" },
+        { value: 500, text: "500 Hz" },
         { value: 1000, text: "1 kHz" },
         { value: 2000, text: "2 kHz" },
         { value: 4000, text: "4 kHz" },
+        { value: 8000, text: "8 kHz" },
       ];
     },
   },
