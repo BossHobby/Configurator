@@ -8,6 +8,7 @@ import { Log } from "@/log";
 import router from "@/router";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
+import { useConnectionStore } from "./connection";
 import { QuicCmd, QuicMotor } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { settings } from "./serial/settings";
@@ -31,6 +32,8 @@ function stopInterval() {
 function startInterval(fn: any) {
   stopInterval();
 
+  // The radio link carries roughly 1 kB/s, so poll far less often.
+  const period = serial.isRadioLink ? 2000 : settings.serial.updateInterval;
   // Skip ticks while a slow link is still answering the previous poll.
   let polling = false;
   interval = setInterval(async () => {
@@ -42,7 +45,7 @@ function startInterval(fn: any) {
     } finally {
       polling = false;
     }
-  }, settings.updateInterval());
+  }, period);
 }
 
 export const useSerialStore = defineStore("serial", {
@@ -88,14 +91,15 @@ export const useSerialStore = defineStore("serial", {
 
       this.is_connecting = true;
       await serial.softReboot();
-      for (let i = 0; i < 10; i++) {
+      // Over the radio link the session is retried until the board is back.
+      for (let i = 0; !serial.isRadioLink && i < 10; i++) {
         const ports = await WebSerial.getPorts();
         if (!ports.length) {
           break;
         }
         await asyncDelay(100);
       }
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; !serial.isRadioLink && i < 10; i++) {
         const ports = await WebSerial.getPorts();
         if (ports.length) {
           break;
@@ -104,7 +108,7 @@ export const useSerialStore = defineStore("serial", {
       }
 
       await this.connect(
-        serial.connectFirstPort((err) => {
+        serial.reconnect((err) => {
           Log.error("serial", err);
           return this.disconnect();
         }),
@@ -264,7 +268,7 @@ export const useSerialStore = defineStore("serial", {
 
       this.is_connecting = true;
       return this.connect(
-        serial.connect((err) => {
+        serial.connect(useConnectionStore().target, (err) => {
           Log.error("serial", err);
           return this.disconnect();
         }),

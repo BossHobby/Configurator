@@ -9,6 +9,10 @@ import {
   CircleHelp,
   Upload,
   SquarePen,
+  Cable,
+  Wifi,
+  Plus,
+  Trash2,
 } from "@lucide/vue";
 // Navigation icons are hand-drawn below; these cover everything else.
 const icons = {
@@ -21,6 +25,10 @@ const icons = {
   help: CircleHelp,
   upload: Upload,
   edit: SquarePen,
+  usb: Cable,
+  wifi: Wifi,
+  plus: Plus,
+  trash: Trash2,
 };
 const navigationPaths = {
   profile: ["M7 3h10l3 3v12l-3 3H7l-3-3V6z", "m9 8 6 8m0-8-6 8M9 12h6"],

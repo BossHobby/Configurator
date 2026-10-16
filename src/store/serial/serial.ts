@@ -36,6 +36,11 @@ const SERIAL_FILTERS = [
 
 export type ProgressCallbackType = (number) => void;
 
+export type ConnectionTarget =
+  | { transport: "usb" }
+  // A CRSF WebSocket such as the TBS Crossfire Wi-Fi module's /ws endpoint.
+  | { transport: "websocket"; url: string };
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noProgress = () => {};
 
@@ -130,8 +135,8 @@ export class Serial {
   private waitingCommands: Promise<QuicPacket> = Promise.resolve({} as any);
 
   private port?: SerialPort;
-  private ws?: WebSocket;
   private crsf?: CrsfLink;
+  private target?: ConnectionTarget;
   // Request compressed replies; enabled once Info shows firmware support.
   private compress = false;
 
@@ -143,29 +148,30 @@ export class Serial {
   private errorCallback?: any;
   private closing?: Promise<void>;
 
-  public async connect(errorCallback: any = console.warn): Promise<any> {
-    const ws = settings.websocketUrl();
-    const crsf = settings.crsfUrl();
-    if (crsf) {
-      await this._connectCrsf(crsf, errorCallback);
-    } else if (ws) {
-      await this._connectWebsocket(ws, errorCallback);
+  /** Whether the flight controller is reached over a slow radio link. */
+  get isRadioLink() {
+    return this.target?.transport === "websocket";
+  }
+
+  public async connect(
+    target: ConnectionTarget,
+    errorCallback: any = console.warn,
+  ): Promise<any> {
+    if (target.transport === "websocket") {
+      await this._connectCrsf(target.url, errorCallback);
     } else {
       const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
       await this._connectPort(port, errorCallback);
     }
+    this.target = target;
     return await this.fetchInfo(10_000);
   }
 
-  public async connectFirstPort(
-    errorCallback: any = console.warn,
-  ): Promise<any> {
-    const ws = settings.websocketUrl();
-    const crsf = settings.crsfUrl();
-    if (crsf) {
-      await this._connectCrsf(crsf, errorCallback);
-    } else if (ws) {
-      await this._connectWebsocket(ws, errorCallback);
+  /** Reconnects to the previous target without prompting, e.g. after a reboot. */
+  public async reconnect(errorCallback: any = console.warn): Promise<any> {
+    const target = this.target;
+    if (target?.transport === "websocket") {
+      await this._connectCrsf(target.url, errorCallback);
     } else {
       const ports = await WebSerial.getPorts();
       if (!ports.length) throw new Error("no ports");
@@ -179,7 +185,7 @@ export class Serial {
     this.compress = false;
     const info = await this.get(QuicVal.Info, timeout);
     this.compress =
-      !!this.crsf &&
+      this.isRadioLink &&
       !!info.quic_protocol_version &&
       semver.gte(
         decodeSemver(info.quic_protocol_version),
@@ -190,7 +196,7 @@ export class Serial {
 
   private async _connectPort(port: any, errorCallback: any = console.warn) {
     await this.closing;
-    if (this.port || this.ws) throw new Error("already connected");
+    if (this.port || this.crsf) throw new Error("already connected");
 
     this.port = port;
     if (!this.port) {
@@ -231,48 +237,10 @@ export class Serial {
     }
   }
 
-  private async _connectWebsocket(
-    host: string,
-    errorCallback: any = console.warn,
-  ) {
-    await this.closing;
-    if (this.port || this.ws) throw new Error("already connected");
-
-    const transform = new QuicStream();
-    this.transform = transform;
-    const writer = transform.writable.getWriter();
-    this.reader = transform.readable.getReader();
-
-    this.errorCallback = errorCallback;
-    this.waitingCommands = Promise.resolve({} as any);
-
-    this.transformClosed = Promise.resolve({} as any);
-
-    return new Promise<void>((resolve, reject) => {
-      this.ws = new WebSocket("wss://" + host + "/ws");
-      this.ws.binaryType = "arraybuffer";
-      this.ws.onopen = (e) => {
-        resolve();
-      };
-      this.ws.onmessage = async (e) => {
-        try {
-          writer.write(new Uint8Array(e.data));
-        } catch (e) {
-          errorCallback(e);
-        }
-      };
-      this.ws.onclose = (e) => {
-        errorCallback(e);
-        this.close();
-      };
-      this.ws.onerror = (e) => {
-        errorCallback(e);
-        reject(e);
-      };
-    });
-  }
-
   private async _connectCrsf(url: string, errorCallback: any = console.warn) {
+    await this.closing;
+    if (this.port || this.crsf) throw new Error("already connected");
+
     const transform = new QuicStream();
     const writer = transform.writable.getWriter();
     this.transform = transform;
@@ -405,11 +373,6 @@ export class Serial {
     // Retain the port if closing fails so cleanup can be retried.
     await this.port?.close();
     this.port = undefined;
-    if (this.ws) {
-      this.ws.onclose = null;
-      this.ws.close();
-      this.ws = undefined;
-    }
     this.crsf?.close();
     this.crsf = undefined;
   }
@@ -445,8 +408,6 @@ export class Serial {
   private async write(array: Uint8Array) {
     if (this.crsf) {
       this.crsf.write(array);
-    } else if (this.ws) {
-      await this.ws?.send(array);
     } else if (this.writer) {
       await this.writer.write(array);
     } else {

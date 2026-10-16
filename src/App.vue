@@ -13,12 +13,12 @@
           {{ state.looptime_autodetect }} µs · CPU {{ state.cpu_load }}% ·
           {{ state.cpu_temp.toFixed(1) }}°C
         </span>
-        <ActionButton
+        <ConnectButton
+          :connected="serial.is_connected"
           :busy="serial.is_connecting"
           :disabled="applying || rebooting"
-          @click="toggleConnection"
-          >{{ serial.is_connected ? "Disconnect" : "Connect" }}</ActionButton
-        >
+          @toggle="toggleConnection"
+        />
       </div>
     </template>
     <template #utilities>
@@ -64,20 +64,14 @@
   <AlertPortal />
   <ModalPortal />
   <div
-    v-if="updateProcessing || !hasBrowserSupport"
+    v-if="updateProcessing"
     role="alertdialog"
     aria-modal="true"
-    :aria-label="updateProcessing ? 'Updating' : 'Unsupported Browser'"
+    aria-label="Updating"
     class="fixed inset-0 z-[10002] flex items-center justify-center bg-workspace/95 p-6"
   >
     <div class="max-w-lg rounded-lg border border-line bg-panel p-6">
-      <h1 class="mb-3 text-xl font-semibold">
-        {{ updateProcessing ? "Updating…" : "Unsupported Browser" }}
-      </h1>
-      <p v-if="!updateProcessing">
-        Your browser does not support the APIs needed by this application.
-        Please use Chrome, Chromium, or Edge.
-      </p>
+      <h1 class="mb-3 text-xl font-semibold">Updating…</h1>
     </div>
   </div>
 </template>
@@ -89,7 +83,7 @@ import ModalPortal from "@/components/ModalPortal.vue";
 import SelectModal from "@/components/SelectModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Shell from "@/components/ui/Shell.vue";
-import ActionButton from "@/components/ui/Button.vue";
+import ConnectButton from "@/components/ConnectButton.vue";
 import SaveBar from "@/components/ui/SaveBar.vue";
 import type { IconName } from "@/components/ui/Icon.vue";
 import { useTargetStore } from "./store/target";
@@ -100,10 +94,8 @@ import { useSerialStore } from "./store/serial";
 import { useRootStore } from "./store/root";
 import { useConstantStore } from "./store/constants";
 import { Log } from "./log";
-import { WebSerial } from "./store/serial/webserial";
-import { settings } from "./store/serial/settings";
 export default defineComponent({
-  components: { Shell, ActionButton, SaveBar, AlertPortal, ModalPortal },
+  components: { Shell, ConnectButton, SaveBar, AlertPortal, ModalPortal },
   setup() {
     return {
       target: useTargetStore(),
@@ -154,13 +146,6 @@ export default defineComponent({
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
-    },
-    hasBrowserSupport() {
-      return (
-        settings.websocketUrl() ||
-        settings.crsfUrl() ||
-        (navigator.usb && WebSerial)
-      );
     },
     logDownloadAnchorRef(): HTMLAnchorElement {
       return this.$refs.logDownloadAnchor as HTMLAnchorElement;
