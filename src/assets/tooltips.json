@@ -367,7 +367,10 @@
     "text": "Circle with GPS and hold the barometer altitude from when loiter started, at cruise throttle. Sticks are ignored. Works only while armed and airborne, after autolaunch. Without GPS, holds a constant bank instead. RTH takes priority, including failsafe RTH."
   },
   "channel.aux_cruise": {
-    "text": "Fly a straight GPS track at cruise throttle. The track locks half a second after roll and yaw are centered; roll or yaw input steers as in Level and locks the new track on release. Pitch sets the climb rate and releasing it holds the barometer altitude. Throttle is ignored. Works only while armed and airborne, after autolaunch. Loiter and RTH take priority, including failsafe RTH."
+    "text": "Fly a straight GPS track at cruise throttle. The track locks half a second after roll and yaw are centered; roll or yaw input steers as in Level and locks the new track on release. Pitch sets the climb rate and releasing it holds the barometer altitude. Throttle is ignored. Works only while armed and airborne, after autolaunch. Mission, loiter and RTH take priority, including failsafe RTH."
+  },
+  "channel.aux_mission": {
+    "text": "Fly the waypoint mission stored on the Mission page, in order. Needs GPS, a home position and the next waypoint within 2 km. Multirotors start only when the switch is turned on in flight, at least 2 m up, and stop at each waypoint. Wings turn for the next waypoint once inside their turn radius, fly at cruise throttle and ignore waypoint speeds; without a usable mission they loiter in place. At the end, the craft holds the last waypoint or returns home, as set on the Mission page. Turning the switch off returns control. Turning it on again continues to the waypoint not yet reached, also after an RTH; wings continue on their own when RTH ends. A finished mission or a new arming starts again from the first waypoint. The OSD status shows the active waypoint, such as WP 3/8 FLY. RTH takes priority, including failsafe RTH."
   },
   "channel.aux_autotrim": {
     "text": "Capture wing control-surface trim during steady flight. Keep Autotrim enabled through landing and disarming so the captured trim can be saved. Switching it off before saving cancels the capture and restores the previous trim."

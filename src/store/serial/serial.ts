@@ -55,6 +55,13 @@ const TRACK_UPLOAD_MIN = 256;
 /** An error reply from the firmware; the link itself is still in sync. */
 export class QuicError extends Error {}
 
+/** The radio link's configuration session is suspended while armed. */
+export class LinkSuspendedError extends QuicError {
+  constructor() {
+    super("Disarm to configure over the radio link.");
+  }
+}
+
 export type ConnectionTarget =
   | { transport: "usb" }
   // A CRSF WebSocket such as the TBS Crossfire Wi-Fi module's /ws endpoint.
@@ -168,6 +175,9 @@ export class Serial {
 
   private port?: SerialPort;
   private crsf?: CrsfLink;
+  // Receives the radio link's stream; replaced to discard a partial packet.
+  private crsfWriter?: WritableStreamDefaultWriter<Uint8Array>;
+  private suspended = false;
   private target?: ConnectionTarget;
   // Request compressed replies; enabled once Info shows firmware support.
   private compress = false;
@@ -189,7 +199,7 @@ export class Serial {
     return !!this.radioKey;
   }
 
-  /** The CrsfSocket key of a radio link. */
+  /** The CrsfSocket key of a radio link, shared with the QUIC_RT link. */
   get radioKey() {
     return this.target ? crsfKey(this.target) : undefined;
   }
@@ -284,10 +294,8 @@ export class Serial {
     await this.closing;
     if (this.port || this.crsf) throw new Error("already connected");
 
-    const transform = new QuicStream(this.onReceive);
-    const writer = transform.writable.getWriter();
-    this.transform = transform;
-    this.reader = transform.readable.getReader();
+    this.resetCrsfStream();
+    this.suspended = false;
 
     this.errorCallback = errorCallback;
     this.waitingCommands = Promise.resolve({} as any);
@@ -295,13 +303,45 @@ export class Serial {
 
     this.crsf = new CrsfLink(
       key,
-      (data) => writer.write(data).catch(errorCallback),
+      (data) => this.crsfWriter?.write(data).catch(errorCallback),
       (e) => {
         errorCallback(e);
         this.close();
       },
     );
     await this.crsf.connect();
+  }
+
+  // A fresh parser for the radio link's stream. Releasing the previous reader
+  // fails a pending read, so commands waiting on the old session end.
+  private resetCrsfStream() {
+    const reader = this.reader;
+    const transform = new QuicStream(this.onReceive);
+    this.crsfWriter = transform.writable.getWriter();
+    this.transform = transform;
+    this.reader = transform.readable.getReader();
+    reader?.releaseLock();
+  }
+
+  /**
+   * Arming ends the radio link's session on the flight controller. Pending
+   * and new commands fail with LinkSuspendedError until resume().
+   */
+  public suspend() {
+    if (!this.crsf) return;
+    // Also fails a resume() still opening its session.
+    this.crsf.suspend();
+    if (this.suspended) return;
+    this.suspended = true;
+    this.resetCrsfStream();
+  }
+
+  /** Opens a new session once disarmed and returns the fresh Info. */
+  public async resume(): Promise<any> {
+    if (!this.crsf || !this.suspended) throw new Error("not suspended");
+    await this.crsf.resume();
+    this.suspended = false;
+    return await this.fetchInfo(30_000);
   }
 
   public async softReboot() {
@@ -440,6 +480,8 @@ export class Serial {
     this.port = undefined;
     this.crsf?.close();
     this.crsf = undefined;
+    this.crsfWriter = undefined;
+    this.suspended = false;
   }
 
   private async _command(
@@ -466,6 +508,10 @@ export class Serial {
         return packet;
       })
       .catch((err) => {
+        // A command cut off by arming is not a transport failure.
+        if (this.suspended && !(err instanceof QuicError)) {
+          err = new LinkSuspendedError();
+        }
         // Only transport failures end the connection; callers handle replies.
         if (this.errorCallback && !(err instanceof QuicError)) {
           this.errorCallback(err);
@@ -503,6 +549,7 @@ export class Serial {
     decodeStreaming: boolean,
     tracker?: Tracker,
   ): Promise<QuicPacket> {
+    if (this.suspended) throw new LinkSuspendedError();
     const payload = this.encodeValues(values);
 
     const request = Uint8Array.from([

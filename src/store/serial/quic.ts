@@ -13,6 +13,7 @@ export enum QuicCmd {
   Serial,
   OSD,
   RX,
+  Mission,
   Max,
 }
 
@@ -61,6 +62,12 @@ export enum QuicOSD {
 
 export enum QuicRx {
   Bind,
+}
+
+export enum QuicMission {
+  Get,
+  Set,
+  Clear,
 }
 
 export enum QuicFlag {
