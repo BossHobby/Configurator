@@ -6,6 +6,7 @@
     :target="serial.is_connected ? info.target_name || target.name : ''"
     :connected="serial.is_connected"
     :connection="serial.is_connected ? 'Connected' : 'Disconnected'"
+    :activity="root.activity"
   >
     <template #connection>
       <div class="flex items-center gap-4">

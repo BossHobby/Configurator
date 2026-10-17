@@ -37,6 +37,21 @@ const SERIAL_FILTERS = [
 
 export type ProgressCallbackType = (number) => void;
 
+/** Reports payload bytes of the packet being parsed. */
+type ReceiveCallback = (cmd: number, received: number, total: number) => void;
+
+/** Commands sent within Serial.track() and their combined progress. */
+interface Tracker {
+  steps: number;
+  sent: number;
+  done: number;
+  // Waiting is set while the board works on a request before replying.
+  onProgress: (progress: number, waiting: boolean) => void;
+}
+
+// Requests larger than this weigh their upload as half of the command.
+const TRACK_UPLOAD_MIN = 256;
+
 /** An error reply from the firmware; the link itself is still in sync. */
 export class QuicError extends Error {}
 
@@ -76,7 +91,7 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
   private payload = new Uint8Array(0);
   private offset = 0;
 
-  constructor() {
+  constructor(onReceive?: ReceiveCallback) {
     super({
       transform: (
         chunk: Uint8Array,
@@ -85,8 +100,12 @@ class QuicStream extends TransformStream<Uint8Array, QuicPacket> {
         for (const b of chunk) {
           const p = this.push(b);
           if (p) {
+            onReceive?.(p.cmd, this.header.len, this.header.len);
             controller.enqueue(p);
           }
+        }
+        if (this.state == QuicParserState.READ_PAYLOAD) {
+          onReceive?.(this.header.cmd, this.offset, this.header.len);
         }
       },
     });
@@ -160,6 +179,10 @@ export class Serial {
   private transformClosed?: Promise<void>;
   private errorCallback?: any;
   private closing?: Promise<void>;
+
+  private tracker?: Tracker;
+  // Set while a tracked command waits for its reply.
+  private receiving?: ReceiveCallback;
 
   /** Whether the flight controller is reached over a slow radio link. */
   get isRadioLink() {
@@ -240,7 +263,7 @@ export class Serial {
 
     this.writer = await this.port.writable.getWriter();
 
-    this.transform = new QuicStream();
+    this.transform = new QuicStream(this.onReceive);
     this.transformClosed = this.port.readable
       .pipeTo(this.transform.writable)
       .catch((err) => {
@@ -261,7 +284,7 @@ export class Serial {
     await this.closing;
     if (this.port || this.crsf) throw new Error("already connected");
 
-    const transform = new QuicStream();
+    const transform = new QuicStream(this.onReceive);
     const writer = transform.writable.getWriter();
     this.transform = transform;
     this.reader = transform.readable.getReader();
@@ -340,6 +363,28 @@ export class Serial {
     return packet.payload.slice(1);
   }
 
+  /**
+   * Reports the progress of the commands fn sends, expecting about steps of
+   * them. Nested calls count towards the outer one.
+   */
+  public async track<T>(
+    steps: number,
+    onProgress: Tracker["onProgress"],
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    if (this.tracker) return fn();
+    const tracker: Tracker = { steps, sent: 0, done: 0, onProgress };
+    this.tracker = tracker;
+    try {
+      return await fn();
+    } finally {
+      this.tracker = undefined;
+    }
+  }
+
+  private onReceive: ReceiveCallback = (cmd, received, total) =>
+    this.receiving?.(cmd, received, total);
+
   public async command(cmd: QuicCmd, ...values: any[]): Promise<QuicPacket> {
     return this._command(cmd, noProgress, undefined, values);
   }
@@ -404,8 +449,12 @@ export class Serial {
     values: any[],
     decodeStreaming = true,
   ) {
+    const tracker = this.tracker;
+    if (tracker) tracker.sent++;
     return (this.waitingCommands = this.waitingCommands
-      .then(() => this.send(cmd, progress, timeout, values, decodeStreaming))
+      .then(() =>
+        this.send(cmd, progress, timeout, values, decodeStreaming, tracker),
+      )
       .then((packet) => {
         if (packet.cmd != cmd) {
           throw new Error("invalid command");
@@ -423,7 +472,17 @@ export class Serial {
           this.errorCallback = undefined;
         }
         throw err;
+      })
+      .finally(() => {
+        if (!tracker) return;
+        tracker.done++;
+        this.report(tracker, 0);
       }));
+  }
+
+  private report(tracker: Tracker, fraction: number, waiting = false) {
+    const steps = Math.max(tracker.steps, tracker.sent);
+    tracker.onProgress(Math.min(1, (tracker.done + fraction) / steps), waiting);
   }
 
   private async write(array: Uint8Array) {
@@ -442,6 +501,7 @@ export class Serial {
     timeout: number | undefined,
     values: any[],
     decodeStreaming: boolean,
+    tracker?: Tracker,
   ): Promise<QuicPacket> {
     const payload = this.encodeValues(values);
 
@@ -461,27 +521,55 @@ export class Serial {
       values,
     );
 
-    await this.write(concatUint8Array(request, payload));
-
-    // Timeouts sized for USB are too short for the radio link.
-    if (this.crsf && timeout) timeout = Math.max(timeout, 30_000);
-
-    let packet = await this.readPacket(progress, timeout, decodeStreaming);
-    while (packet.cmd == QuicCmd.Log) {
-      Log.info("serial", "[quic] " + packet.payload[0]);
-      packet = await this.readPacket(progress, timeout, decodeStreaming);
+    const data = concatUint8Array(request, payload);
+    // The radio link takes seconds to upload a profile.
+    const upload = tracker && data.length > TRACK_UPLOAD_MIN ? 0.5 : 0;
+    let acked = 0;
+    if (tracker) {
+      this.receiving = (c, received, total) => {
+        if (c == cmd && total)
+          this.report(tracker, upload + (1 - upload) * (received / total));
+      };
+      if (upload && this.crsf) {
+        this.crsf.onAck = (bytes) => {
+          acked += bytes;
+          this.report(
+            tracker,
+            upload * Math.min(1, acked / data.length),
+            acked >= data.length,
+          );
+        };
+      }
     }
-    Log.trace(
-      "serial",
-      "[quic] recv cmd:",
-      packet.cmd,
-      "flag:",
-      packet.flag,
-      "len:",
-      packet.len,
-      packet.payload,
-    );
-    return packet;
+
+    try {
+      await this.write(data);
+      // Saving a profile writes flash before the board replies.
+      if (tracker && !this.crsf) this.report(tracker, upload, true);
+
+      // Timeouts sized for USB are too short for the radio link.
+      if (this.crsf && timeout) timeout = Math.max(timeout, 30_000);
+
+      let packet = await this.readPacket(progress, timeout, decodeStreaming);
+      while (packet.cmd == QuicCmd.Log) {
+        Log.info("serial", "[quic] " + packet.payload[0]);
+        packet = await this.readPacket(progress, timeout, decodeStreaming);
+      }
+      Log.trace(
+        "serial",
+        "[quic] recv cmd:",
+        packet.cmd,
+        "flag:",
+        packet.flag,
+        "len:",
+        packet.len,
+        packet.payload,
+      );
+      return packet;
+    } finally {
+      this.receiving = undefined;
+      if (this.crsf) this.crsf.onAck = undefined;
+    }
   }
 
   private encodeValues(values: any[]): Uint8Array {

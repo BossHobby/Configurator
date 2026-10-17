@@ -165,6 +165,8 @@ export class CrsfLink {
   private txTime = 0;
   private lastSend = 0;
   private ackPending = false;
+  // Called with the number of bytes the flight controller acknowledged.
+  onAck?: (bytes: number) => void;
   // Rejects the session being opened, if any.
   private opening?: (err: any) => void;
 
@@ -335,6 +337,7 @@ export class CrsfLink {
       this.txSent -= end;
       this.txSeq = ack;
       this.txTime = Date.now();
+      this.onAck?.(end);
     }
 
     if (!data.length) return;
