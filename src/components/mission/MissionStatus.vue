@@ -1,6 +1,5 @@
 <template>
   <section
-    v-if="compact"
     class="rounded-lg border border-line bg-panel"
     aria-labelledby="mission-status-title"
   >
@@ -32,6 +31,8 @@
       <UiButton
         v-if="!serial.radio_link"
         class="shrink-0"
+        :disabled="nav.armed"
+        :title="nav.armed ? 'Disarm before disconnecting' : undefined"
         @click="nav.disconnect()"
         >Disconnect</UiButton
       >
@@ -75,108 +76,14 @@
       </div>
     </dl>
   </section>
-  <section
-    v-else
-    class="rounded-lg border border-line bg-panel"
-    aria-labelledby="mission-status-title"
-  >
-    <div class="flex flex-wrap items-stretch">
-      <div
-        class="flex min-w-56 flex-1 items-center gap-3 border-l-4 px-4 py-3 sm:flex-none"
-        :class="tone.border"
-      >
-        <span class="relative flex size-3 shrink-0">
-          <span
-            v-if="pulse"
-            class="absolute inset-0 rounded-full opacity-60 motion-safe:animate-ping"
-            :class="tone.dot"
-          />
-          <span class="relative size-3 rounded-full" :class="tone.dot" />
-        </span>
-        <div class="min-w-0">
-          <h2
-            id="mission-status-title"
-            class="truncate text-base leading-tight font-semibold"
-            :class="tone.text"
-            aria-live="polite"
-          >
-            {{ mode }}
-          </h2>
-          <p class="mt-0.5 truncate text-xs text-muted tabular-nums">
-            {{ detail }}
-          </p>
-        </div>
-      </div>
-
-      <dl
-        v-if="status"
-        class="grid flex-1 grid-cols-3 gap-px border-t border-line bg-line sm:grid-cols-4 sm:border-t-0 sm:border-l xl:grid-cols-6"
-        :class="nav.stale ? 'opacity-50' : ''"
-      >
-        <div v-for="tile in tiles" :key="tile.label" class="bg-panel px-3 py-2">
-          <dt class="text-[11px] tracking-wide text-muted uppercase">
-            {{ tile.label }}
-          </dt>
-          <dd
-            class="mt-0.5 text-lg leading-tight font-semibold whitespace-nowrap tabular-nums"
-            :class="tile.warn ? 'text-warning' : ''"
-          >
-            {{ tile.value
-            }}<span
-              v-if="tile.unit"
-              class="ml-0.5 text-xs font-normal text-muted"
-              >{{ tile.unit }}</span
-            >
-          </dd>
-          <div
-            v-if="tile.progress !== undefined"
-            class="mt-1 h-1 overflow-hidden rounded-full bg-line"
-          >
-            <div
-              class="h-full bg-warning transition-[width]"
-              :style="{ width: `${tile.progress * 100}%` }"
-            />
-          </div>
-        </div>
-      </dl>
-      <p
-        v-else
-        class="flex flex-1 items-center border-t border-line px-4 py-3 text-xs text-muted sm:border-t-0 sm:border-l"
-      >
-        {{
-          nav.connected
-            ? "Waiting for the first status from the flight controller."
-            : "Connect to follow the craft on the map and command it over the CRSF radio link, also while armed."
-        }}
-      </p>
-
-      <!-- A radio link session runs the QUIC_RT link itself. -->
-      <div
-        v-if="!serial.radio_link"
-        class="flex items-center border-t border-line px-4 py-3 sm:border-t-0 sm:border-l"
-      >
-        <UiButton
-          v-if="!nav.connected"
-          variant="primary"
-          :busy="nav.connecting"
-          @click="connect"
-          >Connect link</UiButton
-        >
-        <UiButton v-else @click="nav.disconnect()">Disconnect</UiButton>
-      </div>
-    </div>
-  </section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import UiButton from "@/components/ui/Button.vue";
-import { useConnectionStore } from "@/store/connection";
 import { useNavStore } from "@/store/nav";
-import { useRootStore } from "@/store/root";
 import { useSerialStore } from "@/store/serial";
 import { useTelemetryStore } from "@/store/telemetry";
-import { crsfKey } from "@/store/serial/serial";
 import { formatDistance } from "@/store/util/mission";
 import { CrsfTelemetryType } from "@/store/util/crsf-telemetry";
 import { NavVehicle, type NavStatus } from "@/store/util/quic-rt";
@@ -209,15 +116,9 @@ function split(text: string): [string, string] {
 export default defineComponent({
   name: "MissionStatus",
   components: { UiButton },
-  props: {
-    // Sits under the command panel once the link is live.
-    compact: { type: Boolean, default: false },
-  },
   setup() {
     return {
-      connection: useConnectionStore(),
       nav: useNavStore(),
-      root: useRootStore(),
       serial: useSerialStore(),
       telemetry: useTelemetryStore(),
     };
@@ -262,8 +163,7 @@ export default defineComponent({
     },
     mode(): string {
       const s = this.status;
-      if (!this.nav.connected) return "Link offline";
-      if (!s) return "Connecting…";
+      if (!s) return "";
       if (this.nav.stale) return "Telemetry lost";
       if (!s.armed) return "Disarmed";
       if (s.failsafe) return "Failsafe";
@@ -277,8 +177,7 @@ export default defineComponent({
     },
     detail(): string {
       const s = this.status;
-      if (!this.nav.connected) return "CRSF QUIC_RT link";
-      if (!s) return "CRSF QUIC_RT link";
+      if (!s) return "";
       const age = Math.max(0, this.nav.now - this.nav.updatedAt) / 1000;
       if (this.nav.stale) return `Last status ${age.toFixed(1)} s ago`;
       if (!s.armed) return `Live · on the ground${this.linkText}`;
@@ -361,20 +260,6 @@ export default defineComponent({
           warn: !s.gpsLock,
         },
       ];
-    },
-  },
-  methods: {
-    async connect() {
-      const key = crsfKey(this.connection.target);
-      if (!key) return;
-      try {
-        await this.nav.connect(key);
-      } catch {
-        this.root.append_alert({
-          type: "danger",
-          msg: "Could not open the CRSF link.",
-        });
-      }
     },
   },
 });

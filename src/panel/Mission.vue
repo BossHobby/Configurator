@@ -1,8 +1,5 @@
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Once the link is live, the status sits above the commands. -->
-    <MissionStatus v-if="nav.available && !showCommand" />
-
     <p
       v-if="serial.is_connected && !profile.serial?.gps"
       class="flex items-center gap-2 text-xs text-warning"
@@ -21,7 +18,12 @@
     >
       <div class="min-w-0">
         <div
-          class="relative h-[65vh] min-h-80 overflow-hidden rounded-lg border border-line lg:h-[calc(100dvh-19rem)] lg:min-h-[32rem]"
+          class="relative min-h-80 overflow-hidden rounded-lg border border-line lg:min-h-[32rem]"
+          :class="
+            root.fullscreen
+              ? 'h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))]'
+              : 'h-[65vh] lg:h-[calc(100dvh-19rem)]'
+          "
         >
           <MissionMap
             ref="map"
@@ -88,6 +90,20 @@
             >
               Fit mission
             </button>
+            <span class="mx-1 w-px bg-line" />
+            <button
+              type="button"
+              class="flex items-center gap-1.5 rounded px-2 py-1 text-muted hover:text-ink"
+              :title="root.fullscreen ? 'Exit fullscreen (Esc)' : undefined"
+              :aria-pressed="root.fullscreen"
+              @click="root.fullscreen = !root.fullscreen"
+            >
+              <component
+                :is="root.fullscreen ? Minimize2 : Maximize2"
+                :size="14"
+                aria-hidden="true"
+              />{{ root.fullscreen ? "Exit fullscreen" : "Fullscreen" }}
+            </button>
           </div>
         </div>
         <ul
@@ -102,7 +118,7 @@
       </div>
 
       <div v-if="showCommand" class="flex flex-col gap-4 self-start">
-        <MissionStatus compact />
+        <MissionStatus />
         <MissionCommand
           ref="command"
           :selected="selected"
@@ -366,6 +382,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { Maximize2, Minimize2 } from "@lucide/vue";
 import UiButton from "@/components/ui/Button.vue";
 import UiSelect from "@/components/ui/Select.vue";
 import Icon from "@/components/ui/Icon.vue";
@@ -427,6 +444,8 @@ export default defineComponent({
       formatDistance,
       formatDuration,
       hasCoord,
+      Maximize2,
+      Minimize2,
     };
   },
   data() {
@@ -538,8 +557,23 @@ export default defineComponent({
   mounted() {
     // Keep unsent edits when coming back to the page.
     if (this.serial.is_connected && !this.mission.dirty) this.fetch();
+    document.addEventListener("keydown", this.onKeydown);
+  },
+  unmounted() {
+    document.removeEventListener("keydown", this.onKeydown);
+    this.root.fullscreen = false;
   },
   methods: {
+    onKeydown(event: KeyboardEvent) {
+      // Esc first closes the map menu or a dialog.
+      if (
+        event.key != "Escape" ||
+        event.defaultPrevented ||
+        (event.target as Element).closest?.('[role="dialog"], [aria-modal]')
+      )
+        return;
+      this.root.fullscreen = false;
+    },
     flyTo(point: GeoPoint, pickAlt: boolean) {
       (
         this.$refs.command as InstanceType<typeof MissionCommand> | undefined

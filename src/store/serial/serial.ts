@@ -25,7 +25,6 @@ import { lzssDecode } from "./lzss";
 import { WebSerial } from "./webserial";
 import { settings } from "./settings";
 import { CRSF_BLUETOOTH, CrsfLink } from "./crsf";
-import { requestBleDevice } from "./ble";
 
 const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";
@@ -210,7 +209,7 @@ export class Serial {
   ): Promise<any> {
     const key = crsfKey(target);
     if (key) {
-      if (target.transport === "ble") await requestBleDevice();
+      // Callers choose the Bluetooth module first, see requestBleDevice() in ble.ts.
       await this._connectCrsf(key, errorCallback);
     } else {
       const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
