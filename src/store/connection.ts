@@ -24,7 +24,7 @@ const BUILTIN_BOOKMARKS: ConnectionBookmark[] = [
     id: "crossfire",
     name: "Crossfire Wi-Fi",
     transport: "websocket",
-    url: "ws://192.168.4.1/ws",
+    url: "ws://tbs-wifi.local/ws",
     builtin: true,
   },
 ];

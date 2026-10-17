@@ -29,7 +29,7 @@
         <input
           v-model="address"
           class="form-input font-mono"
-          placeholder="192.168.4.1 or ws://192.168.4.1/ws"
+          placeholder="tbs-wifi.local or ws://tbs-wifi.local/ws"
           autocomplete="off"
           autocapitalize="off"
           spellcheck="false"
