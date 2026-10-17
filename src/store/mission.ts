@@ -2,6 +2,7 @@ import { QuicCmd, QuicMission } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { defineStore } from "pinia";
 import { useInfoStore } from "./info";
+import { useRootStore } from "./root";
 import {
   MISSION_DEFAULT_LIMITS,
   MissionEndAction,
@@ -75,10 +76,8 @@ export const useMissionStore = defineStore("mission", {
     },
     async upload() {
       try {
-        const res = await serial.command(
-          QuicCmd.Mission,
-          QuicMission.Set,
-          this.mission,
+        const res = await useRootStore().track("Uploading mission", 1, () =>
+          serial.command(QuicCmd.Mission, QuicMission.Set, this.mission),
         );
         this.apply_response(res.payload[0]);
       } catch (err) {

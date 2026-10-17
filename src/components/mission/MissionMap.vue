@@ -1,5 +1,9 @@
 <template>
-  <div ref="root" class="relative size-full" @keydown.esc="closeMenu">
+  <div
+    ref="root"
+    class="relative size-full"
+    @keydown.esc="closeMenu() && $event.preventDefault()"
+  >
     <div
       ref="container"
       class="mission-map size-full rounded-md"
@@ -160,6 +164,7 @@ async function openMenu(e: L.LeafletMouseEvent, index?: number) {
 function closeMenu() {
   if (!menu.value) return false;
   menu.value = undefined;
+  if (props.follow) followCraft();
   return true;
 }
 
@@ -170,6 +175,20 @@ function choose(run: () => void) {
 
 function onPointerDown(e: PointerEvent) {
   if (!root.value?.contains(e.target as Node)) closeMenu();
+}
+
+// A finger is on the map. Following holds still meanwhile, so a long-press
+// stays on its point and the menu it opens is not closed by the next pan.
+let holding = false;
+
+function onHoldStart() {
+  holding = true;
+}
+
+function onHoldEnd() {
+  if (!holding) return;
+  holding = false;
+  if (props.follow) followCraft();
 }
 
 let map: L.Map | undefined;
@@ -423,12 +442,16 @@ function centerOnCraft() {
 }
 
 function followCraft() {
-  if (!map || !hasCoord(props.position)) return;
+  if (!map || !hasCoord(props.position) || holding || menu.value) return;
   centered = true;
   map.panTo(toLatLng(props.position), { animate: true, duration: 0.25 });
 }
 
 defineExpose({ fit, centerOnCraft });
+
+// Leaflet only tracks window resizes, not the container going fullscreen
+// or the command panel opening beside it.
+const resize = new ResizeObserver(() => map?.invalidateSize());
 
 onMounted(() => {
   map = L.map(container.value!, {
@@ -448,6 +471,9 @@ onMounted(() => {
   map.on("contextmenu", (e: L.LeafletMouseEvent) => openMenu(e));
   map.on("movestart zoomstart", closeMenu);
   document.addEventListener("pointerdown", onPointerDown);
+  container.value!.addEventListener("pointerdown", onHoldStart);
+  document.addEventListener("pointerup", onHoldEnd);
+  document.addEventListener("pointercancel", onHoldEnd);
   map.on("dragstart", () => {
     if (props.follow) emit("unfollow");
   });
@@ -462,10 +488,14 @@ onMounted(() => {
   fit();
   if (!centered) startView();
   map.on("moveend", saveView);
+  resize.observe(container.value!);
 });
 
 onUnmounted(() => {
+  resize.disconnect();
   document.removeEventListener("pointerdown", onPointerDown);
+  document.removeEventListener("pointerup", onHoldEnd);
+  document.removeEventListener("pointercancel", onHoldEnd);
   map?.remove();
   map = undefined;
 });

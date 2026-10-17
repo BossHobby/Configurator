@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import Icon from "@/components/ui/Icon.vue";
 import UiButton from "@/components/ui/Button.vue";
 import { useSerialStore } from "@/store/serial";
 import { bleScan, cancelScan, chooseDevice } from "@/store/serial/ble-scan";
 
+// Shown over another page instead of inside Home.
+const props = defineProps<{ dialog?: boolean }>();
+
 const serial = useSerialStore();
+function onKeydown(e: KeyboardEvent) {
+  if (e.key == "Escape" && bleScan.scanning) cancelScan();
+}
+onMounted(() => {
+  if (props.dialog) document.addEventListener("keydown", onKeydown);
+});
+onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 watch(
   () => serial.is_connecting,
   (connecting) => {
@@ -24,7 +34,25 @@ function bars(rssi?: number) {
 </script>
 
 <template>
-  <div class="w-full max-w-sm text-left">
+  <div
+    class="w-full text-left"
+    :class="
+      dialog
+        ? 'relative z-10 max-w-md rounded-lg border border-line bg-panel p-5 text-ink shadow-xl'
+        : 'max-w-sm'
+    "
+    :role="dialog ? 'dialog' : undefined"
+    :aria-modal="dialog || undefined"
+    :aria-labelledby="dialog ? 'ble-devices-title' : undefined"
+  >
+    <template v-if="dialog">
+      <h2 id="ble-devices-title" class="text-base font-semibold">
+        Choose a Bluetooth module
+      </h2>
+      <p class="mt-2 mb-4 text-sm text-muted">
+        Your radio's Bluetooth module, in its serial mode.
+      </p>
+    </template>
     <div
       class="overflow-hidden rounded-lg border border-line bg-workspace"
       aria-live="polite"
@@ -80,7 +108,10 @@ function bars(rssi?: number) {
         Power on your module and keep it close by.
       </p>
     </div>
-    <div class="mt-3 flex justify-center">
+    <div
+      class="flex"
+      :class="dialog ? 'mt-5 justify-end' : 'mt-3 justify-center'"
+    >
       <UiButton v-if="bleScan.scanning" @click="cancelScan">Cancel</UiButton>
     </div>
   </div>

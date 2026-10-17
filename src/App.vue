@@ -7,6 +7,7 @@
     :connected="serial.is_connected"
     :connection="connectionLabel"
     :activity="root.activity"
+    :fullscreen="root.fullscreen"
   >
     <template #connection>
       <div class="flex items-center gap-4">
@@ -22,7 +23,14 @@
           class="max-md:hidden"
           :connected="serial.is_connected"
           :busy="serial.is_connecting"
-          :disabled="applying || rebooting"
+          :disabled="applying || rebooting || nav.armed"
+          :title="
+            !nav.armed
+              ? undefined
+              : serial.is_connected
+                ? 'Disarm before disconnecting'
+                : 'Connects once the craft disarms'
+          "
           @toggle="toggleConnection"
         />
       </div>
@@ -32,7 +40,7 @@
         v-if="serial.is_connected"
         class="md:hidden"
         :busy="serial.is_connecting"
-        :disabled="applying || rebooting"
+        :disabled="applying || rebooting || nav.armed"
         @click="toggleConnection"
         >Disconnect</UiButton
       >
@@ -46,7 +54,7 @@
       </button>
     </template>
     <header
-      v-if="serial.is_connected"
+      v-if="serial.is_connected && !root.fullscreen"
       class="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3"
     >
       <div class="min-w-0">
@@ -61,13 +69,13 @@
     <router-view />
     <template #footer>
       <SaveBar
-        v-if="serial.is_connected || rebooting"
+        v-if="(serial.is_connected || rebooting) && !root.fullscreen"
         :dirty="root.needs_apply"
         :needs-reboot="root.needs_reboot"
         :busy="applying"
         :rebooting="rebooting"
         :disabled="info.is_read_only || serial.is_connecting"
-        :reboot-disabled="serial.is_connecting"
+        :reboot-disabled="serial.is_connecting || nav.armed"
         :error="operationError"
         @apply="apply"
         @reboot="reboot"
@@ -76,6 +84,15 @@
   </Shell>
   <AlertPortal />
   <ModalPortal />
+  <!-- Home lists nearby modules in its page; elsewhere, e.g. connecting from
+       the mission map, they show over it. -->
+  <div
+    v-if="bleScan.scanning && $route.name !== 'home'"
+    class="fixed inset-0 z-[10000] flex items-center justify-center p-4"
+  >
+    <div class="absolute inset-0 bg-workspace/85" @click="cancelScan"></div>
+    <BleDevices dialog />
+  </div>
   <div
     v-if="updateProcessing"
     role="alertdialog"
@@ -89,10 +106,11 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineAsyncComponent, defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
 import AlertPortal from "@/components/AlertPortal.vue";
 import ModalPortal from "@/components/ModalPortal.vue";
+import { bleScan, cancelScan } from "@/store/serial/ble-scan";
 import SelectModal from "@/components/SelectModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Shell from "@/components/ui/Shell.vue";
@@ -107,6 +125,7 @@ import { useStateStore } from "./store/state";
 import { useSerialStore } from "./store/serial";
 import { useRootStore } from "./store/root";
 import { useMissionStore } from "./store/mission";
+import { useNavStore } from "./store/nav";
 import { useConstantStore } from "./store/constants";
 import { Log } from "./log";
 import { exportFile } from "./store/util/export";
@@ -118,6 +137,11 @@ export default defineComponent({
     SaveBar,
     AlertPortal,
     ModalPortal,
+    // Loaded lazily: the serial store it uses imports the router and Home,
+    // which renders it too.
+    BleDevices: defineAsyncComponent(
+      () => import("@/components/BleDevices.vue"),
+    ),
   },
   setup() {
     return {
@@ -128,7 +152,10 @@ export default defineComponent({
       serial: useSerialStore(),
       root: useRootStore(),
       mission: useMissionStore(),
+      nav: useNavStore(),
       constants: useConstantStore(),
+      bleScan,
+      cancelScan,
     };
   },
   data() {
@@ -140,7 +167,11 @@ export default defineComponent({
   },
   computed: {
     connectionLabel(): string {
-      if (!this.serial.is_connected) return "Disconnected";
+      if (!this.serial.is_connected) {
+        // Following an armed craft before its configuration opens.
+        if (this.nav.connected && this.nav.armed) return "Armed, following";
+        return "Disconnected";
+      }
       // The radio link shows the profile as read before arming.
       return this.root.in_flight ? "Armed, read-only" : "Connected";
     },
@@ -192,7 +223,10 @@ export default defineComponent({
   },
   methods: {
     onBeforeUnload(event: BeforeUnloadEvent) {
-      if (this.serial.is_connected && this.root.needs_apply) {
+      if (
+        this.nav.armed ||
+        (this.serial.is_connected && this.root.needs_apply)
+      ) {
         event.preventDefault();
       }
     },
@@ -217,6 +251,8 @@ export default defineComponent({
       return choice === "discard";
     },
     async toggleConnection() {
+      // Disconnecting would drop the link to a flying craft.
+      if (this.nav.armed) return;
       if (
         this.serial.is_connected &&
         !(await this.resolveUnsaved("Disconnect"))
@@ -249,7 +285,13 @@ export default defineComponent({
       }
     },
     async reboot() {
-      if (this.applying || this.rebooting || !this.serial.is_connected) return;
+      if (
+        this.applying ||
+        this.rebooting ||
+        !this.serial.is_connected ||
+        this.nav.armed
+      )
+        return;
       if (!(await this.resolveUnsaved("Reboot"))) return;
       this.rebooting = true;
       this.operationError = undefined;

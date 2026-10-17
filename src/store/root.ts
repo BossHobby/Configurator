@@ -11,6 +11,9 @@ export const useRootStore = defineStore("root", {
     // suspended, the QUIC_RT link keeps flowing and pages show the profile
     // as read before arming. Owned by the serial store.
     in_flight: false,
+    // A page, such as the mission map, hides the header, sidebar, page title
+    // and save bar to fill the window.
+    fullscreen: false,
 
     alerts: [] as any[],
 
