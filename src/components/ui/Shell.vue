@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 import { ref, watch, nextTick } from "vue";
-import { EllipsisVertical } from "@lucide/vue";
+import { EllipsisVertical, ChevronsLeft, ChevronsRight } from "@lucide/vue";
 import Brand from "./Brand.vue";
 import Icon, { type IconName } from "./Icon.vue";
 import Appearance from "./Appearance.vue";
@@ -19,6 +19,21 @@ const version = import.meta.env.VITE_APP_VERSION;
 const appearance = useAppearance();
 const content = ref<HTMLElement>();
 const menu = ref<HTMLDetailsElement>();
+
+let initialCollapsed = false;
+try {
+  initialCollapsed = localStorage.getItem("sidebar-collapsed") === "true";
+} catch {
+  /* Storage may be unavailable. */
+}
+const collapsed = ref(initialCollapsed);
+watch(collapsed, (value) => {
+  try {
+    localStorage.setItem("sidebar-collapsed", String(value));
+  } catch {
+    /* Sidebar still toggles without persistence. */
+  }
+});
 watch(
   () => props.active,
   async () => {
@@ -62,7 +77,7 @@ watch(
         <details
           ref="menu"
           class="relative"
-          :class="navigation.length ? 'md:hidden' : ''"
+          :class="navigation.length && !collapsed ? 'md:hidden' : ''"
         >
           <summary
             class="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-subtle [&::-webkit-details-marker]:hidden"
@@ -90,8 +105,11 @@ watch(
     </header>
     <div class="flex min-h-0 flex-1 flex-col md:flex-row">
       <aside
-        class="flex shrink-0 flex-col border-b border-line bg-panel md:w-48 md:overflow-y-auto md:border-r md:border-b-0"
-        :class="navigation.length ? '' : 'hidden'"
+        class="flex shrink-0 flex-col border-b border-line bg-panel md:overflow-y-auto md:border-r md:border-b-0"
+        :class="[
+          navigation.length ? '' : 'hidden',
+          collapsed ? 'md:w-14' : 'md:w-48',
+        ]"
       >
         <nav
           v-if="navigation.length"
@@ -103,8 +121,10 @@ watch(
             :key="item.id"
             :to="item.id"
             :aria-current="active === item.id ? 'page' : undefined"
-            class="flex min-h-11 shrink-0 items-center gap-3 border-b-2 px-4 py-2 text-left text-sm md:border-b-0 md:border-l-2 md:px-5"
+            :title="collapsed ? item.label : undefined"
+            class="flex min-h-11 shrink-0 items-center gap-3 border-b-2 px-4 py-2 text-left text-sm md:border-b-0 md:border-l-2"
             :class="[
+              collapsed ? 'md:justify-center md:px-0' : 'md:px-5',
               active === item.id
                 ? 'border-accent bg-active font-medium text-ink'
                 : 'border-transparent text-muted hover:bg-subtle hover:text-ink',
@@ -116,21 +136,47 @@ watch(
             <Icon
               :name="item.icon"
               :class="active === item.id ? 'text-accent' : ''"
-            />{{ item.label }}
+            /><span :class="collapsed ? 'md:sr-only' : ''">{{
+              item.label
+            }}</span>
           </RouterLink>
         </nav>
         <div
-          class="hidden flex-col gap-4 px-3 pt-4 pb-5 md:mt-auto md:flex md:items-stretch"
+          class="hidden flex-col gap-4 pt-4 pb-5 md:mt-auto md:flex md:items-stretch"
+          :class="collapsed ? 'px-0' : 'px-3'"
         >
-          <slot name="utilities" /><Appearance v-model="appearance" />
-          <div class="flex items-center justify-between text-xs text-muted">
-            <span>v{{ version }}</span
-            ><a
-              href="https://docs.bosshobby.com"
-              target="_blank"
-              rel="noreferrer"
-              class="hover:text-ink"
-              >Help &amp; Docs</a
+          <template v-if="!collapsed"
+            ><slot name="utilities" /><Appearance v-model="appearance"
+          /></template>
+          <div
+            class="flex items-center gap-3 text-xs text-muted"
+            :class="collapsed ? 'justify-center' : ''"
+          >
+            <button
+              type="button"
+              class="-my-2 flex size-9 shrink-0 items-center justify-center rounded-md hover:bg-subtle hover:text-ink"
+              :class="collapsed ? '' : '-ml-2'"
+              :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              :aria-expanded="!collapsed"
+              :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              @click="collapsed = !collapsed"
+            >
+              <component
+                :is="collapsed ? ChevronsRight : ChevronsLeft"
+                :size="20"
+                :stroke-width="1.75"
+                aria-hidden="true"
+              />
+            </button>
+            <template v-if="!collapsed"
+              ><span>v{{ version }}</span
+              ><a
+                href="https://docs.bosshobby.com"
+                target="_blank"
+                rel="noreferrer"
+                class="ml-auto hover:text-ink"
+                >Help &amp; Docs</a
+              ></template
             >
           </div>
         </div>
