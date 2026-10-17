@@ -6,18 +6,17 @@
     <div>
       <h1 class="text-2xl font-semibold text-ink">QUICKSILVER Configurator</h1>
       <p class="mx-auto mt-2 max-w-md text-sm text-muted">
-        Connect your flight controller over USB to configure your craft, check
-        receiver inputs, and tune its response.
+        Connect your flight controller over USB, Bluetooth or Wi-Fi to configure
+        your craft, check receiver inputs, and tune its response.
       </p>
     </div>
     <div class="flex flex-wrap items-center justify-center gap-3">
-      <UiButton
-        variant="primary"
-        class="min-h-11 px-6 text-base"
+      <ConnectButton
+        large
+        connect-label="Connect flight controller"
         :busy="serial.is_connecting"
-        @click="connect"
-        >Connect flight controller</UiButton
-      >
+        @toggle="connect"
+      />
       <spinner-btn v-if="updateAvailable" @click="doUpdate"
         >Install update</spinner-btn
       >
@@ -41,12 +40,12 @@ import { defineComponent } from "vue";
 import { updater } from "@/store/util/updater";
 import { useRootStore } from "@/store/root";
 import { useSerialStore } from "@/store/serial";
-import UiButton from "@/components/ui/Button.vue";
+import ConnectButton from "@/components/ConnectButton.vue";
 import LogoClean from "@/assets/Logo_Clean.svg?component";
 
 export default defineComponent({
   name: "Info",
-  components: { UiButton, LogoClean },
+  components: { ConnectButton, LogoClean },
   // Panels placed in the slot (the firmware flasher) render as divided
   // sub-sections of this card instead of a second card.
   provide: { "ui-panel": true },

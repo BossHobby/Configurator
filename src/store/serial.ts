@@ -12,6 +12,7 @@ import { useConnectionStore } from "./connection";
 import { QuicCmd, QuicMotor } from "./serial/quic";
 import { serial } from "./serial/serial";
 import { settings } from "./serial/settings";
+import { ScanCancelled } from "./serial/ble-scan";
 import { useInfoStore } from "./info";
 import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
@@ -258,10 +259,12 @@ export const useSerialStore = defineStore("serial", {
         stopInterval();
         await serial.close();
         root.reset_needs_reboot();
-        root.append_alert({
-          type: "danger",
-          msg: "Connection to the board failed",
-        });
+        if (!(err instanceof ScanCancelled)) {
+          root.append_alert({
+            type: "danger",
+            msg: "Connection to the board failed",
+          });
+        }
       } finally {
         this.is_connecting = false;
       }

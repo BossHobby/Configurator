@@ -1,5 +1,7 @@
 appId: com.bosshobby.config
 productName: quic-config
+# The iOS app icon on macOS's icon grid, see electron/icon.png.
+icon: electron/icon.png
 directories:
   output: build
   buildResources: public
@@ -8,6 +10,9 @@ files:
   - package-lock.json
   - package.json
   - README.md
+mac:
+  extendInfo:
+    NSBluetoothAlwaysUsageDescription: Connect to your flight controller or radio bridge to read and save settings.
 win:
   target: portable
   artifactName: ${name}-${version}.${ext}

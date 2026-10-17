@@ -1,5 +1,5 @@
 import semver from "semver";
-import { BlackboxField } from "../constants";
+import { BlackboxField } from "../blackbox-fields";
 import {
   transformBlackboxFieldFlags,
   type BlackboxFile,

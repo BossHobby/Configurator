@@ -12,7 +12,8 @@
       v-else
       ref="toggle"
       type="button"
-      class="form-button rounded-r-none border-r-0 px-2"
+      class="form-button rounded-r-none border-r-0"
+      :class="large ? 'form-button-primary min-h-11 px-3' : 'px-2'"
       aria-haspopup="menu"
       :aria-expanded="open"
       :aria-label="'Connection: ' + connection.selected.name"
@@ -22,21 +23,27 @@
     >
       <Icon :name="iconFor(connection.selected)" /><Icon
         name="chevron"
-        class="-ml-1 text-muted"
+        class="-ml-1"
+        :class="large ? '' : 'text-muted'"
       />
     </button>
     <UiButton
+      :variant="large ? 'primary' : 'secondary'"
       :busy="busy"
       :disabled="disabled"
-      :class="connected ? '' : 'rounded-l-none'"
+      :class="[
+        connected ? '' : 'rounded-l-none',
+        large ? 'min-h-11 border-l-on-accent/30 px-6 text-base' : '',
+      ]"
       @click="$emit('toggle')"
-      >{{ connected ? "Disconnect" : "Connect" }}</UiButton
+      >{{ connected ? "Disconnect" : connectLabel }}</UiButton
     >
     <div
       v-if="open"
       role="menu"
       aria-label="Connection"
-      class="absolute top-full right-0 z-20 mt-2 flex w-72 max-w-[calc(100vw-2rem)] flex-col rounded-lg border border-line bg-panel p-1 text-sm text-ink shadow-lg"
+      :class="large ? 'left-0 text-left' : 'right-0'"
+      class="absolute top-full z-20 mt-2 flex w-72 max-w-[calc(100vw-2rem)] flex-col rounded-lg border border-line bg-panel p-1 text-sm text-ink shadow-lg"
     >
       <div
         v-for="option in connection.options"
@@ -122,6 +129,9 @@ export default defineComponent({
     connected: { type: Boolean, default: false },
     busy: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
+    // The home page's primary call to action.
+    large: { type: Boolean, default: false },
+    connectLabel: { type: String, default: "Connect" },
   },
   emits: ["toggle"],
   setup() {

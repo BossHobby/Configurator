@@ -6,7 +6,7 @@ import {
   CrsfFrameParser,
   extendedFrame,
 } from "../util/crsf";
-import { CrsfBluetooth } from "./ble";
+import { bluetoothTransport } from "./ble";
 
 // QUIC over CRSF 0x83 frames, tunnelled through a CRSF bridge such as the
 // TBS Crossfire WiFi module's /ws WebSocket or its Bluetooth serial service.
@@ -99,7 +99,7 @@ export class CrsfSocket {
 
   private constructor(private key: string) {
     this.transport =
-      key == CRSF_BLUETOOTH ? new CrsfBluetooth() : new CrsfWebSocket(key);
+      key == CRSF_BLUETOOTH ? bluetoothTransport() : new CrsfWebSocket(key);
     this.opened = this.transport.open(
       (chunk) => {
         for (const body of this.parser.push(chunk)) {
