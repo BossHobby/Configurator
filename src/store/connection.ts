@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { WebSerial } from "./serial/webserial";
+import { bleSupported } from "./serial/ble";
 import type { ConnectionTarget } from "./serial/serial";
 
 export interface ConnectionBookmark {
@@ -12,12 +13,18 @@ export interface ConnectionBookmark {
 
 export type ConnectionOption =
   | { id: "usb"; name: string; transport: "usb" }
+  | { id: "bluetooth"; name: string; transport: "ble" }
   | ConnectionBookmark;
 
 const BOOKMARKS_KEY = "connection-bookmarks";
 const SELECTED_KEY = "connection-selected";
 
 const USB: ConnectionOption = { id: "usb", name: "USB", transport: "usb" };
+const BLUETOOTH: ConnectionOption = {
+  id: "bluetooth",
+  name: "Bluetooth",
+  transport: "ble",
+};
 
 const BUILTIN_BOOKMARKS: ConnectionBookmark[] = [
   {
@@ -68,6 +75,7 @@ export const useConnectionStore = defineStore("connection", {
     options(): ConnectionOption[] {
       return [
         ...(usbSupported() ? [USB] : []),
+        ...(bleSupported() ? [BLUETOOTH] : []),
         ...BUILTIN_BOOKMARKS,
         ...this.bookmarks,
       ];
@@ -79,9 +87,9 @@ export const useConnectionStore = defineStore("connection", {
     },
     target(): ConnectionTarget {
       const option = this.selected;
-      return option.transport === "usb"
-        ? { transport: "usb" }
-        : { transport: "websocket", url: option.url };
+      return option.transport === "websocket"
+        ? { transport: "websocket", url: option.url }
+        : { transport: option.transport };
     },
   },
   actions: {

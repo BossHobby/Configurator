@@ -24,7 +24,8 @@ import { CBOR } from "./cbor";
 import { lzssDecode } from "./lzss";
 import { WebSerial } from "./webserial";
 import { settings } from "./settings";
-import { CrsfLink } from "./crsf";
+import { CRSF_BLUETOOTH, CrsfLink } from "./crsf";
+import { requestBleDevice } from "./ble";
 
 const SOFT_REBOOT_MAGIC = "S";
 const HARD_REBOOT_MAGIC = "R";
@@ -42,7 +43,16 @@ export class QuicError extends Error {}
 export type ConnectionTarget =
   | { transport: "usb" }
   // A CRSF WebSocket such as the TBS Crossfire Wi-Fi module's /ws endpoint.
-  | { transport: "websocket"; url: string };
+  | { transport: "websocket"; url: string }
+  // The TBS Crossfire Wi-Fi module's Bluetooth serial service.
+  | { transport: "ble" };
+
+/** The CrsfSocket key of a radio link target, undefined for USB. */
+export function crsfKey(target: ConnectionTarget) {
+  if (target.transport === "websocket") return target.url;
+  if (target.transport === "ble") return CRSF_BLUETOOTH;
+  return undefined;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noProgress = () => {};
@@ -153,15 +163,22 @@ export class Serial {
 
   /** Whether the flight controller is reached over a slow radio link. */
   get isRadioLink() {
-    return this.target?.transport === "websocket";
+    return !!this.radioKey;
+  }
+
+  /** The CrsfSocket key of a radio link. */
+  get radioKey() {
+    return this.target ? crsfKey(this.target) : undefined;
   }
 
   public async connect(
     target: ConnectionTarget,
     errorCallback: any = console.warn,
   ): Promise<any> {
-    if (target.transport === "websocket") {
-      await this._connectCrsf(target.url, errorCallback);
+    const key = crsfKey(target);
+    if (key) {
+      if (target.transport === "ble") await requestBleDevice();
+      await this._connectCrsf(key, errorCallback);
     } else {
       const port = await WebSerial.requestPort({ filters: SERIAL_FILTERS });
       await this._connectPort(port, errorCallback);
@@ -172,9 +189,9 @@ export class Serial {
 
   /** Reconnects to the previous target without prompting, e.g. after a reboot. */
   public async reconnect(errorCallback: any = console.warn): Promise<any> {
-    const target = this.target;
-    if (target?.transport === "websocket") {
-      await this._connectCrsf(target.url, errorCallback);
+    const key = this.radioKey;
+    if (key) {
+      await this._connectCrsf(key, errorCallback);
     } else {
       const ports = await WebSerial.getPorts();
       if (!ports.length) throw new Error("no ports");
@@ -240,7 +257,7 @@ export class Serial {
     }
   }
 
-  private async _connectCrsf(url: string, errorCallback: any = console.warn) {
+  private async _connectCrsf(key: string, errorCallback: any = console.warn) {
     await this.closing;
     if (this.port || this.crsf) throw new Error("already connected");
 
@@ -254,7 +271,7 @@ export class Serial {
     this.transformClosed = Promise.resolve({} as any);
 
     this.crsf = new CrsfLink(
-      url,
+      key,
       (data) => writer.write(data).catch(errorCallback),
       (e) => {
         errorCallback(e);

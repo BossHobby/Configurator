@@ -65,13 +65,13 @@
               >{{ option.name }}</span
             >
             <span
-              v-if="option.transport !== 'usb'"
+              v-if="option.transport === 'websocket'"
               class="truncate text-xs text-muted"
               >{{ hostOf(option.url) }}</span
             >
           </span>
         </button>
-        <template v-if="option.transport !== 'usb' && !option.builtin">
+        <template v-if="option.transport === 'websocket' && !option.builtin">
           <button
             type="button"
             class="form-dismiss before:content-none"
@@ -144,7 +144,8 @@ export default defineComponent({
   },
   methods: {
     iconFor(option: ConnectionOption): IconName {
-      return option.transport === "usb" ? "usb" : "wifi";
+      if (option.transport === "websocket") return "wifi";
+      return option.transport === "ble" ? "bluetooth" : "usb";
     },
     hostOf(url: string) {
       try {
@@ -154,9 +155,9 @@ export default defineComponent({
       }
     },
     describe(option: ConnectionOption) {
-      return option.transport === "usb"
-        ? option.name
-        : `${option.name} (${option.url})`;
+      return option.transport === "websocket"
+        ? `${option.name} (${option.url})`
+        : option.name;
     },
     onPointerDown(event: PointerEvent) {
       if (!(this.$refs.root as HTMLElement).contains(event.target as Node))
