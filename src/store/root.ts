@@ -7,6 +7,10 @@ export const useRootStore = defineStore("root", {
   state: () => ({
     needs_apply: false,
     needs_reboot: false,
+    // Armed during a radio link session: its configuration session is
+    // suspended, the QUIC_RT link keeps flowing and pages show the profile
+    // as read before arming. Owned by the serial store.
+    in_flight: false,
 
     alerts: [] as any[],
 

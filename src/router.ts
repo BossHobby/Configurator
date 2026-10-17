@@ -1,4 +1,6 @@
 import { useSerialStore } from "./store/serial";
+import { useMissionStore } from "./store/mission";
+import { useNavStore } from "./store/nav";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import Setup from "./views/Setup.vue";
@@ -12,6 +14,7 @@ import Perf from "./views/Perf.vue";
 import Profile from "./views/Profile.vue";
 import Home from "./views/Home.vue";
 import Templates from "./views/Templates.vue";
+import Mission from "./views/Mission.vue";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -107,6 +110,16 @@ const router = createRouter({
       },
     },
     {
+      path: "/mission",
+      name: "mission",
+      component: Mission,
+      meta: {
+        title: "Mission",
+        description:
+          "Plan GPS waypoints and store them on the flight controller.",
+      },
+    },
+    {
       path: "/motor",
       redirect: "/outputs",
     },
@@ -151,8 +164,16 @@ router.beforeEach((to) => {
     if (to.name === "home") {
       return { name: "profile" };
     }
+    if (to.name === "mission" && !useMissionStore().supported) {
+      return { name: "profile" };
+    }
     return true;
   } else {
+    // The QUIC_RT link works without a configurator session, which a craft
+    // that is already armed refuses: the live map can still follow it.
+    if (to.name === "mission" && useNavStore().available) {
+      return true;
+    }
     if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
       return { name: "home" };
     }

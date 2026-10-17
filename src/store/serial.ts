@@ -4,15 +4,18 @@ import { useDefaultProfileStore } from "./default_profile";
 import { usePerfStore } from "./perf";
 import { useBindStore } from "./bind";
 import { useGpsStore } from "./gps";
+import { useMissionStore } from "./mission";
+import { useNavStore } from "./nav";
 import { Log } from "@/log";
 import router from "@/router";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
 import { useConnectionStore } from "./connection";
 import { QuicCmd, QuicMotor } from "./serial/quic";
-import { serial } from "./serial/serial";
+import { LinkSuspendedError, serial } from "./serial/serial";
 import { settings } from "./serial/settings";
 import { ScanCancelled } from "./serial/ble-scan";
+import { watch } from "vue";
 import { useInfoStore } from "./info";
 import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
@@ -23,6 +26,8 @@ import { WebSerial } from "./serial/webserial";
 
 let interval: any = null;
 let intervalCounter = 0;
+// Follows the armed flag of the QUIC_RT link during a radio link session.
+let stopArmWatch: (() => void) | undefined;
 
 function stopInterval() {
   clearInterval(interval);
@@ -43,6 +48,9 @@ function startInterval(fn: any) {
     try {
       await fn(intervalCounter);
       intervalCounter++;
+    } catch (err) {
+      // Arming cut off this poll; polling resumes after disarming.
+      if (!(err instanceof LinkSuspendedError)) throw err;
     } finally {
       polling = false;
     }
@@ -53,10 +61,62 @@ export const useSerialStore = defineStore("serial", {
   state: () => ({
     is_connected: false,
     is_connecting: false,
-    // Connected over the CRSF radio link, which only serves configuration.
+    // Connected over the CRSF radio link.
     radio_link: false,
   }),
   actions: {
+    enter_flight() {
+      stopInterval();
+      useRootStore().in_flight = true;
+      serial.suspend();
+    },
+    // Disarmed again: open a new session and refresh what may have changed.
+    async leave_flight() {
+      const root = useRootStore();
+      this.is_connecting = true;
+      try {
+        const i = await serial.resume();
+        useInfoStore().set_info(i);
+        await useStateStore().fetch_state();
+        // Keep edits that were not applied before arming.
+        if (!root.needs_apply) {
+          await useProfileStore().fetch_profile();
+        }
+        const mission = useMissionStore();
+        if (mission.supported && !mission.dirty) {
+          await mission.fetch();
+        }
+        root.in_flight = false;
+        startInterval((c) => this.poll_serial(c));
+      } catch (err) {
+        // Armed again before the session was back; stay in flight.
+        if (useNavStore().status?.armed) return;
+        Log.error("serial", err);
+        await this.disconnect();
+        root.append_alert({
+          type: "danger",
+          msg: "Reconnecting after disarming failed",
+        });
+      } finally {
+        this.is_connecting = false;
+      }
+    },
+    // Arming ends the radio link's session; the QUIC_RT link reports it.
+    follow_arming(key: string) {
+      const nav = useNavStore();
+      const root = useRootStore();
+      nav
+        .connect(key)
+        .catch((err) => Log.warn("serial", "QUIC_RT link failed", err));
+      stopArmWatch?.();
+      stopArmWatch = watch(
+        () => nav.status?.armed,
+        (armed) => {
+          if (armed) this.enter_flight();
+          else if (armed === false && root.in_flight) this.leave_flight();
+        },
+      );
+    },
     async poll_serial(counter: number) {
       if (!this.is_connected) {
         return;
@@ -186,13 +246,17 @@ export const useSerialStore = defineStore("serial", {
         });
     },
     reset_connection() {
+      if (this.radio_link) useNavStore().disconnect();
       this.is_connected = false;
       this.is_connecting = false;
       this.radio_link = false;
 
       stopInterval();
+      stopArmWatch?.();
+      stopArmWatch = undefined;
 
       const root = useRootStore();
+      root.in_flight = false;
       root.reset_needs_reboot();
 
       if (router.currentRoute.value.fullPath != "/home") {
@@ -212,6 +276,7 @@ export const useSerialStore = defineStore("serial", {
       const bb = useBlackboxStore();
       const default_profile = useDefaultProfileStore();
       const info = useInfoStore();
+      const mission = useMissionStore();
       const motor = useMotorStore();
       const profile = useProfileStore();
       const root = useRootStore();
@@ -223,6 +288,7 @@ export const useSerialStore = defineStore("serial", {
         const i = await infoPromise;
 
         info.$reset();
+        mission.$reset();
         motor.$reset();
         vtx.$reset();
         bb.$reset();
@@ -251,6 +317,8 @@ export const useSerialStore = defineStore("serial", {
         // the radio link.
         this.is_connected = true;
         startInterval((c) => this.poll_serial(c));
+        const key = serial.radioKey;
+        if (key) this.follow_arming(key);
 
         if (router.currentRoute.value.fullPath != "/profile") {
           router.push("/profile");
