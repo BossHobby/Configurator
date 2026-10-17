@@ -5,12 +5,15 @@
     :aircraft="serial.is_connected ? profile.meta.name.replace(/\0/g, '') : ''"
     :target="serial.is_connected ? info.target_name || target.name : ''"
     :connected="serial.is_connected"
-    :connection="serial.is_connected ? 'Connected' : 'Disconnected'"
+    :connection="connectionLabel"
     :activity="root.activity"
   >
     <template #connection>
       <div class="flex items-center gap-4">
-        <span v-if="serial.is_connected" class="hidden tabular-nums lg:inline">
+        <span
+          v-if="serial.is_connected && !root.in_flight"
+          class="hidden tabular-nums lg:inline"
+        >
           {{ state.looptime_autodetect }} µs · CPU {{ state.cpu_load }}% ·
           {{ state.cpu_temp.toFixed(1) }}°C
         </span>
@@ -103,6 +106,7 @@ import { useProfileStore } from "./store/profile";
 import { useStateStore } from "./store/state";
 import { useSerialStore } from "./store/serial";
 import { useRootStore } from "./store/root";
+import { useMissionStore } from "./store/mission";
 import { useConstantStore } from "./store/constants";
 import { Log } from "./log";
 import { exportFile } from "./store/util/export";
@@ -123,6 +127,7 @@ export default defineComponent({
       state: useStateStore(),
       serial: useSerialStore(),
       root: useRootStore(),
+      mission: useMissionStore(),
       constants: useConstantStore(),
     };
   },
@@ -134,6 +139,11 @@ export default defineComponent({
     };
   },
   computed: {
+    connectionLabel(): string {
+      if (!this.serial.is_connected) return "Disconnected";
+      // The radio link shows the profile as read before arming.
+      return this.root.in_flight ? "Armed, read-only" : "Connected";
+    },
     navigation(): { id: string; label: string; icon: IconName }[] {
       if (!this.serial.is_connected) return [];
       const pages: { id: string; label: string; icon: IconName }[] = [
@@ -150,6 +160,8 @@ export default defineComponent({
         this.info.quic_protocol_version > 1
       )
         pages.push({ id: "/blackbox", label: "Blackbox", icon: "blackbox" });
+      if (this.mission.supported)
+        pages.push({ id: "/mission", label: "Mission", icon: "mission" });
       pages.push({
         id: "/diagnostics",
         label: "Diagnostics",
