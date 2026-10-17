@@ -520,27 +520,31 @@ export const useProfileStore = defineStore("profile", {
 
     reset() {
       const default_profile = useDefaultProfileStore();
-      return this.apply_profile(default_profile.$state);
+      return useRootStore().track("Resetting profile", 1, () =>
+        this.apply_profile(default_profile.$state),
+      );
     },
 
     fetch_profile() {
       return serial.get(QuicVal.Profile).then((p) => this.set_profile(p));
     },
-    async merge_profile(profile) {
-      const lhs = migrateProfile(await serial.get(QuicVal.Profile));
-      const rhs = migrateProfile(profile);
+    merge_profile(profile) {
+      return useRootStore().track("Applying template", 2, async () => {
+        const lhs = migrateProfile(await serial.get(QuicVal.Profile));
+        const rhs = migrateProfile(profile);
 
-      const p = mergeDeep(lhs, rhs);
+        const p = mergeDeep(lhs, rhs);
 
-      return this.apply_profile(p);
+        return this.apply_profile(p);
+      });
     },
     apply_profile(profile) {
       const root = useRootStore();
 
       const p = migrateProfile(profile);
 
-      return serial
-        .set(QuicVal.Profile, p)
+      return root
+        .track("Applying profile", 1, () => serial.set(QuicVal.Profile, p))
         .then((p) => this.set_profile(p))
         .then(() =>
           root.append_alert({ type: "success", msg: "Profile applied!" }),

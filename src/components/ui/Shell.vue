@@ -19,7 +19,27 @@ const props = defineProps<{
   target: string;
   connection: string;
   connected?: boolean;
+  // A long-running exchange with the board, progress from 0 to 1.
+  activity?: { label: string; progress: number; waiting?: boolean } | null;
 }>();
+
+// Fast links finish before this, so they never flash the progress bar.
+const ACTIVITY_DELAY_MS = 100;
+const showActivity = ref(false);
+let activityTimer: ReturnType<typeof setTimeout> | undefined;
+watch(
+  () => !!props.activity,
+  (active) => {
+    clearTimeout(activityTimer);
+    if (active)
+      activityTimer = setTimeout(
+        () => (showActivity.value = true),
+        ACTIVITY_DELAY_MS,
+      );
+    else showActivity.value = false;
+  },
+  { immediate: true },
+);
 
 const version = import.meta.env.VITE_APP_VERSION;
 const appearance = useAppearance();
@@ -74,7 +94,7 @@ watch(
       >Skip to content</a
     >
     <header
-      class="app-shell-header flex shrink-0 items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3"
+      class="app-shell-header relative flex shrink-0 items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3"
     >
       <RouterLink to="/" class="shrink-0 text-ink" aria-label="QUICKSILVER home"
         ><Brand
@@ -91,8 +111,34 @@ watch(
           ><span
             class="size-2 rounded-full"
             :class="connected ? 'bg-accent' : 'bg-muted'"
-          /><span class="hidden sm:inline">{{ connection }}</span></span
+          /><span
+            v-if="showActivity && activity"
+            role="status"
+            class="tabular-nums"
+            >{{ activity.label }}
+            {{ Math.round(activity.progress * 100) }}%</span
+          ><span v-else class="hidden sm:inline">{{ connection }}</span></span
         >
+      </div>
+      <div
+        v-if="showActivity && activity"
+        class="absolute inset-x-0 bottom-0 h-0.5"
+        role="progressbar"
+        :aria-label="activity.label"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-valuenow="Math.round(activity.progress * 100)"
+      >
+        <div
+          class="h-full bg-accent transition-[width] duration-200"
+          :style="{ width: activity.progress * 100 + '%' }"
+        ></div>
+        <!-- The board is busy, e.g. writing flash, before it replies. -->
+        <div
+          v-if="activity.waiting"
+          class="activity-waiting absolute inset-y-0 right-0 overflow-hidden"
+          :style="{ left: activity.progress * 100 + '%' }"
+        ></div>
       </div>
       <div class="ml-auto flex items-center gap-2 text-xs text-muted">
         <slot name="connection" />
@@ -104,6 +150,7 @@ watch(
           aria-label="Menu"
           :aria-expanded="drawerOpen"
           aria-controls="app-drawer"
+          :disabled="!!activity"
           @click="drawerOpen = true"
         >
           <Menu :size="20" aria-hidden="true" />
@@ -139,7 +186,13 @@ watch(
         </details>
       </div>
     </header>
-    <div class="flex min-h-0 flex-1 flex-col md:flex-row">
+    <!-- Pages stay locked until the board has answered. -->
+    <div
+      class="flex min-h-0 flex-1 flex-col transition-opacity md:flex-row"
+      :class="showActivity ? 'opacity-60' : ''"
+      :inert="activity ? true : undefined"
+      :aria-busy="activity ? true : undefined"
+    >
       <aside
         class="app-shell-aside hidden shrink-0 flex-col border-r border-line bg-panel md:overflow-y-auto"
         :class="[
@@ -316,3 +369,33 @@ watch(
     </Transition>
   </div>
 </template>
+<style scoped>
+.activity-waiting::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent),
+    transparent
+  );
+  animation: activity-waiting 1.2s ease-in-out infinite;
+}
+@keyframes activity-waiting {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-waiting::before {
+    animation: none;
+    width: 100%;
+    opacity: 0.4;
+  }
+}
+</style>

@@ -233,16 +233,18 @@ export const useSerialStore = defineStore("serial", {
         this.radio_link = serial.isRadioLink;
         info.set_info(i);
 
-        if (info.quic_semver_gte("0.2.0")) {
-          target.fetch();
-        }
-
-        await Promise.all([
-          state.fetch_state(),
-          default_profile.fetch_default_profile(),
-          root.fetch_pid_rate_presets(),
-          profile.fetch_profile(),
-        ]);
+        const fetchTarget = info.quic_semver_gte("0.2.0");
+        await root.track("Loading configuration", fetchTarget ? 5 : 4, () => {
+          if (fetchTarget) {
+            target.fetch();
+          }
+          return Promise.all([
+            state.fetch_state(),
+            default_profile.fetch_default_profile(),
+            root.fetch_pid_rate_presets(),
+            profile.fetch_profile(),
+          ]);
+        });
         vtx.update_status();
 
         // Navigation and pages need the profile, which takes a while over
