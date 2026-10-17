@@ -210,6 +210,10 @@
 .app-shell-header {
   padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
 }
+/* Without the header, the page takes the top inset. */
+.app-shell-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
 .app-shell-bottom > main:last-child,
 .app-shell-aside {
   padding-bottom: env(safe-area-inset-bottom, 0px);

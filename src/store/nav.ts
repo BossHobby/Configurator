@@ -72,6 +72,9 @@ export const useNavStore = defineStore("nav", {
   getters: {
     // The QUIC_RT link rides the CRSF bridge of a radio link.
     available: () => !!crsfKey(useConnectionStore().target),
+    // Armed as last reported, also while the link is stale: losing it in
+    // flight must not unlock anything.
+    armed: (state) => !!state.status?.armed,
     stale(state): boolean {
       return !state.status || state.now - state.updatedAt > STALE_MS;
     },
