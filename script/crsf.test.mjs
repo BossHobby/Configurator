@@ -7,7 +7,7 @@ import {
   crc8,
   extendedFrame,
 } from "../src/store/util/crsf.ts";
-import { resolveEndpoints } from "../src/store/serial/ble.ts";
+import { resolveEndpoints } from "../src/store/util/ble.ts";
 
 const uart = (id) => `6e40000${id}-b5a3-f393-e0a9-e50e24dcca9e`;
 const characteristic = (uuid, props) => ({

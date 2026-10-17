@@ -29,13 +29,13 @@
       >
     </div>
     <input ref="file" accept=".yaml" type="file" hidden />
-    <a ref="downloadAnchor" target="_blank" hidden></a>
   </Panel>
 </template>
 <script lang="ts">
 import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import YAML from "yaml";
+import { exportFile } from "@/store/util/export";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import { useInfoStore } from "@/store/info";
@@ -83,9 +83,6 @@ export default defineComponent({
     fileRef(): HTMLInputElement {
       return this.$refs.file as HTMLInputElement;
     },
-    downloadAnchorRef(): HTMLAnchorElement {
-      return this.$refs.downloadAnchor as HTMLAnchorElement;
-    },
     versionLink() {
       if (/^(v\d\..*)/.test(this.info.git_version)) {
         return (
@@ -121,16 +118,12 @@ export default defineComponent({
     downloadProfile() {
       return serial.get(QuicVal.Profile).then((profile) => {
         const yamlProfile = encodeProfileForYaml(profile);
-        const encoded = encodeURIComponent(YAML.stringify(yamlProfile));
-        const yaml = "data:text/yaml;charset=utf-8," + encoded;
 
         const date = this.date.toISOString().substring(0, 10);
         const name = profile.meta.name.replace(/\0/g, "");
         const filename = `Profile_${name}_${date}.yaml`;
 
-        this.downloadAnchorRef.setAttribute("href", yaml);
-        this.downloadAnchorRef.setAttribute("download", filename);
-        this.downloadAnchorRef.click();
+        return exportFile(filename, YAML.stringify(yamlProfile));
       });
     },
   },

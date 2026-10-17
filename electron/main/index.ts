@@ -68,14 +68,28 @@ function createWindow(): void {
     },
   );
 
-  mainWindow.webContents.session.setPermissionCheckHandler(
-    (webContents, permission, requestingOrigin, details) => {
-      if (permission === "serial" || permission === "usb") {
-        return true;
-      }
-
-      return false;
+  // Fires again for every device found until the callback is called.
+  let bluetoothCallback: ((deviceId: string) => void) | undefined;
+  mainWindow.webContents.on(
+    "select-bluetooth-device",
+    (event, devices, callback) => {
+      event.preventDefault();
+      bluetoothCallback = callback;
+      mainWindow.webContents.send(
+        "bluetooth-devices",
+        devices.map(({ deviceId, deviceName }) => ({ deviceId, deviceName })),
+      );
     },
+  );
+  ipcMain.on("bluetooth-device", (_event, deviceId: string) => {
+    bluetoothCallback?.(deviceId);
+    bluetoothCallback = undefined;
+  });
+
+  // The OSD logo upload opens files.
+  const ALLOWED_PERMISSIONS = ["serial", "usb", "fileSystem"];
+  mainWindow.webContents.session.setPermissionCheckHandler(
+    (webContents, permission) => ALLOWED_PERMISSIONS.includes(permission),
   );
 
   mainWindow.webContents.session.setDevicePermissionHandler((details) => {

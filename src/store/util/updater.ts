@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+
 function newElectronUpdater() {
   // TODO: electron
 }
@@ -22,6 +24,8 @@ function newPWAUpdater() {
       currentVersion: string,
       updateCallback: (v: any) => Promise<any>,
     ) {
+      // App stores update the native apps.
+      if (Capacitor.isNativePlatform()) return;
       this.updateCallback = updateCallback;
       if (this.updateSW) {
         return;

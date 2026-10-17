@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 import { ref, watch, nextTick } from "vue";
-import { EllipsisVertical, ChevronsLeft, ChevronsRight } from "@lucide/vue";
+import {
+  EllipsisVertical,
+  ChevronsLeft,
+  ChevronsRight,
+  Menu,
+  X,
+} from "@lucide/vue";
 import Brand from "./Brand.vue";
 import Icon, { type IconName } from "./Icon.vue";
 import Appearance from "./Appearance.vue";
@@ -19,6 +25,19 @@ const version = import.meta.env.VITE_APP_VERSION;
 const appearance = useAppearance();
 const content = ref<HTMLElement>();
 const menu = ref<HTMLDetailsElement>();
+// Phones get the navigation and utilities in a drawer.
+const drawerOpen = ref(false);
+const drawerButton = ref<HTMLButtonElement>();
+const drawer = ref<HTMLElement>();
+function closeDrawer() {
+  drawerOpen.value = false;
+  drawerButton.value?.focus({ preventScroll: true });
+}
+// Connecting or disconnecting replaces the drawer's contents.
+watch(
+  () => props.navigation.length,
+  () => (drawerOpen.value = false),
+);
 
 let initialCollapsed = false;
 try {
@@ -38,6 +57,7 @@ watch(
   () => props.active,
   async () => {
     if (menu.value) menu.value.open = false;
+    drawerOpen.value = false;
     await nextTick();
     if (content.value) {
       content.value.scrollTop = 0;
@@ -47,12 +67,14 @@ watch(
 );
 </script>
 <template>
-  <div class="flex h-dvh flex-col overflow-hidden bg-workspace text-ink">
+  <div
+    class="app-shell flex h-dvh flex-col overflow-hidden bg-workspace text-ink"
+  >
     <a href="#main-content" class="sr-only z-10 bg-panel p-3 focus:not-sr-only"
       >Skip to content</a
     >
     <header
-      class="flex shrink-0 items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3"
+      class="app-shell-header flex shrink-0 items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3"
     >
       <RouterLink to="/" class="shrink-0 text-ink" aria-label="QUICKSILVER home"
         ><Brand
@@ -74,10 +96,24 @@ watch(
       </div>
       <div class="ml-auto flex items-center gap-2 text-xs text-muted">
         <slot name="connection" />
+        <button
+          v-if="navigation.length"
+          ref="drawerButton"
+          type="button"
+          class="flex size-9 items-center justify-center rounded-md hover:bg-subtle md:hidden"
+          aria-label="Menu"
+          :aria-expanded="drawerOpen"
+          aria-controls="app-drawer"
+          @click="drawerOpen = true"
+        >
+          <Menu :size="20" aria-hidden="true" />
+        </button>
         <details
           ref="menu"
           class="relative"
-          :class="navigation.length && !collapsed ? 'md:hidden' : ''"
+          :class="
+            !navigation.length ? '' : collapsed ? 'hidden md:block' : 'hidden'
+          "
         >
           <summary
             class="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-subtle [&::-webkit-details-marker]:hidden"
@@ -105,16 +141,16 @@ watch(
     </header>
     <div class="flex min-h-0 flex-1 flex-col md:flex-row">
       <aside
-        class="flex shrink-0 flex-col border-b border-line bg-panel md:overflow-y-auto md:border-r md:border-b-0"
+        class="app-shell-aside hidden shrink-0 flex-col border-r border-line bg-panel md:overflow-y-auto"
         :class="[
-          navigation.length ? '' : 'hidden',
+          navigation.length ? 'md:flex' : '',
           collapsed ? 'md:w-14' : 'md:w-48',
         ]"
       >
         <nav
           v-if="navigation.length"
           aria-label="Configuration"
-          class="flex overflow-x-auto md:flex-col md:py-3"
+          class="flex flex-col py-3"
         >
           <RouterLink
             v-for="item in navigation"
@@ -122,27 +158,25 @@ watch(
             :to="item.id"
             :aria-current="active === item.id ? 'page' : undefined"
             :title="collapsed ? item.label : undefined"
-            class="flex min-h-11 shrink-0 items-center gap-3 border-b-2 px-4 py-2 text-left text-sm md:border-b-0 md:border-l-2"
+            class="flex min-h-11 shrink-0 items-center gap-3 border-l-2 py-2 text-left text-sm"
             :class="[
-              collapsed ? 'md:justify-center md:px-0' : 'md:px-5',
+              collapsed ? 'justify-center' : 'px-5',
               active === item.id
                 ? 'border-accent bg-active font-medium text-ink'
                 : 'border-transparent text-muted hover:bg-subtle hover:text-ink',
               item.id === '/templates'
-                ? 'md:mt-5 md:border-t md:border-t-line md:pt-4'
+                ? 'mt-5 border-t border-t-line pt-4'
                 : '',
             ]"
           >
             <Icon
               :name="item.icon"
               :class="active === item.id ? 'text-accent' : ''"
-            /><span :class="collapsed ? 'md:sr-only' : ''">{{
-              item.label
-            }}</span>
+            /><span :class="collapsed ? 'sr-only' : ''">{{ item.label }}</span>
           </RouterLink>
         </nav>
         <div
-          class="hidden flex-col gap-4 pt-4 pb-5 md:mt-auto md:flex md:items-stretch"
+          class="mt-auto flex flex-col items-stretch gap-4 pt-4 pb-5"
           :class="collapsed ? 'px-0' : 'px-3'"
         >
           <template v-if="!collapsed"
@@ -181,7 +215,7 @@ watch(
           </div>
         </div>
       </aside>
-      <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div class="app-shell-bottom flex min-h-0 min-w-0 flex-1 flex-col">
         <main
           id="main-content"
           ref="content"
@@ -193,5 +227,92 @@ watch(
         <slot name="footer" />
       </div>
     </div>
+    <Transition
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+      enter-active-class="transition-opacity duration-200 motion-reduce:transition-none"
+      leave-active-class="transition-opacity duration-200 motion-reduce:transition-none"
+    >
+      <div
+        v-if="drawerOpen"
+        class="fixed inset-0 z-30 bg-black/40 md:hidden"
+        aria-hidden="true"
+        @click="closeDrawer"
+      />
+    </Transition>
+    <Transition
+      enter-from-class="translate-x-full"
+      leave-to-class="translate-x-full"
+      enter-active-class="transition-transform duration-200 ease-out motion-reduce:transition-none"
+      leave-active-class="transition-transform duration-150 ease-in motion-reduce:transition-none"
+      @after-enter="drawer?.focus()"
+    >
+      <div
+        v-if="drawerOpen"
+        id="app-drawer"
+        ref="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        tabindex="-1"
+        class="fixed inset-y-0 right-0 z-40 flex w-72 max-w-[85vw] flex-col border-l border-line bg-panel pt-[env(safe-area-inset-top,0px)] pr-[env(safe-area-inset-right,0px)] pb-[env(safe-area-inset-bottom,0px)] outline-none md:hidden"
+        @keydown.esc="closeDrawer"
+      >
+        <div
+          class="flex shrink-0 items-center justify-between border-b border-line px-4 py-3"
+        >
+          <span class="text-sm font-medium text-ink">Menu</span>
+          <button
+            type="button"
+            class="flex size-9 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-ink"
+            aria-label="Close menu"
+            @click="closeDrawer"
+          >
+            <X :size="18" aria-hidden="true" />
+          </button>
+        </div>
+        <nav
+          v-if="navigation.length"
+          aria-label="Configuration"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2"
+        >
+          <RouterLink
+            v-for="item in navigation"
+            :key="item.id"
+            :to="item.id"
+            :aria-current="active === item.id ? 'page' : undefined"
+            class="flex min-h-12 items-center gap-3 border-l-2 px-5 py-2 text-sm"
+            :class="[
+              active === item.id
+                ? 'border-accent bg-active font-medium text-ink'
+                : 'border-transparent text-muted hover:bg-subtle hover:text-ink',
+              item.id === '/templates'
+                ? 'mt-3 border-t border-t-line pt-3'
+                : '',
+            ]"
+          >
+            <Icon
+              :name="item.icon"
+              :class="active === item.id ? 'text-accent' : ''"
+            />{{ item.label }}
+          </RouterLink>
+        </nav>
+        <div
+          class="mt-auto flex shrink-0 flex-col items-stretch gap-4 border-t border-line px-4 pt-4 pb-5 text-xs text-muted"
+        >
+          <slot name="utilities" /><Appearance v-model="appearance" />
+          <div class="flex items-center justify-between">
+            <span>v{{ version }}</span
+            ><a
+              href="https://docs.bosshobby.com"
+              target="_blank"
+              rel="noreferrer"
+              class="hover:text-ink"
+              >Help &amp; Docs</a
+            >
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>

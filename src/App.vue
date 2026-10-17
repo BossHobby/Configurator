@@ -13,7 +13,9 @@
           {{ state.looptime_autodetect }} µs · CPU {{ state.cpu_load }}% ·
           {{ state.cpu_temp.toFixed(1) }}°C
         </span>
+        <!-- Phones connect from the home page and disconnect in the menu. -->
         <ConnectButton
+          class="max-md:hidden"
           :connected="serial.is_connected"
           :busy="serial.is_connecting"
           :disabled="applying || rebooting"
@@ -22,6 +24,14 @@
       </div>
     </template>
     <template #utilities>
+      <UiButton
+        v-if="serial.is_connected"
+        class="md:hidden"
+        :busy="serial.is_connecting"
+        :disabled="applying || rebooting"
+        @click="toggleConnection"
+        >Disconnect</UiButton
+      >
       <button
         v-if="serial.is_connected"
         type="button"
@@ -60,7 +70,6 @@
       />
     </template>
   </Shell>
-  <a ref="logDownloadAnchor" hidden></a>
   <AlertPortal />
   <ModalPortal />
   <div
@@ -84,6 +93,7 @@ import SelectModal from "@/components/SelectModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Shell from "@/components/ui/Shell.vue";
 import ConnectButton from "@/components/ConnectButton.vue";
+import UiButton from "@/components/ui/Button.vue";
 import SaveBar from "@/components/ui/SaveBar.vue";
 import type { IconName } from "@/components/ui/Icon.vue";
 import { useTargetStore } from "./store/target";
@@ -94,8 +104,16 @@ import { useSerialStore } from "./store/serial";
 import { useRootStore } from "./store/root";
 import { useConstantStore } from "./store/constants";
 import { Log } from "./log";
+import { exportFile } from "./store/util/export";
 export default defineComponent({
-  components: { Shell, ConnectButton, SaveBar, AlertPortal, ModalPortal },
+  components: {
+    Shell,
+    ConnectButton,
+    UiButton,
+    SaveBar,
+    AlertPortal,
+    ModalPortal,
+  },
   setup() {
     return {
       target: useTargetStore(),
@@ -146,9 +164,6 @@ export default defineComponent({
     },
     updateProcessing() {
       return updater.updatePreparing() || updater.updatePending();
-    },
-    logDownloadAnchorRef(): HTMLAnchorElement {
-      return this.$refs.logDownloadAnchor as HTMLAnchorElement;
     },
   },
   created() {
@@ -269,14 +284,8 @@ export default defineComponent({
         });
     },
     downloadLog() {
-      const file = Log.history.join("\n");
-      const encoded =
-        "data:text/plain;charset=utf-8," + encodeURIComponent(file);
       const filename = `Log_${new Date().toISOString()}.txt`;
-
-      this.logDownloadAnchorRef.setAttribute("href", encoded);
-      this.logDownloadAnchorRef.setAttribute("download", filename);
-      this.logDownloadAnchorRef.click();
+      return exportFile(filename, Log.history.join("\n"));
     },
   },
 });
