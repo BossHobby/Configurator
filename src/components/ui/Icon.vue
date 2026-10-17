@@ -11,6 +11,7 @@ import {
   SquarePen,
   Cable,
   Wifi,
+  Bluetooth,
   Plus,
   Trash2,
 } from "@lucide/vue";
@@ -27,6 +28,7 @@ const icons = {
   edit: SquarePen,
   usb: Cable,
   wifi: Wifi,
+  bluetooth: Bluetooth,
   plus: Plus,
   trash: Trash2,
 };

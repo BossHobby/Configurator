@@ -22,7 +22,7 @@
     "extract-tooltips": "node script/extract-tooltips.js",
     "prepare": "husky",
     "pre-commit": "pretty-quick --staged",
-    "test:ui": "node --test script/ui.test.mjs"
+    "test:ui": "node --test script/ui.test.mjs script/crsf.test.mjs"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
@@ -53,6 +53,7 @@
     "@types/node": "^25.6.2",
     "@types/semver": "^7.3.9",
     "@types/w3c-web-usb": "^1.0.6",
+    "@types/web-bluetooth": "^0.0.21",
     "@typescript-eslint/parser": "^8.59.2",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/tsconfig": "^0.9.1",
