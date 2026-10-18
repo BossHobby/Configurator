@@ -18,7 +18,7 @@
     >
       <div class="min-w-0">
         <div
-          class="relative min-h-80 overflow-hidden rounded-lg border border-line lg:min-h-[32rem]"
+          class="relative isolate min-h-80 overflow-hidden rounded-lg border border-line lg:min-h-[32rem]"
           :class="
             root.fullscreen
               ? 'h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))]'
@@ -137,6 +137,7 @@
             Mission
           </h2>
           <span
+            v-if="session || liveUpload"
             class="flex items-center gap-1.5 text-xs"
             :class="mission.dirty ? 'text-warning' : 'text-muted'"
           >
@@ -144,6 +145,9 @@
               class="size-1.5 rounded-full"
               :class="mission.dirty ? 'bg-warning' : 'bg-accent'"
             />{{ mission.dirty ? "Not uploaded" : "In sync with FC" }}
+          </span>
+          <span v-else class="flex items-center gap-1.5 text-xs text-muted">
+            <span class="size-1.5 rounded-full bg-muted" />Connect to upload
           </span>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -153,13 +157,13 @@
           >
           <UiButton
             :busy="busy == 'clear'"
-            :disabled="!!busy || !serial.is_connected || info.is_read_only"
+            :disabled="!!busy || !session || info.is_read_only"
             @click="clear"
             >Clear on FC</UiButton
           >
           <UiButton
             :busy="busy == 'fetch'"
-            :disabled="!!busy || !serial.is_connected"
+            :disabled="!!busy || !session"
             @click="fetch"
             >Read from FC</UiButton
           >
@@ -167,7 +171,10 @@
             variant="primary"
             :busy="busy == 'upload'"
             :disabled="
-              !!busy || !serial.is_connected || info.is_read_only || hasErrors
+              !!busy ||
+              !(session || liveUpload) ||
+              (!liveUpload && info.is_read_only) ||
+              hasErrors
             "
             @click="upload"
             >Upload to FC</UiButton
@@ -236,7 +243,7 @@
         <table class="w-full min-w-[44rem] table-fixed text-sm tabular-nums">
           <colgroup>
             <col class="w-14" />
-            <col :span="waypointSpeeds ? 4 : 3" />
+            <col :span="waypointSpeeds ? 5 : 4" />
             <col class="w-36" />
             <col class="w-32" />
           </colgroup>
@@ -246,6 +253,12 @@
               <th class="py-2 pr-2 font-medium">Latitude</th>
               <th class="py-2 pr-2 font-medium">Longitude</th>
               <th class="py-2 pr-2 font-medium">Altitude (m)</th>
+              <th
+                class="py-2 pr-2 font-medium"
+                title="Height above the ground below the waypoint, from elevation data."
+              >
+                Above ground
+              </th>
               <th v-if="waypointSpeeds" class="py-2 pr-2 font-medium">
                 Speed (km/h)
               </th>
@@ -283,26 +296,24 @@
               </td>
               <td class="py-1.5 pr-2">
                 <input
+                  v-model.lazy="fields[index].lat"
                   class="form-input"
                   type="number"
                   step="0.000001"
                   min="-90"
                   max="90"
                   :aria-label="`Waypoint ${index + 1} latitude`"
-                  :value="wp.lat / COORD_SCALE"
-                  @change="setCoord(index, 'lat', $event)"
                 />
               </td>
               <td class="py-1.5 pr-2">
                 <input
+                  v-model.lazy="fields[index].lon"
                   class="form-input"
                   type="number"
                   step="0.000001"
                   min="-180"
                   max="180"
                   :aria-label="`Waypoint ${index + 1} longitude`"
-                  :value="wp.lon / COORD_SCALE"
-                  @change="setCoord(index, 'lon', $event)"
                 />
               </td>
               <td class="py-1.5 pr-2">
@@ -316,21 +327,34 @@
                   :aria-label="`Waypoint ${index + 1} altitude`"
                 />
               </td>
+              <td
+                class="py-1.5 pr-2 text-xs whitespace-nowrap"
+                :class="
+                  aboveGround(wp) < TERRAIN_CLEARANCE_WARN
+                    ? 'font-medium text-danger'
+                    : 'text-muted'
+                "
+              >
+                {{
+                  Number.isFinite(aboveGround(wp))
+                    ? `${Math.round(aboveGround(wp))} m`
+                    : "–"
+                }}
+              </td>
               <td v-if="waypointSpeeds" class="py-1.5 pr-2">
                 <input
+                  v-model.lazy="fields[index].speed"
                   class="form-input"
                   type="number"
                   step="1"
                   min="0"
                   :max="toKph(mission.limits.max_speed)"
                   :aria-label="`Waypoint ${index + 1} speed in km/h, empty for the navigation return speed`"
-                  :value="wp.speed ? toKph(wp.speed) : ''"
                   :placeholder="
                     cruiseSpeed > 0
                       ? `${toKph(cruiseSpeed)} (default)`
                       : 'Default'
                   "
-                  @change="setSpeed(index, $event)"
                 />
               </td>
               <td class="py-1.5 pr-2 text-xs whitespace-nowrap text-muted">
@@ -368,6 +392,52 @@
           </tbody>
         </table>
       </div>
+
+      <div
+        v-if="mission.waypoints.length"
+        class="mt-5 border-t border-line pt-4"
+        aria-labelledby="mission-terrain-title"
+        role="group"
+      >
+        <div
+          class="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
+        >
+          <h3 id="mission-terrain-title" class="text-sm font-semibold">
+            Terrain
+          </h3>
+          <p
+            class="text-xs text-muted"
+            title="Elevation tiles come from AWS Terrain Tiles, which can see the area of the route."
+          >
+            {{
+              home
+                ? "Heights above home."
+                : "Heights above the ground below #1, until the craft has a home point."
+            }}
+            Bare-ground data, about 30 m resolution.
+          </p>
+        </div>
+        <TerrainProfile
+          v-if="terrainProfile.length > 1"
+          :profile="terrainProfile"
+          :path="path"
+          :warn-clearance="TERRAIN_CLEARANCE_WARN"
+          :takeoff="takeoff"
+        />
+        <p
+          v-else
+          class="rounded-md border border-dashed border-line px-3 py-4 text-center text-xs text-muted"
+          :class="terrainState == 'error' ? 'text-warning' : ''"
+        >
+          {{
+            terrainState == "error"
+              ? "Elevation data could not be loaded. Terrain is not checked."
+              : terrainState == "loading"
+                ? "Loading elevation data…"
+                : "Add a second waypoint to see the terrain along the route."
+          }}
+        </p>
+      </div>
     </section>
 
     <input
@@ -390,6 +460,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import MissionMap from "@/components/mission/MissionMap.vue";
 import MissionCommand from "@/components/mission/MissionCommand.vue";
 import MissionStatus from "@/components/mission/MissionStatus.vue";
+import TerrainProfile from "@/components/mission/TerrainProfile.vue";
 import {
   readTileProvider,
   saveTileProvider,
@@ -407,18 +478,41 @@ import type { NavStatus } from "@/store/util/quic-rt";
 import {
   COORD_SCALE,
   MissionEndAction,
+  MULTI_VERTICAL_RATES,
+  WING_VERTICAL_RATES,
   formatDistance,
   formatDuration,
   hasCoord,
   missionFromFile,
   missionLegs,
+  missionPath,
+  missionRoute,
+  pathReach,
   missionToFile,
   validateMission,
   type GeoPoint,
+  type MissionIssue,
+  type PathVertex,
 } from "@/store/util/mission";
+import {
+  TERRAIN_CLEARANCE_WARN,
+  Terrain,
+  lowestClearance,
+  sampleRoute,
+  terrainProfile,
+  type ProfileSample,
+} from "@/store/util/terrain";
 
 // New waypoints copy the previous altitude, starting here.
 const DEFAULT_ALT = 30;
+// Terrain samples along the route, at least this far apart.
+const TERRAIN_STEP = 10;
+const TERRAIN_SAMPLES = 400;
+
+// Tiles stay cached while the app runs.
+const terrain = new Terrain();
+let terrainTimer: ReturnType<typeof setTimeout> | undefined;
+let terrainToken = 0;
 
 export default defineComponent({
   name: "Mission",
@@ -429,6 +523,7 @@ export default defineComponent({
     MissionMap,
     MissionCommand,
     MissionStatus,
+    TerrainProfile,
   },
   setup() {
     return {
@@ -444,6 +539,7 @@ export default defineComponent({
       formatDistance,
       formatDuration,
       hasCoord,
+      TERRAIN_CLEARANCE_WARN,
       Maximize2,
       Minimize2,
     };
@@ -454,6 +550,9 @@ export default defineComponent({
       selected: undefined as number | undefined,
       busy: undefined as "fetch" | "upload" | "clear" | undefined,
       follow: false,
+      // Ground elevation along the route, refreshed after edits settle.
+      ground: [] as { d: number; elevation: number }[],
+      terrainState: "idle" as "idle" | "loading" | "error",
       mapHints: [
         { gesture: "Click", action: "add a waypoint" },
         { gesture: "Click a leg", action: "insert one" },
@@ -484,9 +583,9 @@ export default defineComponent({
       if (this.serial.is_connected && hasCoord(this.state.gps_home)) {
         return this.state.gps_home;
       }
-      // While armed, STATUS carries the launch point.
-      const home = this.live?.home;
-      return this.live?.armed && hasCoord(home) ? home : undefined;
+      // While armed, CRSF GPS home carries the launch point.
+      const home = this.live ? this.nav.home : undefined;
+      return hasCoord(home) ? home : undefined;
     },
     craft(): GeoPoint | undefined {
       if (this.live) return this.nav.position;
@@ -503,9 +602,23 @@ export default defineComponent({
         return undefined;
       return hasCoord(live.target) ? live.target : undefined;
     },
+    // Armed, there is no configuration session: it is suspended, or the craft
+    // was armed when we connected. The QUIC_RT link replaces the mission.
+    liveUpload(): boolean {
+      return (
+        (!this.serial.is_connected || this.root.in_flight) && !!this.live?.armed
+      );
+    },
+    // The configuration session answers mission commands.
+    session(): boolean {
+      return this.serial.is_connected && !this.root.in_flight;
+    },
     // Mission waypoint the craft is flying to, highlighted on map and table.
+    // Unsent edits renumber the plan, so its indices no longer match the FC.
     activeIndex(): number | undefined {
-      return this.live?.mission ? this.live.missionIndex : undefined;
+      return this.live?.mission && !this.mission.dirty
+        ? this.live.missionIndex
+        : undefined;
     },
     // Wings fly every leg at cruise throttle, so waypoint speeds do not apply.
     waypointSpeeds(): boolean {
@@ -518,6 +631,35 @@ export default defineComponent({
           ? navigation?.cruise_speed
           : navigation?.rth_cruise_speed) ?? 0
       );
+    },
+    // Table inputs in display units. Live telemetry re-renders the panel, and
+    // lazy v-model leaves a focused input alone, unlike a :value binding.
+    fields() {
+      const toKph = this.toKph;
+      return this.mission.waypoints.map((wp) => ({
+        get lat() {
+          return wp.lat / COORD_SCALE;
+        },
+        // The map cannot place a cleared coordinate; keep the last one.
+        set lat(value: number | string) {
+          if (typeof value == "number" && Number.isFinite(value))
+            wp.lat = Math.round(value * COORD_SCALE);
+        },
+        get lon() {
+          return wp.lon / COORD_SCALE;
+        },
+        set lon(value: number | string) {
+          if (typeof value == "number" && Number.isFinite(value))
+            wp.lon = Math.round(value * COORD_SCALE);
+        },
+        get speed(): number | string {
+          return wp.speed ? toKph(wp.speed) : "";
+        },
+        // Empty means 0, which the firmware flies at the navigation return speed.
+        set speed(value: number | string) {
+          wp.speed = value === "" ? 0 : Number(value) / 3.6;
+        },
+      }));
     },
     legs() {
       return missionLegs(
@@ -533,13 +675,77 @@ export default defineComponent({
     routeTime(): number {
       return this.legs.reduce((sum, leg) => sum + leg.time, 0);
     },
-    issues() {
-      return validateMission(this.mission.mission, {
-        maxWaypoints: this.mission.max_waypoints,
-        limits: this.mission.limits,
-        reference: this.home ?? this.craft,
-        routeDistance: this.routeDistance,
+    route(): GeoPoint[] {
+      return missionRoute(this.mission.mission, this.home);
+    },
+    path(): PathVertex[] {
+      return missionPath(
+        this.mission.mission,
+        this.home,
+        this.legs,
+        this.info.is_wing ? WING_VERTICAL_RATES : MULTI_VERTICAL_RATES,
+        this.profile.navigation?.rth_altitude ?? 0,
+      );
+    },
+    // Ground at the launch point: home, or below #1 until home is known.
+    launchElevation(): number {
+      return this.ground.length && this.route.length
+        ? terrain.elevation(this.route[0])
+        : NaN;
+    },
+    terrainProfile(): ProfileSample[] {
+      if (!Number.isFinite(this.launchElevation)) return [];
+      return terrainProfile(this.ground, this.launchElevation, this.path);
+    },
+    // The climb out from the ground is not checked against terrain, up to
+    // #1 or the warning clearance, whichever is lower.
+    takeoff(): number {
+      if (!this.home || !this.mission.waypoints.length) return 0;
+      const reach = pathReach(
+        this.path,
+        Math.min(this.mission.waypoints[0].alt, TERRAIN_CLEARANCE_WARN),
+      );
+      return Number.isFinite(reach)
+        ? reach
+        : (this.path.find((v) => v.index == 0)?.d ?? 0);
+    },
+    terrainIssues(): MissionIssue[] {
+      const profile = this.terrainProfile;
+      if (!profile.length) return [];
+      const issues: MissionIssue[] = [];
+      const offset = this.home ? 0 : 1;
+      let from = 0;
+      this.legs.forEach((leg, i) => {
+        const to = from + leg.distance;
+        const low = lowestClearance(profile, from, to, this.takeoff);
+        from = to;
+        if (!low || low.clearance >= TERRAIN_CLEARANCE_WARN) return;
+        const index = i + offset;
+        const name =
+          index < this.mission.waypoints.length
+            ? `The leg to #${index + 1}`
+            : "The return home";
+        issues.push({
+          level: "warning",
+          index: index < this.mission.waypoints.length ? index : undefined,
+          msg:
+            low.clearance < 0
+              ? `${name} runs ${Math.round(-low.clearance)} m into the ground.`
+              : `${name} passes ${Math.round(low.clearance)} m above the ground, not counting trees and buildings.`,
+        });
       });
+      return issues;
+    },
+    issues() {
+      return [
+        ...validateMission(this.mission.mission, {
+          maxWaypoints: this.mission.max_waypoints,
+          limits: this.mission.limits,
+          reference: this.home ?? this.craft,
+          routeDistance: this.routeDistance,
+        }),
+        ...this.terrainIssues,
+      ];
     },
     hasErrors(): boolean {
       return this.issues.some((issue) => issue.level == "error");
@@ -549,17 +755,38 @@ export default defineComponent({
     tiles(value: TileProvider) {
       saveTileProvider(value);
     },
+    route: {
+      handler() {
+        clearTimeout(terrainTimer);
+        terrainTimer = setTimeout(() => this.loadTerrain(), 300);
+      },
+      immediate: true,
+    },
     // Follow the craft from takeoff, until the user pans away.
     "live.armed"(armed: boolean | undefined, was: boolean | undefined) {
       if (armed && !was) this.follow = true;
     },
+    // Connecting keeps this page, which then reads the new session's mission.
+    // Disarming refreshes it itself.
+    "serial.is_connected"(connected: boolean) {
+      if (
+        connected &&
+        this.mission.supported &&
+        !this.root.in_flight &&
+        !this.mission.dirty
+      ) {
+        this.fetch();
+      }
+    },
   },
   mounted() {
     // Keep unsent edits when coming back to the page.
-    if (this.serial.is_connected && !this.mission.dirty) this.fetch();
+    if (this.session && !this.mission.dirty) this.fetch();
     document.addEventListener("keydown", this.onKeydown);
   },
   unmounted() {
+    clearTimeout(terrainTimer);
+    terrainToken++;
     document.removeEventListener("keydown", this.onKeydown);
     this.root.fullscreen = false;
   },
@@ -582,6 +809,39 @@ export default defineComponent({
     fitMission() {
       this.follow = false;
       this.map?.fit();
+    },
+    async loadTerrain() {
+      const route = this.route;
+      const token = ++terrainToken;
+      if (!route.length) {
+        this.ground = [];
+        this.terrainState = "idle";
+        return;
+      }
+      const step = Math.max(TERRAIN_STEP, this.routeDistance / TERRAIN_SAMPLES);
+      const samples = sampleRoute(route, step);
+      this.terrainState = "loading";
+      try {
+        await terrain.load(samples.map((s) => s.point));
+      } catch (err) {
+        if (token != terrainToken) return;
+        Log.warn("mission", "terrain", err);
+        // Ground of the previous route would not match this one.
+        this.ground = [];
+        this.terrainState = "error";
+        return;
+      }
+      if (token != terrainToken) return;
+      this.ground = samples.map((s) => ({
+        d: s.d,
+        elevation: terrain.elevation(s.point),
+      }));
+      this.terrainState = "idle";
+    },
+    // Height of a waypoint above the ground below it.
+    aboveGround(wp: GeoPoint & { alt: number }) {
+      if (!Number.isFinite(this.launchElevation)) return NaN;
+      return this.launchElevation + wp.alt - terrain.elevation(wp);
     },
     legLabel(index: number) {
       // Legs start at home when it is known, so the arrival leg of a point
@@ -623,18 +883,6 @@ export default defineComponent({
     toKph(speed: number) {
       return Number((speed * 3.6).toFixed(1));
     },
-    setSpeed(index: number, event: Event) {
-      // Empty means 0, which the firmware flies at the navigation return speed.
-      const input = event.target as HTMLInputElement;
-      this.mission.waypoints[index].speed =
-        input.value == "" ? 0 : input.valueAsNumber / 3.6;
-    },
-    setCoord(index: number, key: "lat" | "lon", event: Event) {
-      const value = (event.target as HTMLInputElement).valueAsNumber;
-      this.mission.waypoints[index][key] = Number.isFinite(value)
-        ? Math.round(value * COORD_SCALE)
-        : NaN;
-    },
     async run(
       busy: "fetch" | "upload" | "clear",
       action: () => Promise<void>,
@@ -669,6 +917,24 @@ export default defineComponent({
           ],
         });
         if (choice !== "upload") return;
+      }
+      if (this.liveUpload) {
+        if (this.live?.mission) {
+          const choice = await this.$modal.show(ConfirmModal, {
+            title: "Change the mission in flight?",
+            message: `The craft keeps flying to waypoint ${this.live.missionIndex + 1} of the new route, or to its last waypoint if the route is shorter.`,
+            actions: [
+              { label: "Cancel", value: "cancel" },
+              { label: "Upload", value: "upload", variant: "primary" },
+            ],
+          });
+          if (choice !== "upload") return;
+        }
+        return this.run(
+          "upload",
+          () => this.mission.upload_live(),
+          "Mission replaced. The flight controller saves it once the craft is disarmed and still.",
+        );
       }
       return this.run(
         "upload",

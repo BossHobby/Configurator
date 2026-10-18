@@ -153,6 +153,25 @@ test("link statistics report negative dBm and the power in mW", () => {
   });
 });
 
+test("GPS home matches the firmware's frame", () => {
+  // The firmware's test_crsf_gps_home_frame_follows_home case.
+  const frame = decodeTelemetry(
+    body(
+      CrsfTelemetryType.GpsHome,
+      (v) => {
+        v.setInt32(0, 473987654);
+        v.setInt32(4, -1223456789);
+        v.setUint16(8, 1512);
+      },
+      10,
+    ),
+  );
+  assert.deepEqual(frame, {
+    type: CrsfTelemetryType.GpsHome,
+    gpsHome: { lat: 473987654, lon: -1223456789, altitude: 512 },
+  });
+});
+
 test("flight mode stops at the terminator", () => {
   const frame = decodeTelemetry(
     Uint8Array.of(

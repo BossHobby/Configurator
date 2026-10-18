@@ -8,6 +8,7 @@ import {
   type CrsfBattery,
   type CrsfGps,
   type CrsfGpsExtended,
+  type CrsfGpsHome,
   type CrsfLinkStatistics,
   type CrsfLinkStatisticsSide,
 } from "./util/crsf-telemetry";
@@ -22,6 +23,7 @@ export const useTelemetryStore = defineStore("telemetry", {
   state: () => ({
     gps: undefined as CrsfGps | undefined,
     gpsExtended: undefined as CrsfGpsExtended | undefined,
+    gpsHome: undefined as CrsfGpsHome | undefined,
     verticalSpeed: undefined as number | undefined,
     battery: undefined as CrsfBattery | undefined,
     baroAltitude: undefined as CrsfBaroAltitude | undefined,

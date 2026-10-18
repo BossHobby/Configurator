@@ -1,6 +1,5 @@
 import { useSerialStore } from "./store/serial";
 import { useMissionStore } from "./store/mission";
-import { useNavStore } from "./store/nav";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import Setup from "./views/Setup.vue";
@@ -169,12 +168,14 @@ router.beforeEach((to) => {
     }
     return true;
   } else {
-    // The QUIC_RT link works without a configurator session, which a craft
-    // that is already armed refuses: the live map can still follow it.
-    if (to.name === "mission" && useNavStore().available) {
-      return true;
-    }
-    if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
+    // Missions can be planned offline, and the QUIC_RT link follows a craft
+    // that is already armed, which refuses a configurator session.
+    if (
+      to.name !== "home" &&
+      to.name !== "mission" &&
+      to.name !== "flash" &&
+      to.name !== "log"
+    ) {
       return { name: "home" };
     }
     return true;

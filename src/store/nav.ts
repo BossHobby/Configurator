@@ -10,13 +10,22 @@ import {
   extendedFrame,
 } from "./util/crsf";
 import { CrsfTelemetryType } from "./util/crsf-telemetry";
-import { distance, hasCoord, type GeoPoint } from "./util/mission";
+import {
+  distance,
+  hasCoord,
+  type GeoPoint,
+  type Mission,
+} from "./util/mission";
 import {
   CRSF_FRAMETYPE_QUIC_RT,
+  NAV_MISSION_ITEMS_MAX,
+  NavCommand,
   NavResult,
   decodeStatus,
   encodeCommand,
   encodePing,
+  missionCrc,
+  sameMissionItem,
   type NavCommandRequest,
   type NavStatus,
 } from "./util/quic-rt";
@@ -28,6 +37,8 @@ const TICK_MS = 100;
 const RESEND_MS = 400;
 const COMMAND_TIMEOUT_MS = 3000;
 const STALE_MS = 1500;
+// GPS home goes out on arming and then every 10 s; allow two misses.
+const HOME_STALE_MS = 25000;
 const TRAIL_MAX = 600;
 const TRAIL_MIN_STEP = 1; // meters
 const LOG_MAX = 8;
@@ -35,6 +46,8 @@ const LOG_MAX = 8;
 interface PendingCommand {
   id: number;
   label: string;
+  // Shown in the log once settled; steps of a longer exchange are not.
+  record: boolean;
   frame: Uint8Array<ArrayBuffer>;
   startedAt: number;
   sentAt: number;
@@ -66,6 +79,8 @@ export const useNavStore = defineStore("nav", {
     trail: [] as GeoPoint[],
     nextId: 1 + Math.floor(Math.random() * 254),
     pending: undefined as PendingCommand | undefined,
+    // A mission upload owns the link; another command would cancel it.
+    uploading: false,
     // Settled commands, newest first.
     log: [] as { label: string; result: NavResult; at: number }[],
   }),
@@ -114,8 +129,28 @@ export const useNavStore = defineStore("nav", {
         ? telemetry.baroAltitude
         : undefined;
     },
+    // Meters above launch: barometer altitude, or else GPS altitude over the
+    // launch point's.
+    heightAboveHome(): number | undefined {
+      const baro = this.altitude;
+      if (baro) return baro.altitude;
+      const telemetry = useTelemetryStore();
+      const gps = telemetry.gps;
+      const home = telemetry.gpsHome;
+      if (!this.position || !this.home || !gps || !home) return undefined;
+      return gps.altitude - home.altitude;
+    },
+    // The launch point, latched by the flight controller while armed.
+    home(state): GeoPoint | undefined {
+      const telemetry = useTelemetryStore();
+      const home = telemetry.gpsHome;
+      const at = telemetry.updatedAt[CrsfTelemetryType.GpsHome] ?? 0;
+      if (!state.status?.armed || !home || state.now - at > HOME_STALE_MS)
+        return undefined;
+      return { lat: home.lat, lon: home.lon };
+    },
     homeDistance(): number | undefined {
-      const home = this.status?.home;
+      const home = this.home;
       const position = this.position;
       return position && hasCoord(home) ? distance(position, home) : undefined;
     },
@@ -176,7 +211,11 @@ export const useNavStore = defineStore("nav", {
     },
     // Resolves with the flight controller's answer, or NavResult.None when
     // no acknowledgement arrives. A newer command replaces a pending one.
-    send(cmd: NavCommandRequest, label: string): Promise<NavResult> {
+    send(
+      cmd: NavCommandRequest,
+      label: string,
+      record = true,
+    ): Promise<NavResult> {
       if (!socket) return Promise.resolve(NavResult.None);
       this.finish(NavResult.None, false);
       // The firmware acknowledges a repeated id without applying it again,
@@ -189,6 +228,7 @@ export const useNavStore = defineStore("nav", {
       this.pending = {
         id,
         label,
+        record,
         frame: frame(encodeCommand(cmd, id)),
         startedAt: now,
         sentAt: now,
@@ -198,13 +238,65 @@ export const useNavStore = defineStore("nav", {
     },
     // Settles the pending command; record shows its result to the user.
     finish(result: NavResult, record = true) {
-      if (this.pending && record) {
-        this.log.unshift({ label: this.pending.label, result, at: Date.now() });
-        if (this.log.length > LOG_MAX) this.log.pop();
+      if (this.pending && record && this.pending.record) {
+        this.record(this.pending.label, result);
       }
       this.pending = undefined;
       settle?.(result);
       settle = undefined;
+    },
+    record(label: string, result: NavResult) {
+      this.log.unshift({ label, result, at: Date.now() });
+      if (this.log.length > LOG_MAX) this.log.pop();
+    },
+    // Replaces the stored mission, also in flight. Only waypoints that differ
+    // from base are sent when the flight controller still stores base.
+    async uploadMission(mission: Mission, base?: Mission): Promise<NavResult> {
+      const stored =
+        base &&
+        this.status?.missionCount == base.waypoints.length &&
+        this.status.missionCrc == missionCrc(base);
+      this.uploading = true;
+      try {
+        let result = await this.sendMission(mission, stored ? base : undefined);
+        // Staging starts from what the flight controller stores, not base.
+        if (result == NavResult.Mismatch && stored) {
+          result = await this.sendMission(mission);
+        }
+        this.record("Upload mission", result);
+        return result;
+      } finally {
+        this.uploading = false;
+      }
+    },
+    async sendMission(mission: Mission, base?: Mission): Promise<NavResult> {
+      const waypoints = mission.waypoints;
+      const changed = [...waypoints.keys()].filter(
+        (i) =>
+          !base?.waypoints[i] ||
+          !sameMissionItem(waypoints[i], base.waypoints[i]),
+      );
+      for (let n = 0; n < changed.length; ) {
+        const index = changed[n];
+        const items = waypoints.slice(index, index + NAV_MISSION_ITEMS_MAX);
+        const result = await this.send(
+          { type: NavCommand.MissionItems, index, waypoints: items },
+          `Upload waypoint ${index + 1}/${waypoints.length}`,
+          false,
+        );
+        if (result != NavResult.Ok) return result;
+        while (n < changed.length && changed[n] < index + items.length) n++;
+      }
+      return this.send(
+        {
+          type: NavCommand.MissionCommit,
+          count: waypoints.length,
+          endAction: mission.end_action,
+          crc: missionCrc(mission),
+        },
+        "Commit mission",
+        false,
+      );
     },
     tick() {
       const now = Date.now();

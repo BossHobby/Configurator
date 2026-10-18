@@ -131,6 +131,8 @@ export const useSerialStore = defineStore("serial", {
           if (armed) this.enter_flight();
           else if (armed === false && root.in_flight) this.leave_flight();
         },
+        // The craft may have armed while the configuration loaded.
+        { immediate: true },
       );
     },
     async poll_serial(counter: number) {
@@ -281,16 +283,18 @@ export const useSerialStore = defineStore("serial", {
       stopArmWatch = undefined;
       stopFollowWatch?.();
       stopFollowWatch = undefined;
+      // A session lost in flight opens again once the craft disarms.
+      if (!closeLink && nav.connected && nav.armed) this.follow_armed();
 
       const root = useRootStore();
       root.in_flight = false;
       root.reset_needs_reboot();
 
       const route = router.currentRoute.value;
+      // Missions can be planned offline, so the map stays open.
       const keepMap =
-        !closeLink &&
-        nav.available &&
-        (nav.connected || route.name === "mission");
+        route.name === "mission" ||
+        (!closeLink && nav.available && nav.connected);
       const to = keepMap ? "/mission" : "/home";
       if (route.fullPath != to) {
         router.push(to);
@@ -321,7 +325,8 @@ export const useSerialStore = defineStore("serial", {
         const i = await infoPromise;
 
         info.$reset();
-        mission.$reset();
+        // Keep a plan that was not uploaded, as after disarming.
+        if (!mission.dirty) mission.$reset();
         motor.$reset();
         vtx.$reset();
         bb.$reset();
@@ -353,9 +358,11 @@ export const useSerialStore = defineStore("serial", {
         const key = serial.radioKey;
         if (key) this.follow_arming(key);
 
-        // Landing after following an armed craft keeps the map.
+        // Landing after following an armed craft, or connecting to upload a
+        // plan made offline, keeps the map.
         const route = router.currentRoute.value;
-        if (route.name != "mission" && route.fullPath != "/profile") {
+        const keepMap = route.name == "mission" && useMissionStore().supported;
+        if (!keepMap && route.fullPath != "/profile") {
           router.push("/profile");
         }
       } catch (err) {

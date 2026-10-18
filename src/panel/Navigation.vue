@@ -5,14 +5,28 @@
         >{{ state.home_distance.toFixed(0) }} m from home</span
       >
     </template>
-    <label class="mb-5 inline-flex items-center gap-3 text-sm">
-      <input
-        v-model="profile.navigation.rth_on_failsafe"
-        type="checkbox"
-        class="form-switch"
-      />
-      Return to home on failsafe
-    </label>
+    <div class="mb-5 flex flex-wrap gap-x-6 gap-y-3">
+      <label class="inline-flex items-center gap-3 text-sm">
+        <input
+          v-model="profile.navigation.rth_on_failsafe"
+          type="checkbox"
+          class="form-switch"
+        />
+        Return to home on failsafe
+      </label>
+      <label
+        v-if="profile.navigation.mission_on_failsafe !== undefined"
+        class="inline-flex items-center gap-3 text-sm"
+      >
+        <input
+          v-model="profile.navigation.mission_on_failsafe"
+          type="checkbox"
+          class="form-switch"
+        />
+        Continue mission on failsafe
+        <tooltip entry="navigation.mission_on_failsafe" />
+      </label>
+    </div>
     <div class="form-grid">
       <div v-for="field in fields" :key="field.id" class="form-row">
         <label class="form-label" :for="field.id">{{ field.label }}</label>

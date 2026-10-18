@@ -2,6 +2,8 @@
 // the firmware's io/quic_rt.h. Unlike the QUIC session on 0x83, which exists
 // only on the ground, it also serves armed vehicles. Payloads after the
 // extended header are <version> <type> <body...>, little-endian.
+import type { Mission, MissionEndAction, Waypoint } from "./mission";
+
 export const CRSF_FRAMETYPE_QUIC_RT = 0x84;
 export const QUIC_RT_VERSION = 1;
 
@@ -15,6 +17,10 @@ export const NavCommand = {
   SetAlt: 2,
   RTH: 3,
   Mission: 4,
+  // Stage waypoints into a copy of the stored mission, then swap it in. The
+  // firmware accepts both at any time, in flight too.
+  MissionItems: 5,
+  MissionCommit: 6,
 } as const;
 export type NavCommand = (typeof NavCommand)[keyof typeof NavCommand];
 
@@ -25,12 +31,17 @@ export const NavResult = {
   TooFar: 3,
   NoMission: 4,
   Unsupported: 5,
+  // The staged mission does not match the commit CRC; stage every waypoint.
+  Mismatch: 6,
   None: 7,
 } as const;
 export type NavResult = (typeof NavResult)[keyof typeof NavResult];
 
 // NavCommand.Mission index that resumes where the mission left off.
 export const NAV_MISSION_RESUME = 0xff;
+// Waypoints per MissionItems command, as many as fit a CRSF frame.
+export const NAV_MISSION_ITEMS_MAX = 3;
+const MISSION_ITEM_SIZE = 14;
 
 export type NavCommandRequest =
   | {
@@ -43,7 +54,19 @@ export type NavCommandRequest =
   | { type: typeof NavCommand.Hold }
   | { type: typeof NavCommand.SetAlt; alt: number }
   | { type: typeof NavCommand.RTH }
-  | { type: typeof NavCommand.Mission; index: number };
+  | { type: typeof NavCommand.Mission; index: number }
+  | {
+      type: typeof NavCommand.MissionItems;
+      // The first of the waypoints.
+      index: number;
+      waypoints: Waypoint[];
+    }
+  | {
+      type: typeof NavCommand.MissionCommit;
+      count: number;
+      endAction: MissionEndAction;
+      crc: number;
+    };
 
 export interface NavStatus {
   commandId: number;
@@ -61,18 +84,57 @@ export interface NavStatus {
   guidedReady: boolean;
   missionIndex: number;
   missionCount: number;
-  // gps_coord_t points, degrees * 1e7: the launch point while armed, else
-  // the craft; and the guided target, mission waypoint or home.
-  home: { lat: number; lon: number };
+  // missionCrc() of the stored mission.
+  missionCrc: number;
+  // gps_coord_t, degrees * 1e7: the guided target, mission waypoint or home.
   target: { lat: number; lon: number };
 }
 
-// Position, speed, altitude, heading and battery come from the standard CRSF
-// frames, see crsf-telemetry.ts.
-const STATUS_SIZE = 20;
+// Position, speed, altitude, heading, battery and home come from the standard
+// CRSF frames, see crsf-telemetry.ts.
+const STATUS_SIZE = 14;
 // The result shares a byte with the mission index.
 const RESULT_SHIFT = 5;
 const MISSION_INDEX_MASK = (1 << RESULT_SHIFT) - 1;
+
+// A waypoint as the firmware receives and stores it: lat, lon (int32),
+// altitude in cm (int32) and speed in cm/s (uint16).
+function missionItem(wp: Waypoint): Uint8Array {
+  const v = new DataView(new ArrayBuffer(MISSION_ITEM_SIZE));
+  v.setInt32(0, Math.round(wp.lat), true);
+  v.setInt32(4, Math.round(wp.lon), true);
+  v.setInt32(8, Math.round(wp.alt * 100), true);
+  v.setUint16(12, Math.round(wp.speed * 100), true);
+  return new Uint8Array(v.buffer);
+}
+
+// Equal once sent: the firmware would store the same waypoint.
+export function sameMissionItem(a: Waypoint, b: Waypoint): boolean {
+  const x = missionItem(a);
+  const y = missionItem(b);
+  return x.every((byte, i) => byte == y[i]);
+}
+
+function crc16(crc: number, data: Uint8Array): number {
+  for (const byte of data) {
+    crc ^= byte << 8;
+    for (let bit = 0; bit < 8; bit++) {
+      crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xffff : (crc << 1) & 0xffff;
+    }
+  }
+  return crc;
+}
+
+// The firmware's mission_crc(): CRC-16/CCITT-FALSE over count, end action and
+// each waypoint as sent.
+export function missionCrc(mission: Mission): number {
+  let crc = crc16(
+    0xffff,
+    Uint8Array.of(mission.waypoints.length, mission.end_action),
+  );
+  for (const wp of mission.waypoints) crc = crc16(crc, missionItem(wp));
+  return crc;
+}
 
 export function encodePing(): Uint8Array {
   return Uint8Array.of(QUIC_RT_VERSION, QuicRtType.Ping);
@@ -96,6 +158,19 @@ export function encodeCommand(cmd: NavCommandRequest, id: number): Uint8Array {
     }
     case NavCommand.Mission:
       return Uint8Array.of(...header, cmd.index & 0xff);
+    case NavCommand.MissionItems:
+      return Uint8Array.of(
+        ...header,
+        cmd.index & 0xff,
+        ...cmd.waypoints.flatMap((wp) => [...missionItem(wp)]),
+      );
+    case NavCommand.MissionCommit: {
+      const body = new DataView(new ArrayBuffer(4));
+      body.setUint8(0, cmd.count);
+      body.setUint8(1, cmd.endAction);
+      body.setUint16(2, cmd.crc, true);
+      return Uint8Array.of(...header, ...new Uint8Array(body.buffer));
+    }
     default:
       return Uint8Array.of(...header);
   }
@@ -127,8 +202,8 @@ export function decodeStatus(payload: Uint8Array): NavStatus | undefined {
     guidedReady: !!(flags & 0x80),
     missionIndex: resultIndex & MISSION_INDEX_MASK,
     missionCount: v.getUint8(3),
-    home: { lat: v.getInt32(4, true), lon: v.getInt32(8, true) },
-    target: { lat: v.getInt32(12, true), lon: v.getInt32(16, true) },
+    missionCrc: v.getUint16(4, true),
+    target: { lat: v.getInt32(6, true), lon: v.getInt32(10, true) },
   };
 }
 
@@ -143,9 +218,11 @@ export function resultMessage(result: NavResult): string {
     case NavResult.TooFar:
       return "Rejected: the target is more than 2 km from the craft.";
     case NavResult.NoMission:
-      return "Rejected: the stored mission has no such waypoint.";
+      return "Rejected: the stored mission has no such waypoint, or an empty mission cannot replace the one being flown.";
     case NavResult.Unsupported:
       return "This vehicle has no guided flight.";
+    case NavResult.Mismatch:
+      return "Rejected: the mission arrived incomplete. Upload it again.";
     default:
       return "No answer";
   }

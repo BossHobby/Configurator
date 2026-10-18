@@ -55,6 +55,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { TILE_PROVIDERS, type TileProvider } from "./tiles";
+import { tileCache, type TileCachePolicy } from "@/store/util/tile-cache";
 import {
   COORD_SCALE,
   hasCoord,
@@ -266,6 +267,38 @@ const GridLayer = L.GridLayer.extend({
   },
 }) as new (options?: L.GridLayerOptions) => L.GridLayer;
 
+// Basemap tiles through the persistent tile cache, so viewed areas stay
+// available offline.
+const CachedTileLayer = L.TileLayer.extend({
+  createTile(coords: L.Coords, done: L.DoneCallback) {
+    const tile = document.createElement("img");
+    tile.alt = "";
+    tile.setAttribute("role", "presentation");
+    const policy: TileCachePolicy = this.options.cache;
+    tileCache()
+      .get(this.getTileUrl(coords), policy)
+      .then(
+        (blob) => {
+          const url = URL.createObjectURL(blob);
+          tile.onload = () => {
+            URL.revokeObjectURL(url);
+            done(undefined, tile);
+          };
+          tile.onerror = () => {
+            URL.revokeObjectURL(url);
+            done(new Error("tile image"), tile);
+          };
+          tile.src = url;
+        },
+        (err) => done(err, tile),
+      );
+    return tile;
+  },
+}) as new (
+  url: string,
+  options: L.TileLayerOptions & { cache: TileCachePolicy },
+) => L.TileLayer;
+
 function markerIcon(index: number) {
   const selected = index == props.selected ? " is-selected" : "";
   const active = index == props.active ? " is-active" : "";
@@ -415,7 +448,8 @@ function setTiles() {
   tileLayer?.remove();
   tileLayer = undefined;
   const provider = TILE_PROVIDERS[props.tiles];
-  tileLayer = L.tileLayer(provider.url, {
+  tileLayer = new CachedTileLayer(provider.url, {
+    cache: provider.cache,
     attribution: provider.attribution,
     maxNativeZoom: provider.maxZoom,
     maxZoom: MAX_ZOOM,

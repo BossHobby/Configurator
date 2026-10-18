@@ -95,6 +95,147 @@ export function missionLegs(
   return legs;
 }
 
+// Points in flight order that missionLegs measures, home first when known.
+export function missionRoute(
+  mission: Mission,
+  home: GeoPoint | undefined,
+): GeoPoint[] {
+  const wps = mission.waypoints;
+  if (!hasCoord(home) || !wps.length) return [...wps];
+  return mission.end_action == MissionEndAction.RTH
+    ? [home, ...wps, home]
+    : [home, ...wps];
+}
+
+export interface PathVertex {
+  d: number; // meters along missionRoute
+  alt: number; // meters above launch
+  index?: number; // waypoint reached here
+}
+
+// How the firmware changes altitude. Both change it on the way along a leg.
+// Multirotors climb in place to start the mission and RTH, and carry on from
+// a waypoint reached short of its altitude toward the next one. Wings circle
+// a waypoint reached more than climbMargin below it, up to that margin.
+export interface VerticalRates {
+  climb: number; // m/s
+  sink: number;
+  climbInPlace: boolean;
+  climbMargin: number; // meters
+}
+export const MULTI_VERTICAL_RATES: VerticalRates = {
+  climb: 2,
+  sink: 2,
+  climbInPlace: true,
+  climbMargin: Infinity,
+};
+export const WING_VERTICAL_RATES: VerticalRates = {
+  climb: 3,
+  sink: 2,
+  climbInPlace: false,
+  climbMargin: 10,
+};
+
+// Altitude profile of the planned flight, starting on the ground at home
+// when it is known. RTH climbs by rthAltitude from where the last waypoint
+// was reached and holds it home; the landing is not drawn.
+export function missionPath(
+  mission: Mission,
+  home: GeoPoint | undefined,
+  legs: MissionLeg[],
+  rates: VerticalRates,
+  rthAltitude: number,
+): PathVertex[] {
+  const wps = mission.waypoints;
+  if (!wps.length) return [];
+  const fromHome = hasCoord(home);
+  const path: PathVertex[] = [];
+  let d = 0;
+  let alt = fromHome ? 0 : wps[0].alt;
+  path.push({ d, alt, index: fromHome ? undefined : 0 });
+
+  const climbInPlace = (target: number) => {
+    if (!rates.climbInPlace || target <= alt) return;
+    alt = target;
+    path.push({ d, alt });
+  };
+  // Along the leg toward target, at the vertical rate for the leg's speed.
+  const fly = (leg: MissionLeg, target: number) => {
+    if (target != alt) {
+      const rate = target > alt ? rates.climb : rates.sink;
+      const reach = (Math.abs(target - alt) / rate) * leg.speed;
+      if (!(leg.speed > 0) || !Number.isFinite(leg.time)) {
+        // Without a speed the timing is unknown; assume it gets there.
+        alt = target;
+      } else if (reach < leg.distance) {
+        alt = target;
+        path.push({ d: d + reach, alt });
+      } else {
+        alt += (Math.sign(target - alt) * rate * leg.distance) / leg.speed;
+      }
+    }
+    d += leg.distance;
+  };
+  // At a waypoint: the last one is held at its altitude, others circle up
+  // to within the margin before the next leg.
+  const arrive = (target: number, index: number, hold: boolean) => {
+    const floor = hold ? target : target - rates.climbMargin;
+    if (alt < floor || (hold && alt != target)) {
+      path.push({ d, alt });
+      alt = hold ? target : floor;
+    }
+    path.push({ d, alt, index });
+  };
+
+  const rth = legs.length > (fromHome ? wps.length : wps.length - 1);
+  let leg = 0;
+  if (fromHome) {
+    climbInPlace(wps[0].alt);
+    fly(legs[leg++], wps[0].alt);
+    arrive(wps[0].alt, 0, wps.length == 1 && !rth);
+  }
+  for (let i = 1; i < wps.length; i++) {
+    fly(legs[leg++], wps[i].alt);
+    arrive(wps[i].alt, i, i == wps.length - 1 && !rth);
+  }
+  if (rth) {
+    const target = alt + Math.max(rthAltitude, 0);
+    climbInPlace(target);
+    fly(legs[leg], target);
+    path.push({ d, alt });
+  }
+  return path;
+}
+
+// First distance at which the path reaches an altitude, Infinity if never.
+export function pathReach(path: PathVertex[], alt: number) {
+  for (let i = 0; i < path.length; i++) {
+    const b = path[i];
+    if (b.alt < alt) continue;
+    const a = path[i - 1];
+    if (!a || a.alt >= alt || b.d == a.d) return b.d;
+    return a.d + ((alt - a.alt) / (b.alt - a.alt)) * (b.d - a.d);
+  }
+  return Infinity;
+}
+
+// Lowest planned altitude at a distance along the route: a climb in place
+// passes through every altitude of its vertical segment.
+export function pathAltitude(path: PathVertex[], d: number) {
+  let lowest = path.length == 1 ? path[0].alt : NaN;
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1];
+    const b = path[i];
+    if (d < a.d || d > b.d) continue;
+    const alt =
+      b.d == a.d
+        ? Math.min(a.alt, b.alt)
+        : a.alt + ((b.alt - a.alt) * (d - a.d)) / (b.d - a.d);
+    if (!(alt >= lowest)) lowest = alt;
+  }
+  return lowest;
+}
+
 export interface MissionIssue {
   level: "error" | "warning";
   msg: string;
@@ -228,6 +369,14 @@ export function missionFromFile(text: string): Mission {
   if (file.version > FILE_VERSION) {
     throw new Error("mission file is from a newer configurator");
   }
+  file.waypoints.forEach((wp, index) => {
+    if (
+      !Number.isFinite(Number(wp?.lat)) ||
+      !Number.isFinite(Number(wp?.lon))
+    ) {
+      throw new Error(`waypoint ${index + 1} has no valid coordinates`);
+    }
+  });
   return {
     end_action:
       file.end_action == MissionEndAction.RTH
