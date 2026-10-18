@@ -10,6 +10,7 @@ import {
 import {
   CRSF_FRAMETYPE_QUIC_RT,
   QUIC_RT_VERSION,
+  NAV_MISSION_ITEMS_MAX,
   NAV_MISSION_RESUME,
   NavCommand,
   QuicRtType,
@@ -17,7 +18,10 @@ import {
   decodeStatus,
   encodeCommand,
   encodePing,
+  missionCrc,
+  sameMissionItem,
 } from "../src/store/util/quic-rt.ts";
+import { MissionEndAction } from "../src/store/util/mission.ts";
 
 test("GOTO matches the firmware's packed nav_link_goto_t", () => {
   const payload = encodeCommand(
@@ -62,8 +66,73 @@ test("argument-free and indexed commands", () => {
   assert.deepEqual([...encodePing()], [QUIC_RT_VERSION, QuicRtType.Ping]);
 });
 
+// The firmware's test_mission_crc_covers_the_sent_route uses the same route.
+const crcRoute = {
+  end_action: MissionEndAction.RTH,
+  waypoints: [
+    { lat: -338765000, lon: 1511234000, alt: 30, speed: 5 },
+    { lat: -338765100, lon: 1511234100, alt: 31.25, speed: 0 },
+  ],
+};
+
+test("mission CRC matches the firmware's mission_crc()", () => {
+  assert.equal(missionCrc(crcRoute), 0x4bae);
+  assert.equal(
+    missionCrc({ end_action: MissionEndAction.Hold, waypoints: [] }),
+    0x1d0f,
+  );
+  // Values the firmware stores alike compare equal.
+  const [first] = crcRoute.waypoints;
+  assert.ok(sameMissionItem(first, { ...first, alt: 30.001 }));
+  assert.ok(!sameMissionItem(first, { ...first, speed: 5.01 }));
+});
+
+test("mission items and commit match the firmware's packed structs", () => {
+  const items = encodeCommand(
+    { type: NavCommand.MissionItems, index: 4, waypoints: crcRoute.waypoints },
+    7,
+  );
+  assert.equal(items.length, 4 + 1 + 2 * 14);
+  assert.deepEqual(
+    [...items.subarray(0, 5)],
+    [QUIC_RT_VERSION, QuicRtType.Command, NavCommand.MissionItems, 7, 4],
+  );
+  const v = new DataView(items.buffer, 5);
+  assert.equal(v.getInt32(14, true), -338765100);
+  assert.equal(v.getInt32(18, true), 1511234100);
+  assert.equal(v.getInt32(22, true), 3125, "altitude in cm");
+  assert.equal(v.getUint16(12, true), 500, "speed in cm/s");
+  assert.ok(
+    2 + 2 + 1 + NAV_MISSION_ITEMS_MAX * 14 <= 58,
+    "a full command fits an extended CRSF frame",
+  );
+
+  const commit = encodeCommand(
+    {
+      type: NavCommand.MissionCommit,
+      count: 2,
+      endAction: MissionEndAction.RTH,
+      crc: 0x4bae,
+    },
+    8,
+  );
+  assert.deepEqual(
+    [...commit],
+    [
+      QUIC_RT_VERSION,
+      QuicRtType.Command,
+      NavCommand.MissionCommit,
+      8,
+      2,
+      MissionEndAction.RTH,
+      0xae,
+      0x4b,
+    ],
+  );
+});
+
 function statusPayload() {
-  const payload = new Uint8Array(2 + 20);
+  const payload = new Uint8Array(2 + 14);
   payload[0] = QUIC_RT_VERSION;
   payload[1] = QuicRtType.Status;
   const v = new DataView(payload.buffer, 2);
@@ -71,14 +140,13 @@ function statusPayload() {
   v.setUint8(1, 0x01 | 0x02 | 0x40 | 0x80);
   v.setUint8(2, (NavResult.TooFar << 5) | 31);
   v.setUint8(3, 32);
-  v.setInt32(4, 223000000, true);
-  v.setInt32(8, 1142000000, true);
-  v.setInt32(12, -223000000, true);
-  v.setInt32(16, -1142000000, true);
+  v.setUint16(4, 0x4bae, true);
+  v.setInt32(6, -223000000, true);
+  v.setInt32(10, -1142000000, true);
   return payload;
 }
 
-test("STATUS decodes flags and the home and target points", () => {
+test("STATUS decodes flags and the target point", () => {
   const status = decodeStatus(statusPayload());
   assert.ok(status);
   assert.equal(status.commandId, 42);
@@ -94,7 +162,7 @@ test("STATUS decodes flags and the home and target points", () => {
     "the index shares a byte with the result",
   );
   assert.equal(status.missionCount, 32);
-  assert.deepEqual(status.home, { lat: 223000000, lon: 1142000000 });
+  assert.equal(status.missionCrc, 0x4bae);
   assert.deepEqual(status.target, { lat: -223000000, lon: -1142000000 });
 });
 
@@ -102,7 +170,7 @@ test("STATUS rejects other versions, types and short payloads", () => {
   const other = statusPayload();
   other[0] = QUIC_RT_VERSION + 1;
   assert.equal(decodeStatus(other), undefined);
-  assert.equal(decodeStatus(statusPayload().subarray(0, 20)), undefined);
+  assert.equal(decodeStatus(statusPayload().subarray(0, 15)), undefined);
   assert.equal(decodeStatus(encodePing()), undefined);
 });
 

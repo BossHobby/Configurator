@@ -19,19 +19,19 @@
     <div class="grid grid-cols-2 gap-2">
       <UiButton
         class="min-h-11"
-        :disabled="!ready"
+        :disabled="!enabled"
         @click="command({ type: NavCommand.Hold }, 'Hold')"
         >Hold</UiButton
       >
       <UiButton
         class="min-h-11"
-        :disabled="!ready"
+        :disabled="!enabled"
         @click="command({ type: NavCommand.RTH }, 'Return home')"
         >Return home</UiButton
       >
       <UiButton
         class="col-span-2"
-        :disabled="!ready || !status?.missionCount"
+        :disabled="!enabled || !status?.missionCount"
         @click="
           command(
             { type: NavCommand.Mission, index: NAV_MISSION_RESUME },
@@ -43,7 +43,14 @@
       <UiButton
         v-if="selected !== undefined"
         class="col-span-2"
-        :disabled="!ready || selected >= (status?.missionCount ?? 0)"
+        :disabled="
+          !enabled || mission.dirty || selected >= (status?.missionCount ?? 0)
+        "
+        :title="
+          mission.dirty
+            ? 'Upload the plan first: the craft flies the mission it stores.'
+            : undefined
+        "
         @click="
           command(
             { type: NavCommand.Mission, index: selected },
@@ -54,7 +61,7 @@
       >
       <UiButton
         class="col-span-2"
-        :disabled="!ready || !status?.guided"
+        :disabled="!enabled || !status?.guided"
         @click="changeAltitude"
         >Change altitude</UiButton
       >
@@ -111,6 +118,7 @@ import { defineComponent, type PropType } from "vue";
 import UiButton from "@/components/ui/Button.vue";
 import Icon from "@/components/ui/Icon.vue";
 import AltitudeModal from "./AltitudeModal.vue";
+import { useMissionStore } from "@/store/mission";
 import { useNavStore } from "@/store/nav";
 import type { GeoPoint } from "@/store/util/mission";
 import {
@@ -135,6 +143,7 @@ export default defineComponent({
   },
   setup() {
     return {
+      mission: useMissionStore(),
       nav: useNavStore(),
       resultMessage,
       NavCommand,
@@ -148,6 +157,10 @@ export default defineComponent({
     },
     ready(): boolean {
       return !this.nav.stale && !!this.status?.guidedReady;
+    },
+    // A command sent during a mission upload would cancel it.
+    enabled(): boolean {
+      return this.ready && !this.nav.uploading;
     },
     // Explains the newest command only while it is the one that failed.
     lastFailure(): string | undefined {
@@ -179,7 +192,7 @@ export default defineComponent({
     },
     // The altitude the craft holds, within the guided limits.
     currentAltitude(): number | undefined {
-      const current = this.nav.altitude?.altitude;
+      const current = this.nav.heightAboveHome;
       if (current === undefined) return undefined;
       return Math.min(
         this.limits.max_alt,
@@ -207,12 +220,13 @@ export default defineComponent({
     },
     // Choosing Go here in the map menu is the confirmation. It holds the
     // current altitude unless pickAlt asks for another one.
+    // Without a known altitude, Go here asks for one.
     async flyTo(point: GeoPoint, pickAlt = false) {
-      if (!this.ready) return;
-      const alt = pickAlt
-        ? await this.pickAltitude("Go here at altitude", "Go here")
-        : this.currentAltitude();
-      if (alt === undefined) return;
+      if (!this.enabled) return;
+      const current = pickAlt ? undefined : this.currentAltitude();
+      const alt =
+        current ?? (await this.pickAltitude("Go here at altitude", "Go here"));
+      if (alt === undefined || !this.enabled) return;
       return this.command(
         { type: NavCommand.Goto, lat: point.lat, lon: point.lon, alt },
         `Go here at ${alt} m`,

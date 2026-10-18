@@ -153,13 +153,13 @@
           >
           <UiButton
             :busy="busy == 'clear'"
-            :disabled="!!busy || !serial.is_connected || info.is_read_only"
+            :disabled="!!busy || !session || info.is_read_only"
             @click="clear"
             >Clear on FC</UiButton
           >
           <UiButton
             :busy="busy == 'fetch'"
-            :disabled="!!busy || !serial.is_connected"
+            :disabled="!!busy || !session"
             @click="fetch"
             >Read from FC</UiButton
           >
@@ -167,7 +167,10 @@
             variant="primary"
             :busy="busy == 'upload'"
             :disabled="
-              !!busy || !serial.is_connected || info.is_read_only || hasErrors
+              !!busy ||
+              !(session || liveUpload) ||
+              (!liveUpload && info.is_read_only) ||
+              hasErrors
             "
             @click="upload"
             >Upload to FC</UiButton
@@ -484,9 +487,9 @@ export default defineComponent({
       if (this.serial.is_connected && hasCoord(this.state.gps_home)) {
         return this.state.gps_home;
       }
-      // While armed, STATUS carries the launch point.
-      const home = this.live?.home;
-      return this.live?.armed && hasCoord(home) ? home : undefined;
+      // While armed, CRSF GPS home carries the launch point.
+      const home = this.live ? this.nav.home : undefined;
+      return hasCoord(home) ? home : undefined;
     },
     craft(): GeoPoint | undefined {
       if (this.live) return this.nav.position;
@@ -503,9 +506,23 @@ export default defineComponent({
         return undefined;
       return hasCoord(live.target) ? live.target : undefined;
     },
+    // Armed, there is no configuration session: it is suspended, or the craft
+    // was armed when we connected. The QUIC_RT link replaces the mission.
+    liveUpload(): boolean {
+      return (
+        (!this.serial.is_connected || this.root.in_flight) && !!this.live?.armed
+      );
+    },
+    // The configuration session answers mission commands.
+    session(): boolean {
+      return this.serial.is_connected && !this.root.in_flight;
+    },
     // Mission waypoint the craft is flying to, highlighted on map and table.
+    // Unsent edits renumber the plan, so its indices no longer match the FC.
     activeIndex(): number | undefined {
-      return this.live?.mission ? this.live.missionIndex : undefined;
+      return this.live?.mission && !this.mission.dirty
+        ? this.live.missionIndex
+        : undefined;
     },
     // Wings fly every leg at cruise throttle, so waypoint speeds do not apply.
     waypointSpeeds(): boolean {
@@ -553,10 +570,22 @@ export default defineComponent({
     "live.armed"(armed: boolean | undefined, was: boolean | undefined) {
       if (armed && !was) this.follow = true;
     },
+    // Connecting keeps this page, which then reads the new session's mission.
+    // Disarming refreshes it itself.
+    "serial.is_connected"(connected: boolean) {
+      if (
+        connected &&
+        this.mission.supported &&
+        !this.root.in_flight &&
+        !this.mission.dirty
+      ) {
+        this.fetch();
+      }
+    },
   },
   mounted() {
     // Keep unsent edits when coming back to the page.
-    if (this.serial.is_connected && !this.mission.dirty) this.fetch();
+    if (this.session && !this.mission.dirty) this.fetch();
     document.addEventListener("keydown", this.onKeydown);
   },
   unmounted() {
@@ -630,10 +659,14 @@ export default defineComponent({
         input.value == "" ? 0 : input.valueAsNumber / 3.6;
     },
     setCoord(index: number, key: "lat" | "lon", event: Event) {
-      const value = (event.target as HTMLInputElement).valueAsNumber;
-      this.mission.waypoints[index][key] = Number.isFinite(value)
-        ? Math.round(value * COORD_SCALE)
-        : NaN;
+      const input = event.target as HTMLInputElement;
+      const wp = this.mission.waypoints[index];
+      // The map cannot place a cleared coordinate; keep the last one.
+      if (!Number.isFinite(input.valueAsNumber)) {
+        input.value = String(wp[key] / COORD_SCALE);
+        return;
+      }
+      wp[key] = Math.round(input.valueAsNumber * COORD_SCALE);
     },
     async run(
       busy: "fetch" | "upload" | "clear",
@@ -669,6 +702,24 @@ export default defineComponent({
           ],
         });
         if (choice !== "upload") return;
+      }
+      if (this.liveUpload) {
+        if (this.live?.mission) {
+          const choice = await this.$modal.show(ConfirmModal, {
+            title: "Change the mission in flight?",
+            message: `The craft keeps flying to waypoint ${this.live.missionIndex + 1} of the new route, or to its last waypoint if the route is shorter.`,
+            actions: [
+              { label: "Cancel", value: "cancel" },
+              { label: "Upload", value: "upload", variant: "primary" },
+            ],
+          });
+          if (choice !== "upload") return;
+        }
+        return this.run(
+          "upload",
+          () => this.mission.upload_live(),
+          "Mission replaced. The flight controller saves it once the craft is disarmed and still.",
+        );
       }
       return this.run(
         "upload",

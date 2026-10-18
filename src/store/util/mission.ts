@@ -228,6 +228,14 @@ export function missionFromFile(text: string): Mission {
   if (file.version > FILE_VERSION) {
     throw new Error("mission file is from a newer configurator");
   }
+  file.waypoints.forEach((wp, index) => {
+    if (
+      !Number.isFinite(Number(wp?.lat)) ||
+      !Number.isFinite(Number(wp?.lon))
+    ) {
+      throw new Error(`waypoint ${index + 1} has no valid coordinates`);
+    }
+  });
   return {
     end_action:
       file.end_action == MissionEndAction.RTH

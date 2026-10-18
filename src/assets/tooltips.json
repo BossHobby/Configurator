@@ -355,7 +355,10 @@
     "text": "RTH climbs this far above the altitude where it started, in meters, then holds that altitude on the way home and while circling home. Needs a barometer."
   },
   "navigation.wing_rth_on_failsafe": {
-    "text": "On receiver loss, fly home and circle there instead of gliding and disarming. Without GPS or a home position, circle while descending slowly. The pilot gets control back when the link recovers, unless the RTH switch is on."
+    "text": "On receiver loss, fly home and circle there instead of gliding and disarming. Without GPS or a home position, circle while descending slowly. The pilot gets control back when the link recovers, unless the RTH switch is on. A mission continues instead when Continue mission on failsafe is on."
+  },
+  "navigation.mission_on_failsafe": {
+    "text": "On receiver loss during a mission, keep flying it instead of the failsafe, as when the transmitter is turned off. At the end, the craft holds the last waypoint or returns home, as set on the Mission page, and stays there until the link recovers. Once the link has been stable for half a second, move a stick to unlock the switches; the sticks never steer the mission. The mission switch then applies again: left on, the mission keeps flying. Ground station commands wait for the unlock too. If the route can no longer be flown, such as after losing GPS, the failsafe takes over."
   },
   "navigation.loiter_radius": {
     "text": "Radius of the GPS loiter circle, in meters. The circle is placed to the turn side of the current track when loiter starts."
@@ -373,7 +376,7 @@
     "text": "Fly a straight GPS track at cruise throttle. The track locks half a second after roll and yaw are centered; roll or yaw input steers as in Level and locks the new track on release. Pitch sets the climb rate and releasing it holds the barometer altitude. Throttle is ignored. Works only while armed and airborne, after autolaunch. Mission, loiter and RTH take priority, including failsafe RTH."
   },
   "channel.aux_mission": {
-    "text": "Fly the waypoint mission stored on the Mission page, in order. Needs GPS, a home position and the next waypoint within 2 km. Multirotors start only when the switch is turned on in flight, at least 2 m up, and stop at each waypoint. Wings turn for the next waypoint once inside their turn radius, fly at cruise throttle and ignore waypoint speeds; without a usable mission they loiter in place. At the end, the craft holds the last waypoint or returns home, as set on the Mission page. Turning the switch off returns control. Turning it on again continues to the waypoint not yet reached, also after an RTH; wings continue on their own when RTH ends. A finished mission or a new arming starts again from the first waypoint. The OSD status shows the active waypoint, such as WP 3/8 FLY. RTH takes priority, including failsafe RTH."
+    "text": "Fly the waypoint mission stored on the Mission page, in order. Needs GPS, a home position and the next waypoint within 2 km. Multirotors start only when the switch is turned on in flight, at least 2 m up, and stop at each waypoint. Wings turn for the next waypoint once inside their turn radius, fly at cruise throttle and ignore waypoint speeds; without a usable mission they loiter in place. At the end, the craft holds the last waypoint or returns home, as set on the Mission page. Turning the switch off returns control. Turning it on again continues to the waypoint not yet reached, also after an RTH; wings continue on their own when RTH ends. A finished mission or a new arming starts again from the first waypoint. The OSD status shows the active waypoint, such as WP 3/8 FLY. RTH takes priority. On receiver loss, the mission continues when Continue mission on failsafe is on, with the flight mode showing FS MISSION; otherwise failsafe RTH takes priority."
   },
   "channel.aux_autotrim": {
     "text": "Capture wing control-surface trim during steady flight. Keep Autotrim enabled through landing and disarming so the captured trim can be saved. Switching it off before saving cancels the capture and restores the previous trim."

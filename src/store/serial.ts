@@ -131,6 +131,8 @@ export const useSerialStore = defineStore("serial", {
           if (armed) this.enter_flight();
           else if (armed === false && root.in_flight) this.leave_flight();
         },
+        // The craft may have armed while the configuration loaded.
+        { immediate: true },
       );
     },
     async poll_serial(counter: number) {
@@ -277,6 +279,8 @@ export const useSerialStore = defineStore("serial", {
       stopArmWatch = undefined;
       stopFollowWatch?.();
       stopFollowWatch = undefined;
+      // A session lost in flight opens again once the craft disarms.
+      if (!closeLink && nav.connected && nav.armed) this.follow_armed();
 
       const root = useRootStore();
       root.in_flight = false;
@@ -317,7 +321,8 @@ export const useSerialStore = defineStore("serial", {
         const i = await infoPromise;
 
         info.$reset();
-        mission.$reset();
+        // Keep a plan that was not uploaded, as after disarming.
+        if (!mission.dirty) mission.$reset();
         motor.$reset();
         vtx.$reset();
         bb.$reset();

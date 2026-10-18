@@ -14,6 +14,7 @@ export const CrsfTelemetryType = {
   LinkStatisticsTx: 0x1d,
   Attitude: 0x1e,
   FlightMode: 0x21,
+  GpsHome: 0x23,
 } as const;
 
 export interface CrsfGps {
@@ -23,6 +24,13 @@ export interface CrsfGps {
   course: number; // degrees true
   altitude: number; // meters MSL
   sats: number;
+}
+
+// The launch point, sent only while the flight controller has latched one.
+export interface CrsfGpsHome {
+  lat: number; // degrees * 1e7
+  lon: number; // degrees * 1e7
+  altitude: number; // meters MSL
 }
 
 export interface CrsfGpsExtended {
@@ -101,7 +109,8 @@ export type CrsfTelemetryFrame =
       linkTx: CrsfLinkStatisticsSide;
     }
   | { type: typeof CrsfTelemetryType.Attitude; attitude: CrsfAttitude }
-  | { type: typeof CrsfTelemetryType.FlightMode; flightMode: string };
+  | { type: typeof CrsfTelemetryType.FlightMode; flightMode: string }
+  | { type: typeof CrsfTelemetryType.GpsHome; gpsHome: CrsfGpsHome };
 
 // up_rf_power enum of 0x14.
 const LINK_POWER_MW = [0, 10, 25, 100, 500, 1000, 2000, 250, 50];
@@ -137,6 +146,16 @@ export function decodeTelemetry(
           course: v.getUint16(10) / 100,
           altitude: v.getUint16(12) - 1000,
           sats: v.getUint8(14),
+        },
+      };
+    case CrsfTelemetryType.GpsHome:
+      if (size < 10) return undefined;
+      return {
+        type: CrsfTelemetryType.GpsHome,
+        gpsHome: {
+          lat: v.getInt32(0),
+          lon: v.getInt32(4),
+          altitude: v.getUint16(8) - 1000,
         },
       };
     case CrsfTelemetryType.GpsExtended:
