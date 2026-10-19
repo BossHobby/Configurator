@@ -22,7 +22,7 @@
     "extract-tooltips": "node script/extract-tooltips.js",
     "prepare": "husky",
     "pre-commit": "pretty-quick --staged",
-    "test:ui": "node --test script/ui.test.mjs script/crsf.test.mjs",
+    "test:ui": "node --test script/ui.test.mjs script/crsf.test.mjs script/template.test.mjs",
     "serve:mobile": "env DEPLOYMENT=mobile vite --host",
     "build:mobile": "env DEPLOYMENT=mobile vite build --outDir dist-mobile",
     "mobile:sync": "npm run build:mobile && cap sync",

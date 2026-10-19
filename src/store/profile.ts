@@ -151,7 +151,9 @@ function migrateProfileVersion(
     ...(profile.navigation || {}),
   };
 
-  if (semver.eq(profileVersion, "v0.1.0")) {
+  // Steps below convert only the sections a profile carries: template
+  // patches hold a few fields and are migrated through this chain too.
+  if (semver.eq(profileVersion, "v0.1.0") && profile.rate) {
     const silverware = {
       mode: 0,
       rate: [
@@ -180,7 +182,8 @@ function migrateProfileVersion(
 
   if (
     semver.lt(profileVersion, "v0.2.2") &&
-    semver.gte(firmwareVersion, "v0.2.2")
+    semver.gte(firmwareVersion, "v0.2.2") &&
+    profile.serial
   ) {
     const serial_ports = target.serial_ports.filter((p) => p.index != 0);
     for (const key of Object.keys(profile.serial)) {
@@ -245,7 +248,8 @@ function migrateProfileVersion(
   if (
     semver.lt(profileVersion, "v0.2.7") &&
     semver.gte(firmwareVersion, "v0.2.7") &&
-    profile.filter
+    profile.filter &&
+    "dterm_dynamic_enable" in profile.filter
   ) {
     profile.filter.dterm_dynamic_type = profile.filter.dterm_dynamic_enable
       ? 1
@@ -362,6 +366,59 @@ function migrateProfile(profile) {
   p.meta.datetime = Math.floor(Date.now() / 1000);
 
   return p;
+}
+
+function isPlainObject(value: any): boolean {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    !(value instanceof Uint8Array)
+  );
+}
+
+// The migrated fields that come from the template: everything it set, plus
+// whatever migration converted out of it. Defaults the migration fills in
+// match the same migration of an empty patch and are left out.
+function templateFields(migrated: any, baseline: any, template: any): any {
+  const result = {};
+  for (const [key, value] of Object.entries(migrated)) {
+    const set = isPlainObject(template) && key in template;
+    if (set && isPlainObject(value) && isPlainObject(template[key])) {
+      result[key] = templateFields(value, baseline?.[key], template[key]);
+    } else if (
+      set ||
+      JSON.stringify(value) !== JSON.stringify(baseline?.[key])
+    ) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+// Templates are partial profiles for the firmware version in their meta.
+// Migrate them so older formats convert, but merge only their own fields:
+// a full migration also adds defaults (filter, motor, wing, navigation and a
+// multirotor mixer) that would replace the board's values. The version stays
+// the board's, so the merged profile is not migrated again as an old one.
+// Templates without a version are taken as current.
+export function migrateTemplatePatch(template: any): any {
+  const version = template?.meta?.version;
+  let fields = cloneProfileValue(template);
+  if (version) {
+    const meta = { version };
+    fields = templateFields(
+      migrateProfile(template),
+      migrateProfile({ meta }),
+      template,
+    );
+  }
+  if (fields.meta) {
+    delete fields.meta.version;
+    delete fields.meta.datetime;
+  }
+  coerceProfileByteStrings(fields);
+  return fields;
 }
 
 export const useProfileStore = defineStore("profile", {
@@ -531,7 +588,7 @@ export const useProfileStore = defineStore("profile", {
     merge_profile(profile) {
       return useRootStore().track("Applying template", 2, async () => {
         const lhs = migrateProfile(await serial.get(QuicVal.Profile));
-        const rhs = migrateProfile(profile);
+        const rhs = migrateTemplatePatch(profile);
 
         const p = mergeDeep(lhs, rhs);
 
