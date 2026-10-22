@@ -10,6 +10,12 @@ export interface BlackboxFile {
   blackbox_rate: number;
   start: number;
   size: number;
+  // UTC seconds at recording start; 0 or missing when the clock was not set.
+  datetime?: number;
+}
+
+export function blackboxFileDate(file: BlackboxFile): Date | undefined {
+  return file.datetime ? new Date(file.datetime * 1000) : undefined;
 }
 
 export function transformBlackboxFieldFlags(

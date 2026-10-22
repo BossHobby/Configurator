@@ -2,6 +2,7 @@ import { Log } from "@/log";
 import { ArrayWriter } from ".";
 import {
   BLACKBOX_SCALE,
+  blackboxFileDate,
   transformBlackboxFieldFlags,
   type BlackboxFile,
 } from "./blackbox-shared";
@@ -455,6 +456,14 @@ export class Blackbox {
     this.writeHeaderRaw("gyro_notch_hz", "0,0");
     this.writeHeaderRaw("gyro_notch_cutoff", "0,0");
 
+    const start = blackboxFileDate(this.file);
+    if (start) {
+      // Betaflight's ISO 8601 form with an explicit UTC offset.
+      this.writeHeaderRaw(
+        "Log start datetime",
+        start.toISOString().replace("Z", "+00:00"),
+      );
+    }
     this.writeHeaderRaw("Craft name", profile.meta.name.replace(/\0/g, ""));
 
     this.writeHeaderRaw(
