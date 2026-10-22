@@ -424,6 +424,7 @@ export function migrateTemplatePatch(template: any): any {
   if (fields.meta) {
     delete fields.meta.version;
     delete fields.meta.datetime;
+    delete fields.meta.firmware;
   }
   coerceProfileByteStrings(fields);
   return fields;

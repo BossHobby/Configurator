@@ -280,6 +280,7 @@ export interface profile_metadata_t {
   version: number;
   name: string;
   datetime: number;
+  firmware?: string; // build that encoded the profile, from 0.3.1; read-only
 }
 
 export enum output_protocol_t {

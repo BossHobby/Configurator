@@ -178,6 +178,21 @@ test("an old template's converted fields still apply", () => {
   assert.equal(patch.motor, undefined);
 });
 
+test("a template saved from a board leaves the board's build", () => {
+  const { migrateTemplatePatch } = profileModule();
+  const patch = plain(
+    migrateTemplatePatch({
+      meta: {
+        version: V031,
+        name: "Wingman",
+        datetime: 1792670400,
+        firmware: "v0.11.3-42-gabcdef1",
+      },
+    }),
+  );
+  assert.deepEqual(patch.meta, { name: "Wingman" });
+});
+
 test("a template without a version applies as written", () => {
   const { migrateTemplatePatch } = profileModule();
   const template = {
