@@ -72,7 +72,11 @@
         }"
       >
         <span class="mr-auto text-sm"
-          >Flight {{ index + 1 }} · {{ humanFileSize(file.size) }}</span
+          >Flight {{ index + 1 }} ·
+          <template v-if="blackboxFileDate(file)"
+            >{{ blackboxFileDate(file)!.toLocaleString() }} ·
+          </template>
+          {{ humanFileSize(file.size) }}</span
         >
         <template v-if="!serial.radio_link">
           <spinner-btn @click="download_btfl(index)">BTFL</spinner-btn
@@ -99,11 +103,13 @@
 <script lang="ts">
 import Panel from "@/components/ui/Panel.vue";
 import FieldSelect from "@/components/ui/Select.vue";
+import dayjs from "dayjs";
 import { humanFileSize } from "@/mixin/filters";
 import { exportObjectUrl } from "@/store/util/export";
 import {
   useBlackboxStore,
   BlackboxFields,
+  blackboxFileDate,
   transformBlackboxFieldFlags,
 } from "@/store/blackbox";
 import { BlackboxField, BlackboxDebugFlag } from "@/store/constants";
@@ -230,6 +236,13 @@ export default defineComponent({
   },
   methods: {
     humanFileSize,
+    blackboxFileDate,
+    // The local recording date when the log has one, otherwise today, so
+    // the filename matches the time shown in the list.
+    fileDateStamp(index: number) {
+      const date = blackboxFileDate(this.blackbox.list.files[index]);
+      return dayjs(date).format("YYYY-MM-DD");
+    },
     reset() {
       return this.blackbox
         .reset_blackbox()
@@ -237,7 +250,7 @@ export default defineComponent({
     },
     download_quic(index) {
       return this.blackbox.download_blackbox_quic(index).then((url) => {
-        const date = new Date().toISOString().substring(0, 10);
+        const date = this.fileDateStamp(index);
         const name = this.profile.meta.name.replace(/\0/g, "");
         const filename = `QUIC_${name}_${date}_file_${index}.json`;
 
@@ -246,7 +259,7 @@ export default defineComponent({
     },
     download_btfl(index) {
       return this.blackbox.download_blackbox_btfl(index).then((url) => {
-        const date = new Date().toISOString().substring(0, 10);
+        const date = this.fileDateStamp(index);
         const name = this.profile.meta.name.replace(/\0/g, "");
         const filename = `QUIC_${name}_${date}_file_${index}.bfl`;
 

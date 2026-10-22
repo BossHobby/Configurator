@@ -106,7 +106,10 @@ export interface BlackboxPreset {
 }
 
 export type { BlackboxFile } from "./util/blackbox-shared";
-export { transformBlackboxFieldFlags } from "./util/blackbox-shared";
+export {
+  blackboxFileDate,
+  transformBlackboxFieldFlags,
+} from "./util/blackbox-shared";
 
 const AxisRPY = ["Roll", "Pitch", "Yaw"];
 const AxisRPYT = [...AxisRPY, "Throttle"];
