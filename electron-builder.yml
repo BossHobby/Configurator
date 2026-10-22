@@ -1,5 +1,5 @@
 appId: com.bosshobby.config
-productName: quic-config
+productName: QUICKSILVER Configurator
 # The iOS app icon on macOS's icon grid, see electron/icon.png.
 icon: electron/icon.png
 directories:

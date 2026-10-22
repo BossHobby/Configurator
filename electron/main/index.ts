@@ -109,6 +109,9 @@ function createWindow(): void {
   }
 }
 
+// Keep the data directory from before the productName rename.
+app.setPath("userData", join(app.getPath("appData"), "quic-config"));
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
