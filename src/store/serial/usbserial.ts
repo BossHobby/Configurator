@@ -63,18 +63,27 @@ class UsbSerialPort {
     // NAKed rather than its data dropped.
     this.readable = new ReadableStream<Uint8Array>({
       async pull(controller) {
-        const result = await device.transferIn(data.endpointIn, TRANSFER_SIZE);
-        if (result.status !== "ok") {
-          throw new Error(`USB transfer in: ${result.status}`);
-        }
-        if (result.data?.byteLength) {
-          controller.enqueue(
-            new Uint8Array(
-              result.data.buffer,
-              result.data.byteOffset,
-              result.data.byteLength,
-            ),
+        // A zero-length packet, sent after a reply filling whole packets,
+        // ends a transfer without data. pull() must not return without
+        // enqueuing, or the stream never calls it again.
+        while (true) {
+          const result = await device.transferIn(
+            data.endpointIn,
+            TRANSFER_SIZE,
           );
+          if (result.status !== "ok") {
+            throw new Error(`USB transfer in: ${result.status}`);
+          }
+          if (result.data?.byteLength) {
+            controller.enqueue(
+              new Uint8Array(
+                result.data.buffer,
+                result.data.byteOffset,
+                result.data.byteLength,
+              ),
+            );
+            return;
+          }
         }
       },
     });
