@@ -89,11 +89,15 @@ export const useSerialStore = defineStore("serial", {
         }
       }
     },
-    async soft_reboot() {
+    soft_reboot() {
+      return this.reconnect_after(() => serial.softReboot());
+    },
+    /** Runs a request that reboots the board, then reconnects once it is back. */
+    async reconnect_after(reboot: () => Promise<void>) {
       this.reset_connection();
 
       this.is_connecting = true;
-      await serial.softReboot();
+      await reboot();
       // Over the radio link the session is retried until the board is back.
       for (let i = 0; !serial.isRadioLink && i < 10; i++) {
         const ports = await WebSerial.getPorts();

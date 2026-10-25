@@ -39,6 +39,7 @@
 import Panel from "@/components/ui/Panel.vue";
 import { useConstantStore } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
+import { useSerialStore } from "@/store/serial";
 import { useTargetStore } from "@/store/target";
 import { vehicle_type_t } from "@/store/types";
 import { $enum } from "ts-enum-util";
@@ -53,6 +54,7 @@ export default defineComponent({
 
     return {
       info: useInfoStore(),
+      serial: useSerialStore(),
       target: useTargetStore(),
 
       Features: computed(() => constants.Features),
@@ -91,7 +93,7 @@ export default defineComponent({
       reader.addEventListener("load", (event) => {
         if (event?.target?.result) {
           const target = YAML.parse(event?.target?.result as string);
-          this.target.apply(target);
+          this.serial.reconnect_after(() => this.target.apply(target));
         }
       });
 

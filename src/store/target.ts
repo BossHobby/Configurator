@@ -106,11 +106,12 @@ export const useTargetStore = defineStore("target", {
     fetch() {
       return serial.get(QuicVal.Target).then((target) => this.$patch(target));
     },
+    /** The board saves the target and reboots into it; the caller reconnects. */
     apply(target: target_t) {
       const root = useRootStore();
       return serial
         .set(QuicVal.Target, target)
-        .then(() => this.fetch())
+        .then(() => serial.close())
         .then(() =>
           root.append_alert({ type: "success", msg: "Target applied!" }),
         );
