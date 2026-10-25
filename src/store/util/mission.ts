@@ -1,6 +1,8 @@
-// Coordinates are kept in the firmware's gps_coord_t units (degrees * 1e7) so
-// a mission read from the FC is uploaded back bit for bit.
+// Waypoints are kept in the firmware's units so a mission read from the FC is
+// uploaded back bit for bit: coordinates in gps_coord_t degrees * 1e7,
+// altitudes in whole meters and speeds in 0.1 m/s.
 export const COORD_SCALE = 1e7;
+export const SPEED_SCALE = 0.1; // m/s per Waypoint.speed unit
 
 // A const object instead of an enum keeps this module runnable under plain
 // node for script/mission.test.mjs.
@@ -8,11 +10,17 @@ export const MissionEndAction = { Hold: 0, RTH: 1 } as const;
 export type MissionEndAction =
   (typeof MissionEndAction)[keyof typeof MissionEndAction];
 
+// How a multirotor flies a waypoint, the firmware's mission_waypoint_type_t.
+// A wing flies through every waypoint and accepts only Stop.
+export const WaypointType = { Stop: 0, Pass: 1, Takeoff: 2, Land: 3 } as const;
+export type WaypointType = (typeof WaypointType)[keyof typeof WaypointType];
+
 export interface Waypoint {
   lat: number;
   lon: number;
-  alt: number; // meters above launch, not MSL
-  speed: number; // m/s, 0 = navigation.rth_cruise_speed
+  alt: number; // whole meters above launch, not MSL; Land: the ground there
+  speed: number; // 0.1 m/s, 0 = navigation.rth_cruise_speed
+  type: WaypointType;
 }
 
 export interface Mission {
@@ -31,17 +39,33 @@ export interface MissionLimits {
   min_alt: number; // meters above launch
   max_alt: number;
   max_speed: number; // m/s, shown as km/h
+  min_ground_alt: number; // meters above launch, the lowest Land ground
+  waypoint_types: number; // the vehicle accepts the WaypointType values below this
 }
 export const MISSION_DEFAULT_LIMITS: MissionLimits = {
   min_alt: 5,
   max_alt: 5000,
-  max_speed: 30,
+  max_speed: 25.5,
+  min_ground_alt: -1000,
+  waypoint_types: 4,
 };
 // The firmware will not start a mission whose first point is farther away.
 export const MISSION_START_MAX = 2000;
+// Without a compass, the craft learns its heading after a takeoff by flying
+// straight along its nose for up to this far.
+export const MISSION_HEADING_RUN = 75;
 // Warnings only: long routes and far starts are legal but usually mistakes.
 export const MISSION_ROUTE_WARN = 5000;
 export const MISSION_FIRST_WARN = 1000;
+
+// A mission ending in Land ignores its end action.
+export function missionReturns(mission: Mission) {
+  const last = mission.waypoints[mission.waypoints.length - 1];
+  return (
+    mission.end_action == MissionEndAction.RTH &&
+    last?.type != WaypointType.Land
+  );
+}
 
 const EARTH_RADIUS = 6371000;
 
@@ -78,18 +102,14 @@ export function missionLegs(
   const legs: MissionLeg[] = [];
   const leg = (from: GeoPoint, to: GeoPoint, speed: number) => {
     const d = distance(from, to);
-    const s = waypointSpeeds && speed > 0 ? speed : cruiseSpeed;
+    const s = waypointSpeeds && speed > 0 ? speed * SPEED_SCALE : cruiseSpeed;
     legs.push({ distance: d, speed: s, time: s > 0 ? d / s : NaN });
   };
 
   const wps = mission.waypoints;
   if (hasCoord(home) && wps.length) leg(home, wps[0], wps[0].speed);
   for (let i = 1; i < wps.length; i++) leg(wps[i - 1], wps[i], wps[i].speed);
-  if (
-    hasCoord(home) &&
-    wps.length &&
-    mission.end_action == MissionEndAction.RTH
-  ) {
+  if (hasCoord(home) && wps.length && missionReturns(mission)) {
     leg(wps[wps.length - 1], home, cruiseSpeed);
   }
   return legs;
@@ -102,9 +122,7 @@ export function missionRoute(
 ): GeoPoint[] {
   const wps = mission.waypoints;
   if (!hasCoord(home) || !wps.length) return [...wps];
-  return mission.end_action == MissionEndAction.RTH
-    ? [home, ...wps, home]
-    : [home, ...wps];
+  return missionReturns(mission) ? [home, ...wps, home] : [home, ...wps];
 }
 
 export interface PathVertex {
@@ -137,8 +155,9 @@ export const WING_VERTICAL_RATES: VerticalRates = {
 };
 
 // Altitude profile of the planned flight, starting on the ground at home
-// when it is known. RTH climbs by rthAltitude from where the last waypoint
-// was reached and holds it home; the landing is not drawn.
+// when it is known, or below a Takeoff #1. RTH climbs by rthAltitude from
+// where the last waypoint was reached and holds it home, without landing; a
+// Land waypoint ends the path on its ground.
 export function missionPath(
   mission: Mission,
   home: GeoPoint | undefined,
@@ -189,12 +208,32 @@ export function missionPath(
 
   const rth = legs.length > (fromHome ? wps.length : wps.length - 1);
   let leg = 0;
+  // A landing leg flies level, then descends on the waypoint to its ground.
+  const land = (index: number) => {
+    if (leg < legs.length) fly(legs[leg++], alt);
+    path.push({ d, alt });
+    alt = wps[index].alt;
+    path.push({ d, alt, index });
+  };
   if (fromHome) {
-    climbInPlace(wps[0].alt);
-    fly(legs[leg++], wps[0].alt);
-    arrive(wps[0].alt, 0, wps.length == 1 && !rth);
+    if (wps[0].type == WaypointType.Land) {
+      land(0);
+    } else {
+      climbInPlace(wps[0].alt);
+      fly(legs[leg++], wps[0].alt);
+      arrive(wps[0].alt, 0, wps.length == 1 && !rth);
+    }
+  } else if (wps[0].type == WaypointType.Takeoff) {
+    // The takeoff climbs from the ground below #1.
+    path[0] = { d, alt: 0 };
+    alt = wps[0].alt;
+    path.push({ d, alt, index: 0 });
   }
   for (let i = 1; i < wps.length; i++) {
+    if (wps[i].type == WaypointType.Land) {
+      land(i);
+      continue;
+    }
     fly(legs[leg++], wps[i].alt);
     arrive(wps[i].alt, i, i == wps.length - 1 && !rth);
   }
@@ -235,6 +274,37 @@ export function pathAltitude(path: PathVertex[], d: number) {
   }
   return lowest;
 }
+
+// After a takeoff the craft learns its heading by flying along its nose; with
+// the nose pointed at #2 as asked, it flies this line from #1.
+export function headingRun(
+  waypoints: Waypoint[],
+): [GeoPoint, GeoPoint] | undefined {
+  const [first, next] = waypoints;
+  if (
+    first?.type != WaypointType.Takeoff ||
+    !hasCoord(first) ||
+    !hasCoord(next)
+  )
+    return undefined;
+  const d = distance(first, next);
+  if (d < 1) return undefined;
+  const scale = MISSION_HEADING_RUN / d;
+  return [
+    first,
+    {
+      lat: Math.round(first.lat + (next.lat - first.lat) * scale),
+      lon: Math.round(first.lon + (next.lon - first.lon) * scale),
+    },
+  ];
+}
+
+export const WAYPOINT_TYPE_NAMES: Record<WaypointType, string> = {
+  [WaypointType.Stop]: "Stop",
+  [WaypointType.Pass]: "Fly through",
+  [WaypointType.Takeoff]: "Take off",
+  [WaypointType.Land]: "Land",
+};
 
 export interface MissionIssue {
   level: "error" | "warning";
@@ -285,18 +355,46 @@ export function validateMission(
         msg: `#${n}: coordinates are 0, 0.`,
       });
     }
-    if (!(wp.alt >= limits.min_alt) || wp.alt > limits.max_alt) {
+    if (!(wp.type >= 0 && wp.type < limits.waypoint_types)) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: this flight controller cannot fly "${WAYPOINT_TYPE_NAMES[wp.type] ?? wp.type}" waypoints.`,
+      });
+    } else if (wp.type == WaypointType.Takeoff && index != 0) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: only the first waypoint can take off.`,
+      });
+    } else if (wp.type == WaypointType.Land && index != wps.length - 1) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: only the last waypoint can land.`,
+      });
+    }
+    // Negated so a missing value in a file fails too.
+    if (wp.type == WaypointType.Land) {
+      if (!(wp.alt >= limits.min_ground_alt) || wp.alt > limits.max_alt) {
+        issues.push({
+          level: "error",
+          index,
+          msg: `#${n}: ground height must be between ${limits.min_ground_alt} and ${limits.max_alt} m.`,
+        });
+      }
+    } else if (!(wp.alt >= limits.min_alt) || wp.alt > limits.max_alt) {
       issues.push({
         level: "error",
         index,
         msg: `#${n}: altitude must be between ${limits.min_alt} and ${limits.max_alt} m.`,
       });
     }
-    if (!(wp.speed >= 0) || wp.speed > limits.max_speed) {
+    if (!(wp.speed >= 0) || wp.speed * SPEED_SCALE > limits.max_speed + 1e-6) {
       issues.push({
         level: "error",
         index,
-        msg: `#${n}: speed must be between 0 and ${Math.round(limits.max_speed * 3.6)} km/h.`,
+        msg: `#${n}: speed must be between 0 and ${Math.floor(limits.max_speed * 3.6)} km/h.`,
       });
     }
   });
@@ -339,7 +437,7 @@ export function formatDuration(seconds: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-// Files store degrees so they stay readable and editable by hand.
+// Files store degrees and m/s so they stay readable and editable by hand.
 const FILE_FORMAT = "quicksilver-mission";
 const FILE_VERSION = 1;
 
@@ -353,7 +451,8 @@ export function missionToFile(mission: Mission) {
         lat: wp.lat / COORD_SCALE,
         lon: wp.lon / COORD_SCALE,
         alt: wp.alt,
-        speed: wp.speed,
+        speed: Number((wp.speed * SPEED_SCALE).toFixed(1)),
+        type: wp.type,
       })),
     },
     null,
@@ -385,8 +484,9 @@ export function missionFromFile(text: string): Mission {
     waypoints: file.waypoints.map((wp) => ({
       lat: Math.round(Number(wp.lat) * COORD_SCALE),
       lon: Math.round(Number(wp.lon) * COORD_SCALE),
-      alt: Number(wp.alt),
-      speed: Number(wp.speed ?? 0),
+      alt: Math.round(Number(wp.alt)),
+      speed: Math.round(Number(wp.speed ?? 0) / SPEED_SCALE),
+      type: Number(wp.type) as WaypointType,
     })),
   };
 }

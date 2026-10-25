@@ -34,7 +34,7 @@ test("GOTO matches the firmware's packed nav_link_goto_t", () => {
     },
     9,
   );
-  assert.equal(payload.length, 4 + 13);
+  assert.equal(payload.length, 4 + 11);
   assert.deepEqual(
     [...payload.subarray(0, 4)],
     [QUIC_RT_VERSION, QuicRtType.Command, NavCommand.Goto, 9],
@@ -42,8 +42,8 @@ test("GOTO matches the firmware's packed nav_link_goto_t", () => {
   const v = new DataView(payload.buffer, 4);
   assert.equal(v.getInt32(0, true), 223000000);
   assert.equal(v.getInt32(4, true), -1142000000);
-  assert.equal(v.getInt32(8, true), 5234, "altitude in cm");
-  assert.equal(v.getUint8(12), 73, "speed in 0.1 m/s, rounded");
+  assert.equal(v.getInt16(8, true), 52, "altitude in whole meters");
+  assert.equal(v.getUint8(10), 73, "speed in 0.1 m/s, rounded");
 });
 
 test("argument-free and indexed commands", () => {
@@ -61,49 +61,61 @@ test("argument-free and indexed commands", () => {
     ],
     [QUIC_RT_VERSION, QuicRtType.Command, NavCommand.Mission, 2, 0xff],
   );
-  const alt = encodeCommand({ type: NavCommand.SetAlt, alt: -1.5 }, 3);
-  assert.equal(new DataView(alt.buffer, 4).getInt32(0, true), -150);
+  const alt = encodeCommand({ type: NavCommand.SetAlt, alt: -2.4 }, 3);
+  assert.equal(alt.length, 4 + 2);
+  assert.equal(new DataView(alt.buffer, 4).getInt16(0, true), -2);
   assert.deepEqual([...encodePing()], [QUIC_RT_VERSION, QuicRtType.Ping]);
 });
 
-// The firmware's test_mission_crc_covers_the_sent_route uses the same route.
+// The firmware's test_mission_crc_covers_the_sent_route uses the same route,
+// in its stored units: whole meters and 0.1 m/s.
 const crcRoute = {
   end_action: MissionEndAction.RTH,
   waypoints: [
-    { lat: -338765000, lon: 1511234000, alt: 30, speed: 5 },
-    { lat: -338765100, lon: 1511234100, alt: 31.25, speed: 0 },
+    { lat: -338765000, lon: 1511234000, alt: 30, speed: 50, type: 0 },
+    { lat: -338765100, lon: 1511234100, alt: 31, speed: 0, type: 0 },
   ],
 };
 
 test("mission CRC matches the firmware's mission_crc()", () => {
-  assert.equal(missionCrc(crcRoute), 0x4bae);
+  assert.equal(missionCrc(crcRoute), 0x24ff);
+  const [first, second] = crcRoute.waypoints;
+  assert.equal(
+    missionCrc({ ...crcRoute, waypoints: [{ ...first, type: 1 }, second] }),
+    0x619c,
+    "the type is part of the route",
+  );
   assert.equal(
     missionCrc({ end_action: MissionEndAction.Hold, waypoints: [] }),
     0x1d0f,
   );
-  // Values the firmware stores alike compare equal.
-  const [first] = crcRoute.waypoints;
-  assert.ok(sameMissionItem(first, { ...first, alt: 30.001 }));
-  assert.ok(!sameMissionItem(first, { ...first, speed: 5.01 }));
+  assert.ok(sameMissionItem(first, { ...first }));
+  assert.ok(!sameMissionItem(first, { ...first, alt: 31 }));
+  assert.ok(!sameMissionItem(first, { ...first, speed: 51 }));
+  assert.ok(!sameMissionItem(first, { ...first, type: 3 }));
 });
 
 test("mission items and commit match the firmware's packed structs", () => {
+  const typed = [crcRoute.waypoints[0], { ...crcRoute.waypoints[1], type: 3 }];
   const items = encodeCommand(
-    { type: NavCommand.MissionItems, index: 4, waypoints: crcRoute.waypoints },
+    { type: NavCommand.MissionItems, index: 4, waypoints: typed },
     7,
   );
-  assert.equal(items.length, 4 + 1 + 2 * 14);
+  assert.equal(items.length, 4 + 1 + 2 * 12);
   assert.deepEqual(
     [...items.subarray(0, 5)],
     [QUIC_RT_VERSION, QuicRtType.Command, NavCommand.MissionItems, 7, 4],
   );
   const v = new DataView(items.buffer, 5);
-  assert.equal(v.getInt32(14, true), -338765100);
-  assert.equal(v.getInt32(18, true), 1511234100);
-  assert.equal(v.getInt32(22, true), 3125, "altitude in cm");
-  assert.equal(v.getUint16(12, true), 500, "speed in cm/s");
+  assert.equal(v.getInt16(8, true), 30, "altitude in meters");
+  assert.equal(v.getUint8(10), 50, "speed in 0.1 m/s");
+  assert.equal(v.getUint8(11), 0, "type");
+  assert.equal(v.getInt32(12, true), -338765100);
+  assert.equal(v.getInt32(16, true), 1511234100);
+  assert.equal(v.getInt16(20, true), 31);
+  assert.equal(v.getUint8(23), 3, "type");
   assert.ok(
-    2 + 2 + 1 + NAV_MISSION_ITEMS_MAX * 14 <= 58,
+    2 + 2 + 1 + NAV_MISSION_ITEMS_MAX * 12 <= 58,
     "a full command fits an extended CRSF frame",
   );
 
@@ -112,7 +124,7 @@ test("mission items and commit match the firmware's packed structs", () => {
       type: NavCommand.MissionCommit,
       count: 2,
       endAction: MissionEndAction.RTH,
-      crc: 0x4bae,
+      crc: 0x24ff,
     },
     8,
   );
@@ -125,8 +137,8 @@ test("mission items and commit match the firmware's packed structs", () => {
       8,
       2,
       MissionEndAction.RTH,
-      0xae,
-      0x4b,
+      0xff,
+      0x24,
     ],
   );
 });

@@ -40,16 +40,16 @@ export type NavResult = (typeof NavResult)[keyof typeof NavResult];
 // NavCommand.Mission index that resumes where the mission left off.
 export const NAV_MISSION_RESUME = 0xff;
 // Waypoints per MissionItems command, as many as fit a CRSF frame.
-export const NAV_MISSION_ITEMS_MAX = 3;
-const MISSION_ITEM_SIZE = 14;
+export const NAV_MISSION_ITEMS_MAX = 4;
+const MISSION_ITEM_SIZE = 12;
 
 export type NavCommandRequest =
   | {
       type: typeof NavCommand.Goto;
       lat: number;
       lon: number;
-      alt: number;
-      speed?: number;
+      alt: number; // meters, sent whole
+      speed?: number; // m/s
     }
   | { type: typeof NavCommand.Hold }
   | { type: typeof NavCommand.SetAlt; alt: number }
@@ -98,13 +98,14 @@ const RESULT_SHIFT = 5;
 const MISSION_INDEX_MASK = (1 << RESULT_SHIFT) - 1;
 
 // A waypoint as the firmware receives and stores it: lat, lon (int32),
-// altitude in cm (int32) and speed in cm/s (uint16).
+// altitude (int16), speed and type (uint8).
 function missionItem(wp: Waypoint): Uint8Array {
   const v = new DataView(new ArrayBuffer(MISSION_ITEM_SIZE));
-  v.setInt32(0, Math.round(wp.lat), true);
-  v.setInt32(4, Math.round(wp.lon), true);
-  v.setInt32(8, Math.round(wp.alt * 100), true);
-  v.setUint16(12, Math.round(wp.speed * 100), true);
+  v.setInt32(0, wp.lat, true);
+  v.setInt32(4, wp.lon, true);
+  v.setInt16(8, wp.alt, true);
+  v.setUint8(10, wp.speed);
+  v.setUint8(11, wp.type);
   return new Uint8Array(v.buffer);
 }
 
@@ -144,16 +145,16 @@ export function encodeCommand(cmd: NavCommandRequest, id: number): Uint8Array {
   const header = [QUIC_RT_VERSION, QuicRtType.Command, cmd.type, id & 0xff];
   switch (cmd.type) {
     case NavCommand.Goto: {
-      const body = new DataView(new ArrayBuffer(13));
+      const body = new DataView(new ArrayBuffer(11));
       body.setInt32(0, cmd.lat, true);
       body.setInt32(4, cmd.lon, true);
-      body.setInt32(8, Math.round(cmd.alt * 100), true);
-      body.setUint8(12, Math.min(255, Math.round((cmd.speed ?? 0) * 10)));
+      body.setInt16(8, Math.round(cmd.alt), true);
+      body.setUint8(10, Math.min(255, Math.round((cmd.speed ?? 0) * 10)));
       return Uint8Array.of(...header, ...new Uint8Array(body.buffer));
     }
     case NavCommand.SetAlt: {
-      const body = new DataView(new ArrayBuffer(4));
-      body.setInt32(0, Math.round(cmd.alt * 100), true);
+      const body = new DataView(new ArrayBuffer(2));
+      body.setInt16(0, Math.round(cmd.alt), true);
       return Uint8Array.of(...header, ...new Uint8Array(body.buffer));
     }
     case NavCommand.Mission:

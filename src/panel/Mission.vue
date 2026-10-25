@@ -28,7 +28,7 @@
           <MissionMap
             ref="map"
             :waypoints="mission.waypoints"
-            :rth="mission.end_action == MissionEndAction.RTH"
+            :rth="missionReturns(mission.mission)"
             :selected="selected"
             :home="home"
             :position="craft"
@@ -208,6 +208,7 @@
           </div>
         </dl>
         <UiSelect
+          v-if="!endsWithLanding"
           v-model="mission.end_action"
           class="w-56"
           label="After the last waypoint"
@@ -240,9 +241,13 @@
         No waypoints yet. Click the map to add the first one.
       </p>
       <div v-else class="mt-4 overflow-x-auto">
-        <table class="w-full min-w-[44rem] table-fixed text-sm tabular-nums">
+        <table
+          class="w-full table-fixed text-sm tabular-nums"
+          :class="waypointTypes ? 'min-w-[52rem]' : 'min-w-[44rem]'"
+        >
           <colgroup>
             <col class="w-14" />
+            <col v-if="waypointTypes" class="w-32" />
             <col :span="waypointSpeeds ? 5 : 4" />
             <col class="w-36" />
             <col class="w-32" />
@@ -250,6 +255,7 @@
           <thead class="text-left text-xs text-muted">
             <tr>
               <th class="py-2 pr-2 pl-2 font-medium">#</th>
+              <th v-if="waypointTypes" class="py-2 pr-2 font-medium">Type</th>
               <th class="py-2 pr-2 font-medium">Latitude</th>
               <th class="py-2 pr-2 font-medium">Longitude</th>
               <th class="py-2 pr-2 font-medium">Altitude (m)</th>
@@ -294,6 +300,21 @@
                   >
                 </span>
               </td>
+              <td v-if="waypointTypes" class="py-1.5 pr-2">
+                <select
+                  v-model.number="wp.type"
+                  class="form-select"
+                  :aria-label="`Waypoint ${index + 1} type`"
+                >
+                  <option
+                    v-for="type in typeOptions(index)"
+                    :key="type"
+                    :value="type"
+                  >
+                    {{ WAYPOINT_TYPE_NAMES[type] }}
+                  </option>
+                </select>
+              </td>
               <td class="py-1.5 pr-2">
                 <input
                   v-model.lazy="fields[index].lat"
@@ -318,18 +339,27 @@
               </td>
               <td class="py-1.5 pr-2">
                 <input
-                  v-model.number="wp.alt"
+                  v-model.lazy="fields[index].alt"
                   class="form-input"
                   type="number"
                   step="1"
-                  :min="mission.limits.min_alt"
+                  :min="
+                    wp.type == WaypointType.Land
+                      ? mission.limits.min_ground_alt
+                      : mission.limits.min_alt
+                  "
                   :max="mission.limits.max_alt"
-                  :aria-label="`Waypoint ${index + 1} altitude`"
+                  :aria-label="
+                    wp.type == WaypointType.Land
+                      ? `Waypoint ${index + 1} ground height above launch`
+                      : `Waypoint ${index + 1} altitude`
+                  "
                 />
               </td>
               <td
                 class="py-1.5 pr-2 text-xs whitespace-nowrap"
                 :class="
+                  wp.type != WaypointType.Land &&
                   aboveGround(wp) < TERRAIN_CLEARANCE_WARN
                     ? 'font-medium text-danger'
                     : 'text-muted'
@@ -477,15 +507,19 @@ import { Log } from "@/log";
 import type { NavStatus } from "@/store/util/quic-rt";
 import {
   COORD_SCALE,
+  SPEED_SCALE,
   MissionEndAction,
   MULTI_VERTICAL_RATES,
+  WAYPOINT_TYPE_NAMES,
   WING_VERTICAL_RATES,
+  WaypointType,
   formatDistance,
   formatDuration,
   hasCoord,
   missionFromFile,
   missionLegs,
   missionPath,
+  missionReturns,
   missionRoute,
   pathReach,
   missionToFile,
@@ -493,6 +527,7 @@ import {
   type GeoPoint,
   type MissionIssue,
   type PathVertex,
+  type Waypoint,
 } from "@/store/util/mission";
 import {
   TERRAIN_CLEARANCE_WARN,
@@ -536,9 +571,12 @@ export default defineComponent({
       root: useRootStore(),
       COORD_SCALE,
       MissionEndAction,
+      WAYPOINT_TYPE_NAMES,
+      WaypointType,
       formatDistance,
       formatDuration,
       hasCoord,
+      missionReturns,
       TERRAIN_CLEARANCE_WARN,
       Maximize2,
       Minimize2,
@@ -624,6 +662,15 @@ export default defineComponent({
     waypointSpeeds(): boolean {
       return !this.info.is_wing;
     },
+    // A wing flies through every waypoint and only accepts Stop.
+    waypointTypes(): boolean {
+      return this.mission.limits.waypoint_types > 1;
+    },
+    // A landing ends the mission, so it has no end action.
+    endsWithLanding(): boolean {
+      const wps = this.mission.waypoints;
+      return wps[wps.length - 1]?.type == WaypointType.Land;
+    },
     cruiseSpeed(): number {
       const navigation = this.profile.navigation;
       return (
@@ -635,7 +682,6 @@ export default defineComponent({
     // Table inputs in display units. Live telemetry re-renders the panel, and
     // lazy v-model leaves a focused input alone, unlike a :value binding.
     fields() {
-      const toKph = this.toKph;
       return this.mission.waypoints.map((wp) => ({
         get lat() {
           return wp.lat / COORD_SCALE;
@@ -652,12 +698,22 @@ export default defineComponent({
           if (typeof value == "number" && Number.isFinite(value))
             wp.lon = Math.round(value * COORD_SCALE);
         },
+        get alt() {
+          return wp.alt;
+        },
+        // The firmware stores whole meters.
+        set alt(value: number | string) {
+          if (typeof value == "number" && Number.isFinite(value))
+            wp.alt = Math.round(value);
+        },
+        // Whole km/h: a 0.1 m/s step is 0.36 km/h, so entries read back unchanged.
         get speed(): number | string {
-          return wp.speed ? toKph(wp.speed) : "";
+          return wp.speed ? Math.round(wp.speed * SPEED_SCALE * 3.6) : "";
         },
         // Empty means 0, which the firmware flies at the navigation return speed.
         set speed(value: number | string) {
-          wp.speed = value === "" ? 0 : Number(value) / 3.6;
+          wp.speed =
+            value === "" ? 0 : Math.round(Number(value) / 3.6 / SPEED_SCALE);
         },
       }));
     },
@@ -850,22 +906,37 @@ export default defineComponent({
       if (!leg) return "–";
       return `${formatDistance(leg.distance)} · ${formatDuration(leg.time)}`;
     },
+    // Takeoff only fits the first waypoint and Land only the last; the
+    // current type stays listed so a misplaced one shows until changed.
+    typeOptions(index: number): WaypointType[] {
+      const wps = this.mission.waypoints;
+      return Object.values(WaypointType).filter(
+        (type) =>
+          type == wps[index].type ||
+          (type < this.mission.limits.waypoint_types &&
+            (type != WaypointType.Takeoff || index == 0) &&
+            (type != WaypointType.Land || index == wps.length - 1)),
+      );
+    },
+    // A new waypoint copies the altitude and speed it follows; a landing's
+    // altitude is its ground, so it is not copied.
+    newWaypoint(point: GeoPoint, prev?: Waypoint): Waypoint {
+      const landing = prev?.type == WaypointType.Land;
+      return {
+        ...point,
+        alt: prev && !landing ? prev.alt : DEFAULT_ALT,
+        speed: prev?.speed ?? 0,
+        type: WaypointType.Stop,
+      };
+    },
     add(point: GeoPoint) {
       const last = this.mission.waypoints[this.mission.waypoints.length - 1];
-      this.mission.waypoints.push({
-        ...point,
-        alt: last?.alt ?? DEFAULT_ALT,
-        speed: last?.speed ?? 0,
-      });
+      this.mission.waypoints.push(this.newWaypoint(point, last));
       this.selected = this.mission.waypoints.length - 1;
     },
     insert(index: number, point: GeoPoint) {
       const prev = this.mission.waypoints[index - 1];
-      this.mission.waypoints.splice(index, 0, {
-        ...point,
-        alt: prev?.alt ?? DEFAULT_ALT,
-        speed: prev?.speed ?? 0,
-      });
+      this.mission.waypoints.splice(index, 0, this.newWaypoint(point, prev));
       this.selected = index;
     },
     move(index: number, point: GeoPoint) {

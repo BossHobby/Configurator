@@ -58,7 +58,10 @@ import { TILE_PROVIDERS, type TileProvider } from "./tiles";
 import { tileCache, type TileCachePolicy } from "@/store/util/tile-cache";
 import {
   COORD_SCALE,
+  WAYPOINT_TYPE_NAMES,
+  WaypointType,
   hasCoord,
+  headingRun,
   type GeoPoint,
   type Waypoint,
 } from "@/store/util/mission";
@@ -299,12 +302,20 @@ const CachedTileLayer = L.TileLayer.extend({
   options: L.TileLayerOptions & { cache: TileCachePolicy },
 ) => L.TileLayer;
 
+const TYPE_CLASS: Record<WaypointType, string> = {
+  [WaypointType.Stop]: "",
+  [WaypointType.Pass]: " is-pass",
+  [WaypointType.Takeoff]: " is-takeoff",
+  [WaypointType.Land]: " is-land",
+};
+
 function markerIcon(index: number) {
   const selected = index == props.selected ? " is-selected" : "";
   const active = index == props.active ? " is-active" : "";
+  const type = TYPE_CLASS[props.waypoints[index].type] ?? "";
   return L.divIcon({
     className: "",
-    html: `<div class="mission-wp${selected}${active}">${index + 1}</div>`,
+    html: `<div class="mission-wp${type}${selected}${active}" title="${WAYPOINT_TYPE_NAMES[props.waypoints[index].type] ?? ""}">${index + 1}</div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
@@ -335,6 +346,15 @@ function drawRoute() {
         interactive: false,
       }).addTo(routeLayer);
     }
+  }
+
+  // Where the craft flies along its nose after a takeoff to learn its heading.
+  const run = headingRun(wps);
+  if (run) {
+    L.polyline(run.map(toLatLng), {
+      className: "mission-heading-run",
+      interactive: false,
+    }).addTo(routeLayer);
   }
 
   // One polyline per leg, so clicking a leg inserts a point into it.
@@ -647,8 +667,24 @@ watch(
   font-weight: 600;
   cursor: grab;
 }
+.mission-wp.is-pass {
+  background: var(--ui-panel);
+  color: var(--ui-accent);
+  border-color: var(--ui-accent);
+}
+.mission-wp.is-takeoff,
+.mission-wp.is-land {
+  border-radius: 4px;
+}
 .mission-wp.is-active {
   background: var(--ui-warning);
+}
+.mission-heading-run {
+  stroke: var(--ui-warning);
+  stroke-width: 3;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  fill: none;
 }
 .mission-wp.is-selected {
   outline: 2px solid var(--ui-ink);

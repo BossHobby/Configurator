@@ -64,6 +64,10 @@ export const useMissionStore = defineStore("mission", {
         min_alt: res.min_alt ?? MISSION_DEFAULT_LIMITS.min_alt,
         max_alt: res.max_alt ?? MISSION_DEFAULT_LIMITS.max_alt,
         max_speed: res.max_speed ?? MISSION_DEFAULT_LIMITS.max_speed,
+        min_ground_alt:
+          res.min_ground_alt ?? MISSION_DEFAULT_LIMITS.min_ground_alt,
+        waypoint_types:
+          res.waypoint_types ?? MISSION_DEFAULT_LIMITS.waypoint_types,
       };
       const stored = {
         end_action: res.end_action,

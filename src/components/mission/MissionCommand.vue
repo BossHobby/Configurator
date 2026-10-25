@@ -199,7 +199,8 @@ export default defineComponent({
         Math.max(this.limits.min_alt, Math.round(current)),
       );
     },
-    // Asks for an altitude, starting from the current one.
+    // Asks for an altitude, starting from the current one, in the whole
+    // meters the flight controller flies.
     async pickAltitude(title: string, action: string) {
       const chosen = await this.$modal.show(AltitudeModal, {
         title,
@@ -208,7 +209,9 @@ export default defineComponent({
         min: this.limits.min_alt,
         max: this.limits.max_alt,
       });
-      return typeof chosen === "number" && this.ready ? chosen : undefined;
+      return typeof chosen === "number" && this.ready
+        ? Math.round(chosen)
+        : undefined;
     },
     async changeAltitude() {
       const alt = await this.pickAltitude("Change altitude", "Change");

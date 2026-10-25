@@ -4,7 +4,9 @@ import {
   COORD_SCALE,
   MULTI_VERTICAL_RATES,
   MissionEndAction,
+  SPEED_SCALE,
   WING_VERTICAL_RATES,
+  WaypointType,
   missionLegs,
   missionPath,
   missionRoute,
@@ -24,7 +26,13 @@ const at = (lat, lon) => ({
   lat: Math.round(lat * COORD_SCALE),
   lon: Math.round(lon * COORD_SCALE),
 });
-const wp = (lat, lon, alt = 30, speed = 0) => ({ ...at(lat, lon), alt, speed });
+// Speeds in m/s, stored as the firmware's 0.1 m/s.
+const wp = (lat, lon, alt = 30, speed = 0) => ({
+  ...at(lat, lon),
+  alt,
+  speed: Math.round(speed / SPEED_SCALE),
+  type: WaypointType.Stop,
+});
 
 test("terrarium pixels decode to metres", () => {
   // 32768 + 512.5 = 128 * 256 + 2 * 256 + 0 + 128 / 256
