@@ -35,38 +35,51 @@ function createWindow(): void {
     return { action: "deny" };
   });
 
-  mainWindow.webContents.session.on(
-    "select-serial-port",
-    (event, portList, webContents, callback) => {
-      event.preventDefault();
-      mainWindow.webContents.send("select-serial", portList);
-      ipcMain.once("serial", (_event, port) => {
-        callback(port ? port : "");
-      });
-    },
-  );
+  // The session is shared by every window, so these handlers must be removed
+  // when the window closes. On macOS the app outlives its window and a new one
+  // is created on activate; a stale handler would send to a destroyed window.
+  const session = mainWindow.webContents.session;
 
-  mainWindow.webContents.session.on(
-    "select-usb-device",
-    (event, details, callback) => {
-      event.preventDefault();
+  const onSelectSerialPort = (
+    event: Electron.Event,
+    portList: Electron.SerialPort[],
+    _webContents: Electron.WebContents,
+    callback: (portId: string) => void,
+  ) => {
+    event.preventDefault();
+    mainWindow.webContents.send("select-serial", portList);
+    ipcMain.removeAllListeners("serial");
+    ipcMain.once("serial", (_event, port) => {
+      callback(port ? port : "");
+    });
+  };
 
-      const devices = details.deviceList.filter((d) => {
-        return USB_DEVICE_FILTER.some(
-          (f) => f.vendorId == d.vendorId && f.productId == d.productId,
-        );
-      });
+  const onSelectUsbDevice = (
+    event: Electron.Event,
+    details: Electron.SelectUsbDeviceDetails,
+    callback: (deviceId?: string) => void,
+  ) => {
+    event.preventDefault();
 
-      mainWindow.webContents.send("select-usb-device", devices);
-      ipcMain.once("usb-device", (_event, dev) => {
-        if (dev) {
-          callback(dev);
-        } else {
-          callback();
-        }
-      });
-    },
-  );
+    const devices = details.deviceList.filter((d) => {
+      return USB_DEVICE_FILTER.some(
+        (f) => f.vendorId == d.vendorId && f.productId == d.productId,
+      );
+    });
+
+    mainWindow.webContents.send("select-usb-device", devices);
+    ipcMain.removeAllListeners("usb-device");
+    ipcMain.once("usb-device", (_event, dev) => {
+      if (dev) {
+        callback(dev);
+      } else {
+        callback();
+      }
+    });
+  };
+
+  session.on("select-serial-port", onSelectSerialPort);
+  session.on("select-usb-device", onSelectUsbDevice);
 
   // Fires again for every device found until the callback is called.
   let bluetoothCallback: ((deviceId: string) => void) | undefined;
@@ -81,9 +94,21 @@ function createWindow(): void {
       );
     },
   );
-  ipcMain.on("bluetooth-device", (_event, deviceId: string) => {
+  const onBluetoothDevice = (
+    _event: Electron.IpcMainEvent,
+    deviceId: string,
+  ) => {
     bluetoothCallback?.(deviceId);
     bluetoothCallback = undefined;
+  };
+  ipcMain.on("bluetooth-device", onBluetoothDevice);
+
+  mainWindow.on("closed", () => {
+    session.removeListener("select-serial-port", onSelectSerialPort);
+    session.removeListener("select-usb-device", onSelectUsbDevice);
+    ipcMain.removeListener("bluetooth-device", onBluetoothDevice);
+    ipcMain.removeAllListeners("serial");
+    ipcMain.removeAllListeners("usb-device");
   });
 
   // The OSD logo upload opens files.
