@@ -4,6 +4,8 @@
 <dict>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>Connect to your flight controller or radio bridge to read and save settings.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Show where you are on the mission map.</string>
     <key>NSLocalNetworkUsageDescription</key>
     <string>Connect to your flight controller or radio bridge over Wi-Fi.</string>
     <key>NSAppTransportSecurity</key>

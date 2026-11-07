@@ -12,7 +12,9 @@ import { bluetoothTransport } from "./ble";
 // TBS Crossfire WiFi module's /ws WebSocket or its Bluetooth serial service.
 // Payload after the extended header: <control> <seq> <ack> <QUIC stream
 // bytes...>. RESET carries a random session id in the seq field, echoed by
-// the firmware. Matches the firmware's io/quic_crsf.h.
+// the firmware. Matches the firmware's io/quic_crsf.h. Arming ends the
+// session without notice; the QUIC_RT link reports it, and a new RESET
+// opens the next one on the ground.
 const CRSF_FRAMETYPE_QUIC = 0x83;
 
 const CONTROL_RESET = 0x01;
@@ -74,9 +76,9 @@ class CrsfWebSocket implements CrsfTransport {
   }
 }
 
-// One bridge connection per key, shared by everything that talks over it and
-// closed with its last user. Frame bodies are <type> <dest> <origin>
-// <payload...>.
+// One bridge connection per key, shared by the QUIC session and the realtime
+// link: the QUIC session exists only on the ground, and ending it must not
+// drop the QUIC_RT link. Frame bodies are <type> <dest> <origin> <payload...>.
 export class CrsfSocket {
   private static sockets = new Map<string, CrsfSocket>();
 
@@ -198,6 +200,23 @@ export class CrsfLink {
     const session = this.openSession(timeout, socket.open());
     session.catch(() => this.close());
     return session;
+  }
+
+  // Ends the session without notice, as arming does on the flight controller,
+  // and drops unsent requests. The socket stays open for the QUIC_RT link.
+  suspend() {
+    this.opening?.(new Error("crsf session suspended"));
+    this.stop();
+    this.txQueue = [];
+    this.inflight = [];
+    this.txSent = 0;
+  }
+
+  // Opens the next session after suspend(). A new id keeps a late answer to
+  // the previous RESET from opening it.
+  resume(timeout = 10_000): Promise<void> {
+    this.session = (this.session + 1) & 0xff;
+    return this.openSession(timeout, Promise.resolve());
   }
 
   // Sends RESET until the flight controller answers it, then pumps the stream.

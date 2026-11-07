@@ -124,7 +124,7 @@
               </div>
             </div>
 
-            <div v-if="state.gps_lock" class="form-row">
+            <div v-if="state.gps_health.lock" class="form-row">
               <span class="form-label">Fix Type</span>
               <div class="min-w-0">
                 <span
@@ -139,7 +139,7 @@
               </div>
             </div>
 
-            <div v-if="state.gps_lock" class="form-row">
+            <div v-if="state.gps_health.lock" class="form-row">
               <span class="form-label">Position</span>
               <div class="min-w-0">
                 <p class="text-xs">
@@ -149,7 +149,7 @@
               </div>
             </div>
 
-            <div v-if="gps.h_acc > 0 && state.gps_lock" class="form-row">
+            <div v-if="gps.h_acc > 0 && state.gps_health.lock" class="form-row">
               <span class="form-label">Accuracy</span>
               <div class="min-w-0">
                 <p class="text-xs">
@@ -159,14 +159,14 @@
               </div>
             </div>
 
-            <div v-if="state.gps_lock" class="form-row">
+            <div v-if="state.gps_health.lock" class="form-row">
               <span class="form-label">Speed</span>
               <div class="min-w-0">
                 <p>{{ (state.gps_speed * 3.6).toFixed(1) }} km/h</p>
               </div>
             </div>
 
-            <div v-if="state.gps_lock" class="form-row">
+            <div v-if="state.gps_health.lock" class="form-row">
               <span class="form-label">Heading</span>
               <div class="min-w-0">
                 <p>{{ state.gps_heading.toFixed(0) }}°</p>
@@ -209,6 +209,47 @@
                   :class="signalQualityClass"
                 >
                   {{ gps.avg_cno }} dBHz
+                </span>
+              </div>
+            </div>
+
+            <div v-if="gps.noise_per_ms > 0" class="form-row">
+              <span class="form-label">Antenna</span>
+              <div class="min-w-0">
+                <span
+                  class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs"
+                  :class="antennaClass"
+                >
+                  {{ gps.antennaName }}
+                </span>
+                <span class="ml-2 text-xs">
+                  Noise: {{ gps.noise_per_ms }} AGC: {{ gps.agcPercent }}% CW:
+                  {{ gps.cw_jamming }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-if="
+                state.gps_health.jamming > 0 || state.gps_health.spoofing > 0
+              "
+              class="form-row"
+            >
+              <span class="form-label">Interference</span>
+              <div class="min-w-0">
+                <span
+                  v-if="state.gps_health.jamming > 0"
+                  class="mr-2 inline-flex items-center rounded border border-current px-2 py-0.5 text-xs"
+                  :class="interferenceClass(state.gps_health.jamming)"
+                >
+                  Jamming: {{ jammingName }}
+                </span>
+                <span
+                  v-if="state.gps_health.spoofing > 0"
+                  class="inline-flex items-center rounded border border-current px-2 py-0.5 text-xs"
+                  :class="interferenceClass(state.gps_health.spoofing)"
+                >
+                  Spoofing: {{ spoofingName }}
                 </span>
               </div>
             </div>
@@ -273,13 +314,14 @@ export default defineComponent({
     },
     gpsStatusText() {
       if (!this.gpsDetected) return "- Not Detected";
-      if (this.state.gps_lock) return "- Locked";
+      if (this.state.gps_health.lock) return "- Locked";
       return "- No Lock";
     },
     gpsStatusClass() {
       if (!this.gpsDetected) return "text-danger";
-      if (this.state.gps_lock && this.state.gps_sats >= 6) return "text-accent";
-      if (this.state.gps_lock && this.state.gps_sats >= 4)
+      if (this.state.gps_health.lock && this.state.gps_sats >= 6)
+        return "text-accent";
+      if (this.state.gps_health.lock && this.state.gps_sats >= 4)
         return "text-warning";
       return "text-danger";
     },
@@ -320,6 +362,25 @@ export default defineComponent({
       if (pdop <= 5.0) return "text-warning"; // Fair
       return "text-danger"; // Poor
     },
+    antennaClass() {
+      if (this.gps.antenna_status === 2) return "text-accent";
+      if (this.gps.antenna_status >= 3) return "text-danger";
+      return "text-muted";
+    },
+    jammingName() {
+      return (
+        ["Unknown", "None", "Warning", "Critical"][
+          this.state.gps_health.jamming
+        ] || "Unknown"
+      );
+    },
+    spoofingName() {
+      return (
+        ["Unknown", "None", "Indicated", "Multiple"][
+          this.state.gps_health.spoofing
+        ] || "Unknown"
+      );
+    },
     gpsConfigStateClass() {
       // Configuration state classes
       if (this.gps.state === 10 || this.gps.state === 12) return "text-accent"; // Running
@@ -337,6 +398,11 @@ export default defineComponent({
     },
   },
   methods: {
+    interferenceClass(level: number): string {
+      if (level >= 3) return "text-danger";
+      if (level === 2) return "text-warning";
+      return "text-accent";
+    },
     formatCoordinate(value: number, type: string): string {
       if (value === 0) return "No Fix";
 

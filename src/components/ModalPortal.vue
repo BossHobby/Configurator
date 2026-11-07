@@ -2,7 +2,7 @@
   <div
     v-if="$modal.isShown"
     class="fixed inset-0 z-[10000] flex items-center justify-center p-4"
-    @keydown.esc="$modal.close(undefined)"
+    @keydown.esc.prevent="$modal.close(undefined)"
   >
     <div
       class="absolute inset-0 bg-workspace/85"

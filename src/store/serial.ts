@@ -4,15 +4,24 @@ import { useDefaultProfileStore } from "./default_profile";
 import { usePerfStore } from "./perf";
 import { useBindStore } from "./bind";
 import { useGpsStore } from "./gps";
+import { useMissionStore } from "./mission";
+import { useNavStore } from "./nav";
 import { Log } from "@/log";
 import router from "@/router";
 import { defineStore } from "pinia";
 import { useRootStore } from "./root";
 import { useConnectionStore } from "./connection";
 import { QuicCmd, QuicMotor } from "./serial/quic";
-import { serial } from "./serial/serial";
+import {
+  LinkSuspendedError,
+  crsfKey,
+  serial,
+  type ConnectionTarget,
+} from "./serial/serial";
 import { settings } from "./serial/settings";
 import { ScanCancelled } from "./serial/ble-scan";
+import { requestBleDevice } from "./serial/ble";
+import { watch, type WatchStopHandle } from "vue";
 import { useInfoStore } from "./info";
 import { useMotorStore } from "./motor";
 import { useStateStore } from "./state";
@@ -23,6 +32,13 @@ import { WebSerial } from "./serial/webserial";
 
 let interval: any = null;
 let intervalCounter = 0;
+// Follows the armed flag of the QUIC_RT link during a radio link session.
+let stopArmWatch: (() => void) | undefined;
+// Waits for an armed craft, followed without a session, to disarm.
+let stopFollowWatch: (() => void) | undefined;
+
+/** The craft was armed when connecting; it is followed on the map. */
+class CraftArmedError extends Error {}
 
 function stopInterval() {
   clearInterval(interval);
@@ -43,6 +59,9 @@ function startInterval(fn: any) {
     try {
       await fn(intervalCounter);
       intervalCounter++;
+    } catch (err) {
+      // Arming cut off this poll; polling resumes after disarming.
+      if (!(err instanceof LinkSuspendedError)) throw err;
     } finally {
       polling = false;
     }
@@ -53,10 +72,69 @@ export const useSerialStore = defineStore("serial", {
   state: () => ({
     is_connected: false,
     is_connecting: false,
-    // Connected over the CRSF radio link, which only serves configuration.
+    // Connected over the CRSF radio link.
     radio_link: false,
   }),
   actions: {
+    enter_flight() {
+      stopInterval();
+      useRootStore().in_flight = true;
+      serial.suspend();
+    },
+    // Disarmed again: open a new session and refresh what may have changed.
+    async leave_flight() {
+      const root = useRootStore();
+      this.is_connecting = true;
+      try {
+        const i = await serial.resume();
+        useInfoStore().set_info(i);
+        // Keep edits that were not applied before arming.
+        const fetchProfile = !root.needs_apply;
+        const mission = useMissionStore();
+        const fetchMission = mission.supported && !mission.dirty;
+        const steps = 1 + Number(fetchProfile) + Number(fetchMission);
+        await root.track("Reloading configuration", steps, async () => {
+          await useStateStore().fetch_state();
+          if (fetchProfile) {
+            await useProfileStore().fetch_profile();
+          }
+          if (fetchMission) {
+            await mission.fetch();
+          }
+        });
+        root.in_flight = false;
+        startInterval((c) => this.poll_serial(c));
+      } catch (err) {
+        // Armed again before the session was back; stay in flight.
+        if (useNavStore().status?.armed) return;
+        Log.error("serial", err);
+        await this.disconnect(false);
+        root.append_alert({
+          type: "danger",
+          msg: "Reconnecting after disarming failed",
+        });
+      } finally {
+        this.is_connecting = false;
+      }
+    },
+    // Arming ends the radio link's session; the QUIC_RT link reports it.
+    follow_arming(key: string) {
+      const nav = useNavStore();
+      const root = useRootStore();
+      nav
+        .connect(key)
+        .catch((err) => Log.warn("serial", "QUIC_RT link failed", err));
+      stopArmWatch?.();
+      stopArmWatch = watch(
+        () => nav.status?.armed,
+        (armed) => {
+          if (armed) this.enter_flight();
+          else if (armed === false && root.in_flight) this.leave_flight();
+        },
+        // The craft may have armed while the configuration loaded.
+        { immediate: true },
+      );
+    },
     async poll_serial(counter: number) {
       if (!this.is_connected) {
         return;
@@ -117,7 +195,7 @@ export const useSerialStore = defineStore("serial", {
       await this.connect(
         serial.reconnect((err) => {
           Log.error("serial", err);
-          return this.disconnect();
+          return this.disconnect(false);
         }),
       );
     },
@@ -189,22 +267,41 @@ export const useSerialStore = defineStore("serial", {
           return undefined;
         });
     },
-    reset_connection() {
+    /**
+     * Ends the configurator session. A lost session keeps the QUIC_RT link
+     * and the map, as the craft may be flying; only the user closes both.
+     */
+    reset_connection(closeLink = true) {
+      const nav = useNavStore();
+      if (this.radio_link && closeLink) nav.disconnect();
       this.is_connected = false;
       this.is_connecting = false;
       this.radio_link = false;
 
       stopInterval();
+      stopArmWatch?.();
+      stopArmWatch = undefined;
+      stopFollowWatch?.();
+      stopFollowWatch = undefined;
+      // A session lost in flight opens again once the craft disarms.
+      if (!closeLink && nav.connected && nav.armed) this.follow_armed();
 
       const root = useRootStore();
+      root.in_flight = false;
       root.reset_needs_reboot();
 
-      if (router.currentRoute.value.fullPath != "/home") {
-        router.push("/home");
+      const route = router.currentRoute.value;
+      // Missions can be planned offline, so the map stays open.
+      const keepMap =
+        route.name === "mission" ||
+        (!closeLink && nav.available && nav.connected);
+      const to = keepMap ? "/mission" : "/home";
+      if (route.fullPath != to) {
+        router.push(to);
       }
     },
-    async disconnect() {
-      this.reset_connection();
+    async disconnect(closeLink = true) {
+      this.reset_connection(closeLink);
       this.is_connecting = true;
       try {
         await serial.close();
@@ -216,6 +313,7 @@ export const useSerialStore = defineStore("serial", {
       const bb = useBlackboxStore();
       const default_profile = useDefaultProfileStore();
       const info = useInfoStore();
+      const mission = useMissionStore();
       const motor = useMotorStore();
       const profile = useProfileStore();
       const root = useRootStore();
@@ -227,6 +325,8 @@ export const useSerialStore = defineStore("serial", {
         const i = await infoPromise;
 
         info.$reset();
+        // Keep a plan that was not uploaded, as after disarming.
+        if (!mission.dirty) mission.$reset();
         motor.$reset();
         vtx.$reset();
         bb.$reset();
@@ -255,8 +355,14 @@ export const useSerialStore = defineStore("serial", {
         // the radio link.
         this.is_connected = true;
         startInterval((c) => this.poll_serial(c));
+        const key = serial.radioKey;
+        if (key) this.follow_arming(key);
 
-        if (router.currentRoute.value.fullPath != "/profile") {
+        // Landing after following an armed craft, or connecting to upload a
+        // plan made offline, keeps the map.
+        const route = router.currentRoute.value;
+        const keepMap = route.name == "mission" && useMissionStore().supported;
+        if (!keepMap && route.fullPath != "/profile") {
           router.push("/profile");
         }
       } catch (err) {
@@ -265,7 +371,12 @@ export const useSerialStore = defineStore("serial", {
         stopInterval();
         await serial.close();
         root.reset_needs_reboot();
-        if (!(err instanceof ScanCancelled)) {
+        if (err instanceof CraftArmedError) {
+          root.append_alert({
+            type: "warning",
+            msg: "The craft is armed. Following it on the map; the configuration opens once it disarms.",
+          });
+        } else if (!(err instanceof ScanCancelled)) {
           root.append_alert({
             type: "danger",
             msg: "Connection to the board failed",
@@ -280,14 +391,81 @@ export const useSerialStore = defineStore("serial", {
       if (this.is_connected) {
         return this.disconnect();
       }
-
+      return this.open_connection(true);
+    },
+    // pick lets the user choose the Bluetooth module, which needs a click.
+    open_connection(pick: boolean) {
       this.is_connecting = true;
+      const target = useConnectionStore().target;
+      const key = crsfKey(target);
+      const onError = (err: any) => {
+        Log.error("serial", err);
+        return this.disconnect(false);
+      };
       return this.connect(
-        serial.connect(useConnectionStore().target, (err) => {
-          Log.error("serial", err);
-          return this.disconnect();
-        }),
+        key
+          ? this.open_radio_session(target, key, pick, onError)
+          : serial.connect(target, onError),
       );
+    },
+    /**
+     * Opens the radio link's session with the QUIC_RT link beside it. An
+     * armed craft ignores the session, so once the QUIC_RT link reports it
+     * armed the craft is followed on the map instead.
+     */
+    async open_radio_session(
+      target: ConnectionTarget,
+      key: string,
+      pick: boolean,
+      onError: (err: any) => unknown,
+    ) {
+      if (pick && target.transport === "ble") await requestBleDevice();
+      const nav = useNavStore();
+      nav
+        .connect(key)
+        .catch((err) => Log.warn("serial", "QUIC_RT link failed", err));
+      const session = serial.connect(target, onError);
+
+      let stop: WatchStopHandle | undefined;
+      const armed = new Promise<typeof CraftArmedError>((resolve) => {
+        stop = watch(
+          () => nav.armed,
+          (armed) => armed && resolve(CraftArmedError),
+          { immediate: true },
+        );
+      });
+      try {
+        const info = await Promise.race([session, armed]);
+        if (info !== CraftArmedError) return info;
+      } catch (err) {
+        if (!nav.armed) {
+          nav.disconnect();
+          throw err;
+        }
+      } finally {
+        stop?.();
+      }
+      // The ignored session times out on its own; connect() closes it.
+      session.catch(() => undefined);
+      this.follow_armed();
+      throw new CraftArmedError();
+    },
+    // Opens the session once the followed craft disarms.
+    follow_armed() {
+      const nav = useNavStore();
+      stopFollowWatch?.();
+      const stop = watch(
+        () => [nav.connected, nav.armed, !!nav.status] as const,
+        ([connected, armed, status]) => {
+          if (connected && (armed || !status)) return;
+          stop();
+          if (stopFollowWatch == stop) stopFollowWatch = undefined;
+          // A lost link leaves the map showing it offline.
+          if (connected && !this.is_connecting) this.open_connection(false);
+        },
+      );
+      stopFollowWatch = stop;
+      if (router.currentRoute.value.name != "mission") router.push("/mission");
     },
   },
 });
