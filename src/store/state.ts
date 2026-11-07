@@ -33,17 +33,20 @@ export const useStateStore = defineStore("state", {
     gyro_raw: null,
     altitude: 0,
     gps_version: 0,
-    gps_lock: false,
+    // Receiver status; jamming and spoofing as the firmware's gps_jamming_t
+    // and gps_spoofing_t.
+    gps_health: { lock: false, jamming: 0, spoofing: 0 },
     gps_sats: 0,
     gps_speed: 0,
-    gps_vel_north: 0,
-    gps_vel_east: 0,
+    gps_velocity: [0, 0, 0], // m/s north, east, up
+    gps_accel: [0, 0], // m/s^2 north, east
     gps_heading: 0,
     gps_heading_accuracy: 0,
     gps_horizontal_accuracy: 0,
     gps_last_update_ms: 0,
     gps_coord: { lon: 0, lat: 0 },
-    gps_home: { lon: 0, lat: 0 },
+    position: { lon: 0, lat: 0 }, // navigation's estimate; the map shows it
+    home: { lon: 0, lat: 0 },
     gps_altitude: 0,
     heading: 0,
     heading_confidence: 0,

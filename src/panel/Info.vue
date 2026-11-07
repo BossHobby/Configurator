@@ -30,6 +30,10 @@
         class="font-medium text-accent hover:underline"
         >Getting started ↗</a
       >
+      ·
+      <RouterLink to="/mission" class="font-medium text-accent hover:underline"
+        >Plan a mission</RouterLink
+      >
     </p>
     <div v-if="$slots.default" class="w-full text-left"><slot /></div>
   </section>

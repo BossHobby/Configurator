@@ -8,6 +8,7 @@ export enum BlackboxField {
   PID_D_TERM,
   RX,
   SETPOINT,
+  ATTITUDE,
   ACCEL_RAW,
   ACCEL_FILTER,
   GYRO_RAW,
@@ -19,4 +20,6 @@ export enum BlackboxField {
   ALTITUDE,
   DEBUG,
   STATE,
+  GPS_VEL,
+  GPS_FIX,
 }

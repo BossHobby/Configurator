@@ -28,7 +28,11 @@ export function transformBlackboxFieldFlags(
     flags == undefined ||
     (firmwareVersion && semver.lt(firmwareVersion, "0.2.10"))
   ) {
-    res = (res & ~(1 << 13)) | (res & (1 << 13) ? 1 << BlackboxField.DEBUG : 0);
+    // Released logs end ACCEL_RAW (bit 7) .. CPU_LOAD (bit 12) with DEBUG at 13.
+    const kept = res & ((1 << BlackboxField.ATTITUDE) - 1);
+    const shifted = ((res >> 7) & 0x3f) << BlackboxField.ACCEL_RAW;
+    const debug = res & (1 << 13) ? 1 << BlackboxField.DEBUG : 0;
+    res = kept | shifted | debug;
   }
   return res | (1 << BlackboxField.LOOP) | (1 << BlackboxField.TIME);
 }
@@ -47,6 +51,7 @@ export enum BlackboxFieldUnit {
   METERS = "m",
   G = "g",
   PERCENT = "percent",
+  METERS_PER_SECOND = "mps",
 }
 
 export interface BlackboxFieldDef {
@@ -182,6 +187,41 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     name: "state",
     title: "State",
     axis: ["State", "Aux"],
+    scale: 1,
+    unit: BlackboxFieldUnit.NONE,
+  },
+  [BlackboxField.ATTITUDE]: {
+    name: "attitude",
+    title: "Attitude",
+    axis: ["Roll", "Pitch", "Yaw"],
+    scale: 10,
+    unit: BlackboxFieldUnit.DEGREES,
+  },
+  [BlackboxField.GPS_VEL]: {
+    name: "gps_vel",
+    title: "GPS Velocity",
+    axis: ["North", "East", "Down"],
+    scale: BLACKBOX_SCALE,
+    unit: BlackboxFieldUnit.METERS_PER_SECOND,
+  },
+  [BlackboxField.GPS_FIX]: {
+    name: "gps_fix",
+    title: "GPS Fix",
+    // Status bits: 0 lock, 1 navigation accepts the fix, 2 home valid,
+    // 3 navigation sees a GPS position glitch,
+    // 4-5 jamming and 6-7 spoofing state (0 unknown, 1 ok, 2 warning/indicated, 3 critical/multiple).
+    // The receiver's RF monitor follows: it shows interference where the
+    // receiver reports no jamming state, as the M10 does without SEC-SIG.
+    axis: [
+      "Status",
+      "Satellites",
+      "Horizontal Accuracy (cm)",
+      "Speed Accuracy (cm/s)",
+      "RF Noise",
+      "RF AGC (of 8191)",
+      "RF CW Interference (of 255)",
+      "Navigation Trust (%)",
+    ],
     scale: 1,
     unit: BlackboxFieldUnit.NONE,
   },

@@ -49,6 +49,7 @@ const navigationPaths = {
     "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
     "M12 3v9h9M3 12h4m5 5v4",
   ],
+  mission: ["M5 19 9 9l6 6 4-10", "M5 19h.01M9 9h.01M15 15h.01M19 5h.01"],
   templates: ["M8 5H5v16h14V5h-3M8 3h8v4H8z", "M8 11h8M8 15h8"],
 };
 export type IconName = keyof typeof icons | keyof typeof navigationPaths;

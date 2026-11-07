@@ -203,7 +203,10 @@ export default defineComponent({
             this.profile.blackbox.field_flags |=
               (1 << BlackboxField.GPS_COORD) |
               (1 << BlackboxField.GPS_HOME) |
-              (1 << BlackboxField.ALTITUDE);
+              (1 << BlackboxField.ALTITUDE) |
+              (1 << BlackboxField.ATTITUDE) |
+              (1 << BlackboxField.GPS_VEL) |
+              (1 << BlackboxField.GPS_FIX);
           }
         }
       },
@@ -329,7 +332,10 @@ export default defineComponent({
         this.profile.blackbox.field_flags |=
           (1 << BlackboxField.GPS_COORD) |
           (1 << BlackboxField.GPS_HOME) |
-          (1 << BlackboxField.ALTITUDE);
+          (1 << BlackboxField.ALTITUDE) |
+          (1 << BlackboxField.ATTITUDE) |
+          (1 << BlackboxField.GPS_VEL) |
+          (1 << BlackboxField.GPS_FIX);
       }
       this.current_preset = -1;
     },

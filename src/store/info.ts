@@ -1,4 +1,5 @@
 import { useStateStore } from "./state";
+import { useRootStore } from "./root";
 import semver from "semver";
 import { decodeSemver } from "@/store/util";
 import { defineStore } from "pinia";
@@ -61,7 +62,12 @@ export const useInfoStore = defineStore("info", {
     },
     is_read_only(state) {
       const fwstate = useStateStore();
-      return this.version_too_old || fwstate.failloop > 0;
+      return (
+        this.version_too_old ||
+        fwstate.failloop > 0 ||
+        // Armed on the radio link: the configuration session is suspended.
+        useRootStore().in_flight
+      );
     },
     is_rover(state) {
       return (state.vehicle_type & vehicle_type_t.VEHICLE_TYPE_ROVER) !== 0;
