@@ -258,10 +258,11 @@ export interface profile_wing_t {
 export interface profile_navigation_t {
   rth_altitude: number;
   rth_on_failsafe: boolean;
-  rth_cruise_speed: number;
-  rth_throttle_min: number;
-  rth_throttle_hover: number;
-  rth_throttle_max: number;
+  mission_on_failsafe?: boolean;
+  travel_speed: number;
+  throttle_min: number;
+  throttle_hover: number;
+  throttle_max: number;
   cruise_throttle?: number;
   cruise_speed?: number;
   max_bank_angle?: number;

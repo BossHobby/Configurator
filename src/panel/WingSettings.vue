@@ -242,15 +242,29 @@
         class="min-w-0 border-t border-line pt-4"
       >
         <legend class="pr-3 text-sm font-semibold">Navigation</legend>
-        <label class="mb-4 inline-flex items-center gap-3 text-sm">
-          <input
-            v-model="profile.navigation.rth_on_failsafe"
-            type="checkbox"
-            class="form-switch"
-          />
-          Return to home on failsafe
-          <tooltip entry="navigation.wing_rth_on_failsafe" />
-        </label>
+        <div class="mb-4 flex flex-wrap gap-x-6 gap-y-3">
+          <label class="inline-flex items-center gap-3 text-sm">
+            <input
+              v-model="profile.navigation.rth_on_failsafe"
+              type="checkbox"
+              class="form-switch"
+            />
+            Return to home on failsafe
+            <tooltip entry="navigation.wing_rth_on_failsafe" />
+          </label>
+          <label
+            v-if="profile.navigation.mission_on_failsafe !== undefined"
+            class="inline-flex items-center gap-3 text-sm"
+          >
+            <input
+              v-model="profile.navigation.mission_on_failsafe"
+              type="checkbox"
+              class="form-switch"
+            />
+            Continue mission on failsafe
+            <tooltip entry="navigation.mission_on_failsafe" />
+          </label>
+        </div>
         <div class="form-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           <div class="form-row">
             <label for="wing-settings-rth-altitude" class="form-label"

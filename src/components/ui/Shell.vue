@@ -19,6 +19,8 @@ const props = defineProps<{
   target: string;
   connection: string;
   connected?: boolean;
+  // Hides the header and sidebar so the page fills the window.
+  fullscreen?: boolean;
   // A long-running exchange with the board, progress from 0 to 1.
   activity?: { label: string; progress: number; waiting?: boolean } | null;
 }>();
@@ -94,6 +96,7 @@ watch(
       >Skip to content</a
     >
     <header
+      v-show="!fullscreen"
       class="app-shell-header relative flex shrink-0 items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3"
     >
       <RouterLink to="/" class="shrink-0 text-ink" aria-label="QUICKSILVER home"
@@ -119,26 +122,6 @@ watch(
             {{ Math.round(activity.progress * 100) }}%</span
           ><span v-else class="hidden sm:inline">{{ connection }}</span></span
         >
-      </div>
-      <div
-        v-if="showActivity && activity"
-        class="absolute inset-x-0 bottom-0 h-0.5"
-        role="progressbar"
-        :aria-label="activity.label"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        :aria-valuenow="Math.round(activity.progress * 100)"
-      >
-        <div
-          class="h-full bg-accent transition-[width] duration-200"
-          :style="{ width: activity.progress * 100 + '%' }"
-        ></div>
-        <!-- The board is busy, e.g. writing flash, before it replies. -->
-        <div
-          v-if="activity.waiting"
-          class="activity-waiting absolute inset-y-0 right-0 overflow-hidden"
-          :style="{ left: activity.progress * 100 + '%' }"
-        ></div>
       </div>
       <div class="ml-auto flex items-center gap-2 text-xs text-muted">
         <slot name="connection" />
@@ -186,6 +169,30 @@ watch(
         </details>
       </div>
     </header>
+    <!-- Sits on the header's bottom edge, or the window's top in fullscreen. -->
+    <div class="relative z-10 h-0">
+      <div
+        v-if="showActivity && activity"
+        class="absolute inset-x-0 h-0.5"
+        :class="fullscreen ? 'top-[env(safe-area-inset-top,0px)]' : '-top-0.5'"
+        role="progressbar"
+        :aria-label="activity.label"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-valuenow="Math.round(activity.progress * 100)"
+      >
+        <div
+          class="h-full bg-accent transition-[width] duration-200"
+          :style="{ width: activity.progress * 100 + '%' }"
+        ></div>
+        <!-- The board is busy, e.g. writing flash, before it replies. -->
+        <div
+          v-if="activity.waiting"
+          class="activity-waiting absolute inset-y-0 right-0 overflow-hidden"
+          :style="{ left: activity.progress * 100 + '%' }"
+        ></div>
+      </div>
+    </div>
     <!-- Pages stay locked until the board has answered. -->
     <div
       class="flex min-h-0 flex-1 flex-col transition-opacity md:flex-row"
@@ -196,7 +203,7 @@ watch(
       <aside
         class="app-shell-aside hidden shrink-0 flex-col border-r border-line bg-panel md:overflow-y-auto"
         :class="[
-          navigation.length ? 'md:flex' : '',
+          navigation.length && !fullscreen ? 'md:flex' : '',
           collapsed ? 'md:w-14' : 'md:w-48',
         ]"
       >
@@ -273,9 +280,15 @@ watch(
           id="main-content"
           ref="content"
           class="relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          :class="fullscreen ? 'app-shell-top' : ''"
           tabindex="-1"
         >
-          <div class="mx-auto w-full max-w-[1600px] p-4 lg:p-6"><slot /></div>
+          <div
+            class="mx-auto w-full"
+            :class="fullscreen ? 'p-2 lg:p-3' : 'max-w-[1600px] p-4 lg:p-6'"
+          >
+            <slot />
+          </div>
         </main>
         <slot name="footer" />
       </div>

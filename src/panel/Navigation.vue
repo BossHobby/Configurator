@@ -1,18 +1,32 @@
 <template>
   <Panel title="Navigation" description="Return-to-home behaviour.">
-    <template v-if="state.gps_lock" #actions>
+    <template v-if="state.gps_health.lock" #actions>
       <span class="text-xs text-muted tabular-nums"
         >{{ state.home_distance.toFixed(0) }} m from home</span
       >
     </template>
-    <label class="mb-5 inline-flex items-center gap-3 text-sm">
-      <input
-        v-model="profile.navigation.rth_on_failsafe"
-        type="checkbox"
-        class="form-switch"
-      />
-      Return to home on failsafe
-    </label>
+    <div class="mb-5 flex flex-wrap gap-x-6 gap-y-3">
+      <label class="inline-flex items-center gap-3 text-sm">
+        <input
+          v-model="profile.navigation.rth_on_failsafe"
+          type="checkbox"
+          class="form-switch"
+        />
+        Return to home on failsafe
+      </label>
+      <label
+        v-if="profile.navigation.mission_on_failsafe !== undefined"
+        class="inline-flex items-center gap-3 text-sm"
+      >
+        <input
+          v-model="profile.navigation.mission_on_failsafe"
+          type="checkbox"
+          class="form-switch"
+        />
+        Continue mission on failsafe
+        <tooltip entry="navigation.mission_on_failsafe" />
+      </label>
+    </div>
     <div class="form-grid">
       <div v-for="field in fields" :key="field.id" class="form-row">
         <label class="form-label" :for="field.id">{{ field.label }}</label>
@@ -104,32 +118,28 @@ export default defineComponent({
   computed: {
     throttleMinPercent: {
       get(): number {
-        return Number(
-          (this.profile.navigation.rth_throttle_min * 100).toFixed(2),
-        );
+        return Number((this.profile.navigation.throttle_min * 100).toFixed(2));
       },
       set(value: number) {
-        this.profile.navigation.rth_throttle_min = value / 100;
+        this.profile.navigation.throttle_min = value / 100;
       },
     },
     throttleHoverPercent: {
       get(): number {
         return Number(
-          (this.profile.navigation.rth_throttle_hover * 100).toFixed(2),
+          (this.profile.navigation.throttle_hover * 100).toFixed(2),
         );
       },
       set(value: number) {
-        this.profile.navigation.rth_throttle_hover = value / 100;
+        this.profile.navigation.throttle_hover = value / 100;
       },
     },
     throttleMaxPercent: {
       get(): number {
-        return Number(
-          (this.profile.navigation.rth_throttle_max * 100).toFixed(2),
-        );
+        return Number((this.profile.navigation.throttle_max * 100).toFixed(2));
       },
       set(value: number) {
-        this.profile.navigation.rth_throttle_max = value / 100;
+        this.profile.navigation.throttle_max = value / 100;
       },
     },
     rthAltitude: {
@@ -142,12 +152,10 @@ export default defineComponent({
     },
     cruiseSpeedKph: {
       get(): number {
-        return Number(
-          (this.profile.navigation.rth_cruise_speed * 3.6).toFixed(2),
-        );
+        return Number((this.profile.navigation.travel_speed * 3.6).toFixed(2));
       },
       set(value: number) {
-        this.profile.navigation.rth_cruise_speed = value / 3.6;
+        this.profile.navigation.travel_speed = value / 3.6;
       },
     },
   },

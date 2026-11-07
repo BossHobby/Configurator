@@ -1,4 +1,5 @@
 import { useSerialStore } from "./store/serial";
+import { useMissionStore } from "./store/mission";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import Setup from "./views/Setup.vue";
@@ -12,6 +13,7 @@ import Perf from "./views/Perf.vue";
 import Profile from "./views/Profile.vue";
 import Home from "./views/Home.vue";
 import Templates from "./views/Templates.vue";
+import Mission from "./views/Mission.vue";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -107,6 +109,16 @@ const router = createRouter({
       },
     },
     {
+      path: "/mission",
+      name: "mission",
+      component: Mission,
+      meta: {
+        title: "Mission",
+        description:
+          "Plan GPS waypoints and store them on the flight controller.",
+      },
+    },
+    {
       path: "/motor",
       redirect: "/outputs",
     },
@@ -151,9 +163,19 @@ router.beforeEach((to) => {
     if (to.name === "home") {
       return { name: "profile" };
     }
+    if (to.name === "mission" && !useMissionStore().supported) {
+      return { name: "profile" };
+    }
     return true;
   } else {
-    if (to.name !== "home" && to.name !== "flash" && to.name !== "log") {
+    // Missions can be planned offline, and the QUIC_RT link follows a craft
+    // that is already armed, which refuses a configurator session.
+    if (
+      to.name !== "home" &&
+      to.name !== "mission" &&
+      to.name !== "flash" &&
+      to.name !== "log"
+    ) {
       return { name: "home" };
     }
     return true;

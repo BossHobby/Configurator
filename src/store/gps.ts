@@ -26,6 +26,10 @@ interface GpsStatus {
   update_rate: number;
   avg_cno: number;
   power_mode: number;
+  antenna_status: number;
+  noise_per_ms: number;
+  agc_count: number;
+  cw_jamming: number;
 }
 
 export const useGpsStore = defineStore("gps", {
@@ -66,6 +70,10 @@ export const useGpsStore = defineStore("gps", {
     update_rate: 0,
     avg_cno: 0,
     power_mode: 0,
+    antenna_status: 0,
+    noise_per_ms: 0,
+    agc_count: 0,
+    cw_jamming: 0,
   }),
   getters: {
     configStateName(state) {
@@ -106,6 +114,19 @@ export const useGpsStore = defineStore("gps", {
         255: "Unknown",
       };
       return POWER_MODES[state.power_mode] || "Unknown";
+    },
+    antennaName(state) {
+      const ANTENNA = {
+        0: "Initializing",
+        1: "Unknown",
+        2: "OK",
+        3: "Short",
+        4: "Open",
+      };
+      return ANTENNA[state.antenna_status] || "Unknown";
+    },
+    agcPercent(state) {
+      return Math.round((state.agc_count / 8191) * 100);
     },
     totalSatsUsed(state) {
       return (
