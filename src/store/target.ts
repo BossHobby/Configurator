@@ -3,42 +3,9 @@ import { serial } from "./serial/serial";
 import { defineStore } from "pinia";
 import type { target_t } from "./types";
 
-import YAML from "yaml";
+import { targetToYaml } from "./util/target-yaml";
 import { useInfoStore } from "./info";
 import { useRootStore } from "./root";
-
-export function skipEmpty(val: any) {
-  if (val === undefined) {
-    return undefined;
-  }
-  if (val === "NONE") {
-    return undefined;
-  }
-  if (Array.isArray(val)) {
-    for (let i = val.length - 1; i >= 0; i--) {
-      val[i] = skipEmpty(val[i]);
-      if (!val[i]) {
-        val.splice(i, 1);
-      }
-    }
-    if (val.length == 0) {
-      return undefined;
-    }
-  }
-  if (Object.getPrototypeOf(val) === Object.prototype) {
-    const keys = Object.keys(val);
-    for (let i = keys.length - 1; i >= 0; i--) {
-      val[keys[i]] = skipEmpty(val[keys[i]]);
-      if (!val[keys[i]]) {
-        delete val[keys[i]];
-      }
-    }
-    if (Object.keys(val).length == 0) {
-      return undefined;
-    }
-  }
-  return val;
-}
 
 export const useTargetStore = defineStore("target", {
   state: (): target_t => ({
@@ -60,9 +27,7 @@ export const useTargetStore = defineStore("target", {
   getters: {
     yaml(store) {
       const info = useInfoStore();
-      return YAML.stringify(
-        skipEmpty({ mcu: info.mcu, ...(store as any).$state }),
-      );
+      return targetToYaml((store as any).$state, info.mcu);
     },
     serial_port_names(store): { [index: string]: number } {
       const res = {};

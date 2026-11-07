@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import semver from "semver";
 import ts from "typescript";
+import * as receiver from "../src/store/util/receiver.ts";
 
 function migration() {
   const defaults = {
@@ -16,32 +17,22 @@ function migration() {
     },
   };
   const imports = {
-    "./default_profile": { useDefaultProfileStore: () => defaults },
-    pinia: { defineStore: () => ({}) },
-    "./serial/serial": {},
-    "./serial/quic": {},
-    "@/log": {},
     semver,
-    "./util": {},
-    "./root": {},
-    "@/mixin/filters": {},
-    "./types": { output_source_t: {} },
-    "./target": {},
-    "./util/osd": {},
+    ".": {},
+    "../types": { output_source_t: {} },
+    "./osd": {},
+    "./receiver": receiver,
   };
   const source = readFileSync(
-    new URL("../src/store/profile.ts", import.meta.url),
+    new URL("../src/store/util/profile-migrate.ts", import.meta.url),
     "utf8",
   );
-  const { outputText } = ts.transpileModule(
-    source + "\nexport { migrateProfileVersion };",
-    {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-      },
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
     },
-  );
+  });
   const exports = {};
   runInNewContext(outputText, {
     exports,
@@ -56,6 +47,7 @@ function migration() {
     return exports.migrateProfileVersion(
       { meta: {}, receiver: { aux } },
       target,
+      defaults,
       "v0.2.7",
       "v0.3.1",
     );

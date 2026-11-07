@@ -41,6 +41,7 @@ import { useConstantStore } from "@/store/constants";
 import { useInfoStore } from "@/store/info";
 import { useSerialStore } from "@/store/serial";
 import { useTargetStore } from "@/store/target";
+import { targetFilename } from "@/store/util/target-yaml";
 import { vehicle_type_t } from "@/store/types";
 import { $enum } from "ts-enum-util";
 import { computed, defineComponent } from "vue";
@@ -110,8 +111,7 @@ export default defineComponent({
       const encoded = encodeURIComponent(this.target.yaml);
       const yaml = "data:text/yaml;charset=utf-8," + encoded;
 
-      const date = new Date().toISOString().substring(0, 10);
-      const filename = `Target_${this.target.name}_${date}.yaml`;
+      const filename = targetFilename(this.target.$state);
 
       this.downloadAnchorRef.setAttribute("href", yaml);
       this.downloadAnchorRef.setAttribute("download", filename);

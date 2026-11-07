@@ -36,33 +36,13 @@ import Panel from "@/components/ui/Panel.vue";
 import { defineComponent } from "vue";
 import YAML from "yaml";
 import { exportFile } from "@/store/util/export";
+import { profileFilename, profileToYaml } from "@/store/util/profile-yaml";
 import { serial } from "../store/serial/serial";
 import { QuicVal } from "@/store/serial/quic";
 import { useInfoStore } from "@/store/info";
 import { useStateStore } from "@/store/state";
 import { useProfileStore } from "@/store/profile";
 import { useSerialStore } from "@/store/serial";
-
-function bindRawToBase64(raw: unknown): string | unknown {
-  if (!(raw instanceof Uint8Array)) {
-    return raw;
-  }
-
-  let binary = "";
-  for (const byte of raw) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary);
-}
-
-function encodeProfileForYaml(profile: any) {
-  const yamlProfile = structuredClone(profile);
-  const bind = yamlProfile.receiver?.bind;
-  if (bind?.raw) {
-    bind.raw = bindRawToBase64(bind.raw);
-  }
-  return yamlProfile;
-}
 
 export default defineComponent({
   name: "ProfileMetadata",
@@ -116,15 +96,11 @@ export default defineComponent({
       this.fileRef.click();
     },
     downloadProfile() {
-      return serial.get(QuicVal.Profile).then((profile) => {
-        const yamlProfile = encodeProfileForYaml(profile);
-
-        const date = this.date.toISOString().substring(0, 10);
-        const name = profile.meta.name.replace(/\0/g, "");
-        const filename = `Profile_${name}_${date}.yaml`;
-
-        return exportFile(filename, YAML.stringify(yamlProfile));
-      });
+      return serial
+        .get(QuicVal.Profile)
+        .then((profile) =>
+          exportFile(profileFilename(profile), profileToYaml(profile)),
+        );
     },
   },
 });
