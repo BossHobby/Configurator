@@ -27,7 +27,8 @@
     "build:mobile": "env DEPLOYMENT=mobile vite build --outDir dist-mobile",
     "mobile:sync": "npm run build:mobile && cap sync",
     "mobile:android": "cap open android",
-    "mobile:ios": "cap open ios"
+    "mobile:ios": "cap open ios",
+    "fc": "node script/fc.mjs"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^8.3.0",
