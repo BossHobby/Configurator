@@ -28,31 +28,23 @@ function profileModule() {
     },
   };
   const imports = {
-    "./default_profile": { useDefaultProfileStore: () => defaults },
-    pinia: { defineStore: () => ({}) },
-    "./serial/serial": {},
-    "./serial/quic": {},
-    "@/log": {},
     semver,
-    "./util": {
+    ".": {
       decodeSemver: (v) =>
         `v${(v >> 16) & 0xff}.${(v >> 8) & 0xff}.${v & 0xff}`,
     },
-    "./root": {},
-    "@/mixin/filters": {},
-    "./types": {
+    "../types": {
       output_source_t: {
         OUTPUT_SOURCE_ROLL: 2,
         OUTPUT_SOURCE_PITCH: 3,
         OUTPUT_SOURCE_YAW: 4,
       },
     },
-    "./target": { useTargetStore: () => ({ $state: { serial_ports: [] } }) },
-    "./util/osd": {},
-    "./util/receiver": receiver,
+    "./osd": {},
+    "./receiver": receiver,
   };
   const source = readFileSync(
-    new URL("../src/store/profile.ts", import.meta.url),
+    new URL("../src/store/util/profile-migrate.ts", import.meta.url),
     "utf8",
   );
   const { outputText } = ts.transpileModule(source, {
@@ -73,7 +65,12 @@ function profileModule() {
     Date,
     JSON,
   });
-  return exports;
+  const target = { serial_ports: [] };
+  return {
+    mergeDeep: exports.mergeDeep,
+    migrateTemplatePatch: (template) =>
+      exports.migrateTemplatePatch(template, defaults, target),
+  };
 }
 
 // A wing profile with its own mixer, switches and settings.
