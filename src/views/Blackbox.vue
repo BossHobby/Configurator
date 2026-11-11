@@ -84,7 +84,11 @@
         </template>
       </div>
       <div v-if="blackbox.progress" class="mt-4 text-xs text-muted">
-        Downloading {{ humanFileSize(blackbox.speed || 0) }}/s…<progress
+        Downloading
+        <template v-if="downloadAll"
+          >flight {{ downloadAll.current + 1 }} of {{ downloadAll.total }} at
+        </template>
+        {{ humanFileSize(blackbox.speed || 0) }}/s…<progress
           class="w-full accent-accent"
           :value="blackbox.progress"
           max="1"
@@ -95,7 +99,14 @@
       >
         <span class="text-xs text-muted"
           >{{ blackbox.list.files?.length || 0 }} files</span
-        ><spinner-btn @click="reset()">Erase logs</spinner-btn>
+        >
+        <div class="flex flex-wrap items-center gap-2">
+          <template v-if="!serial.radio_link && blackbox.list.files?.length">
+            <spinner-btn @click="download_all('btfl')">All BTFL</spinner-btn
+            ><spinner-btn @click="download_all('quic')">All QUIC</spinner-btn>
+          </template>
+          <spinner-btn @click="reset()">Erase logs</spinner-btn>
+        </div>
       </div>
     </Panel>
   </div>
@@ -105,7 +116,7 @@ import Panel from "@/components/ui/Panel.vue";
 import FieldSelect from "@/components/ui/Select.vue";
 import dayjs from "dayjs";
 import { humanFileSize } from "@/mixin/filters";
-import { exportObjectUrl } from "@/store/util/export";
+import { exportFile, exportObjectUrl } from "@/store/util/export";
 import {
   useBlackboxStore,
   BlackboxFields,
@@ -137,6 +148,7 @@ export default defineComponent({
   data() {
     return {
       current_preset: -1,
+      downloadAll: undefined as { current: number; total: number } | undefined,
       BlackboxDebugFlag,
     };
   },
@@ -248,23 +260,58 @@ export default defineComponent({
         .reset_blackbox()
         .then(() => this.blackbox.list_blackbox());
     },
+    profileName() {
+      return this.profile.meta.name.replace(/\0/g, "");
+    },
+    logFilename(index: number, format: "btfl" | "quic") {
+      const ext = format == "btfl" ? "bfl" : "json";
+      return `QUIC_${this.profileName()}_${this.fileDateStamp(index)}_file_${index}.${ext}`;
+    },
+    fetchLog(index: number, format: "btfl" | "quic") {
+      return format == "btfl"
+        ? this.blackbox.download_blackbox_btfl(index)
+        : this.blackbox.download_blackbox_quic(index);
+    },
     download_quic(index) {
-      return this.blackbox.download_blackbox_quic(index).then((url) => {
-        const date = this.fileDateStamp(index);
-        const name = this.profile.meta.name.replace(/\0/g, "");
-        const filename = `QUIC_${name}_${date}_file_${index}.json`;
-
-        return exportObjectUrl(filename, url);
-      });
+      return this.fetchLog(index, "quic").then((url) =>
+        exportObjectUrl(this.logFilename(index, "quic"), url),
+      );
     },
     download_btfl(index) {
-      return this.blackbox.download_blackbox_btfl(index).then((url) => {
-        const date = this.fileDateStamp(index);
-        const name = this.profile.meta.name.replace(/\0/g, "");
-        const filename = `QUIC_${name}_${date}_file_${index}.bfl`;
-
-        return exportObjectUrl(filename, url);
-      });
+      return this.fetchLog(index, "btfl").then((url) =>
+        exportObjectUrl(this.logFilename(index, "btfl"), url),
+      );
+    },
+    // Downloads every log one after another (the port serves one transfer
+    // at a time) and saves them as a single zip.
+    async download_all(format: "btfl" | "quic") {
+      const { BlobReader, BlobWriter, ZipWriter } =
+        await import("@zip.js/zip.js");
+      const files = this.blackbox.list.files;
+      const zip = new ZipWriter(new BlobWriter("application/zip"));
+      try {
+        for (let index = 0; index < files.length; index++) {
+          this.downloadAll = { current: index, total: files.length };
+          const url = await this.fetchLog(index, format);
+          try {
+            const blob = await (await fetch(url)).blob();
+            await zip.add(
+              this.logFilename(index, format),
+              new BlobReader(blob),
+            );
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+        }
+        const date = dayjs().format("YYYY-MM-DD");
+        const prefix = format == "btfl" ? "BTFL" : "QUIC";
+        await exportFile(
+          `QUIC_${this.profileName()}_${date}_${prefix}_logs.zip`,
+          await zip.close(),
+        );
+      } finally {
+        this.downloadAll = undefined;
+      }
     },
     load_preset(i: number) {
       this.profile.blackbox.field_flags = this.blackbox.presets[i].field_flags;
