@@ -290,6 +290,11 @@ export default defineComponent({
             enabled: this.info.is_wing,
             text: "\x70A 54\x9e",
           },
+          {
+            name: "WIND",
+            enabled: this.info.is_wing,
+            text: "\x60 18\x9e",
+          },
         );
       }
       return elements;
