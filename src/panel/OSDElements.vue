@@ -36,6 +36,9 @@
         description="Simulated OSD · drag an element to reposition it"
         class="flex flex-col"
       >
+        <template v-if="is_hd" #actions>
+          <Toggle v-model="showDjiGuides" label="DJI guides" />
+        </template>
         <div class="flex flex-1 items-center justify-center min-h-0">
           <div class="osd-preview" :style="previewStyle">
             <canvas
@@ -157,6 +160,25 @@ function roundRect(
   return ctx;
 }
 
+const DJI_GUIDES_KEY = "osd-dji-guides";
+
+function loadDjiGuides() {
+  try {
+    return JSON.parse(localStorage.getItem(DJI_GUIDES_KEY) ?? "false") === true;
+  } catch {
+    return false;
+  }
+}
+
+// Areas DJI goggles cover with their own native overlay, as fractions of the
+// screen. Taken from the INAV configurator's 53x20 DJI guides (636x360 px).
+const DJI_GUIDE_AREAS = [
+  // flight time, battery and link status, bottom right
+  { x: 450 / 636, y: 290 / 360, w: 186 / 636, h: 70 / 360 },
+  // recording / storage indicator, right edge
+  { x: 556 / 636, y: 115 / 360, w: 80 / 636, h: 55 / 360 },
+];
+
 export default defineComponent({
   name: "OSDElements",
   components: { Panel, FieldSelect, Toggle },
@@ -172,6 +194,7 @@ export default defineComponent({
       selectedIndex: 0,
       preview: "NTSC",
       osdProfile: 0,
+      showDjiGuides: loadDjiGuides(),
       osdProfileOptions: [
         { text: "Profile 1", value: 0 },
         { text: "Profile 2", value: 1 },
@@ -351,6 +374,14 @@ export default defineComponent({
       this.draw_canvas();
     },
     drag() {
+      this.draw_canvas();
+    },
+    showDjiGuides(value: boolean) {
+      try {
+        localStorage.setItem(DJI_GUIDES_KEY, JSON.stringify(value));
+      } catch {
+        // storage unavailable, keep the in-memory value
+      }
       this.draw_canvas();
     },
     canvasWidth() {
@@ -559,6 +590,29 @@ export default defineComponent({
       );
       ctx.stroke();
     },
+    draw_dji_guides(ctx: CanvasRenderingContext2D) {
+      const width = this.screen.width * OSD.CHAR_WIDTH;
+      const height = this.screen.height * OSD.CHAR_HEIGHT;
+
+      ctx.save();
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.font = "8px sans-serif";
+      ctx.textBaseline = "top";
+      for (const area of DJI_GUIDE_AREAS) {
+        const x = Math.round(area.x * width) + 0.5;
+        const y = Math.round(area.y * height) + 0.5;
+        const w = Math.round(area.w * width) - 1;
+        const h = Math.round(area.h * height) - 1;
+        ctx.fillStyle = "rgba(168, 85, 247, 0.15)";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "rgba(168, 85, 247, 0.8)";
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "rgba(168, 85, 247, 0.9)";
+        ctx.fillText("DJI", x + 3, y + 3);
+      }
+      ctx.restore();
+    },
     draw_canvas() {
       const ctx = this.canvas.getContext("2d");
       if (!ctx) {
@@ -569,6 +623,10 @@ export default defineComponent({
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.setTransform(this.canvasScale, 0, 0, this.canvasScale, 0, 0);
       ctx.imageSmoothingEnabled = false;
+
+      if (this.is_hd && this.showDjiGuides) {
+        this.draw_dji_guides(ctx);
+      }
 
       for (const [index, el] of this.elements.entries()) {
         if (!el.enabled || !el.active) {
