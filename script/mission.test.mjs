@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  arcSpeed,
+  bendArc,
+  legDistance,
+  legMiddle,
+  legPoints,
+  legRadius,
+  splitLeg,
   COORD_SCALE,
   MISSION_DEFAULT_LIMITS,
   MULTI_VERTICAL_RATES,
@@ -30,12 +37,14 @@ const wp = (
   speed = 0,
   type = WaypointType.Stop,
   hold = 0,
+  arc = 0,
 ) => ({
   ...at(lat, lon),
   alt,
   speed,
   type,
   hold,
+  arc,
 });
 
 test("distance matches a known great-circle length", () => {
@@ -139,7 +148,15 @@ test("mission files round-trip coordinates exactly", () => {
   const mission = {
     end_action: MissionEndAction.RTH,
     waypoints: [
-      { lat: 481234567, lon: -113456789, alt: 42, speed: 73, type: 1, hold: 0 },
+      {
+        lat: 481234567,
+        lon: -113456789,
+        alt: 42,
+        speed: 73,
+        type: 1,
+        hold: 0,
+        arc: 0,
+      },
       {
         lat: -339999999,
         lon: 1799999999,
@@ -147,6 +164,7 @@ test("mission files round-trip coordinates exactly", () => {
         speed: 0,
         type: 0,
         hold: 9,
+        arc: -120,
       },
     ],
   };
@@ -157,6 +175,13 @@ test("mission files round-trip coordinates exactly", () => {
   const bare = JSON.parse(missionToFile(mission));
   delete bare.waypoints[1].hold;
   assert.equal(missionFromFile(JSON.stringify(bare)).waypoints[1].hold, 0);
+  // A straight leg is written without an arc and read back as one.
+  delete bare.waypoints[1].arc;
+  assert.equal(missionFromFile(JSON.stringify(bare)).waypoints[1].arc, 0);
+  const straight = JSON.parse(
+    missionToFile(missionFromFile(JSON.stringify(bare))),
+  );
+  assert.ok(!("arc" in straight.waypoints[1]));
 });
 
 test("takeoff only starts and landing only ends a mission", () => {
@@ -312,4 +337,129 @@ test("the time estimate includes every hold", () => {
   const legs = missionLegs(mission, home, 5);
   const flying = legs.reduce((sum, leg) => sum + leg.time, 0);
   assert.ok(Math.abs(missionTime(mission, legs) - flying - 35) < 1e-9);
+});
+
+// 111.19 m per 0.001 degree of latitude; on the equator the same east.
+const METER = 0.001 / 111.19493;
+
+test("an arc is a circle through both waypoints, clockwise when positive", () => {
+  const from = at(0, 1);
+  const to = at(0, 1 + 200 * METER);
+  // A half circle on a 200 m chord to the east: 100 m radius, round the north.
+  assert.ok(Math.abs(legRadius(from, to, 180) - 100) < 0.1);
+  assert.ok(Math.abs(legDistance(from, to, 180) - 100 * Math.PI) < 0.3);
+  const north = legMiddle(from, to, 180);
+  assert.ok(
+    Math.abs(distance(from, { lat: north.lat, lon: from.lon }) - 100) < 0.1,
+  );
+  assert.ok(north.lat > 0, "a clockwise arc eastward bulges north");
+  assert.ok(legMiddle(from, to, -180).lat < 0, "counter-clockwise, south");
+
+  // A quarter circle has its chord times 1/sqrt(2) as radius.
+  assert.ok(Math.abs(legRadius(from, to, 90) - 200 / Math.SQRT2) < 0.1);
+  // More than a half circle is longer than the circle is wide.
+  assert.ok(legDistance(from, to, 300) > 2 * legRadius(from, to, 300));
+
+  // Straight legs, and repeated waypoints an arc cannot be placed on.
+  assert.equal(legRadius(from, to, 0), undefined);
+  assert.equal(legRadius(from, from, 90), undefined);
+  assert.equal(legDistance(from, to), distance(from, to));
+
+  // Every point drawn lies on the circle, and the polyline keeps its ends.
+  const points = legPoints(from, to, 180);
+  assert.deepEqual(points[0], from);
+  assert.deepEqual(points[points.length - 1], to);
+  assert.ok(points.length >= 36);
+  const center = at(0, 1 + 100 * METER);
+  for (const p of points) assert.ok(Math.abs(distance(center, p) - 100) < 0.2);
+  assert.deepEqual(legPoints(from, to, 0), [from, to]);
+});
+
+test("legs, time and the route follow arcs", () => {
+  const mission = {
+    end_action: MissionEndAction.Hold,
+    waypoints: [wp(0, 1), wp(0, 1 + 200 * METER, 30, 0, 0, 0, 180)],
+  };
+  // A wing flies the arc at cruise speed.
+  const [wing] = missionLegs(mission, undefined, 15, false);
+  assert.ok(Math.abs(wing.distance - 100 * Math.PI) < 0.3);
+  assert.equal(wing.speed, 15);
+  // A multirotor slows down for it: 100 m of radius allow sqrt(1.5 * 100).
+  const [multi] = missionLegs(mission, undefined, 15);
+  assert.ok(Math.abs(multi.speed - Math.sqrt(150)) < 0.01);
+  assert.ok(Math.abs(arcSpeed(4) - (4 * 22.5 * Math.PI) / 180) < 1e-9);
+  assert.equal(arcSpeed(0.5), 1);
+  assert.equal(missionLegs(mission, undefined, 5)[0].speed, 5);
+
+  const route = missionRoute(mission, undefined);
+  assert.ok(route.length >= 36);
+  assert.deepEqual(route[0], mission.waypoints[0]);
+  // The leg from a takeoff is flown straight.
+  mission.waypoints[0].type = WaypointType.Takeoff;
+  assert.equal(missionRoute(mission, undefined).length, 2);
+  assert.ok(
+    Math.abs(missionLegs(mission, undefined, 5)[0].distance - 200) < 0.3,
+  );
+});
+
+test("a leg bends by dragging its middle and splits on its arc", () => {
+  const from = at(0, 1);
+  const to = at(0, 1 + 200 * METER);
+  // Dragging the middle of a bent leg where it is changes nothing.
+  for (const arc of [90, -90, 180, 250, -300])
+    assert.equal(bendArc(from, to, legMiddle(from, to, arc), 330), arc);
+  assert.equal(bendArc(from, to, at(100 * METER, 1 + 100 * METER), 330), 180);
+  // Nearly straight snaps straight; the limit holds.
+  assert.equal(bendArc(from, to, at(1 * METER, 1 + 100 * METER), 330), 0);
+  assert.equal(bendArc(from, to, at(5000 * METER, 1 + 100 * METER), 330), 330);
+  assert.equal(bendArc(from, from, at(1, 1), 330), 0);
+
+  // A waypoint inserted at the top of the half circle halves it.
+  const top = splitLeg(from, to, 180, at(120 * METER, 1 + 100 * METER));
+  assert.deepEqual(top.arcs, [90, 90]);
+  assert.ok(distance(top.point, at(100 * METER, 1 + 100 * METER)) < 0.2);
+  // Both halves follow the old circle.
+  assert.ok(Math.abs(legRadius(from, top.point, 90) - 100) < 0.2);
+  assert.ok(Math.abs(legRadius(top.point, to, 90) - 100) < 0.2);
+  // The parts keep the direction and add up.
+  const left = splitLeg(from, to, -270, legMiddle(from, to, -90));
+  assert.equal(left.arcs[0] + left.arcs[1], -270);
+  assert.ok(left.arcs[0] < 0 && left.arcs[1] < 0);
+  // A straight leg takes the point as it is.
+  const point = at(1 * METER, 1 + 50 * METER);
+  assert.deepEqual(splitLeg(from, to, 0, point), { point, arcs: [0, 0] });
+});
+
+test("arcs are validated against the vehicle's limit", () => {
+  const check = (waypoints, extra = {}) =>
+    validateMission(
+      { end_action: MissionEndAction.Hold, waypoints },
+      {
+        maxWaypoints: 32,
+        limits: MISSION_DEFAULT_LIMITS,
+        routeDistance: 0,
+        ...extra,
+      },
+    );
+  const from = wp(0, 1);
+  const to = (arc) => wp(0, 1 + 200 * METER, 30, 0, 0, 0, arc);
+  assert.deepEqual(check([from, to(180)]), []);
+  assert.deepEqual(check([from, to(-330)]), []);
+  assert.equal(check([from, to(331)])[0].level, "error");
+  assert.equal(check([from, to(90.5)])[0].level, "error");
+  assert.equal(check([{ ...from, arc: 90 }, to(0)])[0].level, "error");
+  // A vehicle that reports no arc flies none.
+  assert.match(
+    check([from, to(90)], {
+      limits: { ...MISSION_DEFAULT_LIMITS, max_arc: 0 },
+    })[0].msg,
+    /cannot fly arcs/,
+  );
+  // A wing flies wide of an arc tighter than it turns.
+  const wide = check([from, to(180)], { minArcRadius: 120 });
+  assert.equal(wide.length, 1);
+  assert.equal(wide[0].level, "warning");
+  assert.deepEqual(check([from, to(180)], { minArcRadius: 80 }), []);
+  const takeoff = check([{ ...from, type: WaypointType.Takeoff }, to(90)]);
+  assert.equal(takeoff[0].level, "warning");
 });

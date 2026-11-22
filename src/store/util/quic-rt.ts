@@ -40,8 +40,8 @@ export type NavResult = (typeof NavResult)[keyof typeof NavResult];
 // NavCommand.Mission index that resumes where the mission left off.
 export const NAV_MISSION_RESUME = 0xff;
 // Waypoints per MissionItems command, as many as fit a CRSF frame.
-export const NAV_MISSION_ITEMS_MAX = 4;
-const MISSION_ITEM_SIZE = 13;
+export const NAV_MISSION_ITEMS_MAX = 3;
+const MISSION_ITEM_SIZE = 15;
 
 export type NavCommandRequest =
   | {
@@ -98,7 +98,7 @@ const RESULT_SHIFT = 5;
 const MISSION_INDEX_MASK = (1 << RESULT_SHIFT) - 1;
 
 // A waypoint as the firmware receives and stores it: lat, lon (int32),
-// altitude (int16), speed, type and hold (uint8).
+// altitude (int16), speed, type and hold (uint8), arc (int16).
 function missionItem(wp: Waypoint): Uint8Array {
   const v = new DataView(new ArrayBuffer(MISSION_ITEM_SIZE));
   v.setInt32(0, wp.lat, true);
@@ -107,6 +107,7 @@ function missionItem(wp: Waypoint): Uint8Array {
   v.setUint8(10, wp.speed);
   v.setUint8(11, wp.type);
   v.setUint8(12, wp.hold);
+  v.setInt16(13, wp.arc, true);
   return new Uint8Array(v.buffer);
 }
 

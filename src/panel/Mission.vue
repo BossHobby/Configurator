@@ -37,12 +37,14 @@
             :target="liveTarget"
             :active="activeIndex"
             :live="!!live?.guidedReady"
+            :max-arc="mission.limits.max_arc"
             :follow="follow && hasCoord(craft)"
             :tiles="tiles"
             @flyto="flyTo"
             @add="add"
             @insert="insert"
             @move="move"
+            @bend="bend"
             @remove="remove"
             @select="selected = $event"
             @unfollow="follow = false"
@@ -248,7 +250,7 @@
           <colgroup>
             <col class="w-14" />
             <col v-if="waypointTypes" class="w-32" />
-            <col :span="waypointSpeeds ? 6 : 5" />
+            <col :span="5 + (waypointSpeeds ? 1 : 0) + (arcs ? 1 : 0)" />
             <col class="w-36" />
             <col class="w-32" />
           </colgroup>
@@ -272,6 +274,9 @@
               </th>
               <th class="py-2 pr-2 font-medium whitespace-nowrap">
                 Hold (s) <tooltip entry="mission.hold" />
+              </th>
+              <th v-if="arcs" class="py-2 pr-2 font-medium whitespace-nowrap">
+                Arc (°) <tooltip entry="mission.arc" />
               </th>
               <th class="py-2 pr-2 font-medium">Leg</th>
               <th class="py-2 pr-2 font-medium">
@@ -413,6 +418,25 @@
                   >–</span
                 >
               </td>
+              <td v-if="arcs" class="py-1.5 pr-2">
+                <input
+                  v-if="index > 0"
+                  v-model.lazy="fields[index].arc"
+                  class="form-input"
+                  type="number"
+                  step="1"
+                  :min="-mission.limits.max_arc"
+                  :max="mission.limits.max_arc"
+                  placeholder="0"
+                  :aria-label="`Degrees the leg into waypoint ${index + 1} turns through, positive clockwise, empty for a straight leg`"
+                />
+                <span
+                  v-else
+                  class="text-xs text-muted"
+                  title="No leg leads to the first waypoint."
+                  >–</span
+                >
+              </td>
               <td class="py-1.5 pr-2 text-xs whitespace-nowrap text-muted">
                 {{ legLabel(index) }}
               </td>
@@ -543,6 +567,7 @@ import {
   formatDistance,
   formatDuration,
   hasCoord,
+  legRadius,
   missionFromFile,
   missionLegs,
   missionPath,
@@ -553,7 +578,9 @@ import {
   missionToFile,
   newWaypoint,
   setWaypointType,
+  splitLeg,
   validateMission,
+  waypointArc,
   type GeoPoint,
   type MissionIssue,
   type PathVertex,
@@ -697,6 +724,19 @@ export default defineComponent({
     waypointTypes(): boolean {
       return this.mission.limits.waypoint_types > 1;
     },
+    // The vehicle flies legs as arcs.
+    arcs(): boolean {
+      return this.mission.limits.max_arc > 0;
+    },
+    // Meters a wing turns no tighter than at cruise speed, as the firmware
+    // banks it, at most 40 degrees.
+    minArcRadius(): number | undefined {
+      const navigation = this.profile.navigation;
+      const speed = navigation?.cruise_speed ?? 0;
+      const bank = Math.min(navigation?.max_bank_angle ?? 0, 40);
+      if (!this.info.is_wing || !(speed > 0) || !(bank > 0)) return undefined;
+      return (speed * speed) / (9.80665 * Math.tan((bank * Math.PI) / 180));
+    },
     // A landing ends the mission, so it has no end action.
     endsWithLanding(): boolean {
       const wps = this.mission.waypoints;
@@ -714,6 +754,7 @@ export default defineComponent({
     // lazy v-model leaves a focused input alone, unlike a :value binding.
     fields() {
       const waypoints = this.mission.waypoints;
+      const maxArc = this.mission.limits.max_arc;
       return waypoints.map((wp, index) => ({
         get lat() {
           return wp.lat / COORD_SCALE;
@@ -761,6 +802,16 @@ export default defineComponent({
           const hold = Math.round(Number(value));
           wp.hold = Number.isFinite(hold)
             ? Math.min(Math.max(hold, 0), MISSION_HOLD_MAX)
+            : 0;
+        },
+        get arc(): number | string {
+          return wp.arc || "";
+        },
+        // Whole degrees within the firmware's limit; empty means straight.
+        set arc(value: number | string) {
+          const arc = Math.round(Number(value));
+          wp.arc = Number.isFinite(arc)
+            ? Math.min(Math.max(arc, -maxArc), maxArc)
             : 0;
         },
       }));
@@ -847,6 +898,7 @@ export default defineComponent({
           limits: this.mission.limits,
           reference: this.home ?? this.craft,
           routeDistance: this.routeDistance,
+          minArcRadius: this.minArcRadius,
         }),
         ...this.terrainIssues,
       ];
@@ -967,7 +1019,13 @@ export default defineComponent({
       // is offset by one.
       const leg = this.legs[this.home ? index : index - 1];
       if (!leg) return "–";
-      return `${formatDistance(leg.distance)} · ${formatDuration(leg.time)}`;
+      const wps = this.mission.waypoints;
+      const radius =
+        index > 0
+          ? legRadius(wps[index - 1], wps[index], waypointArc(wps, index))
+          : undefined;
+      const label = `${formatDistance(leg.distance)} · ${formatDuration(leg.time)}`;
+      return radius ? `${label} · r ${formatDistance(radius)}` : label;
     },
     // Takeoff only fits the first waypoint and Land only the last; the
     // current type stays listed so a misplaced one shows until changed.
@@ -989,22 +1047,39 @@ export default defineComponent({
       this.mission.waypoints.push(this.newWaypoint(point, last));
       this.selected = this.mission.waypoints.length - 1;
     },
+    // Into the leg to waypoint index, at a point clicked on it. An arc is
+    // split where the point lands on it, so the route keeps its shape.
     insert(index: number, point: GeoPoint) {
-      const prev = this.mission.waypoints[index - 1];
-      this.mission.waypoints.splice(index, 0, this.newWaypoint(point, prev));
+      const wps = this.mission.waypoints;
+      const prev = wps[index - 1];
+      const next = wps[index];
+      const split = splitLeg(prev, next, waypointArc(wps, index), point);
+      const wp = this.newWaypoint(split.point, prev);
+      if (split.arcs[0]) [wp.arc, next.arc] = split.arcs;
+      wps.splice(index, 0, wp);
       this.selected = index;
     },
     move(index: number, point: GeoPoint) {
       Object.assign(this.mission.waypoints[index], point);
     },
+    bend(index: number, arc: number) {
+      this.mission.waypoints[index].arc = arc;
+    },
     remove(index: number) {
       this.mission.waypoints.splice(index, 1);
       this.selected = undefined;
+      this.straightenFirst();
     },
     swap(a: number, b: number) {
       const wps = this.mission.waypoints;
       [wps[a], wps[b]] = [wps[b], wps[a]];
       this.selected = b;
+      this.straightenFirst();
+    },
+    // No leg leads to the first waypoint, whichever one that has become.
+    straightenFirst() {
+      const first = this.mission.waypoints[0];
+      if (first) first.arc = 0;
     },
     toKph(speed: number) {
       return Number((speed * 3.6).toFixed(1));

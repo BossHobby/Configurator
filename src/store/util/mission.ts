@@ -23,6 +23,9 @@ export interface Waypoint {
   speed: number; // 0.1 m/s, 0 = navigation.travel_speed
   type: WaypointType;
   hold: number; // whole seconds to stay on a Stop waypoint, 0 on other types
+  // Whole degrees the leg from the previous waypoint turns through on a
+  // circle, positive clockwise; 0 flies the straight line.
+  arc: number;
 }
 
 export interface Mission {
@@ -44,6 +47,7 @@ export interface MissionLimits {
   max_speed: number; // m/s, shown as km/h
   min_ground_alt: number; // meters above launch, the lowest Land ground
   waypoint_types: number; // the vehicle accepts the WaypointType values below this
+  max_arc: number; // degrees a leg may turn through either way; 0 without arcs
 }
 // Waypoint.hold is a uint8 on the firmware.
 export const MISSION_HOLD_MAX = 255;
@@ -54,6 +58,7 @@ export const MISSION_DEFAULT_LIMITS: MissionLimits = {
   max_speed: 25.5,
   min_ground_alt: -1000,
   waypoint_types: 4,
+  max_arc: 330,
 };
 // The firmware will not start a mission whose first point is farther away.
 export const MISSION_START_MAX = 2000;
@@ -69,7 +74,7 @@ export const MISSION_DEFAULT_ALT = 30;
 
 // A new waypoint copies the altitude and speed it follows; a landing's
 // altitude is its ground, so it is not copied. It flies through where the
-// vehicle can, and does not hold.
+// vehicle can, does not hold and is reached on a straight leg.
 export function newWaypoint(
   point: GeoPoint,
   limits: MissionLimits,
@@ -86,6 +91,7 @@ export function newWaypoint(
         ? WaypointType.Pass
         : WaypointType.Stop,
     hold: 0,
+    arc: 0,
   };
 }
 
@@ -135,6 +141,184 @@ export function distance(a: GeoPoint, b: GeoPoint) {
   return 2 * EARTH_RADIUS * Math.asin(Math.min(Math.sqrt(h), 1));
 }
 
+// Meters north and east from a to b, as the firmware's nav_position_delta().
+function localDelta(a: GeoPoint, b: GeoPoint): [number, number] {
+  const rad = Math.PI / 180 / COORD_SCALE;
+  return [
+    (b.lat - a.lat) * rad * EARTH_RADIUS,
+    (b.lon - a.lon) *
+      rad *
+      EARTH_RADIUS *
+      Math.cos(((a.lat + b.lat) / 2) * rad),
+  ];
+}
+
+function localPoint(a: GeoPoint, north: number, east: number): GeoPoint {
+  const rad = Math.PI / 180 / COORD_SCALE;
+  return {
+    lat: Math.round(a.lat + north / EARTH_RADIUS / rad),
+    lon: Math.round(
+      a.lon + east / (EARTH_RADIUS * Math.cos(a.lat * rad)) / rad,
+    ),
+  };
+}
+
+// The circle a leg with an arc follows, as the firmware places it: the leg is
+// a chord of it, and a clockwise arc of less than a half circle has its
+// center to the right of the chord.
+interface LegArc {
+  center: [number, number]; // meters north and east of the leg's start
+  radius: number; // meters
+  sweep: number; // radians, positive clockwise
+}
+
+function legArc(from: GeoPoint, to: GeoPoint, arc: number): LegArc | undefined {
+  const [north, east] = localDelta(from, to);
+  const chord = Math.hypot(north, east);
+  // Repeated waypoints leave an arc without a chord; the firmware flies straight.
+  if (!arc || chord < 1) return undefined;
+  const sweep = (arc * Math.PI) / 180;
+  const half = Math.abs(sweep) / 2;
+  const side = (Math.sign(sweep) * 0.5) / Math.tan(half);
+  return {
+    center: [north / 2 - east * side, east / 2 + north * side],
+    radius: chord / 2 / Math.sin(half),
+    sweep,
+  };
+}
+
+// Radians round the center from the leg's start to a point, in the arc's
+// direction, 0 to a full turn.
+function arcFlown(circle: LegArc, north: number, east: number) {
+  const start = Math.atan2(-circle.center[1], -circle.center[0]);
+  const at = Math.atan2(east - circle.center[1], north - circle.center[0]);
+  const turn = 2 * Math.PI;
+  return ((((at - start) * Math.sign(circle.sweep)) % turn) + turn) % turn;
+}
+
+// Radius in meters of the circle a leg's arc follows, undefined for a
+// straight leg.
+export function legRadius(from: GeoPoint, to: GeoPoint, arc: number) {
+  return legArc(from, to, arc)?.radius;
+}
+
+// Meters flown from one waypoint to the next, round the arc if there is one.
+export function legDistance(from: GeoPoint, to: GeoPoint, arc = 0) {
+  const circle = legArc(from, to, arc);
+  return circle ? circle.radius * Math.abs(circle.sweep) : distance(from, to);
+}
+
+// Points of an arc are at most this far apart round its circle.
+const ARC_STEP = (5 * Math.PI) / 180;
+
+// The leg as a polyline, both ends included.
+export function legPoints(from: GeoPoint, to: GeoPoint, arc = 0): GeoPoint[] {
+  const circle = legArc(from, to, arc);
+  if (!circle) return [from, to];
+  const start = Math.atan2(-circle.center[1], -circle.center[0]);
+  const steps = Math.ceil(Math.abs(circle.sweep) / ARC_STEP);
+  const points = [from];
+  for (let i = 1; i < steps; i++) {
+    const bearing = start + (circle.sweep * i) / steps;
+    points.push(
+      localPoint(
+        from,
+        circle.center[0] + circle.radius * Math.cos(bearing),
+        circle.center[1] + circle.radius * Math.sin(bearing),
+      ),
+    );
+  }
+  points.push(to);
+  return points;
+}
+
+// Arcs flatter than this snap to the straight line when bent by hand.
+const ARC_SNAP = 3;
+
+// The arc whose middle lies as far off the chord as the point does: bending a
+// leg by dragging its middle. Whole degrees within the limit.
+export function bendArc(
+  from: GeoPoint,
+  to: GeoPoint,
+  point: GeoPoint,
+  maxArc: number,
+) {
+  const [north, east] = localDelta(from, to);
+  const chord = Math.hypot(north, east);
+  if (chord < 1) return 0;
+  const [pn, pe] = localDelta(from, point);
+  // A clockwise arc bulges to the left of the chord.
+  const left = (east * pn - north * pe) / chord;
+  const arc = Math.round((4 * Math.atan((2 * left) / chord) * 180) / Math.PI);
+  if (Math.abs(arc) < ARC_SNAP) return 0;
+  return Math.min(Math.max(arc, -maxArc), maxArc);
+}
+
+// The middle of a leg, on its arc: where bendArc() gives the arc back.
+export function legMiddle(from: GeoPoint, to: GeoPoint, arc = 0): GeoPoint {
+  const [north, east] = localDelta(from, to);
+  const circle = legArc(from, to, arc);
+  if (!circle) return localPoint(from, north / 2, east / 2);
+  const bearing =
+    Math.atan2(-circle.center[1], -circle.center[0]) + circle.sweep / 2;
+  return localPoint(
+    from,
+    circle.center[0] + circle.radius * Math.cos(bearing),
+    circle.center[1] + circle.radius * Math.sin(bearing),
+  );
+}
+
+// A waypoint inserted into a leg at a point: where it lands on the leg's arc,
+// and the arcs of the two legs that replace it, which follow the same circle.
+export function splitLeg(
+  from: GeoPoint,
+  to: GeoPoint,
+  arc: number,
+  point: GeoPoint,
+): { point: GeoPoint; arcs: [number, number] } {
+  const circle = legArc(from, to, arc);
+  if (!circle) return { point, arcs: [0, 0] };
+  const [north, east] = localDelta(from, point);
+  const sweep = Math.abs(circle.sweep);
+  // Off either end of the arc, the nearer end; neither part vanishes.
+  let flown = arcFlown(circle, north, east);
+  if (flown > sweep) flown = flown - sweep < 2 * Math.PI - flown ? sweep : 0;
+  const first = Math.min(
+    Math.max(Math.round((arc * flown) / sweep), Math.sign(arc)),
+    arc - Math.sign(arc),
+  );
+  const bearing =
+    Math.atan2(-circle.center[1], -circle.center[0]) + (first * Math.PI) / 180;
+  return {
+    point: localPoint(
+      from,
+      circle.center[0] + circle.radius * Math.cos(bearing),
+      circle.center[1] + circle.radius * Math.sin(bearing),
+    ),
+    arcs: [first, arc - first],
+  };
+}
+
+// The fastest a multirotor flies an arc, as the firmware limits it: by the
+// acceleration of the turn and by how fast the nose comes round with it.
+const ARC_ACCEL = 1.5; // m/s^2
+const ARC_YAW_RATE = (22.5 * Math.PI) / 180; // rad/s
+const ARC_SPEED_MIN = 1; // m/s
+
+export function arcSpeed(radius: number) {
+  return Math.max(
+    Math.min(Math.sqrt(ARC_ACCEL * radius), ARC_YAW_RATE * radius),
+    ARC_SPEED_MIN,
+  );
+}
+
+// The arc of the leg into a waypoint as it is flown: the leg from a takeoff
+// starts where the craft lifted off and is straight.
+export function waypointArc(waypoints: Waypoint[], index: number) {
+  const prev = waypoints[index - 1];
+  return prev && prev.type != WaypointType.Takeoff ? waypoints[index].arc : 0;
+}
+
 export interface MissionLeg {
   distance: number;
   speed: number;
@@ -142,8 +326,9 @@ export interface MissionLeg {
 }
 
 // Legs in flight order: home to the first point when home is known, then
-// point to point, and back home for RTH. Wings ignore waypoint speeds and
-// fly every leg at cruise speed.
+// point to point round their arcs, and back home for RTH. Wings ignore
+// waypoint speeds and fly every leg at cruise speed; a multirotor slows down
+// for a tight arc.
 export function missionLegs(
   mission: Mission,
   home: GeoPoint | undefined,
@@ -151,15 +336,18 @@ export function missionLegs(
   waypointSpeeds = true,
 ): MissionLeg[] {
   const legs: MissionLeg[] = [];
-  const leg = (from: GeoPoint, to: GeoPoint, speed: number) => {
-    const d = distance(from, to);
-    const s = waypointSpeeds && speed > 0 ? speed * SPEED_SCALE : cruiseSpeed;
+  const leg = (from: GeoPoint, to: GeoPoint, speed: number, arc = 0) => {
+    const d = legDistance(from, to, arc);
+    const radius = legRadius(from, to, arc);
+    let s = waypointSpeeds && speed > 0 ? speed * SPEED_SCALE : cruiseSpeed;
+    if (waypointSpeeds && radius) s = Math.min(s, arcSpeed(radius));
     legs.push({ distance: d, speed: s, time: s > 0 ? d / s : NaN });
   };
 
   const wps = mission.waypoints;
   if (hasCoord(home) && wps.length) leg(home, wps[0], wps[0].speed);
-  for (let i = 1; i < wps.length; i++) leg(wps[i - 1], wps[i], wps[i].speed);
+  for (let i = 1; i < wps.length; i++)
+    leg(wps[i - 1], wps[i], wps[i].speed, waypointArc(wps, i));
   if (hasCoord(home) && wps.length && missionReturns(mission)) {
     // Speed 0 is the cruise speed, which RTH flies.
     leg(wps[wps.length - 1], home, 0);
@@ -175,14 +363,18 @@ export function missionTime(mission: Mission, legs: MissionLeg[]) {
   );
 }
 
-// Points in flight order that missionLegs measures, home first when known.
+// The route missionLegs measures as a polyline in flight order, home first
+// when known, with arcs drawn out.
 export function missionRoute(
   mission: Mission,
   home: GeoPoint | undefined,
 ): GeoPoint[] {
   const wps = mission.waypoints;
-  if (!hasCoord(home) || !wps.length) return [...wps];
-  return missionReturns(mission) ? [home, ...wps, home] : [home, ...wps];
+  const route: GeoPoint[] = wps.slice(0, 1);
+  for (let i = 1; i < wps.length; i++)
+    route.push(...legPoints(wps[i - 1], wps[i], waypointArc(wps, i)).slice(1));
+  if (!hasCoord(home) || !wps.length) return route;
+  return missionReturns(mission) ? [home, ...route, home] : [home, ...route];
 }
 
 export interface PathVertex {
@@ -401,6 +593,9 @@ export function validateMission(
     limits?: MissionLimits;
     reference?: GeoPoint;
     routeDistance: number;
+    // Meters; a wing turns no tighter at cruise speed and flies wide of
+    // smaller arcs.
+    minArcRadius?: number;
   },
 ): MissionIssue[] {
   const limits = opts.limits ?? MISSION_DEFAULT_LIMITS;
@@ -500,6 +695,48 @@ export function validateMission(
         msg: `#${n}: only Stop waypoints can hold.`,
       });
     }
+    const arc = wp.arc;
+    const prev = wps[index - 1];
+    if (!Number.isInteger(arc)) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: the arc must be whole degrees.`,
+      });
+    } else if (arc && !limits.max_arc) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: this flight controller cannot fly arcs.`,
+      });
+    } else if (Math.abs(arc) > limits.max_arc) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: the arc must be between -${limits.max_arc} and ${limits.max_arc} degrees.`,
+      });
+    } else if (arc && !prev) {
+      issues.push({
+        level: "error",
+        index,
+        msg: `#${n}: the first waypoint has no leg to curve.`,
+      });
+    } else if (arc && prev.type == WaypointType.Takeoff) {
+      issues.push({
+        level: "warning",
+        index,
+        msg: `#${n}: the leg from a takeoff is flown straight, from where the craft lifted off.`,
+      });
+    } else if (arc) {
+      const radius = legRadius(prev, wp, arc);
+      if (radius && opts.minArcRadius && radius < opts.minArcRadius) {
+        issues.push({
+          level: "warning",
+          index,
+          msg: `#${n}: the arc's radius of ${radius.toFixed(0)} m is tighter than the ${opts.minArcRadius.toFixed(0)} m the wing turns at cruise speed. It will fly wide of it.`,
+        });
+      }
+    }
   });
 
   if (wps.length && hasCoord(opts.reference) && hasCoord(wps[0])) {
@@ -557,6 +794,7 @@ export function missionToFile(mission: Mission) {
         speed: Number((wp.speed * SPEED_SCALE).toFixed(1)),
         type: wp.type,
         hold: wp.hold,
+        ...(wp.arc ? { arc: wp.arc } : {}),
       })),
     },
     null,
@@ -592,6 +830,7 @@ export function missionFromFile(text: string): Mission {
       speed: Math.round(Number(wp.speed ?? 0) / SPEED_SCALE),
       type: Number(wp.type) as WaypointType,
       hold: Math.round(Number(wp.hold ?? 0)),
+      arc: Math.round(Number(wp.arc ?? 0)),
     })),
   };
 }

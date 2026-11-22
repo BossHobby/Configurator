@@ -72,23 +72,44 @@ test("argument-free and indexed commands", () => {
 const crcRoute = {
   end_action: MissionEndAction.RTH,
   waypoints: [
-    { lat: -338765000, lon: 1511234000, alt: 30, speed: 50, type: 0, hold: 0 },
-    { lat: -338765100, lon: 1511234100, alt: 31, speed: 0, type: 0, hold: 0 },
+    {
+      lat: -338765000,
+      lon: 1511234000,
+      alt: 30,
+      speed: 50,
+      type: 0,
+      hold: 0,
+      arc: 0,
+    },
+    {
+      lat: -338765100,
+      lon: 1511234100,
+      alt: 31,
+      speed: 0,
+      type: 0,
+      hold: 0,
+      arc: 0,
+    },
   ],
 };
 
 test("mission CRC matches the firmware's mission_crc()", () => {
-  assert.equal(missionCrc(crcRoute), 0x2baa);
+  assert.equal(missionCrc(crcRoute), 0xe1ff);
   const [first, second] = crcRoute.waypoints;
   assert.equal(
     missionCrc({ ...crcRoute, waypoints: [{ ...first, type: 1 }, second] }),
-    0x8556,
+    0x3fe0,
     "the type is part of the route",
   );
   assert.equal(
     missionCrc({ ...crcRoute, waypoints: [{ ...first, hold: 30 }, second] }),
-    0x0d51,
+    0xe28b,
     "the hold is part of the route",
+  );
+  assert.equal(
+    missionCrc({ ...crcRoute, waypoints: [first, { ...second, arc: -90 }] }),
+    0x48d7,
+    "the arc is part of the route",
   );
   assert.equal(
     missionCrc({ end_action: MissionEndAction.Hold, waypoints: [] }),
@@ -99,18 +120,19 @@ test("mission CRC matches the firmware's mission_crc()", () => {
   assert.ok(!sameMissionItem(first, { ...first, speed: 51 }));
   assert.ok(!sameMissionItem(first, { ...first, type: 3 }));
   assert.ok(!sameMissionItem(first, { ...first, hold: 1 }));
+  assert.ok(!sameMissionItem(first, { ...first, arc: 1 }));
 });
 
 test("mission items and commit match the firmware's packed structs", () => {
   const typed = [
     { ...crcRoute.waypoints[0], hold: 200 },
-    { ...crcRoute.waypoints[1], type: 3 },
+    { ...crcRoute.waypoints[1], type: 3, arc: -90 },
   ];
   const items = encodeCommand(
     { type: NavCommand.MissionItems, index: 4, waypoints: typed },
     7,
   );
-  assert.equal(items.length, 4 + 1 + 2 * 13);
+  assert.equal(items.length, 4 + 1 + 2 * 15);
   assert.deepEqual(
     [...items.subarray(0, 5)],
     [QUIC_RT_VERSION, QuicRtType.Command, NavCommand.MissionItems, 7, 4],
@@ -120,13 +142,15 @@ test("mission items and commit match the firmware's packed structs", () => {
   assert.equal(v.getUint8(10), 50, "speed in 0.1 m/s");
   assert.equal(v.getUint8(11), 0, "type");
   assert.equal(v.getUint8(12), 200, "hold in seconds");
-  assert.equal(v.getInt32(13, true), -338765100);
-  assert.equal(v.getInt32(17, true), 1511234100);
-  assert.equal(v.getInt16(21, true), 31);
-  assert.equal(v.getUint8(24), 3, "type");
-  assert.equal(v.getUint8(25), 0, "hold");
+  assert.equal(v.getInt16(13, true), 0, "arc");
+  assert.equal(v.getInt32(15, true), -338765100);
+  assert.equal(v.getInt32(19, true), 1511234100);
+  assert.equal(v.getInt16(23, true), 31);
+  assert.equal(v.getUint8(26), 3, "type");
+  assert.equal(v.getUint8(27), 0, "hold");
+  assert.equal(v.getInt16(28, true), -90, "arc in degrees, clockwise positive");
   assert.ok(
-    2 + 2 + 1 + NAV_MISSION_ITEMS_MAX * 13 <= 58,
+    2 + 2 + 1 + NAV_MISSION_ITEMS_MAX * 15 <= 58,
     "a full command fits an extended CRSF frame",
   );
 
@@ -135,7 +159,7 @@ test("mission items and commit match the firmware's packed structs", () => {
       type: NavCommand.MissionCommit,
       count: 2,
       endAction: MissionEndAction.RTH,
-      crc: 0x2baa,
+      crc: 0xe1ff,
     },
     8,
   );
@@ -148,8 +172,8 @@ test("mission items and commit match the firmware's packed structs", () => {
       8,
       2,
       MissionEndAction.RTH,
-      0xaa,
-      0x2b,
+      0xff,
+      0xe1,
     ],
   );
 });

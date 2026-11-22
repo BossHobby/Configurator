@@ -366,6 +366,9 @@
   "mission.altitude": {
     "text": "Meters above the launch point, not above sea level. On a Land waypoint this is the height of the ground there instead: 0 when landing level with the launch, higher or lower for a hill or a dip. The craft flies to a landing level, at the altitude it already has, then descends and slows down for the last 5 meters above that ground."
   },
+  "mission.arc": {
+    "text": "Degrees the leg from the previous waypoint turns through on a circle, up to 330: positive curves clockwise, negative counter-clockwise, empty flies the straight line. 180 is a half circle with the two waypoints across it. Drag the handle in the middle of the selected waypoint's leg on the map to bend it. The altitude changes evenly round the arc. A multirotor slows down for a tight arc; a wing that cannot turn that tightly flies wide of it. A mission that starts or resumes part way flies straight to the waypoint instead, as does the leg from a takeoff."
+  },
   "mission.hold": {
     "text": "Seconds to stay on a Stop waypoint before flying on, up to 255. A multirotor hovers on it, a wing circles it at the loiter radius. On the last waypoint the hold comes before the end action. Only Stop waypoints hold."
   },

@@ -8,7 +8,7 @@
       ref="container"
       class="mission-map size-full rounded-md"
       role="application"
-      aria-label="Mission map. Click to add a waypoint, drag a waypoint to move it, right-click or long-press for more actions."
+      aria-label="Mission map. Click to add a waypoint, drag a waypoint to move it, drag the handle on the leg into the selected waypoint to bend it, right-click or long-press for more actions."
     />
     <div
       v-if="menu"
@@ -60,8 +60,12 @@ import {
   COORD_SCALE,
   WAYPOINT_TYPE_NAMES,
   WaypointType,
+  bendArc,
   hasCoord,
   headingRun,
+  legMiddle,
+  legPoints,
+  waypointArc,
   type GeoPoint,
   type Waypoint,
 } from "@/store/util/mission";
@@ -80,6 +84,8 @@ const props = defineProps<{
   active?: number;
   // The craft takes guided commands: the context menu offers flyto.
   live?: boolean;
+  // Degrees a leg may turn through; 0 on a vehicle that flies no arcs.
+  maxArc?: number;
   // Keep the craft centered; panning the map emits unfollow.
   follow?: boolean;
   tiles: TileProvider;
@@ -88,6 +94,8 @@ const emit = defineEmits<{
   add: [point: GeoPoint];
   insert: [index: number, point: GeoPoint];
   move: [index: number, point: GeoPoint];
+  // The arc of the leg into a waypoint, in degrees.
+  bend: [index: number, arc: number];
   remove: [index: number];
   select: [index: number];
   // pickAlt asks for the altitude instead of holding the current one.
@@ -324,11 +332,60 @@ function markerIcon(index: number) {
   });
 }
 
-function legPoints(): L.LatLngTuple[][] {
-  const points = props.waypoints.map(toLatLng);
-  const out: L.LatLngTuple[][] = [];
-  for (let i = 1; i < points.length; i++) out.push([points[i - 1], points[i]]);
-  return out;
+// The leg into waypoint index as it is flown, with either end moved or the
+// arc changed while dragging.
+function legLine(
+  index: number,
+  moved: { from?: GeoPoint; to?: GeoPoint; arc?: number } = {},
+): L.LatLngTuple[] {
+  const wps = props.waypoints;
+  return legPoints(
+    moved.from ?? wps[index - 1],
+    moved.to ?? wps[index],
+    moved.arc ?? waypointArc(wps, index),
+  ).map(toLatLng);
+}
+
+// A handle in the middle of the leg into the selected waypoint: dragging it
+// off the line bends the leg into an arc through it.
+function drawBendHandle() {
+  const wps = props.waypoints;
+  const index = props.selected;
+  if (
+    !props.maxArc ||
+    !index ||
+    !wps[index] ||
+    wps[index - 1].type == WaypointType.Takeoff
+  )
+    return;
+  const from = wps[index - 1];
+  const to = wps[index];
+  let arc = to.arc;
+  const handle = L.marker(toLatLng(legMiddle(from, to, arc)), {
+    draggable: true,
+    keyboard: false,
+    zIndexOffset: 900,
+    icon: L.divIcon({
+      className: "",
+      html: `<div class="mission-bend" title="Drag to bend the leg into waypoint ${index + 1}"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    }),
+  })
+    .on("dragstart", () => {
+      closeMenu();
+      dragging = true;
+    })
+    .on("drag", () => {
+      arc = bendArc(from, to, fromLatLng(handle.getLatLng()), props.maxArc!);
+      legs[index - 1].setLatLngs(legLine(index, { arc }));
+    })
+    .on("dragend", () => {
+      dragging = false;
+      emit("bend", index, arc);
+      drawRoute();
+    })
+    .addTo(routeLayer!);
 }
 
 function drawRoute() {
@@ -361,8 +418,8 @@ function drawRoute() {
   }
 
   // One polyline per leg, so clicking a leg inserts a point into it.
-  legs = legPoints().map((points, index) =>
-    L.polyline(points, { className: "mission-leg", weight: 3 })
+  legs = wps.slice(1).map((_, index) =>
+    L.polyline(legLine(index + 1), { className: "mission-leg", weight: 3 })
       .on("click", (e: L.LeafletMouseEvent) => {
         L.DomEvent.stopPropagation(e);
         if (!closeMenu()) emit("insert", index + 1, fromLatLng(e.latlng));
@@ -393,11 +450,10 @@ function drawRoute() {
       })
       .on("drag", () => {
         // Move the adjacent legs live; the route is redrawn on drop.
-        const at = marker.getLatLng();
-        if (index > 0)
-          legs[index - 1].setLatLngs([toLatLng(wps[index - 1]), at]);
+        const at = fromLatLng(marker.getLatLng());
+        if (index > 0) legs[index - 1].setLatLngs(legLine(index, { to: at }));
         if (index < legs.length)
-          legs[index].setLatLngs([at, toLatLng(wps[index + 1])]);
+          legs[index].setLatLngs(legLine(index + 1, { from: at }));
       })
       .on("dragend", () => {
         dragging = false;
@@ -406,6 +462,7 @@ function drawRoute() {
       })
       .addTo(routeLayer!);
   });
+  drawBendHandle();
 }
 
 function drawCraft() {
@@ -481,7 +538,12 @@ function setTiles() {
 
 function fit() {
   if (!map) return;
-  const points = props.waypoints.filter(hasCoord).map(toLatLng);
+  const wps = props.waypoints;
+  const points = wps.filter(hasCoord).map(toLatLng);
+  // An arc reaches beyond its waypoints.
+  for (let i = 1; i < wps.length; i++) {
+    if (hasCoord(wps[i - 1]) && hasCoord(wps[i])) points.push(...legLine(i));
+  }
   if (hasCoord(props.home)) points.push(toLatLng(props.home));
   if (hasCoord(props.position)) points.push(toLatLng(props.position));
   if (!points.length) return;
@@ -559,7 +621,14 @@ onUnmounted(() => {
 
 watch(() => props.tiles, setTiles);
 watch(
-  () => [props.waypoints, props.rth, props.selected, props.home, props.active],
+  () => [
+    props.waypoints,
+    props.rth,
+    props.selected,
+    props.home,
+    props.active,
+    props.maxArc,
+  ],
   drawRoute,
   { deep: true },
 );
@@ -681,6 +750,15 @@ watch(
 }
 .mission-wp.is-active {
   background: var(--ui-warning);
+}
+.mission-bend {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid var(--ui-accent);
+  background: var(--ui-panel);
+  transform: rotate(45deg);
+  cursor: grab;
 }
 .mission-heading-run {
   stroke: var(--ui-warning);
