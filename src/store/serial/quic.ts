@@ -32,6 +32,7 @@ export enum QuicVal {
   BlackboxPresets,
   Target,
   GpsStatus,
+  OsdScreen,
 }
 
 export enum QuicBlackbox {

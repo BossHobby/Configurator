@@ -4,6 +4,7 @@ import { useDefaultProfileStore } from "./default_profile";
 import { usePerfStore } from "./perf";
 import { useBindStore } from "./bind";
 import { useGpsStore } from "./gps";
+import { useOSDStore } from "./osd";
 import { useMissionStore } from "./mission";
 import { useNavStore } from "./nav";
 import { Log } from "@/log";
@@ -157,6 +158,9 @@ export const useSerialStore = defineStore("serial", {
         }
         if (router.currentRoute.value.fullPath == "/perf") {
           await perf.fetch_perf_counters();
+        }
+        if (router.currentRoute.value.fullPath == "/osd") {
+          await useOSDStore().update_screen();
         }
         if (router.currentRoute.value.fullPath == "/setup") {
           await vtx.update_status();

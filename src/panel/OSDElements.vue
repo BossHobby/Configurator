@@ -8,19 +8,30 @@
           osdProfileOptions.map((o) => ({ label: o.text, value: o.value }))
         "
       />
-      <FieldSelect
-        v-if="!is_hd"
-        v-model="preview"
-        label="Preview format"
-        :options="[
-          { label: 'NTSC', value: 'NTSC' },
-          { label: 'PAL', value: 'PAL' },
-        ]"
-      />
-      <div v-else>
-        <p class="mb-1.5 text-xs text-muted">Display</p>
-        <p class="rounded-md border border-line bg-subtle px-3 py-2 text-sm">
-          Digital · {{ limits.width }} × {{ limits.height }}
+      <div>
+        <FieldSelect
+          v-if="!is_hd"
+          v-model="preview"
+          label="Preview format"
+          :options="[
+            { label: 'NTSC', value: 'NTSC' },
+            { label: 'PAL', value: 'PAL' },
+          ]"
+        />
+        <template v-else>
+          <p class="mb-1.5 text-xs text-muted">
+            Display <tooltip entry="osd.display" />
+          </p>
+          <p class="rounded-md border border-line bg-subtle px-3 py-2 text-sm">
+            Digital · {{ limits.width }} × {{ limits.height }}
+          </p>
+        </template>
+        <p
+          v-if="displayState"
+          class="mt-1.5 text-xs"
+          :class="displayState.ok ? 'text-accent' : 'text-warning'"
+        >
+          {{ displayState.text }}
         </p>
       </div>
       <label class="text-xs text-muted"
@@ -214,16 +225,42 @@ export default defineComponent({
       return this.elements.find((el) => el.index === this.selectedIndex);
     },
     is_hd() {
+      // Analog OSDs can speak DisplayPort too, so prefer what the board reports.
+      if (this.osd.screen.cols) {
+        return this.osd.screen.cols > 30;
+      }
       return this.profile.serial.digital_vtx > 0;
+    },
+    // The camera the board detected on an analog screen.
+    boardFormat() {
+      const { connected, cols, rows } = this.osd.screen;
+      if (!connected || !cols || this.is_hd) return undefined;
+      return rows < 16 ? "NTSC" : "PAL";
+    },
+    // What the board sees on its OSD link, where it reports that.
+    displayState() {
+      if (!this.osd.screen.cols) return undefined;
+      if (this.is_hd) {
+        return this.osd.screen.connected
+          ? { ok: true, text: "Goggles connected" }
+          : { ok: false, text: "Waiting for goggles" };
+      }
+      return this.boardFormat
+        ? { ok: true, text: `${this.boardFormat} camera detected` }
+        : { ok: false, text: "No camera signal" };
     },
     currentProfile() {
       return this.profile.osd.profiles[this.osdProfile];
     },
     limits() {
-      return {
-        width: this.is_hd ? 50 : 30,
-        height: this.is_hd ? 18 : 15,
-      };
+      if (!this.is_hd) {
+        return { width: 30, height: 15 };
+      }
+      // The goggle's canvas, or firmware that does not report one draws 50x18.
+      const { cols, rows } = this.osd.screen;
+      return cols && rows
+        ? { width: cols, height: rows }
+        : { width: 50, height: 18 };
     },
     screen() {
       const screen = { ...this.limits };
@@ -370,6 +407,13 @@ export default defineComponent({
     },
   },
   watch: {
+    boardFormat: {
+      immediate: true,
+      handler(format?: string) {
+        // follow the camera the board detected
+        if (format) this.preview = format;
+      },
+    },
     elements() {
       this.draw_canvas();
     },
@@ -401,9 +445,11 @@ export default defineComponent({
     },
   },
   mounted() {
-    Promise.resolve()
+    Promise.resolve(this.osd.update_screen())
       .then(() => {
-        if (this.is_hd) {
+        // Without a MAX7456 there is no board font to read, analog
+        // DisplayPort included, so preview with the bundled one.
+        if (this.profile.serial.digital_vtx > 0) {
           return this.osd.fetch_hd_osd_font();
         }
       })
@@ -555,8 +601,9 @@ export default defineComponent({
         if (this.is_hd) {
           bitmap = this.osd.font_bitmap;
         } else {
+          // the bundled font has no inverted variant
           bitmap = inverted
-            ? this.osd.font_bitmap_inverted
+            ? (this.osd.font_bitmap_inverted ?? this.osd.font_bitmap)
             : this.osd.font_bitmap;
         }
 

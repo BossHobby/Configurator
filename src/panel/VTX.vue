@@ -22,9 +22,14 @@
                 v-model.number="desiredVtx.protocol"
                 :options="vtxProtocolOptions"
               ></UiSelect>
-              <p v-if="desiredVtx.protocol == 0" class="text-xs text-warning">
-                Please select a VTX protocol
-              </p>
+              <template v-if="desiredVtx.protocol == 0">
+                <p v-if="profile.serial.digital_vtx" class="text-xs text-muted">
+                  Automatic: MSP VTX over the digital VTX port
+                </p>
+                <p v-else class="text-xs text-warning">
+                  Please select a VTX protocol
+                </p>
+              </template>
             </div>
           </div>
 

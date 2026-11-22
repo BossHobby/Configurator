@@ -4,13 +4,35 @@ import { defineStore } from "pinia";
 import { OSD } from "./util/osd";
 import { useInfoStore } from "./info";
 
+const OSD_SCREEN_VERSION = "0.2.10";
+
+const NO_SCREEN = { connected: 0, cols: 0, rows: 0 };
+
 export const useOSDStore = defineStore("osd", {
   state: () => ({
     font_raw: undefined as number[][] | undefined,
     font_bitmap: undefined as ImageBitmap | undefined,
     font_bitmap_inverted: undefined as ImageBitmap | undefined,
+    // The board's screen; zero cols when not reported. An analog screen is 30
+    // wide with 16 rows on PAL and 13 on NTSC.
+    screen: { ...NO_SCREEN },
   }),
   actions: {
+    update_screen() {
+      if (!useInfoStore().quic_semver_gte(OSD_SCREEN_VERSION)) {
+        this.screen = { ...NO_SCREEN };
+        return;
+      }
+      return serial
+        .get(QuicVal.OsdScreen)
+        .then((screen) => {
+          this.screen = screen;
+        })
+        .catch(() => {
+          // development builds of 0.2.10 lack the value
+          this.screen = { ...NO_SCREEN };
+        });
+    },
     async fetch_sd_osd_font() {
       const info = useInfoStore();
       if (!info.quic_semver_gte("0.2.0")) {
