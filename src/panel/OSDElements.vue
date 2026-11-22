@@ -290,14 +290,14 @@ export default defineComponent({
         { name: "FILTERED VOLTS", enabled: true, text: " 4.3\x06" },
         { name: "GYRO TEMP", enabled: true, text: "  40\x0e" },
         { name: "FLIGHT MODE", enabled: true, text: "   ACRO   " },
-        { name: "RSSI", enabled: true, text: "  90\x01" },
+        { name: "RSSI", enabled: true, text: "\x7b  90" },
         { name: "STOPWATCH", enabled: true, text: "01:20" },
         {
           name: "SYSTEM STATUS",
           enabled: true,
           text: "     **FAILSAFE**     ",
         },
-        { name: "THROTTLE", enabled: true, text: "  50\x04" },
+        { name: "THROTTLE", enabled: true, text: "\x04  50" },
         { name: "VTX CHANNEL", enabled: true, text: "R:7:1" },
         { name: "CURRENT", enabled: true, text: "0.00\x9a" },
       ];
@@ -324,7 +324,7 @@ export default defineComponent({
       }
       elements.push(
         { name: "GPS SATS", enabled: true, text: "\x1e\x1f 12" },
-        { name: "GPS SPEED", enabled: true, text: " 45\x9e" },
+        { name: "GPS SPEED", enabled: true, text: "\x70  45\x9e" },
       );
       elements.push({
         name: "INCLINOMETER",
@@ -344,7 +344,7 @@ export default defineComponent({
       );
       if (this.profile.profileVersionGt("0.2.7")) {
         elements.push(
-          { name: "VARIO", enabled: true, text: "\x75 1.2" },
+          { name: "VARIO", enabled: true, text: "\x75  1.2\x9f" },
           {
             name: "AIRSPEED",
             enabled: this.info.is_wing,
@@ -353,7 +353,7 @@ export default defineComponent({
           {
             name: "WIND",
             enabled: this.info.is_wing,
-            text: "\x60 18\x9e",
+            text: "\x60  18\x9e",
           },
         );
       }
