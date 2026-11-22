@@ -219,3 +219,23 @@ test("the digital VTX port goes to older firmware as hdzero", () => {
   );
   assert.deepEqual(p.serial, { rx: 3, hdzero: 4 });
 });
+
+test("an unset VTX protocol on a digital VTX port becomes MSP VTX", () => {
+  const { migrateProfile } = profileModule();
+  const saved = (version, vtx) =>
+    plain(
+      migrateProfile({
+        meta: { version },
+        serial: { rx: 3, hdzero: 4 },
+        vtx,
+      }),
+    ).vtx;
+
+  assert.deepEqual(saved(V022, { protocol: 0, band: 2 }), {
+    protocol: 3,
+    band: 2,
+  });
+  assert.deepEqual(saved(V022, { protocol: 1 }), { protocol: 1 });
+  // off is a choice from 0.3.0 on
+  assert.deepEqual(saved(V030, { protocol: 0 }), { protocol: 0 });
+});

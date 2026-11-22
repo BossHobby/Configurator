@@ -127,6 +127,25 @@ function ensureMinVersion(version): number {
   return version;
 }
 
+const RX_PROTOCOL_CRSF = 3;
+const VTX_PROTOCOL_MSP_VTX = 3;
+
+// Before profile 0.3.0 an unset VTX protocol meant MSP VTX on boards with a
+// digital VTX port or a CRSF receiver sharing the smart audio port. It is off
+// now, so select what those boards were running. Call after the receiver
+// migration, which renumbers receiver.protocol.
+function migrateImpliedVtxProtocol(profile) {
+  const serial = profile.serial || {};
+  const implied =
+    serial.digital_vtx > 0 ||
+    serial.hdzero > 0 ||
+    (serial.smart_audio > 0 &&
+      serial.smart_audio == serial.rx &&
+      profile.receiver?.protocol == RX_PROTOCOL_CRSF);
+  if (!implied || profile.vtx?.protocol) return profile.vtx;
+  return { ...profile.vtx, protocol: VTX_PROTOCOL_MSP_VTX };
+}
+
 function migrateCrsfTxPowerOsdElement(elements, defaultElements) {
   const migrated = [...(Array.isArray(elements) ? elements : [])];
   while (migrated.length <= OSD_CRSF_TX_POWER_ELEMENT) {
@@ -299,6 +318,9 @@ export function migrateProfileVersion(
     if (profile.receiver) {
       profile.receiver = migrateReceiverV030(profile.receiver);
     }
+
+    const vtx = migrateImpliedVtxProtocol(profile);
+    if (vtx) profile.vtx = vtx;
 
     if (Array.isArray(profile.receiver?.aux)) {
       // Released profiles are multirotor. Keep inverse serial pit-mode behavior;

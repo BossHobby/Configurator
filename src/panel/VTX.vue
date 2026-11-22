@@ -22,14 +22,6 @@
                 v-model.number="desiredVtx.protocol"
                 :options="vtxProtocolOptions"
               ></UiSelect>
-              <template v-if="desiredVtx.protocol == 0">
-                <p v-if="profile.serial.digital_vtx" class="text-xs text-muted">
-                  Automatic: MSP VTX over the digital VTX port
-                </p>
-                <p v-else class="text-xs text-warning">
-                  Please select a VTX protocol
-                </p>
-              </template>
             </div>
           </div>
 
@@ -271,9 +263,17 @@ export default defineComponent({
         };
       }).filter(Boolean);
     },
+    // Firmware before profile 0.3.0 talks MSP VTX over a digital VTX port
+    // while no protocol is selected.
+    impliesMspVtx() {
+      return (
+        this.profile.serial.digital_vtx != 0 &&
+        !this.profile.profileVersionGt("0.2.7")
+      );
+    },
     vtxProtocolOptions() {
       const data = [
-        //{ value: 0, text: "AUTO" }, we dont do this anymore
+        { value: 0, text: this.impliesMspVtx ? "AUTO (MSP_VTX)" : "OFF" },
         { value: 1, text: "TRAMP" },
         { value: 2, text: "SMARTAUDIO" },
       ];
