@@ -22,12 +22,20 @@ import {
   exportBlackboxBtfl,
   exportBlackboxJson,
 } from "@/store/util/blackbox-export";
+import {
+  MISSION_DEFAULT_LIMITS,
+  missionFromFile,
+  missionToFile,
+  validateMission,
+  type MissionLimits,
+} from "@/store/util/mission";
 import { CBOR } from "@/store/serial/cbor";
 import { lzssDecode } from "@/store/serial/lzss";
 import {
   QuicBlackbox,
   QuicCmd,
   QuicFlag,
+  QuicMission,
   QuicVal,
   QUIC_HEADER_CMD_MASK,
   QUIC_HEADER_COMPRESSED,
@@ -72,6 +80,13 @@ commands:
                              json is the configurator's export, bbl a Betaflight
                              log; writes blackbox-<index>.<format> by default
   blackbox reset             erase blackbox storage
+  mission get                read the stored mission and the board's limits
+  mission export [--out <file|->]
+                             save the mission as the configurator's .json,
+                             to <name>-mission.json by default
+  mission import <file|->    check a mission .json against the board's limits
+                             and write it; the board saves it
+  mission clear              erase the stored mission
   reboot                     soft reboot the board
   raw <cmd> [<json>...]      send a QuicCmd (name or number) with CBOR args
 
@@ -517,6 +532,59 @@ async function downloadBlackbox(
 
 // --------------------------------------------------------------------- main
 
+// The limits a mission reply reports, as the mission panel reads them.
+function missionLimits(res: any): MissionLimits {
+  const limits = { ...MISSION_DEFAULT_LIMITS };
+  for (const key of Object.keys(limits) as (keyof MissionLimits)[])
+    limits[key] = res[key] ?? limits[key];
+  return limits;
+}
+
+async function runMission(
+  fc: Quic,
+  params: string[],
+  opts: Record<string, string>,
+) {
+  const read = async () =>
+    (await fc.command(QuicCmd.Mission, QuicMission.Get))[0];
+  switch (params[0]) {
+    case "get":
+      print(await read());
+      break;
+    case "export": {
+      const profile = await fc.get(QuicVal.Profile);
+      const name = profile.meta.name.replace(/\0/g, "").trim();
+      output(
+        missionToFile(await read()) + "\n",
+        opts.out ?? `${name || "mission"}-mission.json`,
+      );
+      break;
+    }
+    case "import": {
+      const mission = missionFromFile(readInput(params[1], "mission import"));
+      const stored = await read();
+      const errors = validateMission(mission, {
+        maxWaypoints: stored.max_waypoints,
+        limits: missionLimits(stored),
+        routeDistance: 0,
+      }).filter((issue) => issue.level == "error");
+      if (errors.length)
+        throw new Error(errors.map((issue) => issue.msg).join("\n"));
+      const written = (
+        await fc.command(QuicCmd.Mission, QuicMission.Set, mission)
+      )[0];
+      print({ ok: true, waypoints: written.waypoints?.length ?? 0 });
+      break;
+    }
+    case "clear":
+      await fc.command(QuicCmd.Mission, QuicMission.Clear);
+      print({ ok: true });
+      break;
+    default:
+      throw new Error("mission needs get, export, import or clear");
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const opts: Record<string, string> = {};
@@ -657,6 +725,10 @@ async function main() {
       }
       break;
     }
+
+    case "mission":
+      await runMission(fc, params, opts);
+      break;
 
     case "reboot":
       fc.writeRaw(new TextEncoder().encode("S"));
