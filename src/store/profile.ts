@@ -9,6 +9,8 @@ import { useRootStore } from "./root";
 import { timeAgo } from "@/mixin/filters";
 import type { aux_function_map_t } from "./types";
 import { useTargetStore } from "./target";
+import { useInfoStore } from "./info";
+import { profileBackups } from "./util/profile-backup";
 import {
   DEFAULT_MOTOR,
   mergeDeep,
@@ -23,6 +25,14 @@ export {
   mergeDeep,
   mergeFixedMotorMixer,
 } from "./util/profile-migrate";
+
+// Keeps every profile the board sends, before set_profile() changes it.
+function backupProfile(profile) {
+  profileBackups()
+    .record(useInfoStore().craft, profile)
+    .catch((err) => Log.warn("profile", "backup failed", err));
+  return profile;
+}
 
 function migrateProfile(profile) {
   return migrateProfileFor(
@@ -203,11 +213,15 @@ export const useProfileStore = defineStore("profile", {
     },
 
     fetch_profile() {
-      return serial.get(QuicVal.Profile).then((p) => this.set_profile(p));
+      return serial
+        .get(QuicVal.Profile)
+        .then(backupProfile)
+        .then((p) => this.set_profile(p));
     },
     merge_profile(profile) {
       return useRootStore().track("Applying template", 2, async () => {
-        const lhs = migrateProfile(await serial.get(QuicVal.Profile));
+        const current = backupProfile(await serial.get(QuicVal.Profile));
+        const lhs = migrateProfile(current);
         const rhs = migrateTemplatePatch(profile);
 
         const p = mergeDeep(lhs, rhs);
@@ -222,6 +236,7 @@ export const useProfileStore = defineStore("profile", {
 
       return root
         .track("Applying profile", 1, () => serial.set(QuicVal.Profile, p))
+        .then(backupProfile)
         .then((p) => this.set_profile(p))
         .then(() =>
           root.append_alert({ type: "success", msg: "Profile applied!" }),

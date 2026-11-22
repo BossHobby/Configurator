@@ -496,4 +496,7 @@ export interface target_info_t {
 
   gyro_id: number;
   vehicle_type: number;
+
+  // A stable chip id, from protocol 0.2.10.
+  uid?: Uint8Array;
 }

@@ -8,6 +8,8 @@ import { vehicle_type_t } from "./types";
 import { $enum } from "ts-enum-util";
 import { useConstantStore } from "./constants";
 import { useDefaultProfileStore } from "./default_profile";
+import { useTargetStore } from "./target";
+import type { CraftInfo } from "./util/profile-backup";
 
 export interface local_target_info_t extends target_info_t {
   quic_protocol_semver: string;
@@ -30,11 +32,21 @@ export const useInfoStore = defineStore("info", {
     gyro_id: 0,
     gyro_name: "",
     vehicle_type: 0,
+    uid: undefined,
     rx_protocol: 0,
     rx_protocols: [],
     features: 0,
   }),
   getters: {
+    // Firmware from 0.2.0 names the target in the target, not the info.
+    craft(state): CraftInfo {
+      return {
+        uid: state.uid,
+        target_name: state.target_name || useTargetStore().name,
+        mcu: state.mcu,
+        git_version: state.git_version,
+      };
+    },
     has_feature(state) {
       return (feature) => {
         if (state.features == null) {

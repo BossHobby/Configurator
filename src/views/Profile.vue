@@ -21,6 +21,7 @@
     <div class="grid items-stretch gap-4 lg:grid-cols-2">
       <ProfileMetadata /><Target />
     </div>
+    <ProfileBackups />
     <!-- Passthrough bridges the USB port to a UART, so it needs USB. -->
     <div v-if="!serial.radio_link">
       <SerialPassthrough></SerialPassthrough>
@@ -34,6 +35,7 @@ import { useInfoStore } from "@/store/info";
 import { useStateStore } from "@/store/state";
 import { useSerialStore } from "@/store/serial";
 
+import ProfileBackups from "@/panel/ProfileBackups.vue";
 import ProfileMetadata from "@/panel/ProfileMetadata.vue";
 import SerialPassthrough from "@/panel/SerialPassthrough.vue";
 import Target from "@/panel/Target.vue";
@@ -41,6 +43,7 @@ import Target from "@/panel/Target.vue";
 export default defineComponent({
   name: "Profile",
   components: {
+    ProfileBackups,
     ProfileMetadata,
     SerialPassthrough,
     Target,
