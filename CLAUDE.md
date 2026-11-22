@@ -79,5 +79,5 @@ All serial communication follows this pattern:
 - ESC passthrough support was recently added - use with caution
 - The app supports both web deployment and desktop builds from the same codebase
 - PWA functionality requires service worker - test with `npm run pwa`
-- When working with 3D visualizations, models are in `/public/*.glb`
+- The board orientation view builds its vehicle models in code (`/src/ui/attitudeModels.ts`); there are no model files
 - GitHub workflow runs are filtered to only show "build" workflow artifacts (not "test" workflow)
