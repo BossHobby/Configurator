@@ -108,6 +108,17 @@ function coerceProfileByteStrings(profile: any) {
   }
 }
 
+// Firmware before the rename names the DisplayPort UART serial.hdzero. The
+// configurator works on digital_vtx and writes whichever name the board uses.
+export function renameDigitalVtxPort(serial, key: "digital_vtx" | "hdzero") {
+  const other = key == "digital_vtx" ? "hdzero" : "digital_vtx";
+  if (!serial || !(other in serial)) {
+    return;
+  }
+  serial[key] = serial[other];
+  delete serial[other];
+}
+
 function ensureMinVersion(version): number {
   version = version || makeSemver(0, 1, 0);
   if (version < makeSemver(0, 1, 0)) {
@@ -333,6 +344,11 @@ export function migrateProfile(profile, default_profile, target: target_t) {
       decodeSemver(firmwareVersion),
     );
   }
+
+  renameDigitalVtxPort(
+    p.serial,
+    "hdzero" in (default_profile.serial || {}) ? "hdzero" : "digital_vtx",
+  );
 
   p.filter = {
     ...(default_profile.filter || {}),

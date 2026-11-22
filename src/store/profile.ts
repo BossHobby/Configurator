@@ -14,6 +14,7 @@ import {
   mergeDeep,
   migrateProfile as migrateProfileFor,
   migrateTemplatePatch as migrateTemplatePatchFor,
+  renameDigitalVtxPort,
 } from "./util/profile-migrate";
 
 export {
@@ -49,7 +50,7 @@ export const useProfileStore = defineStore("profile", {
     serial: {
       rx: 0,
       smart_audio: 0,
-      hdzero: 0,
+      digital_vtx: 0,
       gps: 0,
     },
     gps: { constellations: 5 },
@@ -162,6 +163,7 @@ export const useProfileStore = defineStore("profile", {
       profile.modified = timeAgo(new Date(profile.meta.datetime * 1000));
       profile.semver = decodeSemver(profile.meta.version);
       profile.meta.name = profile.meta.name.replace(/\0/g, "");
+      renameDigitalVtxPort(profile.serial, "digital_vtx");
       this.$patch(profile);
     },
     set_current_pid_rate(rate) {

@@ -3,7 +3,9 @@
     <div class="grid items-stretch gap-5 lg:grid-cols-2">
       <GyroModel /><BoardOrientationSettings /><Voltage /><Serial />
     </div>
-    <VTX v-if="profile.serial.smart_audio != 0 || profile.serial.hdzero != 0" />
+    <VTX
+      v-if="profile.serial.smart_audio != 0 || profile.serial.digital_vtx != 0"
+    />
     <GPS v-if="profile.profileVersionGt('0.2.6') && profile.serial.gps != 0" />
   </div>
 </template>

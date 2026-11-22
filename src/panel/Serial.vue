@@ -14,7 +14,7 @@
         :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"
       />
       <FieldSelect
-        v-model="profile.serial.hdzero"
+        v-model="profile.serial.digital_vtx"
         label="Digital VTX"
         help="serial.digital_vtx"
         :options="serialPorts.map((o) => ({ value: o.value, label: o.text }))"

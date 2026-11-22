@@ -10,7 +10,7 @@ export const useDefaultProfileStore = defineStore("default_profile", {
     serial: {
       rx: 0,
       smart_audio: 0,
-      hdzero: 0,
+      digital_vtx: 0,
       gps: 0,
     },
     filter: {
@@ -87,6 +87,8 @@ export const useDefaultProfileStore = defineStore("default_profile", {
       return serial.get(QuicVal.DefaultProfile).then((profile) => {
         profile.meta.name = profile.meta.name.replace(/\0/g, "");
         this.$patch(profile);
+        // $patch merges, but the serial key names tell the firmware apart.
+        this.serial = profile.serial;
       });
     },
   },

@@ -214,7 +214,7 @@ export default defineComponent({
       return this.elements.find((el) => el.index === this.selectedIndex);
     },
     is_hd() {
-      return this.profile.serial.hdzero > 0;
+      return this.profile.serial.digital_vtx > 0;
     },
     currentProfile() {
       return this.profile.osd.profiles[this.osdProfile];

@@ -70,6 +70,8 @@ function profileModule() {
     mergeDeep: exports.mergeDeep,
     migrateTemplatePatch: (template) =>
       exports.migrateTemplatePatch(template, defaults, target),
+    migrateProfile: (profile, firmware = {}) =>
+      exports.migrateProfile(profile, { ...defaults, ...firmware }, target),
   };
 }
 
@@ -197,4 +199,23 @@ test("a template without a version applies as written", () => {
     motor: { digital_idle: 6 },
   };
   assert.deepEqual(plain(migrateTemplatePatch(template)), template);
+});
+
+test("a saved hdzero port loads as the digital VTX port", () => {
+  const { migrateProfile } = profileModule();
+  const p = plain(
+    migrateProfile({ meta: { version: V030 }, serial: { rx: 3, hdzero: 4 } }),
+  );
+  assert.deepEqual(p.serial, { rx: 3, digital_vtx: 4 });
+});
+
+test("the digital VTX port goes to older firmware as hdzero", () => {
+  const { migrateProfile } = profileModule();
+  const p = plain(
+    migrateProfile(
+      { meta: { version: V030 }, serial: { rx: 3, digital_vtx: 4 } },
+      { serial: { rx: 0, hdzero: 0 } },
+    ),
+  );
+  assert.deepEqual(p.serial, { rx: 3, hdzero: 4 });
 });

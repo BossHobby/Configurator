@@ -191,7 +191,7 @@ export interface vtx_status_t extends profile_vtx_t {}
 export interface profile_serial_t {
   rx: number;
   smart_audio: number;
-  hdzero: number;
+  digital_vtx: number;
   gps: number;
 }
 
@@ -426,7 +426,7 @@ export interface target_output_t {
 export interface target_serial_defaults_t {
   rx?: number;
   smart_audio?: number;
-  hdzero?: number;
+  digital_vtx?: number;
   gps?: number;
 }
 

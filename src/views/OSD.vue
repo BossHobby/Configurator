@@ -39,7 +39,7 @@ export default defineComponent({
   },
   computed: {
     is_hd() {
-      return this.profile.serial.hdzero;
+      return this.profile.serial.digital_vtx;
     },
   },
   watch: {

@@ -188,7 +188,7 @@ export default defineComponent({
   },
   computed: {
     is_hd() {
-      return this.profile.serial.hdzero > 0;
+      return this.profile.serial.digital_vtx > 0;
     },
     currentElements() {
       return this.is_hd
