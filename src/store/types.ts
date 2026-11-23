@@ -128,8 +128,9 @@ export interface profile_motor_t {
   motor_limit: number;
   dshot_time: dshot_time_t;
   gyro_orientation: number;
-  torque_boost: number;
-  throttle_boost: number;
+  // Absent from profile 0.3.0 onwards.
+  torque_boost?: number;
+  throttle_boost?: number;
   turtle_throttle_percent: number;
 }
 

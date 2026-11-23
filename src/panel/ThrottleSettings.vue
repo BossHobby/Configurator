@@ -70,7 +70,10 @@
               />
             </div>
 
-            <div class="form-row">
+            <div
+              v-if="profile.motor.torque_boost !== undefined"
+              class="form-row"
+            >
               <label class="form-label" for="torque-boost">
                 Torque Boost
                 <tooltip entry="motor.torque_boost"
@@ -85,7 +88,10 @@
               />
             </div>
 
-            <div class="form-row">
+            <div
+              v-if="profile.motor.throttle_boost !== undefined"
+              class="form-row"
+            >
               <label class="form-label" for="throttle-boost">
                 Throttle Boost
                 <tooltip entry="motor.throttle_boost"
