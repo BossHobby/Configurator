@@ -74,9 +74,7 @@
               <th scope="row" class="w-16">
                 <span class="inline-flex items-center gap-1.5"
                   >{{ pidTermLabels[key] || key }}
-                  <tooltip
-                    v-if="key === 'kff'"
-                    text="Wing rate feedforward. 100 gives full output at 1 rad/s requested rotation. Applies to stick and leveling rate targets."
+                  <tooltip v-if="key === 'kff'" :text="feedforwardHelp"
                 /></span>
               </th>
               <td v-for="(axis, i) in axes" :key="axis">
@@ -141,7 +139,7 @@
       </div>
 
       <div class="min-w-0 space-y-8">
-        <div class="form-grid">
+        <div v-if="hasStickBoost" class="form-grid">
           <div class="form-row">
             <label class="form-label" for="stick-profile">
               Stick Boost Profile <tooltip entry="pid.stick_profile" />
@@ -154,7 +152,7 @@
           </div>
         </div>
 
-        <table class="data-table [&_td]:py-3 [&_th]:py-3">
+        <table v-if="hasStickBoost" class="data-table [&_td]:py-3 [&_th]:py-3">
           <thead>
             <tr>
               <th scope="col"><span class="sr-only">Setting</span></th>
@@ -254,10 +252,23 @@ export default defineComponent({
     };
   },
   computed: {
+    // Profiles up to 0.2.7 shape stick response with the stick boost
+    // profiles; later multirotor firmware uses the FF gain instead.
+    hasStickBoost() {
+      return !this.profile.profileVersionGt("0.2.7");
+    },
     pidTermKeys() {
       return Object.keys(this.pid_rates).filter(
-        (key) => key !== "kff" || this.info.is_wing,
+        (key) =>
+          key !== "kff" ||
+          this.info.is_wing ||
+          (this.info.is_multi && !this.hasStickBoost),
       );
+    },
+    feedforwardHelp() {
+      return this.info.is_wing
+        ? "Wing rate feedforward. 100 gives full output at 1 rad/s requested rotation. Applies to stick and leveling rate targets."
+        : "Stick feedforward on how fast the requested rate changes, at the same scale as D. 0 turns it off.";
     },
     pid_rates: {
       get() {

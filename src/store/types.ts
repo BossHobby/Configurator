@@ -116,8 +116,9 @@ export interface throttle_dterm_attenuation_t {
 export interface profile_pid_t {
   pid_profile: pid_profile_t;
   pid_rates: pid_rate_t[];
-  stick_profile: stick_profile_t;
-  stick_rates: stick_rate_t[];
+  // Profiles up to 0.2.7 only.
+  stick_profile?: stick_profile_t;
+  stick_rates?: stick_rate_t[];
   big_angle: angle_pid_rate_t;
   small_angle: angle_pid_rate_t;
   throttle_dterm_attenuation: throttle_dterm_attenuation_t;
