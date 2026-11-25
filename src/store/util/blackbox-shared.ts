@@ -226,6 +226,29 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
     scale: 1,
     unit: BlackboxFieldUnit.NONE,
   },
+  [BlackboxField.RX_LINK]: {
+    name: "rx_link",
+    title: "RX Link",
+    // RSSI / LQ follows the receiver's LQI source, as the OSD RSSI element
+    // does. RSSI and SNR are uplink at the receiver's active antenna. The values
+    // from antenna 1 on come from CRSF link statistics and stay 0 for other
+    // protocols, TX power -1; an RSSI of 0 means the antenna is absent.
+    axis: [
+      "RSSI / LQ (%)",
+      "RSSI (dBm)",
+      "SNR (dB)",
+      "RSSI Antenna 1 (dBm)",
+      "RSSI Antenna 2 (dBm)",
+      "Active Antenna",
+      "RF Mode",
+      "TX Power (mW)",
+      "Downlink RSSI (dBm)",
+      "Downlink Link Quality (%)",
+      "Downlink SNR (dB)",
+    ],
+    scale: 1,
+    unit: BlackboxFieldUnit.NONE,
+  },
 };
 
 /** The definitions of the fields a file records, in recording order. */

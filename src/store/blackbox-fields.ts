@@ -22,4 +22,5 @@ export enum BlackboxField {
   STATE,
   GPS_VEL,
   GPS_FIX,
+  RX_LINK,
 }

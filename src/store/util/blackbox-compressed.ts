@@ -24,6 +24,7 @@ const INT16_DELTA_FIELDS = new Set<BlackboxField>([
   BlackboxField.ATTITUDE,
   BlackboxField.GPS_VEL,
   BlackboxField.GPS_FIX,
+  BlackboxField.RX_LINK,
 ]);
 
 function toInt16(value: number) {
@@ -61,7 +62,7 @@ export class CompressedBlackboxDecoder {
     // Add other fields in enum order
     for (
       let field = BlackboxField.PID_P_TERM;
-      field <= BlackboxField.GPS_FIX;
+      field <= BlackboxField.RX_LINK;
       field++
     ) {
       if (this.fieldflags & (1 << field)) {
@@ -158,7 +159,7 @@ export class CompressedBlackboxDecoder {
     // Process remaining fields in the order they appear in the compressed data
     for (
       let field = BlackboxField.PID_P_TERM;
-      field <= BlackboxField.GPS_FIX;
+      field <= BlackboxField.RX_LINK;
       field++
     ) {
       // Skip fields that are not enabled

@@ -355,6 +355,8 @@ export default defineComponent({
             enabled: this.info.is_wing,
             text: "\x60  18\x9e",
           },
+          { name: "RSSI DBM", enabled: true, text: "\x01 98" },
+          { name: "SNR", enabled: true, text: "\x01 -7" },
         );
       }
       return elements;
