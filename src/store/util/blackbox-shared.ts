@@ -221,6 +221,7 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
       "RF AGC (of 8191)",
       "RF CW Interference (of 255)",
       "Navigation Trust (%)",
+      "Position Error (cm)",
     ],
     scale: 1,
     unit: BlackboxFieldUnit.NONE,
