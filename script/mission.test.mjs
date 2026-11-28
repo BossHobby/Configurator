@@ -114,7 +114,7 @@ test("validation blocks bad missions and only warns on distance", () => {
   assert.deepEqual(errors({ end_action: 0, waypoints: [wp(1, 1, 5000)] }), []);
   // Limits reported by the firmware replace the defaults, as for a wing.
   const wing = {
-    limits: { ...MISSION_DEFAULT_LIMITS, min_alt: 20, waypoint_types: 1 },
+    limits: { ...MISSION_DEFAULT_LIMITS, min_alt: 20, waypoint_types: 3 },
   };
   assert.deepEqual(
     errors({ end_action: 0, waypoints: [wp(1, 1, 19)] }, wing),
@@ -211,7 +211,11 @@ test("takeoff only starts and landing only ends a mission", () => {
     errors([route[0], route[1], { ...route[2], type: T.Stop }]),
     [2],
   );
-  // Firmware reports how many types it flies; a wing only stops.
+  // Firmware reports how many types it flies; a wing takes off but does not land.
+  assert.deepEqual(
+    errors(route, { ...MISSION_DEFAULT_LIMITS, waypoint_types: 3 }),
+    [2],
+  );
   assert.deepEqual(
     errors(route, { ...MISSION_DEFAULT_LIMITS, waypoint_types: 2 }),
     [0, 2],
@@ -291,9 +295,14 @@ test("new waypoints fly through where the vehicle can", () => {
   assert.equal(multi.alt, 30);
   const wing = newWaypoint(point, {
     ...MISSION_DEFAULT_LIMITS,
+    waypoint_types: 3,
+  });
+  assert.equal(wing.type, WaypointType.Pass);
+  const stopOnly = newWaypoint(point, {
+    ...MISSION_DEFAULT_LIMITS,
     waypoint_types: 1,
   });
-  assert.equal(wing.type, WaypointType.Stop);
+  assert.equal(stopOnly.type, WaypointType.Stop);
   // The altitude and speed follow the previous waypoint, not its hold.
   const next = newWaypoint(
     point,

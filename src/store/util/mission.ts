@@ -10,9 +10,10 @@ export const MissionEndAction = { Hold: 0, RTH: 1 } as const;
 export type MissionEndAction =
   (typeof MissionEndAction)[keyof typeof MissionEndAction];
 
-// How a multirotor flies a waypoint, the firmware's mission_waypoint_type_t.
-// A wing flies through every waypoint and accepts only Stop, which it circles
-// while it holds.
+// How a waypoint is flown, the firmware's mission_waypoint_type_t. A wing
+// flies over a Stop waypoint, circling it while it holds, and turns early
+// through a Pass one; it takes off with its launch, climbing on along the
+// launch track before turning for #2, and lands by hand.
 export const WaypointType = { Stop: 0, Pass: 1, Takeoff: 2, Land: 3 } as const;
 export type WaypointType = (typeof WaypointType)[keyof typeof WaypointType];
 
@@ -62,7 +63,7 @@ export const MISSION_DEFAULT_LIMITS: MissionLimits = {
 };
 // The firmware will not start a mission whose first point is farther away.
 export const MISSION_START_MAX = 2000;
-// Without a compass, the craft learns its heading after a takeoff by flying
+// Without a compass, a multirotor learns its heading after a takeoff by flying
 // straight along its nose for up to this far.
 export const MISSION_HEADING_RUN = 75;
 // Warnings only: long routes and far starts are legal but usually mistakes.
@@ -549,8 +550,8 @@ export function pathAltitude(path: PathVertex[], d: number) {
   return lowest;
 }
 
-// After a takeoff the craft learns its heading by flying along its nose; with
-// the nose pointed at #2 as asked, it flies this line from #1.
+// After a takeoff a multirotor learns its heading by flying along its nose;
+// with the nose pointed at #2 as asked, it flies this line from #1.
 export function headingRun(
   waypoints: Waypoint[],
 ): [GeoPoint, GeoPoint] | undefined {
@@ -725,7 +726,7 @@ export function validateMission(
       issues.push({
         level: "warning",
         index,
-        msg: `#${n}: the leg from a takeoff is flown straight, from where the craft lifted off.`,
+        msg: `#${n}: the leg from a takeoff is flown straight, from where its climb ends.`,
       });
     } else if (arc) {
       const radius = legRadius(prev, wp, arc);

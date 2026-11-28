@@ -38,6 +38,7 @@
             :active="activeIndex"
             :live="!!live?.guidedReady"
             :max-arc="mission.limits.max_arc"
+            :learns-heading="!info.is_wing"
             :follow="follow && hasCoord(craft)"
             :tiles="tiles"
             @flyto="flyTo"
@@ -720,7 +721,7 @@ export default defineComponent({
     waypointSpeeds(): boolean {
       return !this.info.is_wing;
     },
-    // A wing flies through every waypoint and only accepts Stop.
+    // The vehicle flies more than Stop waypoints.
     waypointTypes(): boolean {
       return this.mission.limits.waypoint_types > 1;
     },

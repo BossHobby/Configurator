@@ -86,6 +86,8 @@ const props = defineProps<{
   live?: boolean;
   // Degrees a leg may turn through; 0 on a vehicle that flies no arcs.
   maxArc?: number;
+  // A multirotor learns its heading after a takeoff; a wing launches along it.
+  learnsHeading?: boolean;
   // Keep the craft centered; panning the map emits unfollow.
   follow?: boolean;
   tiles: TileProvider;
@@ -409,7 +411,7 @@ function drawRoute() {
   }
 
   // Where the craft flies along its nose after a takeoff to learn its heading.
-  const run = headingRun(wps);
+  const run = props.learnsHeading ? headingRun(wps) : undefined;
   if (run) {
     L.polyline(run.map(toLatLng), {
       className: "mission-heading-run",
