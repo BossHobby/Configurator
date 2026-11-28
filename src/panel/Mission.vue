@@ -155,7 +155,7 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <UiButton @click="importFile">Import</UiButton>
-          <UiButton :disabled="!mission.waypoints.length" @click="exportFile"
+          <UiButton :disabled="!mission.waypoints.length" @click="exportMission"
             >Export</UiButton
           >
           <UiButton
@@ -555,6 +555,7 @@ import { useStateStore } from "@/store/state";
 import { useInfoStore } from "@/store/info";
 import { useRootStore } from "@/store/root";
 import { Log } from "@/log";
+import { exportFile } from "@/store/util/export";
 import type { NavStatus } from "@/store/util/quic-rt";
 import {
   COORD_SCALE,
@@ -1162,16 +1163,14 @@ export default defineComponent({
         "Mission cleared on the flight controller.",
       );
     },
-    exportFile() {
-      const blob = new Blob([missionToFile(this.mission.mission)], {
-        type: "application/json",
-      });
+    exportMission() {
       const name = this.profile.meta.name.replace(/\0/g, "").trim();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${name || "mission"}-mission.json`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 0);
+      return exportFile(
+        name ? `${name}-mission.json` : "mission.json",
+        new Blob([missionToFile(this.mission.mission)], {
+          type: "application/json",
+        }),
+      );
     },
     importFile() {
       (this.$refs.fileInput as HTMLInputElement).click();

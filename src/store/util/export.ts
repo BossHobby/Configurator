@@ -9,7 +9,12 @@ function base64(blob: Blob) {
   });
 }
 
-/** Saves a file: a download in browsers, the share sheet in the apps. */
+type SavePicker = (options: {
+  suggestedName?: string;
+}) => Promise<FileSystemFileHandle>;
+
+/** Saves a file: a save dialog where the browser offers one, else a
+ * download, and the share sheet in the apps. */
 export async function exportFile(filename: string, data: Blob | string) {
   const blob = typeof data === "string" ? new Blob([data]) : data;
   if (Capacitor.isNativePlatform()) {
@@ -22,6 +27,20 @@ export async function exportFile(filename: string, data: Blob | string) {
     });
     await Share.share({ title: filename, files: [uri] });
     return;
+  }
+  const win = window as { showSaveFilePicker?: SavePicker };
+  if (win.showSaveFilePicker) {
+    try {
+      const handle = await win.showSaveFilePicker({ suggestedName: filename });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      // A slow export loses the click's user activation, so the dialog is
+      // refused; fall back to a download.
+    }
   }
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
