@@ -558,12 +558,14 @@ export default defineComponent({
           { value: output_source_t.OUTPUT_SOURCE_PITCH, text: "Pitch" },
           { value: output_source_t.OUTPUT_SOURCE_YAW, text: "Yaw" },
           { value: this.rxSource, text: "RX Channel" },
+          { value: output_source_t.OUTPUT_SOURCE_FIXED, text: "Fixed" },
         ];
       }
       return [
         { value: output_source_t.OUTPUT_SOURCE_THROTTLE, text: "Throttle" },
         { value: output_source_t.OUTPUT_SOURCE_YAW, text: "Steering" },
         { value: this.rxSource, text: "RX Channel" },
+        { value: output_source_t.OUTPUT_SOURCE_FIXED, text: "Fixed" },
       ];
     },
   },

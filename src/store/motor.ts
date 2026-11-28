@@ -57,6 +57,7 @@ const WING_SOURCE_LABELS = {
   [output_source_t.OUTPUT_SOURCE_PITCH]: "Pitch",
   [output_source_t.OUTPUT_SOURCE_YAW]: "Yaw",
   [output_source_t.OUTPUT_SOURCE_RX_CHANNEL]: "RX",
+  [output_source_t.OUTPUT_SOURCE_FIXED]: "Fixed",
 };
 
 function wingOutputTestPins(profile) {

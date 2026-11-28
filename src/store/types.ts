@@ -300,6 +300,7 @@ export enum output_source_t {
   OUTPUT_SOURCE_PITCH = 3,
   OUTPUT_SOURCE_YAW = 4,
   OUTPUT_SOURCE_RX_CHANNEL = 5,
+  OUTPUT_SOURCE_FIXED = 6,
 }
 
 export interface profile_output_t {
