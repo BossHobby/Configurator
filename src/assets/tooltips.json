@@ -307,7 +307,7 @@
     "text": "How long a launch detection condition must remain true before the throw is accepted. A longer time rejects brief spikes."
   },
   "wing.autolaunch.finish_ms": {
-    "text": "Time to blend launch throttle and pitch back toward pilot control when the climb ends. Roll or pitch movement beyond Stick Deadband ends this ramp early."
+    "text": "Time to blend launch throttle and pitch back toward pilot control when the climb ends. A mission, loiter, cruise or RTH switch that is on takes over from the climb instead. Roll or pitch movement beyond Stick Deadband ends this ramp early."
   },
   "wing.autolaunch.idle_delay_ms": {
     "text": "Delay after raising throttle with autolaunch armed, before ramping to Idle Throttle and waiting for the throw."
