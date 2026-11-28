@@ -30,6 +30,8 @@ function convertOffset(offset: number): (v: number) => number {
   };
 }
 
+const BLACKBOX_OUTPUT_MAX = 16;
+
 export const DefaultFields: FieldDefinition[] = [
   {
     name: "loopIteration",
@@ -285,62 +287,14 @@ export const DefaultFields: FieldDefinition[] = [
     convert: convertToDeg(-1),
   },
 
-  {
+  // One entry per output; the writer keeps those its log carries.
+  ...Array.from({ length: BLACKBOX_OUTPUT_MAX }, (_, i) => ({
     name: "output",
-    array_index: 0,
+    array_index: i,
     blackbox_field: BlackboxField.OUTPUT,
     advance: 0,
     signed: true,
-  },
-  {
-    name: "output",
-    array_index: 1,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 2,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 3,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 4,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 5,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 6,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 0,
-    signed: true,
-  },
-  {
-    name: "output",
-    array_index: 7,
-    blackbox_field: BlackboxField.OUTPUT,
-    advance: 1,
-    signed: true,
-  },
+  })),
 
   {
     name: "cpuload",
@@ -417,14 +371,26 @@ export const DefaultFields: FieldDefinition[] = [
 export class Blackbox {
   private buffer = new ArrayWriter();
 
-  private defs = DefaultFields;
+  private defs: FieldDefinition[];
   private fieldflags: number;
 
+  // outputCount is the length of the log's output field: 8 before firmware
+  // grew it to 16.
   constructor(
     private file: BlackboxFile,
     private scale = BLACKBOX_SCALE,
+    outputCount = 8,
   ) {
     this.fieldflags = transformBlackboxFieldFlags(file.field_flags);
+    this.defs = DefaultFields.filter(
+      (d) =>
+        d.blackbox_field !== BlackboxField.OUTPUT ||
+        d.array_index! < outputCount,
+    ).map((d) =>
+      d.blackbox_field === BlackboxField.OUTPUT
+        ? { ...d, advance: d.array_index === outputCount - 1 ? 1 : 0 }
+        : d,
+    );
   }
 
   public writeHeaders(profile: profile_t) {

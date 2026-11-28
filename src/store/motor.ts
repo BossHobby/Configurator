@@ -7,8 +7,6 @@ import { useProfileStore } from "./profile";
 import { output_protocol_t, output_source_t } from "./types";
 import { useInfoStore } from "./info";
 
-const OUTPUT_COUNT = 8;
-
 const MULTI_PINS = [
   {
     index: 0,
@@ -214,7 +212,7 @@ export const useMotorStore = defineStore("motor", {
           this.test.active = this.test.active ? 0 : 1;
           const info = useInfoStore();
           if (info.is_rover || info.is_wing) {
-            this.test.value = Array(OUTPUT_COUNT).fill(0);
+            this.test.value = this.test.value.map(() => 0);
           }
         });
     },

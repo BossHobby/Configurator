@@ -51,7 +51,10 @@ export function exportBlackboxJson(
     fields: blackboxFieldDefs(file.field_flags, firmwareVersion).map(
       (field, index) => {
         const value = entries[0]?.[index];
-        if (field.name === "debug" && Array.isArray(value)) {
+        if (
+          (field.name === "debug" || field.name === "output") &&
+          Array.isArray(value)
+        ) {
           return {
             ...field,
             axis: value.map((_, channel) => channel.toString()),
@@ -83,6 +86,11 @@ export function exportBlackboxBtfl(
     throw new Error("missing profile");
   }
 
+  const outputIndex = blackboxFieldDefs(
+    file.field_flags,
+    firmwareVersion,
+  ).findIndex((field) => field.name === "output");
+  const outputs = entries[0]?.[outputIndex];
   const writer = new Blackbox(
     {
       ...file,
@@ -92,6 +100,7 @@ export function exportBlackboxBtfl(
       ),
     },
     blackboxScaleForFirmware(firmwareVersion),
+    Array.isArray(outputs) ? outputs.length : undefined,
   );
   writer.writeHeaders(btflProfile);
   for (const v of entries) {

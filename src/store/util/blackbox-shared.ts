@@ -146,7 +146,7 @@ export const BlackboxFields: { [index: number]: BlackboxFieldDef } = {
   [BlackboxField.OUTPUT]: {
     name: "output",
     title: "Output",
-    axis: AxisIndex(8),
+    axis: AxisIndex(16),
     scale: BLACKBOX_SCALE,
     unit: BlackboxFieldUnit.NONE,
   },
